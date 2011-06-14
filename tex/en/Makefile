@@ -2,48 +2,33 @@ LATEX = pdflatex
 BIBTEX = bibtex
 
 CHAPTERS = \
-	frontmatter \
 	intro \
-	asterisk \
-	audacity \
-	bash \
-	bdb \
-	cmake \
-	eclipse \
-	graphite \
-	hdfs \
-	integration \
-	jitsi \
-	llvm \
-	mercurial \
-	nosql \
-	packaging \
-	riak \
-	selenium \
-	sendmail \
-	snowflock \
-	socialcalc \
-	telepathy \
-	thousandparsec \
-	violet \
-	vistrails \
-	vtk \
-	wesnoth \
-	makingsoftware \
-  colophon
+	aderby \
+	gdb \
+	ghc \
+	inkscape \
+	ironlang \
+	itk \
+	jquery \
+	k9mail \
+	mailman \
+	openmpi \
+	parrot \
+	pjs \
+	pypy \
+	sqlalchemy \
+	yesod \
+	colophon
 
 SRC=$(foreach name,${CHAPTERS},${name}.tex)
 
-all : aosa.pdf
+all : aosa2.pdf
 
-aosa.pdf : aosa2.tex aosa.bib ${SRC}
-	${LATEX} aosa
-	${BIBTEX} aosa
-	${LATEX} aosa
-	${LATEX} aosa
-
-ascii:
-	@python ../bin/ascii.py ${SRC}
+aosa2.pdf : aosa2.tex aosa2.bib ${SRC}
+	${LATEX} aosa2
+	${BIBTEX} aosa2
+	${LATEX} aosa2
+	${LATEX} aosa2
 
 questions:
 	@(for i in *.tex; do echo `fgrep aosaquestion $$i | wc -l` $$i; done) | sort -n -r
