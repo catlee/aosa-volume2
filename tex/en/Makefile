@@ -36,7 +36,7 @@ SRC=$(foreach name,${CHAPTERS},${name}.tex)
 
 all : aosa.pdf
 
-aosa.pdf : aosa.tex aosa.bib ${SRC}
+aosa.pdf : aosa2.tex aosa.bib ${SRC}
 	${LATEX} aosa
 	${BIBTEX} aosa
 	${LATEX} aosa
