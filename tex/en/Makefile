@@ -6,6 +6,7 @@ CHAPTERS = \
 	aderby \
 	gdb \
 	ghc \
+	gpsd \
 	inkscape \
 	ironlang \
 	itk \
