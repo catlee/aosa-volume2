@@ -1,6 +1,64 @@
 \begin{aosachapter}{Git}{s:git}{Susan Potter}
 
-Your chapter goes here---please look at /volume1/tex/en/wesnoth.tex for 
-formatting ideas.
+Currently just contains the basic structure of the chapter as I envision 
+it today.
+
+Introduction text goes here\ldots
+
+\being{aosasect1}{The Version Control Landscape}
+
+This section will describe the two primary classification dimensions to 
+Version Control Systems (VCS) today:
+
+\begin{aosasect1}
+  \item Distribution mode: local, client/server, distributed
+  \item Storage mode: changeset based vs directed acyclic graph (DAG) based
+\end{aosasect1}
+
+Provide examples of difference VCSes and how they fit in to these 
+classifications, e.g. Subversion (client/server + changeset), Mercurial 
+(distributed + changeset), BitKeeper (client/server + DAG), etc.
+
+\begin{aosasect1}{Gitting Started}
+
+Here I will describe the most rudimentary workflow of installing, configuring 
+and cloning a remote Git repository. Then explain on a low-level what happened.
+
+Describe the three main elements of a Git working environment:
+\begin{aosaitemize}
+  \item Repository (object database): default at #{projectdir}/.git subdirectory
+  \item Working area: default at #{projectdir} excluding .git subdirectory
+  \item Index: default at #{projectdir}/.git/index file
+\end{aosaitemize}
+
+Basic steps:
+\begin{aosaitemize}
+  \item sudo yum install git-core
+  \item git config --global user.name ``Your Name''
+  \item git config --global user.email ``user@emaildomain.com''
+  \item cat #{HOME}/.gitconfig
+  \item git clone remote-repo-url
+\end{aosaitemize}
+
+Mention the different protocols that can be used with Git, e.g. ssh, http, 
+https, git, file and even rsync. Broadly discuss pros and cons of each.
+
+Protocols notes: 
+\begin{aosaitemize}
+  \item file:// local repository easiest to setup, useful for only one author 
+environment
+  \item ssh:// most common for active development and easy to setup team repository
+  \item http:// good for open source pull based (consumers) users, can setup with 
+WebDAV support for allowing pushes, but more work. Good for working in 
+restricted public networks where SSH ports may be blocked.
+  \item https:// same as http except encrypts pulls and pushes over the wire.
+  \item git:// lightweight protocol useful in an enclosed and trusted local network
+  \item rsync:// hardly used.
+\end{aosaitemize}
+
+\begin{aosasect1}{Gitting Down \& Dirty}
+
+% This is how to include a figure using the AOSA styles already configured
+%\aosafigure{../images/git/distworkflow.eps}{Distributed VCS}{fig.git.dvcs}
 
 \end{aosachapter}
