@@ -5,19 +5,21 @@ it today.
 
 Introduction text goes here\ldots
 
-\being{aosasect1}{The Version Control Landscape}
+\begin{aosasect1}{Version Control Landscape}
 
 This section will describe the two primary classification dimensions to 
 Version Control Systems (VCS) today:
 
-\begin{aosasect1}
+\begin{aosaitemize}
   \item Distribution mode: local, client/server, distributed
   \item Storage mode: changeset based vs directed acyclic graph (DAG) based
-\end{aosasect1}
+\end{aosaitemize}
 
 Provide examples of difference VCSes and how they fit in to these 
 classifications, e.g. Subversion (client/server + changeset), Mercurial 
 (distributed + changeset), BitKeeper (client/server + DAG), etc.
+
+\end{aosasect1}
 
 \begin{aosasect1}{Gitting Started}
 
@@ -45,20 +47,64 @@ https, git, file and even rsync. Broadly discuss pros and cons of each.
 
 Protocols notes: 
 \begin{aosaitemize}
-  \item file:// local repository easiest to setup, useful for only one author 
-environment
+  \item file:// local repository easiest to setup, usuallly only useful for
+    one author environment
   \item ssh:// most common for active development and easy to setup team repository
   \item http:// good for open source pull based (consumers) users, can setup with 
-WebDAV support for allowing pushes, but more work. Good for working in 
-restricted public networks where SSH ports may be blocked.
+    WebDAV support for allowing pushes, but more work. Good for working in
+    restricted public networks where SSH ports may be blocked.
   \item https:// same as http except encrypts pulls and pushes over the wire.
   \item git:// lightweight protocol useful in an enclosed and trusted local network
   \item rsync:// hardly used.
 \end{aosaitemize}
 
+\end{aosasect1}
+
 \begin{aosasect1}{Gitting Down \& Dirty}
+
+Start with simplest of workflows: purely LOCAL. One author/editor local repo,
+multiple contributors receive bundle of their branch from author/editor.
+Contributors submit patches to author/editor (via email or ticketing system):
+1. Contributor: git format-patch origin/master --stdout > my-feature.patch
+2. Author: git am < my-feature.patch
+
+Notice how GIT\_AUTHOR\_NAME and GIT\_AUTHOR\_EMAIL use the contributors
+values and the editor's information is in GIT\_COMMITTER\_NAME, etc.
+
+Make sure to cover: git config|init|add|commit|status|branch|tag|log|
+format-patch|am|merge|rebase|bundle|diff
 
 % This is how to include a figure using the AOSA styles already configured
 %\aosafigure{../images/git/distworkflow.eps}{Distributed VCS}{fig.git.dvcs}
+
+Discussion on distributed workflows\ldots
+
+Introduce Git Flow workflow as a common one used in the Git community. Provide
+a realistic example. Plus I need to create good diagrams to explain things
+better.
+
+Then introduce the ``fork'' workflow which is commonly seen on GitHub and
+used by OSS projects.
+
+Then introduce the tiered/curated workflow where a release engineer/manager
+is gatekeeper. production-like environments do not have development branches
+visible to them at all. More locked-down.
+
+Then introduce the GitHub model with ``forks''.
+
+\end{aosasect1}
+
+\begin{aosasect1}{Deploying with Git}
+
+Here talk a little more about 'git bundle' and git shallow clones, e.g.
+git clone --depth N #{GIT\_URL}, where N is the number of parents.
+
+Demonstrate with a repository that shows significant benefit to using
+bundle in conjunction with shallow clones as a way to provide portable
+shall git repositories that allow deployment agents to transfer/receive
+minimal bytes over the wires AND have ability to do rollbacks in severe
+cases where a release does not go as planned.
+
+\end{aosasect1}
 
 \end{aosachapter}
