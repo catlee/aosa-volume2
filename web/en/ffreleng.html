@@ -1,3 +1,4 @@
+<!-- vim: set ts=2 sw=2 tw=70: -->
 <html>
   <head>
     <meta name="provenance" content="$Id$" />
@@ -29,23 +30,24 @@
     </div>
 
     <p>
-    The Mozilla Release Engineering team has made a lot of advances recently
-    in how our release automation works and it's getting to be quite close
-    to pushing a button, with minimal human interventions, eliminating many
-    of the headaches and do-overs often resulting with the old ways. In this
-    chapter we will explore and explain the infrastructure decisions as well
-    as scripts that comprise the complete, and current, Firefox rapid
-    release system.
+    The Mozilla Release Engineering team has made a lot of advances
+    recently in how our release automation works and it's getting to
+    be quite close to pushing a button, with minimal human
+    interventions, eliminating many of the headaches and do-overs
+    often resulting with the old ways. In this chapter we will explore
+    and explain the infrastructure decisions as well as scripts that
+    comprise the complete, and current, Firefox rapid release system.
     </p>
 
     <p>
-    You'll see the system from the perspective of a release-worthy changeset
-    in the mozilla-beta repo as it is turned into a release candidate, and
-    then a public release.  Accompanied by diagrams, we'll start with builds
-    &amp; signing, then on to how we generate update snippets for every
-    supported version and OS out in the wild, finally stopping for loads of
-    verification automation as well as manual QA before being pushed out to
-    a network of mirrors for availability to our users.
+    You'll see the system from the perspective of a release-worthy
+    changeset in the mozilla-beta repository as it is turned into a
+    release candidate, and then a public release.  Accompanied by
+    diagrams, we'll start with builds &amp; signing, then on to how we
+    generate update snippets for every supported version and OS out in
+    the wild, finally stopping for loads of verification automation as
+    well as manual QA before being pushed out to a network of mirrors
+    for availability to our users.
     </p>
 
     <p>
@@ -58,16 +60,77 @@
     </p>
 
     <p>
-    We'll show how the new rapid release process metrics and talk about how
-    we've generified much of the configs we use to be able to maintain only
-    one Mercurial repo for all our release code.
+    We'll show how the new rapid release process metrics and talk
+    about how we've generalized much of the configuration we use to be
+    able to maintain only one Mercurial repository for all our release
+    code.
     </p>
 
     <p>
-    Come along for a wild ride and follow a Mozilla Firefox release from the
-    moment the release coordinator gives the official "Go" to when it's
-    available for download (or update) to your computer or mobile device.
+    Come along for a wild ride and follow a Mozilla Firefox release
+    from the moment the release coordinator gives the official "Go" to
+    when it's available for download (or update) to your computer or
+    mobile device.
     </p>
+
+    <div class="sect">
+      <h2>Section title</h2>
+      <p>
+      Section text goes here!
+      </p>
+    </div>
+
+    <div class="sect">
+      <h2>The Chosen One - how the final revision is chosen for a release</h2>
+      <p>
+      Throughout the beta cycle for Firefox, we are doing periodic
+      releases from our <a
+        href="http://hg.mozilla.org/releases/mozilla-beta/">mozilla-beta</a>
+      repository. Each one of these beta releases goes through the
+      full release automation and is treated almost identically to our
+      regular final releases.
+      </p>
+
+      <p>
+      For each beta release, we're looking to see if bugs or crashes
+      we've fixed internally fix the problems for users.
+      </p>
+
+      go/no-go decision
+      </p>
+    </div>
+
+    <div class="sect">
+      <h2>Release Build Automation - what happens, where, when?</h2>
+      <p>
+      </p>
+    </div>
+
+    <div class="sect">
+      <h2>Release Build Automation - how stuff works</h2>
+      <p>
+      </p>
+    </div>
+
+    <div class="sect">
+      <h2>Working in the open</h2>
+      <p>
+      At Mozilla we strive to do everything in the open. All of
+      Release Engineering's code and notes are public, available to
+      see. Here are some links for further reading:
+      </p>
+      <ul>
+        <li><a href="http://hg.mozilla.org/build">build group's
+        repositories</a>. In particular, the buildbotcustom,
+        buildbot-configs, and tools repositories are used heavily for
+        releases.</li>
+        <li><a
+          href="https://wiki.mozilla.org/Releases/Firefox_7.0b4/BuildNotes">Firefox
+          7.0 Beta 4 Build Notes</a>. In addition to code, we document
+        every aspect of a release. Here's an example from our 7.0b4
+        release.</li>
+      </ul>
+    </div>
 
     <div class="footer">
     </div>
