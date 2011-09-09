@@ -50,6 +50,73 @@
 
 </div>
 -->
+    <!-- Introduction does not need a section div -->
+    <p>The Mozilla Release Engineering team has made a lot of advances recently
+    in how our release automation works and it's getting to be quite close
+    to pushing a button, with minimal human interventions, eliminating many
+    of the headaches and do-overs often resulting with the old ways. In this
+    chapter we will explore and explain the infrastructure decisions as well
+    as scripts that comprise the complete, and current, Firefox rapid
+    release system.
+    
+    You'll see the system from the perspective of a release-worthy changeset
+    in the mozilla-beta repo as it is turned into a release candidate, and
+    then a public release.  Accompanied by diagrams, we'll start with builds
+    &  signing, then on to how we generate update snippets for every
+    supported version and OS out in the wild, finally stopping for loads of
+    verification automation as well as manual QA before being pushed out to
+    a network of mirrors for availability to our users.
+    
+    We'll look at some of the newer decisions that have been made to improve
+    this process like our sanity-checking script that helps eliminate much
+    of what used to be vulnerable to human error, our automated signing
+    script, our integration of mobile releases into the desktop release
+    stream, and the land of patcher/AUS where updates are created and served
+    to our over 400 million users across multiple versions of the software.
+      We'll show how the new rapid release process metrics and talk about how
+    we've generified much of the configs we use to be able to maintain only
+    one Mercurial repo for all our release code.
+    
+    Come along for a wild ride and follow a Mozilla Firefox release from the
+    moment the release coordinator gives the official "Go" to when it's
+    available for download (or update) to your computer or mobile device.
+    </p>
+    <!-- Rough outline of sections -->
+    <div class="sect">
+        <h2>6.1 "Go to Build"</h2>
+        <p></p>
+    </div>
+
+    <div class="sect">
+        <h2>6.2 Tagging, Building, and Source Tarballs</h2>
+        <p></p>
+    </div>
+
+    <div class="sect">
+        <h2>6.3 Repacks and L10N</h2>
+        <p></p>
+    </div>
+
+    <div class="sect">
+        <h2>6.4 Signing</h2>
+        <p></p>
+    </div>
+
+    <div class="sect">
+        <h2>6.5 Updates</h2>
+        <p></p>
+    </div>
+    
+    <div class="sect">
+        <h2>6.6 Pushing Internal & QA</h2>
+        <p></p>
+    </div>
+
+    <div class="sect">
+        <h2>6.7 AUS and Pushing Public</h2>
+        <p></p>
+    </div>
+
     <div class="footer">
     </div>
 
