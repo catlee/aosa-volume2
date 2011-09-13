@@ -688,7 +688,7 @@ established, and stable piece of the open source ecosystem.
   bytes are almost always ASCII, and there is a strong temptation to
   manipulate message components as text.  The email standards themselves
   describe how human readable, non-ASCII text can be safely encoded, so even
-  things like finding a ``Re:`` prefix in a ``Subject:``header will be text
+  things like finding a ``Re:`` prefix in a ``Subject:`` header will be text
   operations, not byte operations.  Mailman's principle is to convert all text
   to unicode as early as possible, deal with the text as unicode internally,
   and only convert it back to bytes on the way out.  It's critical to be clear
