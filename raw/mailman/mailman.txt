@@ -49,7 +49,7 @@ Mailman 3, the design and implementation remains largely unchanged.
 
 
 The anatomy of a message
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+========================
 
 As you might guess, one of the core data structures in the system is the
 *email message*.  In fact, many of the interfaces, functions, and methods in
@@ -100,7 +100,7 @@ perfectly suited to optimizing the handling of email message object trees.
 
 
 The mailing list
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+================
 
 As you've probably inferred, the *mailing list* is another core object in the
 Mailman system.  Mailing list objects have undergone some radical redesigns in
@@ -199,7 +199,7 @@ system.
 
 
 Runners
-=3D=3D=3D=3D=3D=3D=3D
+=======
 
 Messages flow through the system by way of a set of independent processes
 called *runners*.  Originally conceived as a way of predictably processing all
@@ -294,7 +294,7 @@ ported untouched from Mailman 2 to Mailman 3.
 
 
 The master queue runner
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+=======================
 
 "One process to rule them all."
 
@@ -387,7 +387,7 @@ each individual piece.
 
 
 Rules, links, and chains
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+========================
 
 A mailing list posting goes through several phases from the time it's first
 received, until the time it's sent out to the list's membership.  In Mailman
@@ -468,7 +468,7 @@ processing pipeline you can imagine can be implemented.
 
 
 Handlers and pipelines
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+======================
 
 Let's say that once a message as made its way through the chains and rules,
 Mailman has determined that it can be posted to the mailing list.  Every
@@ -494,7 +494,7 @@ handlers, so these usually appear at the end of the pipeline.
 
 
 VERP
-=3D=3D=3D=3D
+====
 
 *VERP* stands for *Variable Envelope Return Path*, and it is a well-known
 technique that mailing lists can use to unambiguously determine recipient
@@ -537,7 +537,7 @@ can use this fact to encode the original recipient email address into the
 
 For example, let's say that the recipient is anne@example.com and the Mailman
 server is mylist@example.org.  The envelope sender for a mailing list posting
-sent to anne@example.com will be mylist-bounce+anne=3Dexample.com@example.org.
+sent to anne@example.com will be mylist-bounce+anne=example.com@example.org.
 The ``+`` here is a local address separator, which is a format supported by
 most modern mail servers.  So when the bounce comes back, it will actually get
 delivered to ``mylist-bounce@example.com`` but with the ``To:`` header still
@@ -560,7 +560,7 @@ customizing the body of the message for each individual recipient.
 
 
 REST
-=3D=3D=3D=3D
+====
 
 One of the key architectural changes in Mailman 3 addresses a common request
 over the years: allow Mailman to be more easily integrated with external
@@ -652,7 +652,7 @@ for alternative access to the archives.
 
 
 Lessons
-=3D=3D=3D=3D=3D=3D=3D
+=======
 
 Well, I've pretty much ran out of time, and there are lots of other
 interesting architectural decisions in Mailman which I can't cover.  These
@@ -715,4 +715,3 @@ Project wiki            : http://wiki.list.org
 Developer mailing list  : mailman-developers@python.org
 Users mailing list      : mailman-users@python.org
 Freenode IRC channel    : #mailman
-
