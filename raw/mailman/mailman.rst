@@ -1,4 +1,5 @@
 A brief history
+===============
 
 GNU Mailman is free software for managing mailing list.  Almost everybody who
 writes or uses free and open source software has probably encountered a
