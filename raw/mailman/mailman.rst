@@ -1,7 +1,7 @@
 A brief history
 ===============
 
-GNU Mailman is free software for managing mailing list.  Almost everybody who
+GNU Mailman is free software for managing mailing lists.  Almost everybody who
 writes or uses free and open source software has probably encountered a
 mailing list.  Mailing lists can be discussion-based or announcement-based,
 with all kinds of variations in between.  Sometimes mailing lists are
@@ -96,8 +96,7 @@ until we're ready to send it back out to the outgoing mail server.  It's at
 that point that we flatten the tree back to a bytes representation.  Along the
 way, we might pickle the message object tree for quick storage to, and
 reconstruction from, the file system.  *Pickles* are a Python technology for
-serializing **[Are readers going to understand what pickles are from this brief
-description? - Amy]** any Python object, including all its subobjects, and it's
+serializing any Python object, including all its subobjects, and it's
 perfectly suited to optimizing the handling of email message object trees.
 
 
