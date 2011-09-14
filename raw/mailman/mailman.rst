@@ -96,7 +96,8 @@ until we're ready to send it back out to the outgoing mail server.  It's at
 that point that we flatten the tree back to a bytes representation.  Along the
 way, we might pickle the message object tree for quick storage to, and
 reconstruction from, the file system.  *Pickles* are a Python technology for
-serializing any Python object, including all its subobjects, and it's
+serializing **[Are readers going to understand what pickles are from this brief
+description? - Amy]** any Python object, including all its subobjects, and it's
 perfectly suited to optimizing the handling of email message object trees.
 
 
@@ -131,6 +132,7 @@ inheritance, each mixin class provided a related set of operations and
 parameters.  This made it really easy to add entirely new functionality.  By
 grafting on a new mixin class, the core ``MailList`` class could easily
 accommodate something new and cool.
+**[Will readers know what a mixin class is? - Amy]**
 
 For example, in Mailman 2, when we wanted to add an auto-responder, we just
 created a mixin to hold the data specific to that feature, and they would get
@@ -449,7 +451,7 @@ missed.
 
 The central chain-processing loop then calls each rule in turn, and if the
 rule matches, it executes the chain link's action.  Most links defer action
-until later, which as the effect of grouping the moderation rules together, so
+until later, which has the effect of grouping the moderation rules together, so
 that every cause for discarding a message can be recorded.  Actions can also
 *jump* to another chain, and there are chains which discard, reject
 (i.e. bounce back to the original author), and accept messages, as well as
@@ -575,7 +577,7 @@ administrators would not need the plethora of options available in the typical
 Mailman site, and what few options they would need could be specified through
 the Launchpad web ui.
 
-At the time, Launchpad as not open source, so we had to design the integration
+At the time, Launchpad was not open source, so we had to design the integration
 in such a way that Mailman 2's GPLv2 code could not infect Launchpad.  This
 led to a number of architectural decision during that integration design that
 were quite tricky and somewhat inefficient.  Because Launchpad is now open
@@ -621,7 +623,7 @@ Mailman.
 
 It was about this time that I attended a Python conference where a talk on
 ``restish.io`` was given.  This seemed like exactly the kind of lightweight
-toolkit I needed, and indeed it was effortless (and kind of joyful ;) to rip
+toolkit I needed, and indeed it was effortless (and kind of joyful) to rip
 out all the old REST stuff and re-implement it on top of restish.io.  Now, it
 takes me just minutes to expose some new functionality over REST.
 
@@ -675,7 +677,7 @@ established, and stable piece of the open source ecosystem.
   sometimes take longer, but think of it as an investment in the future
   quality of your code.  In that way, *not* having a good test suite means
   you're just wasting your time.  Remember the mantra: untested code is broken
-  code. :)
+  code. 
 
 * Get your bytes/strings story straight from the beginning.  In Python 3, a
   sharp distinction is made between unicode text strings and byte arrays,
@@ -698,7 +700,7 @@ established, and stable piece of the open source ecosystem.
   this fundamental model shift later.
 
 * Internationalize your application from the start.  Do you want your
-  application to only be used by the minority of the English-speaking world?
+  application to only be used by the minority of the world that speaks English?
   Think about how many fantastic users this ignores!  It's not hard to
   set up internationalization, and Python provides lots of good tools for
   making this easy, many of which were pioneered in Mailman.  I've even spun
@@ -707,7 +709,7 @@ established, and stable piece of the open source ecosystem.
   your application is accessible to the world's wealth of languages, you will
   have volunteer translators knocking down your door to help.
 
-Finally, GNU Mailman is a vibrant project with a healthy user base, and lots
+GNU Mailman is a vibrant project with a healthy user base, and lots
 of opportunities for contributions.  Here are some resources you can use if
 you think you'd like to help us out, which I hope you do!
 
