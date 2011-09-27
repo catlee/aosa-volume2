@@ -1,6 +1,9 @@
 <!-- vim: set ts=2 sw=2 tw=70: -->
 <html>
   <head>
+    <style type="text/css">
+      div.inline { float:left; }
+    </style>
     <meta name="provenance" content="$Id$" />
     <link rel="stylesheet" href="aosa.css" type="text/css" />
     <title>The Architecture of Open Source Applications, Volume 2: Firefox Release Engineering</title>
@@ -97,6 +100,11 @@
     <!-- Rough outline of sections -->
     <div class="sect">
       <h2>6.1 "Go to Build"</h2>
+      <div class="figure" id="fig.ffreleng.go_to_build" class="inline">
+        <img src="../images/ffreleng/go_to_build.png" alt="Getting from code to a 'Go' to build" />
+        <p>Figure&nbsp;6.1: Getting from code to a 'Go' to build</p>
+      </div>
+      <p>
       Throughout the beta cycle for Firefox, we are doing periodic
       releases from our <a
         href="http://hg.mozilla.org/releases/mozilla-beta/">mozilla-beta</a>
@@ -116,12 +124,22 @@
 
     <div class="sect">
       <h2>6.2 Tagging, Building, and Source Tarballs</h2>
-      <p></p>
+      <div class="figure" id="fig.ffreleng.tagging">
+        <img src="../images/ffreleng/tagging.png" alt="Automated tagging" />
+        <p>Figure&nbsp;6.2: Automated tagging</p>
+      </div>
+        <p>
+        When we start automation we tag Firefox & Fennec in parallel.  Write about hgtool here - what it does and why we wrote it? How we handle buildN using RELBRANCH?
+        </p>
     </div>
 
     <div class="sect">
       <h2>6.3 Repacks and L10N</h2>
-      <p></p>
+      <div class="figure" id="fig.ffreleng.repacks_l10n">
+        <img src="../images/ffreleng/repacks_l10n.png" alt="Repacking Firefox for each localization" />
+        <p>Figure&nbsp;6.3: Repacking Firefox for each localization</p>
+      </div>
+        <p>Explain the process here of how we currently get our locale changesets, why they are in two different formats, and how the repacking code works.</p>
     </div>
 
     <div class="sect">
