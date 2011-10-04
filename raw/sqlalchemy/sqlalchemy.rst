@@ -516,7 +516,7 @@ only the class, the ``Column`` objects, and other ORM-related attributes are nam
 
 It may appear above that the class instrumentation is being achieved directly
 by our placement of ``id = Column()``, however this is not the case.   The Declarative
-extension uses a Python metaclass, which in general is just a handy way to run a series
+extension uses a Python metaclass, which is a handy way to run a series
 of operations each time a new class is first declared, to generate a new ``Table()``
 object from what's been declared, and to pass it to the ``mapper()`` function along with
 the class.  The ``mapper()`` function then does its job in exactly the same way, 
@@ -527,7 +527,7 @@ replacing what was there previously.  By the time the metaclass initialization i
 has been replaced by a new attribute, specific to the mapping.
 
 It was always intended that SQLAlchemy would have a
-"shorthand", declarative form of configuration, however the creation of Declarative
+shorthand, declarative form of configuration. However, the creation of Declarative
 was delayed in favor of continued work solidifying the mechanics of classical mapping.   
 An interim extension called ActiveMapper existed early on, which 
 later became the Elixir project, which redefines mapping constructs in a higher-level
