@@ -129,7 +129,69 @@
         <p>Figure&nbsp;6.2: Automated tagging</p>
       </div>
         <p>
-        When we start automation we tag Firefox & Fennec in parallel.  Write about hgtool here - what it does and why we wrote it? How we handle buildN using RELBRANCH?
+        One of the first steps in building Firefox is tagging all of
+        the related source code repositories to record which revision
+        of the source, locales, and related tools was used for the
+        release. A single Firefox release uses code from a half dozen
+        version control repositories that host things such as the
+        product code , localization data, release automation code, and
+        helper utilities. Tagging all these repositories is therefore
+        critical to ensure that future steps of the release automation
+        are all using a consistent set of revisions. It also has a
+        number of other benefits: Linux distributions and other
+        contributors can reproduce builds with exactly the same code
+        that goes into the official builds, it also records the
+        revisions of source and tools used on a per-release basis for
+        future comparison of what changed between releases. For
+        Firefox releases we use tag names such as
+        FIREFOX_6_0_2_RELEASE.
+        </p>
+        <p>
+        <!--
+
+        XXX
+
+        relbranches actually aren't that useful since we've
+        moved to rapid release. version bumping is usually done by the
+        aurora -> beta merge, and chemspills are done on the default
+        branch in the release repo.
+
+        That said, do we need to go into detail about relbranches?
+
+        - catlee
+
+        XXX
+        -->
+        For the main Firefox source repository, the first thing we
+        actually do is to create a release branch (relbranch) based
+        from the signed-off revision given by the release driver.
+        This release branch is implemented as an in-repository named
+        branch whose parent changeset is the signed-off revision. The
+        release branch is used to make release-specific modifications
+        to the source code, such as bumping the version numbers, or
+        finalizing the set of locales that will be built. If a 
+        critical security vulnerability is discovered in the future
+        that requires an immediate fix (a "chemspill" situation), the
+        minimal set of changes to address the vulnerability will be
+        landed on this relbranch and a new version of Firefox
+        released.
+        </p>
+        <p>
+        how we handle buildN
+        </p>
+        <p>
+        hgtool - what it does, and why we wrote it.
+        </p>
+        <p>
+        tagging firefox, fennec in parallel
+        </p>
+        <p>
+        In the future we would like to streamline our release
+        automation process so that we tag all the various repositories
+        in parallel. The initial builds can be started as soon as the
+        product code repository is tagged. By the time these builds
+        are finished, the rest of the repositories will have been
+        tagged so that l10n repacks and future steps can be completed.
         </p>
     </div>
 
@@ -167,7 +229,12 @@
     </div>
 
     <div class="sect">
-      <h2>6.8 Working in the open</h2>
+      <h2>6.8 Chemspills - Turning it up to 11</h2>
+      <p></p>
+    </div>
+
+    <div class="sect">
+      <h2>6.9 Working in the open</h2>
       <p>
       At Mozilla we strive to do everything in the open. All of
       Release Engineering's code and notes are public, available to
