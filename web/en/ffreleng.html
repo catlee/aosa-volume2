@@ -184,6 +184,8 @@
         </p>
         <p>
         tagging firefox, fennec in parallel
+
+        tagging takes XXX minutes to complete.
         </p>
         <p>
         In the future we would like to streamline our release
@@ -192,6 +194,8 @@
         product code repository is tagged. By the time these builds
         are finished, the rest of the repositories will have been
         tagged so that l10n repacks and future steps can be completed.
+        We estimate this can reduce the total time to have builds
+        ready by 15 minutes. <!-- XXX check this XXX -->
         </p>
     </div>
 
@@ -229,12 +233,36 @@
     </div>
 
     <div class="sect">
-      <h2>6.8 Chemspills - Turning it up to 11</h2>
-      <p></p>
+      <h2>6.8 Murphy's Law</h2>
+      <p>One thing you learn when trying to coordinate work across
+      hundreds of machines is that if something *can* go wrong, it
+      *will* go wrong. A lot of effort is spent making our tools and
+      processes bulletproof so that "rare" events like network
+      hiccups, disk space issues or typos made by real live humans are
+      caught and handled as early as possible.
+      
+      release_sanity - what it is, why we wrote it (intern project!
+      yay!)
+      </p>
     </div>
 
     <div class="sect">
-      <h2>6.9 Working in the open</h2>
+      <h2>6.9 Chemspills - Turning it up to 11</h2>
+      <p>The internet can be a dangerous place. There are people
+      and organizations out there trying to gain access to users'
+      computers or online accounts via software exploits. Mozilla
+      takes security in all of its products very seriously, and so
+      when a new security vulnerability is found (a "chemspill" - a critically
+      dangerous event that needs cleaning up ASAP) the security,
+      development and release engineering teams work around the clock
+      to get the problem fixed and a safer product delivered to users. This is why
+      we're so focused on streamlining our process and making it more
+      resilient to failure. Every minute counts.
+      </p>
+    </div>
+
+    <div class="sect">
+      <h2>6.10 Working in the open</h2>
       <p>
       At Mozilla we strive to do everything in the open. All of
       Release Engineering's code and notes are public, available to
