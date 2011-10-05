@@ -1,8 +1,164 @@
 \begin{aosachapter}{GDB}{s:gdb}{Stan Shebs}
 
-Your chapter goes here---please look at /volume1/tex/en/wesnoth.tex for 
-formatting ideas.
+GDB, the GNU Debugger, was among the first programs to be written for
+the Free Software Foundation, and it has been a staple of GNU systems
+ever since.  Originally designed as a plain Unix-type debugger, it has
+since been expanded to a wide range of uses, including many embedded
+systems, and has grown by an order of magnitude.
 
-GDB, the GNU Debugger
+This chapter will retrace the development of GDB, showing how the
+internal structure derives from new demands, and new features added
+over time.
+
+Scope
+
+GDB is designed to be a symbolic debugger for programs written in
+compiled imperative languages such as C, C++, Ada, Fortran and so
+forth.  As usual for an unaptly-named ``debugger'', it doesn't
+actually remove bugs from programs; instead, it helps the developer
+study the program's behavior closely, hopefully in enough detail to
+find the bugs and figure out how to fix them.  The most common usage
+looks something like this:
+
+% gdb myprog
+[...]
+(gdb) break buggy_function
+Breakpoint 1 ...
+(gdb) run
+Stopped at buggy_function
+(gdb) print variable_that_should_be_positive
+$$1 = -34
+(gdb)
+
+So GDB shows something that is not right, and then it is up to the developer
+to figure out why.
+
+The important point for design is that GDB is an interactive toolbox
+for poking around in a program, and as such it should be responsive
+to an unpredictable series of requests.  It also needs to deal with
+programs that have been optimized by the compiler, and programs that
+exploit every hardware option for performance, so it needs to have
+detailed knowledge down to the lowest levels of a system.
+
+History
+
+GDB is an old program.  It came into existence around 1985-6, written
+by Richard Stallman along with GCC, GNU Emacs, and other early
+components of GNU.  (In those days, there were no public source
+control repositories, and much of the detailed development history
+has simply been lost.)
+
+Block Diagram
+
+(big picture)
+
+GDB can be said to have two sides to it:
+
+1) The ``symbol side'' is concerned with symbolic information about
+the program.  Symbolic information includes function and variable
+names and types, line numbers, machine register usage, and so forth.
+The symbol side reads symbolic information from the file, parses
+expressions, finds the memory address of a given line number, and so
+forth.
+
+2) The ``target side'' is concerned with the manipulation of the
+target system.  It has facilities to start and stop the program, to
+read memory and registers, to modify them, to catch signals, and so
+on.
+
+The two sides are somewhat independent of each other; you can look
+around your program's machine code, display variable types, etc,
+without having anything running.  Conversely, it is possible to do
+pure machine-language debugging even if no symbols are avaiable.
+
+In the middle, tying the two sides together, is the command interpreter
+and the main execution control loop.
+
+Symbol Side
+
+The symbol side starts by reading the compiled program and extracting
+any symbolic information it finds.
+
+The process starts with BFD, which is the common binary file reading
+library shared with the GNU assembler, linker, and other minor tools
+(the ``binutils'').  BFD offers a single API to read the original Unix
+a.out format, COFF (used on System V Unix and MS Windows), and ELF
+(modern Unix, GNU/Linux, and most embedded systems), among others.
+
+BFD just pulls blocks of data from the program into GDB's memory, then
+for each format, GDB has two levels of reader.  The first is for basic
+symbols, which is just the names that the linker uses to build
+executables and library; so these are names with addresses and not
+much else.  The second level is detailed symbolic information, which
+may be in its own format; for instance, DWARF information is
+encapsulated in an ELF file.
+
+The code for reading symbolic information is somewhat tedious and
+uninteresting; the different format encode the same information in
+their own ways, so it's just a matter of interpretation and construction
+of the appropriate GDB structures.
+
+Partial Symbol Tables
+
+However, for a program of significant size (such as Emacs or Firefox),
+construction of the symbol table can take quite a while, maybe even
+several minutes.  Measurements show that the time is *not* in file
+reading, but in the in-memory construction of GDB symbols; there are
+literally millions of small interconnected objects, and the time adds
+up.
+
+Most of the symbolic information will never be looked at in a session,
+since it is local to functions that are not of debugging interest.  So
+when GDB first pulls in a program, it scans through the symbolic
+information, looking for just the globally-visible symbols and
+recording only them in the symbol table.  Complete symbolic info for a
+function is filled in only when the user stops inside it.
+
+Partial symbol tables allow GDB to start up in only a few seconds, even
+for large programs.
+
+Target Side
+
+Target Vectors and the Target Stack
+
+Originally the target side of GDB was composed of a handful of
+platform-specific files that handled the details of calling ptrace(),
+launching executables, and so forth.
+
+This is not sufficiently flexible for long-running debugging session,
+in which the user might switch from local to remote debugging, switch
+from files to live programs, attach and detach, and so forth.
+
+So in 1990 the target side of GDB was redesigned to send all
+platform-specific operation through the ''target vector'', which is
+basically a class of objects, each of what defines the the specifics
+of a type of target.  In practice, each target vector is a structure
+of several dozen function pointers.  Methods ranging from reading of
+memory and registers, to setting parameters of a tracing run.
+
+In addition, it is often useful to blend methods from several target
+vectors.  For instance, consider the printing of an initialized global
+variable on Unix; before the program is running, the bytes should come
+from the executable's .data section, and in fact there is a target
+vector for executable programs for which the method reads from the
+file.  But while the program is running, the bytes should instead come
+from the process's address space.  So GDB has a ''target stack'' where
+the live process target vector gets pushed on top of the executable's
+target vector when the process starts running, and is then popped when
+it exits.
+
+(picture?)
+
+In practice, the target vector has become a key abstraction in GDB,
+while the target stack has not worked so well.  The reality of the
+target stack is that target vectors are not really orthogonal to each
+other; it never makes sense to have a exec,process,exec,corefile
+combination for example, and it would be very confusing if the user
+could get into that situation.  So GDB has a notion of ``stratum'' in
+which process-like target vectors are all one level, while file-like
+target vectors get assigned to a lower level.
+
+While GDBers grumble about the target stack regularly, nobody has yet
+come up with (and implemented!) a better replacement.xs
 
 \end{aosachapter}
