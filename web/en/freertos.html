@@ -39,9 +39,7 @@ and commercial TCP/IP, file system, and USB components."</p>
 <p>FreeRTOS has an active, free support forum on SourceForge.</p>
 
 <p>Commercial (paid) FreeRTOS support is also available under the OpenRTOS and 
-SafeRTOS brands, owned by WITTENSTEIN.</p>
-
-[??? How to include URL: http://www.wittenstein-us.com/Embedded-RTOS.html].
+SafeRTOS brands, owned by WITTENSTEIN.<sup class="footnote"><a href=#footnote-2">2</a></sup></p>
 
 <p>This chapter discusses FreeRTOS version 7.0.1, released on May 13, 2011.</p>
 
@@ -551,7 +549,7 @@ algorithms later.</p>
 implements them similarly, but they're intended to be used in different ways.</p>
 
 <p>How should they be used differently? Embedded guru Michael Barr says it best here 
-in his article, "Mutexes and Semaphores Demystified":<sup class="footnote"><a href="#footnote-2">2</a></sup></p>
+in his article, "Mutexes and Semaphores Demystified":<sup class="footnote"><a href="#footnote-3">3</a></sup></p>
 
 <p>"The correct use of a semaphore is for signaling from one task to another. A mutex 
 is meant to be taken and released, always in that order, by each task that uses the 
@@ -598,7 +596,7 @@ don't.</p>
 
 <p>In case you're not familiar with priority inheritance, I'll quote Michael Barr 
 again to define it, this time from his article, "Introduction to Priority 
-Inversion":<sup class="footnote"><a href="#footnote-3">3</a></sup></p>
+Inversion":<sup class="footnote"><a href="#footnote-4">4</a></sup></p>
 
 
 <p>"[Priority inheritance] mandates that a lower-priority task inherit the priority 
@@ -833,7 +831,7 @@ didn't mention memory allocation, ISRs, debugging, or MPU support. Please check 
 the source code for more information about the FreeRTOS architecture.</p>
 
 <p>This chapter also did not discuss how to setup or use FreeRTOS. Richard Barry has 
-written an excellent book<sup class="footnote"><a href="#footnote-4">4</a></sup>, 
+written an excellent book<sup class="footnote"><a href="#footnote-5">5</a></sup>, 
 "Using the FreeRTOS Real Time Kernel - a Practical Guide," which discusses exactly 
 that.  It's not free, but it's authoritative and very well written; I highly 
 recommend it if you're going to use FreeRTOS.</p>
@@ -863,9 +861,10 @@ was a geek when she married me!</p>
 <h2>Footnotes</h2>
 <ol>
 <li id="footnote-1"<code class="url">http://www.freertos.org</code</li>
-<li id="footnote-2"<code class="url">http://www.netrino.com/node/202</code></li>
-<li id="footnote-3"<code class="url">http://www.eetimes.com/discussion/beginner-s-corner/4023947/Introduction-to-Priority-Inversion</code></li>
-<li id="footnote-4"<code class="url">http://www.freertos.org/Documentation/FreeRTOS-documentation-and-book.html</code</li>
+<li id="footnote-2"<code class="url">http://www.wittenstein-us.com/Embedded-RTOS.html</code></li>
+<li id="footnote-3"<code class="url">http://www.netrino.com/node/202</code></li>
+<li id="footnote-4"<code class="url">http://www.eetimes.com/discussion/beginner-s-corner/4023947/Introduction-to-Priority-Inversion</code></li>
+<li id="footnote-5"<code class="url">http://www.freertos.org/Documentation/FreeRTOS-documentation-and-book.html</code</li>
 </ol>
 </div>
 
