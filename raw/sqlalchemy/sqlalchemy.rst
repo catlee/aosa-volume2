@@ -2,7 +2,7 @@
 Introduction
 ============
 
-SQLAlchemy is a database toolkit and object relational system for
+SQLAlchemy is a database toolkit and object-relational mapping (ORM) system for
 the Python programming language, first introduced in 2005. From
 the beginning, it has sought to provide an end-to-end system for
 working with relational databases in Python, using
@@ -36,9 +36,9 @@ not the underlying storage is relational.
 The most common critiques of ORMs center on the assumption that this is the
 primary purpose of such a tool - to "hide" the usage of a relational database,
 taking over the task of constructing an interaction with the database and
-reducing it to an implementation detail. Central in this notion is that the
+reducing it to an implementation detail. Central to this notion is the idea that the
 design of relational structures and of the queries constructed against them
-are taken away from the developer and handed off to an opaque library.
+is taken away from the developer and handed off to an opaque library.
 
 Those who work heavily with relational databases know that this approach is
 entirely impractical. Relational structures and SQL queries are vastly
@@ -50,7 +50,7 @@ in the first place.
 
 The issue of reconciling applications that seek concealment of an underlying
 relational database with the fact that relational databases require great
-specificity is often referred to as the "object relational impedance mismatch"
+specificity is often referred to as the "object-relational impedance mismatch"
 problem. SQLAlchemy takes a somewhat novel approach to this problem.
 
 SQLAlchemy's Approach to Database Abstraction
@@ -66,10 +66,10 @@ At the same time, the implementation of these decisions can and should be
 executed through high level patterns as much as possible. Relating an object
 model to a schema and persisting it via SQL queries is a highly repetitive
 task. Allowing tools to automate these tasks leads an application that is to
-more succinct, capable, and efficient, created within a fraction of the development time it
-would otherwise take to roll these operations manually.
+more succinct, capable, and efficient, created in a fraction of the development time it
+would take to roll these operations manually.
 
-To this end, SQLAlchemy refers to itself as a "toolkit", to emphasize the role
+To this end, SQLAlchemy refers to itself as a *toolkit*, to emphasize the role
 of the developer as the designer/builder of all relational structures and
 linkages between those structures and the application, not as a passive
 consumer of decisions made by a library. By strongly exposing relational
@@ -82,11 +82,11 @@ sacrifice in control over the relational database.
 The Core / ORM Dichotomy
 =========================
 
-Central to SQLAlchemy's goal of providing a "toolkit" approach is that it
+Central to SQLAlchemy's goal of providing a toolkit approach is that it
 exposes every layer of database interaction as a rich API, dividing the task
-into two main categories, known as "Core" and "ORM". The Core includes DBAPI
-interaction, SQL rendering, and schema management - all of which are public
-APIs of their own. The ORM, or object relational mapper, is then a specific
+into two main categories, known as *Core* and *ORM*. The Core includes DBAPI
+interaction, SQL rendering, and schema management, all of which are public
+APIs of their own. The ORM, or object-relational mapper, is then a specific
 library built on top of the Core. The ORM provided with SQLAlchemy is only one
 of any number of possible object abstraction layers that could be built upon
 the Core.
@@ -129,7 +129,7 @@ improve performance.   However, the growing acceptance of the
 PyPy interpreter for Python may promise to squash the remaining
 performance problems without the need to replace the majority of
 SQLAlchemy's internals with C code, as PyPy vastly
-reduces the impact of long call chains through "just-in-time" 
+reduces the impact of long call chains through just-in-time 
 inlining and compilation.
 
 Taming the DBAPI
@@ -142,7 +142,7 @@ particular target database, such as for MySQL or Postgresql, or alternatively
 for particular non-DBAPI database adapters, such as ODBC and JDBC.
 
 The DBAPI presents two challenges.  The first is to provide an
-easy-to-use yet full featured facade around the DBAPI's rudimental
+easy-to-use yet full-featured facade around the DBAPI's rudimental
 usage patterns.  The second is to handle the extremely variable nature of
 specific DBAPI implementations as well as the underlying database engines.
 
@@ -171,7 +171,7 @@ connection and configuration information is assembled.  An instance of
 to the DBAPI, which itself is never exposed directly.
 
 For simple statement executions, ``Engine`` offers
-what's known as an "implicit execution" interface.  The work 
+what's known as an *implicit execution* interface.  The work 
 of acquiring and closing both a DBAPI connection
 and cursor are handled behind the scenes::
 
@@ -206,9 +206,9 @@ for all decisions which may have varied behaviors depending on the target DBAPI 
 
 The ``Connection``, when created,
 will procure and maintain an actual DBAPI connection from a repository
-known as a ``Pool``, that's also associated with the ``Engine``.
-The ``Pool`` is responsible for creating new DBAPI connections and
-usually maintaining them in an in-memory pool for frequent re-use.
+known as a ``Pool`` that's also associated with the ``Engine``.
+The ``Pool`` is responsible for creating new DBAPI connections and,
+usually, maintaining them in an in-memory pool for frequent re-use.
 
 During a statement execution, an additional object called an
 ``ExecutionContext`` is created by the ``Connection``, which lasts from the
@@ -230,18 +230,18 @@ For the second task of managing variability in DBAPI behavior,
 first we'll consider the scope of the problem. The DBAPI
 specification, currently at version two, is written as a series of
 API definitions which allow for a wide degree of variability in
-behavior, as well as a good number of "undefined" areas.  Real
-life DBAPIs as a result include a great degree of variability
+behavior, as well as a good number of undefined areas.  As a result, real-life 
+DBAPIs nclude a great degree of variability
 in several areas, including when Python
 unicode strings are acceptable and when they are not; how the 
 "last inserted id", that is an autogenerated primary key, may be
 acquired after an INSERT statement; how bound parameter values
-may be specified and interpreted; and a large number of idiosyncratic type
-oriented behavior, including the handling of binary, precision numeric, date,
+may be specified and interpreted; and a large number of idiosyncratic type-oriented 
+behavior, including the handling of binary, precision numeric, date,
 boolean, and unicode data.
 
 SQLAlchemy approaches this by allowing variability in both ``Dialect`` as
-well as ``ExecutionContext`` via multi-level subclassing.   Figure 2 below illustrates
+well as ``ExecutionContext`` via multi-level subclassing.   Figure 2 illustrates
 the relationship between ``Dialect`` and ``ExecutionContext`` when
 used with the psycopg2 dialect.  The ``PGDialect`` class provides behaviors that
 are specific to the usage of the Postgresql database, such as the ARRAY datatype
@@ -273,7 +273,7 @@ to define every interaction with the database and DBAPI,
 including how connection arguments are formatted and how special
 quirks during statement execution are handled - the ``Dialect``
 is also a factory for SQL compilation constructs that render
-SQL correctly for the target database and type objects which 
+SQL correctly for the target database, and type objects which 
 define how Python data should be marshaled to and from the target
 DBAPI and database.
 
@@ -287,15 +287,15 @@ that are part of the so-called "schema" of the database.   These constructs
 represent how data are organized.  SQL then presents the language
 used to access and manipulate their state.
 
-An ORM or data access layer needs to provide programatic access to the SQL
-language; at the base is a programatic system of describing tables and
-columns. This is where SQLAlchemy offers the first strong division of "Core"
-and "ORM", by offering the ``Table`` and ``Column`` constructs that describe
-the structure of the database independently of a user's "model" class
+An ORM or data access layer needs to provide programmatic access to the SQL
+language; at the base is a programmatic system of describing tables and
+columns. This is where SQLAlchemy offers the first strong division of Core
+and ORM by offering the ``Table`` and ``Column`` constructs that describe
+the structure of the database independently of a user's model class
 definition.  The rationale behind the division of schema definition from object
-relational mapping is so that the relational schema can be designed
+relational mapping is that the relational schema can be designed
 unambiguously in terms of the relational database, including platform-specific
-details if necessary, without being muddled by object relational concepts - 
+details if necessary, without being muddled by object-relational concepts - 
 these remain a separate concern. Being independent of the ORM component also
 means the schema description system is just as useful for any other kind of
 object-relational system which may be built on the Core.
@@ -339,7 +339,7 @@ SQL Expressions
 When SQLAlchemy was first being created, the
 approach to textual SQL generation wasn't clear. A textual
 language might have been a likely candidate - this is a common
-approach and is at the core of well-known object relational tools
+approach and is at the core of well-known object-relational tools
 like Hibernate's HQL. For Python however, a more intriguing
 choice was available, that of using Python objects and expressions
 to generatively construct "expression tree" structures, including
@@ -348,7 +348,7 @@ could be given SQL statement behavior.
 
 While it may not have been the first tool to do so, full
 credit goes to the SQLBuilder library included in Ian
-Bicking's SQLObject, as the source of inspiration for the
+Bicking's SQLObject as the source of inspiration for the
 system of Python objects and operators used by
 SQLAlchemy's expression language. In this approach,
 Python objects represent lexical portions of a SQL
@@ -367,7 +367,7 @@ Expression Trees
 A SQLAlchemy SQL expression construct is very much like the kind of structure
 you'd create if you were parsing a SQL statement - it's a parse tree,
 except the developer creates the parse tree directly, rather than 
-deriving one from a string.   The core type of node in this parse
+deriving it from a string.   The core type of node in this parse
 tree is called ``ClauseElement``, and figure 6 illustrates the relationship
 of ``ClauseElement`` to some key classes.
 
@@ -481,7 +481,7 @@ Classical vs. Declarative
 --------------------------
 
 We use the term "classical mapping" to refer to SQLAlchemy's system of
-applying an object relational "data mapping" to an existing user class. This
+applying an object-relational "data mapping" to an existing user class. This
 form considers the ``Table`` object and the user defined class to be two
 individually-defined entities which are joined together via a function called
 ``mapper()``. Once ``mapper()`` has been applied to a user defined class, the
@@ -504,7 +504,7 @@ better expressed via the term "class instrumentation".
 
 Modern usage of SQLAlchemy centers around usage of the Declarative extension, which
 is a configurational system that resembles the common "active-record"-like class
-declaration system used by many other object relational tools.   In this system,
+declaration system used by many other object-relational tools.   In this system,
 the end user explicitly defines attributes inline with the class definition,
 each representing an attribute on the class that is to be mapped.   The ``Table``
 object in most cases is not mentioned explicitly, nor is the ``mapper()`` function;
@@ -516,7 +516,7 @@ only the class, the ``Column`` objects, and other ORM-related attributes are nam
 
 It may appear above that the class instrumentation is being achieved directly
 by our placement of ``id = Column()``, however this is not the case.   The Declarative
-extension uses a Python metaclass, which in general is just a handy way to run a series
+extension uses a Python metaclass, which is a handy way to run a series
 of operations each time a new class is first declared, to generate a new ``Table()``
 object from what's been declared, and to pass it to the ``mapper()`` function along with
 the class.  The ``mapper()`` function then does its job in exactly the same way, 
@@ -527,7 +527,7 @@ replacing what was there previously.  By the time the metaclass initialization i
 has been replaced by a new attribute, specific to the mapping.
 
 It was always intended that SQLAlchemy would have a
-"shorthand", declarative form of configuration, however the creation of Declarative
+shorthand, declarative form of configuration. However, the creation of Declarative
 was delayed in favor of continued work solidifying the mechanics of classical mapping.   
 An interim extension called ActiveMapper existed early on, which 
 later became the Elixir project, which redefines mapping constructs in a higher-level
