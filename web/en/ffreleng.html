@@ -97,6 +97,9 @@
     mobile device.
     </p>
 
+    <!-- XXX diagram of builds and their dependencies, along with
+    times? something like a gantt chart ? XXX -->
+
     <!-- Rough outline of sections -->
     <div class="sect">
       <h2>6.1 "Go to Build"</h2>
@@ -180,18 +183,54 @@
         how we handle buildN
         </p>
         <p>
-        hgtool - what it does, and why we wrote it.
+        Our tagging process does a <em>lot</em> of operations with
+        local and remote mercurial (hg) repositories. To factor out
+        some of the most common operations we've written a few tools
+        to assist us: hgtool.py and retry.py.
         </p>
-        <p>
-        tagging firefox, fennec in parallel
 
-        tagging takes XXX minutes to complete.
+        <p>
+        retry.py is a simple wrapper that can take a given command and
+        run it, retrying several times if it fails. It can also watch
+        for exceptional output conditions and retry or report failure
+        in those cases. We've found it useful to wrap retry.py around
+        most of the commands which can fail due to external resources.
+        For tagging, the hg operations could fail due to temporary
+        network outages, web server issues, or the backend hg server
+        being temporarily overloaded. Being able to automatically
+        retry these operations and continue on saves a lot of our
+        time, since we don't have to manually recover and get the
+        release automation running again.
+        </p>
+
+        <p>
+        hgtool.py is a utility that encapsulates several common
+        mercurial operations, like cloning/pulling/updating into a
+        single invocation. It also adds support for mercurial's share
+        extension, which we use extensively to avoid having to have
+        several full clones of repositories in different directories
+        on the same machine. Adding support for shared local
+        repositories was a significant speedup to our tagging process
+        since most full clones of the product and locale repositories
+        could be avoided.
+        </p>
+
+        <p>
+        An important consideration for factoring out tools like these
+        is to make our automation as testable as possible. Because
+        tools like hgtool.py are small, single purpose utilities built
+        on top of reusable libraries, they're much easier to test in
+        isolation. 
         </p>
         <p>
-        In the future we would like to streamline our release
-        automation process so that we tag all the various repositories
+        Today our tagging is done in two parallel jobs: one for
+        desktop Firefox which takes around 20 minutes to complete,
+        and another for mobile Firefox which takes around 10 minutes
+        to complete. In the future we would like to streamline our release
+        automation process so that we tag <em>all</em> the various repositories
         in parallel. The initial builds can be started as soon as the
-        product code repository is tagged. By the time these builds
+        product code repository is tagged without having to wait for
+        all the locale repositories to be tagged. By the time these builds
         are finished, the rest of the repositories will have been
         tagged so that l10n repacks and future steps can be completed.
         We estimate this can reduce the total time to have builds
