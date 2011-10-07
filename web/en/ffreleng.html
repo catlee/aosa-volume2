@@ -66,7 +66,7 @@
     <p>
     You'll see the system from the perspective of a release-worthy
     changeset in the mozilla-beta repository as it is turned into a
-    release candidate, and then a public release.  Accompanied by
+    release candidate, and then a public release. Accompanied by
     diagrams, we'll start with builds &amp; signing, then on to how we
     generate update snippets for every supported version and OS out in
     the wild, finally stopping for loads of verification automation as
@@ -212,7 +212,7 @@
       <h2>6.4 Signing</h2>
       <div class="figure" id="fig.ffreleng.signing">
         <img src="../images/ffreleng/signing.png" alt="Signing Firefox installers" />
-        <p>Figure&nbsp;6.3: Signing of Firefox installers, partially automated</p>
+        <p>Figure&nbsp;6.4: Signing of Firefox installers, partially automated</p>
       </div>
       <p></p>
     </div>
@@ -224,7 +224,45 @@
     
     <div class="sect">
       <h2>6.6 Pushing Internal & QA</h2>
-      <p></p>
+      <p>Verifying that the release process is producing the expected
+      deliverables is key for producing the right bits for our users. This
+      is accomplished by QA's verification and sign offs process along the
+      way to ensure that everything is going according to the plan.
+      </p>
+      
+      <p>
+      QA does manual and automated testing of the builds as soon as they are
+      available. They use contractors in other timezones to speed up the
+      validation process. Meanwhile, the release automation generates updates
+      for all languages and all platforms. Once these are ready QA tests that
+      users would be able to update from the previous release to the current
+      one. 
+      </p>
+
+      <p>We also push the binaries to our internal mirrors to help us
+      handle the load of users requesting their updates rather than
+      reaching ftp directly. In the case of betas this is around
+      of one million users. Notice that users don't get the updates until
+      QA has signed them off and we get the request to push them live.
+      </p>
+
+      <p>
+      The validation process after builds and updates are generated is:
+      <ol>
+         <li>Contractors on other timezones do manual testing.</li>
+         <li>QA triggers the automation systems to do functional
+testing.</li>
+         <li>QA verifies that fixed problems for that release are
+indeed fixed.</li>
+         <li>The release automation meanwhile is generating the
+updates.</li>
+         <li>QA signs off the builds.</li>
+         <li>QA signs off the updates.</li>
+      </ol>
+      </p>
+      <p>At this point we are ready to go live which is covered in the
+      following section.
+      </p>
     </div>
 
     <div class="sect">
