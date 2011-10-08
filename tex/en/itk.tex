@@ -1,14 +1,51 @@
 \begin{aosachapter}{ITK}{s:itk}{Luis Ibanez and Brad King}
 
-The Insight Toolkit (ITK) is a library for image analysis
-
-% Your chapter goes here---please look at /volume1/tex/en/wesnoth.tex for 
+% Your chapter goes here---please look at /volume1/tex/en/wesnoth.tex for
 % formatting ideas.
 
 \begin{aosasect1}{What Is ITK?}
+The Insight Toolkit ITK is a library for image analysis that was developed by
+the initiative and mainly with the funding of the US National Library of
+Medicine. ITK can be tought of as an usable encyclopedia of image analysis
+algorithms, in particular for image filtering, image segmentation and image
+registration. The library was developed by a consortium involving universities,
+commercial companies, and many individual contributors from around the world.
+Development of ITK started in 1999, and recently at after its 10th anniversary
+the library underwent a refactoring process intended to remove crusty code and
+to reshape it for the next decade.
 \end{aosasect1}
 
 \begin{aosasect1}{Architectural Features}
+
+Software is written by people. We are persuaded of the truth of Conway's Law,
+an adage named after computer programmer Melvin Conway, who in 1968 stated:
+
+\begin{quotation}
+"Organizations which design systems\\
+are constrained to produce designs\\
+which are copies of the communication\\
+structures of these organizations."
+\end{quotation}
+
+Taken one step further, Conway's Law can be extended to say that the design of
+the system also reflects the structure of the community that uses the software
+and the nature of the work they do with it. At least in the case of ITK this
+holds true.
+
+\begin{aosasect2}{Modularity}
+Modularity is of the main characteristics of ITK. This is a requirement that
+emerges from the way the image analysis community work when solving their
+problems. For example, in a typical image analysis problem, a researcher or an
+engineer will take an input image, will improve some characteristics of the
+image by let say reducing noise or increasing contrast, and then will proceed
+to identify some features in the image, such as corners and strong edges.
+
+For each one of these tasks, the image analysis community has developed a
+variety of algorighms.
+
+\aosafigure{../images/itk/BrainProtonDensitySlice.png}{MRI Brain Image}{fig.itk.brim}
+
+\end{aosasect2}
 
 \begin{aosasect2}{Pipeline Architecture}
 \end{aosasect2}
