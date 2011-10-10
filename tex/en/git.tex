@@ -1,9 +1,58 @@
 \begin{aosachapter}{Git}{s:git}{Susan Potter}
 
-Currently just contains the basic structure of the chapter as I envision 
-it today.
+Dear Editors: Still outliney, but fleshed out a little more since last time\ldots
 
-Introduction text goes here\ldots
+Git is an open source distributed Version Control System (dVCS) that was 
+born out of the needs and frustrations of the Linux Kernel development
+community in 2005.
+
+Git enables the management of a digital body of work (often, 
+but not limited to code) across a peer-to-peer network of 
+collaborating repositories. It supports distributed workflows to 
+manage a body of work that is either eventually converging or 
+intentionally diverging in nature. A feat not easily accomplished
+using a centralized Version Control System (VCS) such as CVS or
+Subversion, the two most popular open source centralized VCS 
+projects.
+
+\begin{aosasect1}{History}
+To understand Git better it is helpful to understand the circumstances
+from which the Git project was started in the Linux Kernel community.
+The painpoints of the Linux developer community can be traced back to the 
+late 1990s when Torvalds and other core developers voiced concerns 
+about managing the Linux Kernel codebase with many contributed patches
+in the open source centralized VCSes available to them at that time.
+
+Between 2002 and 2005 many of the core developers of the Linux 
+Kernel opted to use BitKeeper, a proprietary dVCS made by BitMover Inc.
+This was a contraversial move by arguably the best known open source 
+project at that time, a decision questioned by Richard Stallman, the GNU 
+project founder. Several key Linux Kernel developers (including Alan Cox) 
+refused to use BitKeeper, voicing concerns over the proprietary Bitmover 
+license. BitMover provided a way for the Linux BitKeeper servers to 
+interoperate with the Linux CVS server in limited ways plus it offered a 
+public release and free use of its servers to a shortlist of free and 
+open source projects. For roughly three years the Linux Kernel would be 
+maintained across two VCS systems in this way.
+
+This ended after the first half of 2005, when BitMover retracted its 
+"Free Use" version for many of the Linux Kernel developers and Git was born
+to fill the void.
+
+In April 2005, days after the BitMover announcement, Linus Torvalds began
+development in haste of what was to become Git as we know it today. He began 
+by writing a collection of scripts to help him manage lists of email patches
+to apply one after the other. The aim of this initial collection of scripts 
+was to fail merges quickly so the maintainer could modify the codebase to 
+continue merging contributed patches one after the other.
+
+Torvald's goals for Git from the outset were:
+\begin{aosaitemize}
+  \item Be the anti-CVS
+  \item Support distributed workflows like those enabled by BitKeeper
+  \item Provide strong safeguards against corruption
+  \item Provide high performance
+\end{aosaitemize}
 
 \begin{aosasect1}{Version Control Landscape}
 
