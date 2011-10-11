@@ -1,5 +1,9 @@
+<!-- vim: set ts=2 sw=2 tw=70: -->
 <html>
   <head>
+    <style type="text/css">
+      div.inline { float:left; }
+    </style>
     <meta name="provenance" content="$Id$" />
     <link rel="stylesheet" href="aosa.css" type="text/css" />
     <title>The Architecture of Open Source Applications, Volume 2: Firefox Release Engineering</title>
@@ -28,10 +32,333 @@
       </h1>
     </div>
 
-    <p>Please see <a href="../../../volume1/web/en/wesnoth.html">Wesnoth</a> for formatting ideas.</p>
+<!-- FORMATTING -->
+<!-- Sections go into divs
+<div class="sect"></div>
+-->
+
+<!-- Headers are level 2 with the following format:
+<h2>{Chapter#}.{Section#} {Section Title}</h2>
+-->
+
+<!-- Then mostly normal markup for paragraphs
+<p>Lorem Ipsum...</p>
+-->
+
+<!-- Example of how to incorporate a diagram
+<div class="figure" id="fig.ffreleng.arch">
+  <img src="../images/ffreleng/diagram.png" alt="[Image Title]" />
+  <p>Figure&nbsp;{Chapter#}.{Section#}: {Image Title}</p>
+
+</div>
+-->
+    <!-- Introduction does not need a section div -->
+    <p>
+    The Mozilla Release Engineering team has made a lot of advances
+    recently in how our release automation works and it's getting to
+    be quite close to pushing a button, with minimal human
+    interventions, eliminating many of the headaches and do-overs
+    often resulting with the old ways. In this chapter we will explore
+    and explain the infrastructure decisions as well as scripts that
+    comprise the complete, and current, Firefox rapid release system.
+    </p>
+
+    <p>
+    You'll see the system from the perspective of a release-worthy
+    changeset in the mozilla-beta repository as it is turned into a
+    release candidate, and then a public release. Accompanied by
+    diagrams, we'll start with builds &amp; signing, then on to how we
+    generate update snippets for every supported version and OS out in
+    the wild, finally stopping for loads of verification automation as
+    well as manual QA before being pushed out to a network of mirrors
+    for availability to our users.
+    </p>
+
+    <p>
+    We'll look at some of the newer decisions that have been made to improve
+    this process like our sanity-checking script that helps eliminate much
+    of what used to be vulnerable to human error, our automated signing
+    script, our integration of mobile releases into the desktop release
+    stream, and the land of patcher/AUS where updates are created and served
+    to our over 400 million users across multiple versions of the software.
+    </p>
+
+    <p>
+    We'll show how the new rapid release process metrics and talk
+    about how we've generalized much of the configuration we use to be
+    able to maintain only one Mercurial repository for all our release
+    code.
+    </p>
+
+    <p>
+    Come along for a wild ride and follow a Mozilla Firefox release
+    from the moment the release coordinator gives the official "Go" to
+    when it's available for download (or update) to your computer or
+    mobile device.
+    </p>
+
+    <!-- XXX diagram of builds and their dependencies, along with
+    times? something like a gantt chart ? XXX -->
+
+    <!-- Rough outline of sections -->
+    <div class="sect">
+      <h2>6.1 "Go to Build"</h2>
+      <div class="figure" id="fig.ffreleng.go_to_build" class="inline">
+        <img src="../images/ffreleng/go_to_build.png" alt="Getting from code to a 'Go' to build" />
+        <p>Figure&nbsp;6.1: Getting from code to a 'Go' to build</p>
+      </div>
+      <p>
+      Throughout the beta cycle for Firefox, we are doing periodic
+      releases from our <a
+        href="http://hg.mozilla.org/releases/mozilla-beta/">mozilla-beta</a>
+      repository. Each one of these beta releases goes through the
+      full release automation and is treated almost identically to our
+      regular final releases.
+      </p>
+
+      <p>
+      For each beta release, we're looking to see if bugs or crashes
+      we've fixed internally fix the problems for users.
+      </p>
+
+      go/no-go decision
+      </p>
+    </div>
+
+    <div class="sect">
+      <h2>6.2 Tagging, Building, and Source Tarballs</h2>
+      <div class="figure" id="fig.ffreleng.tagging">
+        <img src="../images/ffreleng/tagging.png" alt="Automated tagging" />
+        <p>Figure&nbsp;6.2: Automated tagging</p>
+      </div>
+        <p>
+        One of the first steps in building Firefox is tagging all of
+        the related source code repositories to record which revision
+        of the source, locales, and related tools was used for the
+        release. A single Firefox release uses code from a half dozen
+        version control repositories that host things such as the
+        product code , localization data, release automation code, and
+        helper utilities. Tagging all these repositories is therefore
+        critical to ensure that future steps of the release automation
+        are all using a consistent set of revisions. It also has a
+        number of other benefits: Linux distributions and other
+        contributors can reproduce builds with exactly the same code
+        that goes into the official builds, it also records the
+        revisions of source and tools used on a per-release basis for
+        future comparison of what changed between releases. For
+        Firefox releases we use tag names such as
+        FIREFOX_6_0_2_RELEASE.
+        </p>
+        <p>
+        <!--
+
+        XXX
+
+        relbranches actually aren't that useful since we've
+        moved to rapid release. version bumping is usually done by the
+        aurora -> beta merge, and chemspills are done on the default
+        branch in the release repo.
+
+        That said, do we need to go into detail about relbranches?
+
+        - catlee
+
+        XXX
+        -->
+        For the main Firefox source repository, the first thing we
+        actually do is to create a release branch (relbranch) based
+        from the signed-off revision given by the release driver.
+        This release branch is implemented as an in-repository named
+        branch whose parent changeset is the signed-off revision. The
+        release branch is used to make release-specific modifications
+        to the source code, such as bumping the version numbers, or
+        finalizing the set of locales that will be built. If a 
+        critical security vulnerability is discovered in the future
+        that requires an immediate fix (a "chemspill" situation), the
+        minimal set of changes to address the vulnerability will be
+        landed on this relbranch and a new version of Firefox
+        released.
+        </p>
+        <p>
+        how we handle buildN
+        </p>
+        <p>
+        Our tagging process does a <em>lot</em> of operations with
+        local and remote mercurial (hg) repositories. To factor out
+        some of the most common operations we've written a few tools
+        to assist us: hgtool.py and retry.py.
+        </p>
+
+        <p>
+        retry.py is a simple wrapper that can take a given command and
+        run it, retrying several times if it fails. It can also watch
+        for exceptional output conditions and retry or report failure
+        in those cases. We've found it useful to wrap retry.py around
+        most of the commands which can fail due to external resources.
+        For tagging, the hg operations could fail due to temporary
+        network outages, web server issues, or the backend hg server
+        being temporarily overloaded. Being able to automatically
+        retry these operations and continue on saves a lot of our
+        time, since we don't have to manually recover and get the
+        release automation running again.
+        </p>
+
+        <p>
+        hgtool.py is a utility that encapsulates several common
+        mercurial operations, like cloning/pulling/updating into a
+        single invocation. It also adds support for mercurial's share
+        extension, which we use extensively to avoid having to have
+        several full clones of repositories in different directories
+        on the same machine. Adding support for shared local
+        repositories was a significant speedup to our tagging process
+        since most full clones of the product and locale repositories
+        could be avoided.
+        </p>
+
+        <p>
+        An important consideration for factoring out tools like these
+        is to make our automation as testable as possible. Because
+        tools like hgtool.py are small, single purpose utilities built
+        on top of reusable libraries, they're much easier to test in
+        isolation. 
+        </p>
+        <p>
+        Today our tagging is done in two parallel jobs: one for
+        desktop Firefox which takes around 20 minutes to complete,
+        and another for mobile Firefox which takes around 10 minutes
+        to complete. In the future we would like to streamline our release
+        automation process so that we tag <em>all</em> the various repositories
+        in parallel. The initial builds can be started as soon as the
+        product code repository is tagged without having to wait for
+        all the locale repositories to be tagged. By the time these builds
+        are finished, the rest of the repositories will have been
+        tagged so that l10n repacks and future steps can be completed.
+        We estimate this can reduce the total time to have builds
+        ready by 15 minutes. <!-- XXX check this XXX -->
+        </p>
+    </div>
+
+    <div class="sect">
+      <h2>6.3 Repacks and L10N</h2>
+      <div class="figure" id="fig.ffreleng.repacks_l10n">
+        <img src="../images/ffreleng/repacks_l10n.png" alt="Repacking Firefox for each localization" />
+        <p>Figure&nbsp;6.3: Repacking Firefox for each localization</p>
+      </div>
+        <p>Explain the process here of how we currently get our locale changesets, why they are in two different formats, and how the repacking code works.</p>
+    </div>
+
+    <div class="sect">
+      <h2>6.4 Signing</h2>
+      <div class="figure" id="fig.ffreleng.signing">
+        <img src="../images/ffreleng/signing.png" alt="Signing Firefox installers" />
+        <p>Figure&nbsp;6.4: Signing of Firefox installers, partially automated</p>
+      </div>
+      <p></p>
+    </div>
+
+    <div class="sect">
+      <h2>6.5 Updates</h2>
+      <p></p>
+    </div>
+    
+    <div class="sect">
+      <h2>6.6 Pushing Internal & QA</h2>
+      <p>Verifying that the release process is producing the expected
+      deliverables is key for producing the right bits for our users. This
+      is accomplished by QA's verification and sign offs process along the
+      way to ensure that everything is going according to the plan.
+      </p>
+      
+      <p>
+      QA does manual and automated testing of the builds as soon as they are
+      available. They use contractors in other timezones to speed up the
+      validation process. Meanwhile, the release automation generates updates
+      for all languages and all platforms. Once these are ready QA tests that
+      users would be able to update from the previous release to the current
+      one. 
+      </p>
+
+      <p>We also push the binaries to our internal mirrors to help us
+      handle the load of users requesting their updates rather than
+      reaching ftp directly. In the case of betas this is around
+      of one million users. Notice that users don't get the updates until
+      QA has signed them off and we get the request to push them live.
+      </p>
+
+      <p>
+      The validation process after builds and updates are generated is:
+      <ol>
+         <li>Contractors on other timezones do manual testing.</li>
+         <li>QA triggers the automation systems to do functional
+testing.</li>
+         <li>QA verifies that fixed problems for that release are
+indeed fixed.</li>
+         <li>The release automation meanwhile is generating the
+updates.</li>
+         <li>QA signs off the builds.</li>
+         <li>QA signs off the updates.</li>
+      </ol>
+      </p>
+      <p>At this point we are ready to go live which is covered in the
+      following section.
+      </p>
+    </div>
+
+    <div class="sect">
+      <h2>6.7 AUS and Pushing Public</h2>
+      <p></p>
+    </div>
+
+    <div class="sect">
+      <h2>6.8 Murphy's Law</h2>
+      <p>One thing you learn when trying to coordinate work across
+      hundreds of machines is that if something *can* go wrong, it
+      *will* go wrong. A lot of effort is spent making our tools and
+      processes bulletproof so that "rare" events like network
+      hiccups, disk space issues or typos made by real live humans are
+      caught and handled as early as possible.
+      
+      release_sanity - what it is, why we wrote it (intern project!
+      yay!)
+      </p>
+    </div>
+
+    <div class="sect">
+      <h2>6.9 Chemspills - Turning it up to 11</h2>
+      <p>The internet can be a dangerous place. There are people
+      and organizations out there trying to gain access to users'
+      computers or online accounts via software exploits. Mozilla
+      takes security in all of its products very seriously, and so
+      when a new security vulnerability is found (a "chemspill" - a critically
+      dangerous event that needs cleaning up ASAP) the security,
+      development and release engineering teams work around the clock
+      to get the problem fixed and a safer product delivered to users. This is why
+      we're so focused on streamlining our process and making it more
+      resilient to failure. Every minute counts.
+      </p>
+    </div>
+
+    <div class="sect">
+      <h2>6.10 Working in the open</h2>
+      <p>
+      At Mozilla we strive to do everything in the open. All of
+      Release Engineering's code and notes are public, available to
+      see. Here are some links for further reading:
+      </p>
+      <ul>
+        <li><a href="http://hg.mozilla.org/build">build group's
+        repositories</a>. In particular, the buildbotcustom,
+        buildbot-configs, and tools repositories are used heavily for
+        releases.</li>
+        <li><a
+          href="https://wiki.mozilla.org/Releases/Firefox_7.0b4/BuildNotes">Firefox
+          7.0 Beta 4 Build Notes</a>. In addition to code, we document
+        every aspect of a release. Here's an example from our 7.0b4
+        release.</li>
+      </ul>
+    </div>
 
     <div class="footer">
     </div>
-
   </body>
 </html>
