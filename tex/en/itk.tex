@@ -1,16 +1,161 @@
 \begin{aosachapter}{ITK}{s:itk}{Luis Ibanez and Brad King}
 
-The Insight Toolkit (ITK) is a library for image analysis
-
-% Your chapter goes here---please look at /volume1/tex/en/wesnoth.tex for 
+% Your chapter goes here---please look at /volume1/tex/en/wesnoth.tex for
 % formatting ideas.
 
+\aosafigure{../images/itk/SoftwareAndCommunitySynergy.pdf}{Synergy between Software and Community}{fig.itk.synergy}
+
 \begin{aosasect1}{What Is ITK?}
+The Insight Toolkit ITK is a library for image analysis that was developed by
+the initiative, and mainly with the funding, of the US National Library of
+Medicine. ITK can be tought of as a usable encyclopedia of image analysis
+algorithms, in particular for image filtering, image segmentation and image
+registration. The library was developed by a consortium involving universities,
+commercial companies, and many individual contributors from around the world.
+Development of ITK started in 1999, and recently after its 10th anniversary
+the library underwent a refactoring process intended to remove crusty code and
+to reshape it for the next decade.
 \end{aosasect1}
 
 \begin{aosasect1}{Architectural Features}
 
-\begin{aosasect2}{Pipeline Architecture}
+Software is written by people for people. We are persuaded of the truth of Conway's Law,
+an adage named after computer programmer Melvin Conway, who in 1968 stated:
+
+\begin{center}
+\begin{quotation}
+\emph{
+``Organizations which design systems\\
+are constrained to produce designs\\
+which are copies of the communication\\
+structures of these organizations.''
+}
+\end{quotation}
+\end{center}
+
+Taken one step further, \emph{Conway's Law} can be extended to say that the
+design of the system also reflects the structure of the community that uses the
+software and the nature of the work they do with it. At least in the case of
+ITK this holds true. In short: \emph{Form follows Function}.
+
+This situation is really the consequence that software and community are not
+independent. Instead, they shape one another in a continuous synergistic
+relationship. The software gets to be modified until it satisfies the needs of
+the community, and those modifications are performed by using community
+coordination and communication mechanisms that leave their mark in the
+continuously changing software product. The software in its turn, also changes
+the community dynamics, by empowering them to undertake certain challenges, and
+in some cases by not doing enough to simplify the tasks of attacking some other
+problems. This is particularly true for the case of software libraries whose
+community turns out to be composed of developers and researchers.
+
+To better understand the nature of ITK's architecture is therefore very useful
+to get a sense of what kind of problems the ITK community is usually addressing
+and how they tend to go about them.
+
+\begin{aosasect2}{The Nature of the Beast}
+
+\begin{center}
+\begin{quotation}
+\emph{
+``If you don't understand the nature of the beast,\\
+it would be of little use to know the mechanics of their anatomy''.\\
+}
+\hfill Dee Hook - \emph{One From Many}
+\end{quotation}
+\end{center}
+
+In a typical image analysis problem, a researcher or an engineer will take an
+input image, will improve some characteristics of the image by let's say
+reducing noise or increasing contrast, and then will proceed to identify some
+features in the image, such as corners and strong edges. This type of
+processing is naturally well suited for a data pipeline architecture, as
+shown in Figure~\ref{fig.itk.pipeline}.
+
+To illustrate this point, Figure \ref{fig.itk.brim} below, shows an image of a
+brain from a magnetic resonance image (MRI), and the result of processing with
+a median filter to reduce its level of noise, as well as the outcome of an edge
+detection filter in order to identify the borders of anatomical structures.
+
+\aosafigure{../images/itk/ExampleImageProcessingPipeline.pdf}{Image Processing Pipeline}{fig.itk.pipeline}
+
+%
+% NOTE TO EDITOR: We meant for these images to be rather small, and to be
+% arranged in a single row, from left to right, but didn't quite found how
+% to resize them with the parameters of the aosafigure command.
+%
+\aosafigure{../images/itk/BrainProtonDensitySlice.png}{MRI Brain Image}{fig.itk.brim}
+\aosafigure{../images/itk/BrainProtonDensitySliceMedian.png}{Median Filter}{fig.itk.brimmedian}
+\aosafigure{../images/itk/BrainProtonDensitySliceCanny.png}{Edge Detection Filter}{fig.itk.brimcanny}
+
+For each one of these tasks, the image analysis community has developed a
+variety of algorighms, and continue developing new ones. Why do they continue
+doing this? you may ask, and the answer is that image processing is a
+combination of science, engineering, art, and cooking skills. Claiming that
+there is an algorithmic combination that is the ``right'' answer to an image
+processing task, is as mislead as claiming that there is such a thing as the
+``right'' type of chocolate dessert for a dinner. Instead of pursuing
+perfection, the community strives for producing a rich enough set of tools that
+ensures that there will be no shortage of options to try when it comes to
+facing a given image processing challenge.
+
+This state of affairs, of course comes at a price. The cost is that the image
+analyzer is confronted with the difficulty of choosing among tens of different
+tools that could be used in different combinations to achieve a similar result.
+To make things more interesting, each one of those algorithmic choices comes
+with numeric and boolean parameters that can be tuned to regulate the behavior
+of the filters. For example, that median filter has two numeric parameters, and
+that edge detection filter has five parameters. The existance of those tunable
+parameters makes even more difficult to ever claim that method ``A'' is better
+than method ``B''; since we could only say that for a given application and a
+given set of input images, the method ``A'' with a particular set of
+parameters, seems to produce better results than method ``B'' with a particular
+set of parameters. And of course, here ``better'' is judged by a mixture of
+subjective and objective measures of quality.
+
+The image analysis community is also closely integrated with the research
+community, and it is common to have specific research groups to become attached
+to the algorithmic families that they came up with. This practice of ``branding'',
+and up to some level ``marketing'' leads to a situation where the best that the
+software can do for the community is to offer them a very complete set of
+algorithmic implementations that they can try, and then mix and match to create
+a recipe that satisfy their needs.
+
+Armed with this quick overview of the nature of activities that make the daily
+routine of the image analyzers who compose the ITK community, we can now dive
+into the main features of the architecture:
+
+\begin{itemize}
+\item Modularity
+\item Data Pipeline
+\item Factories
+\item IO Factories
+\item Streaming
+\item Maintainability
+\item Reusability
+\end{itemize}
+
+\end{aosasect2}
+
+\begin{aosasect2}{Modularity}
+Modularity is of the main characteristics of ITK. This is a requirement that
+emerges from the way the image analysis community work when solving their
+problems. Most image analysis problems require to put one or more input images
+through a combination of processing filters that enhance or extract particular
+pieces of information from the images. There is therefore, no single large
+processing object, but a myriad of small ones. This structural nature of the
+image processing problem maps to implement the software as well as a large
+collection of image processing filters that can be combined in many different
+ways.
+
+It is also the case that certain types of processing filters are clustered into
+families, inside which some of their implementation features can be factorized.
+This leads to natural grouping of the image filters into modules and groups of
+modules.
+
+\end{aosasect2}
+
+\begin{aosasect2}{Data Pipeline}
 \end{aosasect2}
 
 \begin{aosasect2}{Factories}
@@ -20,6 +165,12 @@ The Insight Toolkit (ITK) is a library for image analysis
 \end{aosasect2}
 
 \begin{aosasect2}{Streaming}
+\end{aosasect2}
+
+\begin{aosasect2}{Maintainability}
+\end{aosasect2}
+
+\begin{aosasect2}{Reusability}
 \end{aosasect2}
 
 \end{aosasect1}
@@ -46,7 +197,7 @@ that community together and as the platform where the \emph{``collective
 intelligence''} of the community gets imprinted.
 \end{aosasect2}
 
-\begin{aosasect2}{Shaped for Maintenance}
+\begin{aosasect2}{Maintenability}
 The architecture satisfies the constraints that minimize maintenace cost.
 \begin{itemize}
 \item Modularity (at the class level)
@@ -94,16 +245,16 @@ with the code and its proper use. The outcome is that most published papers
 are not reproducible, and that when researchers and students attempt to use
 such techniques, they end up spending a lot of time in the process and deliver
 variations of the original work. It is actually quite difficult in practice
-to verify if an implementation matches what was described in a paper. 
+to verify if an implementation matches what was described in a paper.
 
 ITK disrupted, for the good, that environment and restored a culture
 of DYI (Do It Yourself), in a field that has grown accoustomed to
 theoretical reasoning, and that had learned to dismiss experimental
-work. The new culture brought by ITK is a practical and pragmatic one 
+work. The new culture brought by ITK is a practical and pragmatic one
 in which the virtues of the software are judged by its practical results
 and not by the appearance of complexity that is celebrated in scientific
-publications. Helas, it turns out that in practice, the most effective 
-processing methods are those that would appear to simple to be accepted 
+publications. Helas, it turns out that in practice, the most effective
+processing methods are those that would appear to simple to be accepted
 for a scientific paper.
 
 The Insight Journal...

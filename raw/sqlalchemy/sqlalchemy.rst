@@ -2,26 +2,27 @@
 Introduction
 ============
 
-SQLAlchemy is a database toolkit and object-relational mapping (ORM) system for
-the Python programming language, first introduced in 2005. From
-the beginning, it has sought to provide an end-to-end system for
-working with relational databases in Python, using
-the Python Database API (DBAPI) for database
-interactivity.  SQLAlchemy's early use of the "unit of work" pattern as
-well as its capability to fluently map SQL queries to objects in
-an open-ended way attracted a lot of attention to the earliest
-releases.
+SQLAlchemy is a database toolkit and object-relational mapping (ORM) system
+for the Python programming language, first introduced in 2005. From the
+beginning, it has sought to provide an end-to-end system for working with
+relational databases in Python, using the Python Database API (DBAPI) for
+database interactivity. SQLAlchemy's capabilities attracted a lot of attention
+even in its earliest releases, including its fluency regarding complex SQL
+queries and object mappings, as well as its implementation of the "unit of
+work" pattern, which provides for a highly automated system of persisting data
+to a database.
 
 Starting from a small, roughly implemented concept, SQLAlchemy quickly
 progressed through a series of transformations and reworkings, turning over
 new iterations of its internal architectures as well as its public API, as the
-userbase continued to grow. By version 0.5, SQLAlchemy had begun to assume a
-stable form that was already proving itself in a wide variety of production
-deployments. Throughout 0.6 and 0.7, architectural and API enhancements
-continued the process of producing the most efficient and stable library
-possible. As of this writing, SQLAlchemy is used by a large number of
-organizations in a variety of fields, and is considered by many to be the de
-facto standard for working with relational databases in Python.
+userbase continued to grow. By the time version 0.5 was introduced in January
+of 2009, SQLAlchemy had begun to assume a stable form that was already proving
+itself in a wide variety of production deployments. Throughout 0.6 (April,
+2010) and 0.7 (May, 2011), architectural and API enhancements continued the
+process of producing the most efficient and stable library possible. As of
+this writing, SQLAlchemy is used by a large number of organizations in a
+variety of fields, and is considered by many to be the de facto standard for
+working with relational databases in Python.
 
 The Challenge of Database Abstraction
 =====================================
@@ -59,8 +60,8 @@ SQLAlchemy's Approach to Database Abstraction
 SQLAlchemy takes the position that the developer must be willing to consider
 the relational form of his or her data. A system which pre-determines and
 conceals schema and query design decisions marginalizes the usefulness of
-using a relational database, leading to all the classic problems of "impedance
-mismatch".
+using a relational database, leading to all the classic problems of impedance
+mismatch.
 
 At the same time, the implementation of these decisions can and should be
 executed through high level patterns as much as possible. Relating an object
@@ -84,38 +85,39 @@ The Core / ORM Dichotomy
 
 Central to SQLAlchemy's goal of providing a toolkit approach is that it
 exposes every layer of database interaction as a rich API, dividing the task
-into two main categories, known as *Core* and *ORM*. The Core includes DBAPI
-interaction, SQL rendering, and schema management, all of which are public
+into two main categories, known as *Core* and *ORM*. The Core includes Python
+Database API (DBAPI) interaction, rendering of textual SQL statements
+understood by the database, and schema management, all of which are public
 APIs of their own. The ORM, or object-relational mapper, is then a specific
 library built on top of the Core. The ORM provided with SQLAlchemy is only one
 of any number of possible object abstraction layers that could be built upon
-the Core.
+the Core - many developers and organizations build their applications on top
+of the Core directly.
 
 .. figure:: fig_layers.png
 
    SQLAlchemy Layer Diagram
 
-The Core/ORM separation has always been SQLAlchemy's most
-defining feature, and it has both pros and cons. An ORM built without an
-explicit "core" might have a SQL query construct that renders
-directly to a string, relates the columns selected in the string
-directly to attributes on a user-defined class to be mapped, then
-populates data directly from the DBAPI cursor's result rows
-straight to an instance of that class. SQLAlchemy's ORM, on the
-other hand, relates ORM-enabled class attributes to a separate
-table metadata structure (``Table``), renders the SELECT via a SQL 
-construct (``select()``), and receives DBAPI results through
-a proxying result (``ResultProxy``) before passing data on to the user-defined object.
+The Core/ORM separation has always been SQLAlchemy's most defining feature,
+and it has both pros and cons.   The explicit core present in SQLAlchemy
+means that the ORM relates database-mapped class attributes to a
+structure known as a ``Table``, rather than directly to their string 
+column names as expressed in the database; produces a SELECT query using a
+structure called ``select()``, rather than piecing together object attributes
+directly into a string statement; and receives result rows through a
+facade called ``ResultProxy`` which transparently maps the ``select()`` to each result row, rather than transferring data directly from a database cursor
+to a user-defined object.
 
 While the Core elements may not be visible in a very simple ORM application,
-having it be fully public and fluidly integrated allows an ORM-centric
-application to "move down" a level or two in order to deal with the database
-in a more specific and finely tuned manner, as the situation requires.  As SQLAlchemy has matured, 
-the Core API has become less explicit in regular use as the ORM continues to
-provide more sophisticated and comprehensive patterns.  However,
+having a fully public Core API, carefully integrated to allow fluid
+movement between ORM and Core constructs, allows an ORM-centric application to
+"move down" a level or two in order to deal with the database in a more
+specific and finely tuned manner, as the situation requires. As SQLAlchemy has
+matured, the Core API has become less explicit in regular use as the ORM
+continues to provide more sophisticated and comprehensive patterns. However,
 the availability of the Core was also a contributor to SQLAlchemy's early
-success, as it allowed early users to accomplish much more 
-than would have been possible when the ORM was still being developed.
+success, as it allowed early users to accomplish much more than would have
+been possible when the ORM was still being developed.
 
 The downside to the ORM/Core approach is that instructions must
 travel through more steps.  Python's
@@ -149,8 +151,7 @@ specific DBAPI implementations as well as the underlying database engines.
 The Dialect System
 -------------------
 
-The interface described by the DBAPI is extremely simple. Its core components
-of usage are the DBAPI module itself, the connection object, and the cursor
+The interface described by the DBAPI is extremely simple. Its core components  are the DBAPI module itself, the connection object, and the cursor
 object - a "cursor" in database parlance represents the context of a
 particular statement and its associated results.  A simple interaction with these
 objects to connect and retrieve data from a database is as follows::
@@ -192,8 +193,8 @@ The result returned by the ``execute()`` method of ``Engine``
 or ``Connection`` is called a ``ResultProxy``, which offers
 an interface similar to the DBAPI cursor but with richer
 behavior.   The ``Engine``,
-``Connection``, and ``ResultProxy`` can be thought of as
-corresponding to the DBAPI module, an instance of a specific 
+``Connection``, and ``ResultProxy`` correspond to 
+the DBAPI module, an instance of a specific 
 DBAPI connection, and an instance of a specific DBAPI 
 cursor, respectively.
 
@@ -231,7 +232,7 @@ first we'll consider the scope of the problem. The DBAPI
 specification, currently at version two, is written as a series of
 API definitions which allow for a wide degree of variability in
 behavior, as well as a good number of undefined areas.  As a result, real-life 
-DBAPIs nclude a great degree of variability
+DBAPIs include a great degree of variability
 in several areas, including when Python
 unicode strings are acceptable and when they are not; how the 
 "last inserted id", that is an autogenerated primary key, may be
@@ -301,7 +302,7 @@ means the schema description system is just as useful for any other kind of
 object-relational system which may be built on the Core.
 
 The ``Table`` and ``Column`` model falls under the scope of what's
-called "metadata", offering a collection object called ``MetaData`` to represent
+called *metadata*, offering a collection object called ``MetaData`` to represent
 a collection of ``Table`` objects.  The structure here is derived
 mostly from Martin Fowler's description of "Metadata Mapping" in 
 *Patterns of Enterprise Application Architecture*.  Figure 4 illustrates
@@ -487,13 +488,13 @@ individually-defined entities which are joined together via a function called
 ``mapper()``. Once ``mapper()`` has been applied to a user defined class, the
 class takes on new attributes that correspond to columns in the table::
 
-    class SomeClass(object):
+    class User(object):
         pass
 
-    mapper(SomeClass, some_table)
+    mapper(User, user_table)
 
-    # now SomeClass has an ".id" attribute
-    SomeClass.id
+    # now User has an ".id" attribute
+    User.id
 
 ``mapper()`` can also affix other kinds of attributes to the class, including
 attributes which correspond to references to other kinds of objects, as well
@@ -502,16 +503,17 @@ a class is known in the Python world as "monkeypatching", however since we are
 doing it in a data-driven and non-arbitrary way, the spirit of the operation is
 better expressed via the term "class instrumentation".
 
-Modern usage of SQLAlchemy centers around usage of the Declarative extension, which
-is a configurational system that resembles the common "active-record"-like class
-declaration system used by many other object-relational tools.   In this system,
-the end user explicitly defines attributes inline with the class definition,
-each representing an attribute on the class that is to be mapped.   The ``Table``
-object in most cases is not mentioned explicitly, nor is the ``mapper()`` function;
-only the class, the ``Column`` objects, and other ORM-related attributes are named::
+Modern usage of SQLAlchemy centers around the Declarative extension,
+which is a configurational system that resembles the common
+"active-record"-like class declaration system used by many other
+object-relational tools. In this system, the end user explicitly defines
+attributes inline with the class definition, each representing an attribute on
+the class that is to be mapped. The ``Table`` object in most cases is not
+mentioned explicitly, nor is the ``mapper()`` function; only the class, the
+``Column`` objects, and other ORM-related attributes are named::
 
-    class SomeClass(Base):
-        __tablename__ = 'some_table'
+    class User(Base):
+        __tablename__ = 'user'
         id = Column(Integer, primary_key=True)        
 
 It may appear above that the class instrumentation is being achieved directly
@@ -522,8 +524,8 @@ object from what's been declared, and to pass it to the ``mapper()`` function al
 the class.  The ``mapper()`` function then does its job in exactly the same way, 
 patching its own attributes onto the class, in this case towards the ``id`` attribute, 
 replacing what was there previously.  By the time the metaclass initialization is complete
-(that is, when the flow of execution leaves the block delineated by ``SomeClass``), the 
-``Column()`` object marked by ``id`` has been moved into a new ``Table``, and ``SomeClass.id``
+(that is, when the flow of execution leaves the block delineated by ``User``), the 
+``Column()`` object marked by ``id`` has been moved into a new ``Table``, and ``User.id``
 has been replaced by a new attribute, specific to the mapping.
 
 It was always intended that SQLAlchemy would have a
@@ -536,21 +538,34 @@ approach by establishing a system that preserved SQLAlchemy classical mapping co
 exactly, only reorganizing how they are used to be less verbose and more amenable to
 class-level extensions than a classical mapping would be.
 
-Whether classical or declarative mapping is used, a mapped class takes on new behaviors
-that allow it to express SQL constructs in terms of its attributes.   SQLAlchemy originally
-followed SQLObject's behavior of using a special attribute, in this case ``.c``, as the source
-of SQL column expressions.   In version 0.4 however, SQLAlchemy moved the functionality into
-the mapped attributes themselves.   This proved to be a great improvement, as it allowed
-the columns present on the class to be *annotated* as originating from an ORM mapping, while
-the columns as present on the original ``Table`` object could be identified as non-ORM mapped.
-It also provided a symmetry between a mapped class, and an instance of that mapped class, such
-that the same named attribute could provide behavior appropriate to the SQL expression or the
-data level based on the parent.
+Whether classical or declarative mapping is used, a mapped class takes on new
+behaviors that allow it to express SQL constructs in terms of its attributes.
+SQLAlchemy originally followed SQLObject's behavior of using a special
+attribute, in this case ``.c``, as the source of SQL column expressions, as in 
+this example::
+
+    result = session.query(User).filter(User.c.username == 'ed').all()
+
+In version 0.4 however, SQLAlchemy moved the functionality into the mapped
+attributes themselves::
+
+    result = session.query(User).filter(User.username == 'ed').all()
+
+This proved to be a great improvement, as it allowed the column-like objects
+present on the class to gain additional class-specific capabilities not
+present on those originating directly from the underlying ``Table`` object. It
+also allowed usage integration between different kinds of class attributes,
+such as those which represent table columns directly, those which represent
+SQL expressions derived from those columns, and those which represent a
+linkage to a related class. Finally, it provided a symmetry between a mapped
+class, and an instance of that mapped class, such that the same named
+attribute could provide behavior appropriate to the SQL expression or the data
+level, based on whether the parent itself were a class or an instance.
 
 Anatomy of a Mapping
 ---------------------
 
-The ``id`` attribute that's been attached to our ``SomeClass`` class is a type of 
+The ``id`` attribute that's been attached to our ``User`` class is a type of 
 object known in Python as a **descriptor**, an object
 that has a ``__get__()``, ``__set__()``, and ``__del__()`` method, which the Python
 runtime defers to for all class and instance operations involving this attribute.
@@ -559,15 +574,15 @@ and we'll illustrate the world behind this facade with another example.
 Starting with a ``Table`` and a user defined class, we'll set up a mapping that has just one
 mapped column, as well as a ``relationship()``, which defines a reference to a related class::
 
-    some_table = Table("sometable", metadata,
+    user_table = Table("user", metadata,
         Column('id', Integer, primary_key=True),
     )
 
-    class SomeClass(object):
+    class User(object):
         pass
 
-    mapper(SomeClass, some_table, properties={
-        'related':relationship(SomeOtherClass)
+    mapper(User, user_table, properties={
+        'related':relationship(Address)
     })
 
 When the mapping is complete, the structure of objects related to the class is detailed in figure 10.
@@ -586,8 +601,8 @@ is used to distinguish amongst behavioral variances within a particular role.
 Within the realm of class instrumentation, the ``ClassManager`` is linked to the mapped class, while
 its collection of ``InstrumentedAttribute`` objects are linked to each attribute mapped on the class.
 ``InstrumentedAttribute`` is also the public-facing Python descriptor mentioned previously, and
-produces SQL expressions when used in a class-based expression (i.e. ``SomeClass.id==5``).   When 
-dealing with an instance of ``SomeClass``, ``InstrumentedAttribute`` delegates the behavior of the
+produces SQL expressions when used in a class-based expression (i.e. ``User.id==5``).   When 
+dealing with an instance of ``User``, ``InstrumentedAttribute`` delegates the behavior of the
 attribute to an ``AttributeImpl`` object, which is one of several varieties tailored towards the 
 type of data being represented.
 
@@ -633,9 +648,9 @@ transactions on those connections.   Below is a rudimentary usage example::
 
     from sqlalchemy.orm import Session
     session = Session(engine)
-    query = session.query(SomeClass)
+    query = session.query(User)
 
-where above, we create a ``Query`` that will yield instances of ``SomeClass``, relative to a new
+where above, we create a ``Query`` that will yield instances of ``User``, relative to a new
 ``Session`` we've created.  ``Query`` provides a generative builder pattern in the same
 way as the ``select()`` construct discussed previously, where additional criteria and 
 modifiers are associated with a statement construct one method call at a time.    
@@ -728,9 +743,10 @@ quickly ran into a wall at nearly top speed. Users new to modern SQLAlchemy
 will sometimes lament the need to define a factory and possibly a registry for
 ``Session`` objects, as well as the need to keep their objects organized into
 just one ``Session`` at a time and to be aware of threads - but this is far
-preferable to the early days when the entire system was 100% implicit.  In any
-case, the early system can be recreated entirely as a specialization of the
-current API.
+preferable to the early days when the entire system was 100% implicit. The
+convenience of the 0.1 usage pattern is still largely present in modern
+SQLAlchemy, which features a session registry that's normally configured to
+use thread local scoping.
 
 The ``Session`` itself was only introduced in version 0.2 of SQLAlchemy,
 modeled loosely after that of Hibernate.   This version featured
@@ -773,15 +789,17 @@ contained stale data post-transaction, with no simple way to load newer data
 without rebuilding the full set of objects already loaded. Early on, it seemed
 that this problem couldn't be reasonably solved, as it wasn't apparent when
 exactly the ``Session`` should consider current state to be stale, and thus
-resulting in an expensive new set of SELECT statements on next access. However, 
-once the ``Session`` moved to an
-"always-in-a-transaction" model, the nature of transaction isolation, i.e.
-that one transaction with a high degree of isolation *can't* see new data until committed or rolled back
-anyway, could be taken into account, and the point of transaction end became
-the natural point of data expiration. Different databases and configurations of course have
-varied levels of transaction isolation, including no transactions at all. 
-Modern SQLAlchemy simply follows along with the configured isolation behavior, instead of trying to
-fight it, producing a smooth and integrated experience.
+resulting in an expensive new set of SELECT statements on next access.
+However, once the ``Session`` moved to an "always-in-a-transaction" model, the
+nature of transaction isolation, i.e. that one transaction with a high degree
+of isolation *can't* see new data until committed or rolled back anyway, could
+be taken into account, and the point of transaction end became the natural
+point of data expiration. Different databases and configurations of course
+have varied levels of transaction isolation, including no transactions at all.
+These modes of usage are entirely acceptable with SQLAlchemy's expiration
+model as well; the developer only needs to be aware that a lower isolation
+level may expose un-isolated changes within a Session if multiple Sessions
+share the same rows, not at all different from what can occur when using two database connections directly.
 
 Session Overview
 ------------------
@@ -926,15 +944,16 @@ occurs, can be populated from a just-executed INSERT statement's result into the
 list of a dependent row that's about to be inserted.   For deletes, the same ordering is used
 in reverse - dependent rows deleted first before those which they are dependent on.
 
-The unit of work features a unique system where
-the topological sort is performed at two different levels, based on the structure of dependencies present.
-The first level organizes persistence steps into buckets based on the
-dependencies between mappers, that is, full "buckets" of objects corresponding to a particular
-class.   The second level breaks up zero or more of these "buckets" into smaller batches, to 
-handle the case of reference cycles or self-referring tables.   Figure 14 illustrates
-the "buckets" generated to insert a set of ``User`` objects, then a set of ``Address`` 
-objects, where an intermediary step copies newly generated ``User`` primary key values
-into the ``user_id`` foreign key column of each ``Address`` object.
+The unit of work features a system where the topological sort is
+performed at two different levels, based on the structure of dependencies
+present. The first level organizes persistence steps into buckets based on the
+dependencies between mappers, that is, full "buckets" of objects corresponding
+to a particular class. The second level breaks up zero or more of these
+"buckets" into smaller batches, to handle the case of reference cycles or
+self-referring tables. Figure 14 illustrates the "buckets" generated to insert
+a set of ``User`` objects, then a set of ``Address`` objects, where an
+intermediary step copies newly generated ``User`` primary key values into the
+``user_id`` foreign key column of each ``Address`` object.
 
 .. figure:: fig_uow_mapper_buckets.png
 

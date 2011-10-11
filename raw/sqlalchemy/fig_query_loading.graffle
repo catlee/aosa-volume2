@@ -249,7 +249,7 @@
 			<integer>123</integer>
 			<key>Points</key>
 			<array>
-				<string>{344.102, 522.909}</string>
+				<string>{343.603, 522.909}</string>
 				<string>{421, 523}</string>
 			</array>
 			<key>Style</key>
@@ -328,7 +328,7 @@
 		</dict>
 		<dict>
 			<key>Bounds</key>
-			<string>{{298, 301.344}, {93, 14}}</string>
+			<string>{{297.999, 301.344}, {93, 14}}</string>
 			<key>Class</key>
 			<string>ShapedGraphic</string>
 			<key>FitText</key>
@@ -384,7 +384,7 @@
 		</dict>
 		<dict>
 			<key>Bounds</key>
-			<string>{{276.494, 326}, {93, 14}}</string>
+			<string>{{276.717, 326}, {93, 14}}</string>
 			<key>Class</key>
 			<string>ShapedGraphic</string>
 			<key>FitText</key>
@@ -456,7 +456,7 @@
 			<real>-1</real>
 			<key>Points</key>
 			<array>
-				<string>{180.68, 171.202}</string>
+				<string>{180.68, 171.702}</string>
 				<string>{353.504, 333}</string>
 				<string>{384, 375}</string>
 				<string>{451.253, 449.453}</string>
@@ -522,7 +522,7 @@
 		</dict>
 		<dict>
 			<key>Bounds</key>
-			<string>{{654.836, 287.344}, {93, 14}}</string>
+			<string>{{654.836, 286.914}, {93, 14}}</string>
 			<key>Class</key>
 			<string>ShapedGraphic</string>
 			<key>FitText</key>
@@ -634,7 +634,7 @@
 		</dict>
 		<dict>
 			<key>Bounds</key>
-			<string>{{591.573, 317.25}, {93, 14}}</string>
+			<string>{{597.659, 317.25}, {93, 14}}</string>
 			<key>Class</key>
 			<string>ShapedGraphic</string>
 			<key>FitText</key>
@@ -690,7 +690,7 @@
 		</dict>
 		<dict>
 			<key>Bounds</key>
-			<string>{{89.2216, 273}, {93, 14}}</string>
+			<string>{{89.2217, 273}, {93, 14}}</string>
 			<key>Class</key>
 			<string>ShapedGraphic</string>
 			<key>FitText</key>
@@ -746,7 +746,7 @@
 		</dict>
 		<dict>
 			<key>Bounds</key>
-			<string>{{74.1086, 253}, {93, 14}}</string>
+			<string>{{74.1085, 253}, {93, 14}}</string>
 			<key>Class</key>
 			<string>ShapedGraphic</string>
 			<key>FitText</key>
@@ -802,7 +802,7 @@
 		</dict>
 		<dict>
 			<key>Bounds</key>
-			<string>{{62.9528, 232}, {93, 14}}</string>
+			<string>{{62.9527, 232}, {93, 14}}</string>
 			<key>Class</key>
 			<string>ShapedGraphic</string>
 			<key>FitText</key>
@@ -858,7 +858,7 @@
 		</dict>
 		<dict>
 			<key>Bounds</key>
-			<string>{{22.647, 212.183}, {97, 14}}</string>
+			<string>{{22.6468, 212.183}, {97, 14}}</string>
 			<key>Class</key>
 			<string>ShapedGraphic</string>
 			<key>FitText</key>
@@ -970,12 +970,12 @@
 			<key>OrthogonalBarAutomatic</key>
 			<true/>
 			<key>OrthogonalBarPosition</key>
-			<real>39.425003051757812</real>
+			<real>39.675003051757812</real>
 			<key>Points</key>
 			<array>
-				<string>{701.336, 221.5}</string>
+				<string>{701.336, 221}</string>
 				<string>{739, 312.25}</string>
-				<string>{643.096, 609.043}</string>
+				<string>{643.096, 609.044}</string>
 			</array>
 			<key>Style</key>
 			<dict>
@@ -1101,7 +1101,7 @@
 			<key>OrthogonalBarAutomatic</key>
 			<true/>
 			<key>OrthogonalBarPosition</key>
-			<real>3.9584808349609375</real>
+			<real>3.9585037231445312</real>
 			<key>Points</key>
 			<array>
 				<string>{384.479, 219.183}</string>
@@ -1142,7 +1142,7 @@
 			<key>OrthogonalBarAutomatic</key>
 			<true/>
 			<key>OrthogonalBarPosition</key>
-			<real>18.040573120117188</real>
+			<real>18.040496826171875</real>
 			<key>Points</key>
 			<array>
 				<string>{145.25, 171.202}</string>
@@ -1185,13 +1185,13 @@
 			<key>OrthogonalBarAutomatic</key>
 			<true/>
 			<key>OrthogonalBarPosition</key>
-			<real>56.583480834960938</real>
+			<real>56.583511352539062</real>
 			<key>Points</key>
 			<array>
-				<string>{422.438, 219.183}</string>
+				<string>{422.437, 219.183}</string>
 				<string>{693, 344.25}</string>
 				<string>{701, 438.25}</string>
-				<string>{644.096, 563.043}</string>
+				<string>{644.096, 563.044}</string>
 			</array>
 			<key>Style</key>
 			<dict>
@@ -1241,7 +1241,7 @@
 				<string>{559, 221}</string>
 				<string>{692, 324.25}</string>
 				<string>{718, 453.051}</string>
-				<string>{642.836, 586.051}</string>
+				<string>{622.836, 586.051}</string>
 			</array>
 			<key>Style</key>
 			<dict>
@@ -1318,7 +1318,7 @@
 		</dict>
 		<dict>
 			<key>Bounds</key>
-			<string>{{552.836, 580.344}, {90, 14}}</string>
+			<string>{{572.836, 580.344}, {50, 14}}</string>
 			<key>Class</key>
 			<string>ShapedGraphic</string>
 			<key>FitText</key>
@@ -1359,7 +1359,7 @@
 {\colortbl;\red255\green255\blue255;}
 \pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\qc\pardirnatural
 
-\f0\fs24 \cf0 some_class_id}</string>
+\f0\fs24 \cf0 user_id}</string>
 			</dict>
 			<key>Wrap</key>
 			<string>NO</string>
@@ -1453,7 +1453,7 @@
 {\colortbl;\red255\green255\blue255;}
 \pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\qc\pardirnatural
 
-\f0\fs24 \cf0 name}</string>
+\f0\fs24 \cf0 street}</string>
 			</dict>
 		</dict>
 		<dict>
@@ -1523,7 +1523,7 @@
 {\colortbl;\red255\green255\blue255;}
 \pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\qc
 
-\f0\b\fs24 \cf0 SomeOtherClass}</string>
+\f0\b\fs24 \cf0 Address}</string>
 			</dict>
 			<key>TextPlacement</key>
 			<integer>0</integer>
@@ -1551,7 +1551,7 @@
 {\colortbl;\red255\green255\blue255;}
 \pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\qc
 
-\f0\b\fs24 \cf0 SomeClass}</string>
+\f0\b\fs24 \cf0 User}</string>
 			</dict>
 			<key>TextPlacement</key>
 			<integer>0</integer>
@@ -2009,7 +2009,7 @@ Query.instances()}</string>
 {\colortbl;\red255\green255\blue255;}
 \pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\qc\pardirnatural
 
-\f0\fs24 \cf0 name="name"}</string>
+\f0\fs24 \cf0 name="street"}</string>
 			</dict>
 			<key>Wrap</key>
 			<string>NO</string>
@@ -2046,7 +2046,7 @@ Query.instances()}</string>
 		</dict>
 		<dict>
 			<key>Bounds</key>
-			<string>{{462, 203}, {135, 14}}</string>
+			<string>{{482, 203}, {95, 14}}</string>
 			<key>Class</key>
 			<string>ShapedGraphic</string>
 			<key>FitText</key>
@@ -2083,7 +2083,7 @@ Query.instances()}</string>
 {\colortbl;\red255\green255\blue255;}
 \pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\qc\pardirnatural
 
-\f0\fs24 \cf0 name="some_class_id"}</string>
+\f0\fs24 \cf0 name="user_id"}</string>
 			</dict>
 			<key>Wrap</key>
 			<string>NO</string>
@@ -2362,23 +2362,23 @@ Query.instances()}</string>
 
 \f0\fs24 \cf0 SELECT\
  \
-    some_class.id \
-             as some_class_id, \
+    user.id \
+             as user_id, \
 \
-    some_related_class.id \
-            as some_related_class_id, \
+    address.id \
+            as address_id, \
 \
-    some_related_class.some_class_id \
-            as some_related_class_some_class_id,\
+    address.user_id \
+            as address_user_id,\
  \
-    some_related_class.name \
-            as some_related_class_name\
+    address.street \
+            as address_street\
 \
-FROM some_class \
-    LEFT OUTER JOIN some_related_class \
-    ON some_class.id=\
-       some_related_class.some_class_id\
-WHERE some_class.id =5 }</string>
+FROM user \
+    LEFT OUTER JOIN address \
+    ON user.id=\
+       address.user_id\
+WHERE user.id =5 }</string>
 			</dict>
 		</dict>
 		<dict>
@@ -2611,7 +2611,7 @@ WHERE some_class.id =5 }</string>
 		</dict>
 	</array>
 	<key>ModificationDate</key>
-	<string>2011-07-18 20:47:25 -0400</string>
+	<string>2011-10-10 13:05:54 -0400</string>
 	<key>Modifier</key>
 	<string>classic</string>
 	<key>NotesVisible</key>
@@ -2683,7 +2683,7 @@ WHERE some_class.id =5 }</string>
 		<key>FitInWindow</key>
 		<false/>
 		<key>Frame</key>
-		<string>{{186, 57}, {1235, 921}}</string>
+		<string>{{186, 75}, {1235, 921}}</string>
 		<key>ShowRuler</key>
 		<false/>
 		<key>ShowStatusBar</key>
