@@ -64,6 +64,8 @@ Torvald's goals for Git from the outset were:
   \item Provide high performance
 \end{aosaitemize}
 
+\end{aosasect1}
+
 \begin{aosasect1}{The Toolkit}
 
 Today the Git ecosystem posesses many GUIs on a number of operating systems.
@@ -76,12 +78,12 @@ tools.
 
 The Git toolkit is divided into two parts: the plumbing and
 the porcelain. The plumbing consists of low-level commands that enable
-the manipulation of Directed Acyclic Graphs (DAG) and basic content
+the manipulation of directed acyclic graphs (DAG) and basic content
 tracking. The porcelain is the smaller subset of git commands that most
 end-users of Git are likely to need to use for maintaining repositories and
 communicating between repositories for collaboration.
 
-While the toolkit design has provided enough commands to offer enough
+While the toolkit design has provided enough commands to offer
 fine grained access to functionality for many scripters, application developers
 complained about the lack of a linkable library for Git. The argument was
 that since the Git binary calls die() at a number of points, it was not
@@ -100,6 +102,7 @@ open source projects are maintained independently of the Git core project.
 As you can see today there is a wide array of ways to integrate with Git.
 From the plumbing portion of the toolkit, procelain layer and now the
 linkable library, libgit2 and its offshoots in Ruby and Python.
+\end{aosasect1}
 
 \begin{aosasect1}{The Primitives}
 
@@ -133,9 +136,19 @@ of Git above).
 In many ways Git can be thought of as a content tracking filesystem living on top
 of your existing filesystem.
 
-\begin{aosasect1}{Version Control Landscape}
+TODO: More to discuss here. Use plumbing commands like 'git show' and 'git cat-file'
+to demonstrate how the primitives work together and build on top of each other.
 
-This section will describe the two primary classification dimensions to
+\end{aosasect1}
+
+\begin{aosasect1}{Version Control System (VCS) Landscape}
+
+Now is a good time to take a step back and look at the alternative VCS soltuions
+to Git. How the solutions differ will help us understand Git's importance and why 
+developers have been rapidly adopting it.
+
+TODO: Flesh out this section. Overview:
+* This section will describe the two primary classification dimensions to
 Version Control Systems (VCS) today:
 
 \begin{aosaitemize}
@@ -143,13 +156,17 @@ Version Control Systems (VCS) today:
   \item Storage mode: changeset based vs directed acyclic graph (DAG) based
 \end{aosaitemize}
 
-Provide examples of difference VCSes and how they fit in to these
+Provide examples of different VCSes and how they fit in to these
 classifications, e.g. Subversion (client/server + changeset), Mercurial
 (distributed + changeset), BitKeeper (client/server + DAG), etc.
 
 \end{aosasect1}
 
 \begin{aosasect1}{Gitting Started}
+
+TODO: This may still be included to show off more plumbing commands as well as the major
+porcelain commands and also help explain repository-to-repository commands and 
+collaboration.
 
 Here I will describe the most rudimentary workflow of installing, configuring
 and cloning a remote Git repository. Then explain on a low-level what happened.
@@ -166,7 +183,7 @@ Basic steps:
   \item sudo yum install git-core
   \item git config --global user.name ``Your Name''
   \item git config --global user.email ``user@emaildomain.com''
-  \item cat #{HOME}/.gitconfig
+  \item cat \#\{HOME\}/.gitconfig
   \item git clone remote-repo-url
 \end{aosaitemize}
 
@@ -225,7 +242,7 @@ Then introduce the GitHub model with ``forks''.
 \begin{aosasect1}{Deploying with Git}
 
 Here talk a little more about 'git bundle' and git shallow clones, e.g.
-git clone --depth N #{GIT\_URL}, where N is the number of parents.
+git clone --depth N \#\{GIT\_URL\}, where N is the number of parents.
 
 Demonstrate with a repository that shows significant benefit to using
 bundle in conjunction with shallow clones as a way to provide portable
