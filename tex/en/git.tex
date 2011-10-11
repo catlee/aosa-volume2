@@ -7,7 +7,7 @@ born out of the needs and frustrations of the Linux Kernel development
 community in 2005.
 
 Git enables the management of a digital body of work (often,
-but not limited to code) across a peer-to-peer network of
+but not limited to, code) across a peer-to-peer network of
 collaborating repositories. It supports distributed workflows to
 manage a body of work that is either eventually converging or
 intentionally diverging in nature. A feat not easily accomplished
@@ -66,30 +66,30 @@ Torvald's goals for Git from the outset were:
 
 \begin{aosasect1}{The Toolkit}
 
-Today Git posesses many GUIs on a number of operating systems. These are
-all built on top of the Git toolkit.
+Today the Git ecosystem posesses many GUIs on a number of operating systems.
+These are all built on top of Git core.
 
 Due to the way it was originally written by Linus and its inception within
-the Linux community (which is heavily UNIX inspired) it was written around
+the Linux community (which is heavily Unix inspired) it was written around
 a toolkit design philosphy very much in the Unix tradition of command line
 tools.
 
-The Git toolkit is considered to be in two parts: the plumbing and
+The Git toolkit is divided into two parts: the plumbing and
 the porcelain. The plumbing consists of low-level commands that enable
 the manipulation of Directed Acyclic Graphs (DAG) and basic content
 tracking. The porcelain is the smaller subset of git commands that most
 end-users of Git are likely to need to use for maintaining repositories and
-communicating between repositories for collaborating.
+communicating between repositories for collaboration.
 
 While the toolkit design has provided enough commands to offer enough
-fine grained access to functionality for scripters, application developers
+fine grained access to functionality for many scripters, application developers
 complained about the lack of a linkable library for Git. The argument was
 that since the Git binary calls die() at a number of points, it was not
 reentrant and GUIs, web interfaces or longer running scripts would have
 to fork/exec a call to the Git binary, which is often slow.
 
 Shawn Pearce spearheaded an effort to create a linkable Git library with
-licensing that didn't inhibit use with the project called libgit2. It didn't
+licensing that didn't inhibit use of the library called libgit2. It didn't
 find much traction until a student named, Vincent Marti chose it for his
 Google Summer of Code project last year. Since then Vincent and GitHub have
 continued contributing to the libgit2 project and created Ruby bindings
@@ -99,7 +99,7 @@ open source projects are maintained independently of the Git core project.
 
 As you can see today there is a wide array of ways to integrate with Git.
 From the plumbing portion of the toolkit, procelain layer and now the
-linkable library, libgit2 and its offshoots.
+linkable library, libgit2 and its offshoots in Ruby and Python.
 
 \begin{aosasect1}{The Primitives}
 
@@ -121,8 +121,8 @@ which has the following properties:
   \item if two objects are identical they will have the same SHA
   \item if two objects are different they will have different SHAs
   \item if an object was only copied partially or another form of data
-        corruption occurred recalculating the SHA of the current object
-        will identify such corruption.
+        corruption occurred, recalculating the SHA of the current object
+        will identify such corruption
 \end{aosaitemize}
 
 The first two properties of the SHA relating to identity of the objects is
@@ -132,7 +132,6 @@ of Git above).
 
 In many ways Git can be thought of as a content tracking filesystem living on top
 of your existing filesystem.
-
 
 \begin{aosasect1}{Version Control Landscape}
 
@@ -157,9 +156,9 @@ and cloning a remote Git repository. Then explain on a low-level what happened.
 
 Describe the three main elements of a Git working environment:
 \begin{aosaitemize}
-  \item Repository (object database): default at #{projectdir}/.git subdirectory
-  \item Working area: default at #{projectdir} excluding .git subdirectory
-  \item Index: default at #{projectdir}/.git/index file
+  \item Repository (object database): default at \#\{projectdir\}/.git subdirectory
+  \item Working area: default at \#\{projectdir\} excluding .git subdirectory
+  \item Index: default at \#\{projectdir\}/.git/index file
 \end{aosaitemize}
 
 Basic steps:
