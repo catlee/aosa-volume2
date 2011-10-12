@@ -244,7 +244,34 @@
         <img src="../images/ffreleng/repacks_l10n.png" alt="Repacking Firefox for each localization" />
         <p>Figure&nbsp;6.3: Repacking Firefox for each localization</p>
       </div>
-        <p>Explain the process here of how we currently get our locale changesets, why they are in two different formats, and how the repacking code works.</p>
+        <p>Once the desktop builds are generated and uploaded to FTP, our
+        automation triggers the localization repackages. This consists of a
+        handful number of jobs that take the English-US build, unpacks it and
+        stuffs in the strings for each localization. Each job takes care of a
+        handful of locales. This approach allows us to parallelize the job
+        among machines but we do more than one per job to save up on the
+        overhead of setting up the machine for a repackage.
+        </p>
+        <p>
+        The case for mobile is slightly different as we only produce
+        an English-US version and a multi-language version with just a handful
+        of languages.
+        </p>
+        <p>
+        In Figure 6.3 you can realize that we have three sources of
+        locales information. This is just because of historical
+        reasons but there is no reason not to unify all information in a
+        unified json file.
+        </p>
+        <p>
+        Who decides which languages we ship? First of all, localizers
+        themselve nominate their specific changeset for a given
+        release. The nominated changeset gets reviewed by Mozilla's 
+        localization team and show up in a web dashboard that lists
+        the changesets needed for each language. On the day of a
+        release we retrieved this web page with the list of changesets and we
+        repackage them accordingly. 
+        </p>
     </div>
 
     <div class="sect">
