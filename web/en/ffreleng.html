@@ -123,6 +123,7 @@
 
       go/no-go decision
       </p>
+      <!-- XXX Define release driver(s) XXX -->
     </div>
 
     <div class="sect">
@@ -306,7 +307,39 @@ updates.</li>
 
     <div class="sect">
       <h2>6.7 AUS and Pushing Public</h2>
-      <p></p>
+      <p>
+      Pushing this latest Firefox release public is then pretty
+      straightforward. The release driver gives the go ahead to have
+      the files pushed to our community mirror network. We rely on our
+      community mirrors to be able to handle a few hundred million
+      users downloading updates over the next few days. All the
+      installers, complete and partial updates for all platforms and
+      locales are already on our internal mirror network at this
+      point. Publishing the files to our external mirrors involves
+      changes to an rsync exclude file for the public mirrors module.
+      Once this change is made, the mirrors will start to synchronize
+      the new release files. Each mirror has a score or weighting
+      associated with it, and we monitor which mirrors have
+      synchronized the files and sum their individual scores to
+      compute a total "uptake" score. Once a certain uptake is
+      reached, we notify the release driver that the mirrors have
+      enough uptake to handle the release.
+      </p>
+      <p>
+      This is the point at which the release becomes "official". The
+      release driver sends the final "go", and we update some symlinks
+      on the web server so that visitors to our web and ftp sites can
+      find the latest version. We also publish all the update snippets
+      for past versions of Firefox to our AUS (automated update
+      service) system. Firefox on users' machines regularly checks the
+      AUS servers to see if there's an updated version of Firefox
+      available for them. Once we publish these update snippets, users
+      are able to automatically update Firefox on their machines to
+      the latest version.
+      </p>
+      <p>
+      Bouncer
+      </p>
     </div>
 
     <div class="sect">
