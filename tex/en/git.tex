@@ -1,6 +1,6 @@
 \begin{aosachapter}{Git}{s:git}{Susan Potter}
 
-Dear Editors: Still outliney, but fleshed out a little more since last time\ldots
+Work in progress\ldots
 
 Git is an open source distributed Version Control System (dVCS) that was
 born out of the needs and frustrations of the Linux Kernel development
@@ -10,7 +10,7 @@ Git enables the management of a digital body of work (often,
 but not limited to, code) across a peer-to-peer network of
 collaborating repositories. It supports distributed workflows to
 manage a body of work that is either eventually converging or
-intentionally diverging in nature. A feat not easily accomplished
+diverging in nature. A feat not easily accomplished
 using a centralized Version Control System (VCS) such as CVS or
 Subversion, the two most popular open source centralized VCS
 projects.
@@ -19,7 +19,7 @@ projects.
 To understand Git better it is helpful to understand the circumstances
 from which the Git project was started in the Linux Kernel community.
 
-First released in October 1991, the Linux Kernel rapidly grew a community
+The Linux Kernel was first released in October 1991. It rapidly grew a community
 of core developers and contributors by the mid-to-late 1990s. Along side
 individuals adopting Linux there were organisations or teams of developers
 creating Linux distributions based on top of the Linux Kernel project by
@@ -60,8 +60,8 @@ Torvald's goals for Git from the outset were:
 \begin{aosaitemize}
   \item Be the anti-CVS
   \item Support distributed workflows like those enabled by BitKeeper
-  \item Provide strong safeguards against corruption
-  \item Provide high performance
+  \item Offer safeguards against content corruption
+  \item Offer high performance
 \end{aosaitemize}
 
 \end{aosasect1}
@@ -72,7 +72,7 @@ Today the Git ecosystem posesses many GUIs on a number of operating systems.
 These are all built on top of Git core.
 
 Due to the way it was originally written by Linus and its inception within
-the Linux community (which is heavily Unix inspired) it was written around
+the Linux community it was written around
 a toolkit design philosphy very much in the Unix tradition of command line
 tools.
 
@@ -86,22 +86,43 @@ communicating between repositories for collaboration.
 While the toolkit design has provided enough commands to offer
 fine grained access to functionality for many scripters, application developers
 complained about the lack of a linkable library for Git. The argument was
-that since the Git binary calls die() at a number of points, it was not
-reentrant and GUIs, web interfaces or longer running scripts would have
+that since the Git binary calls die(), it was not
+reentrant and GUIs, web interfaces or longer running services would have
 to fork/exec a call to the Git binary, which is often slow.
 
 Shawn Pearce spearheaded an effort to create a linkable Git library with
-licensing that didn't inhibit use of the library called libgit2. It didn't
-find much traction until a student named, Vincent Marti chose it for his
-Google Summer of Code project last year. Since then Vincent and GitHub have
-continued contributing to the libgit2 project and created Ruby bindings
-for it in a project called Rugged. More recently Python bindings around
-libgit2 have emerged in an open source project called pygit2. These three
-open source projects are maintained independently of the Git core project.
+more permissive licensing that didn't inhibit use of the library. This was 
+called libgit2. It didn't find much traction until a student named, Vincent 
+Marti chose it for his Google Summer of Code project last year. Since then 
+Vincent and GitHub have continued contributing to the libgit2 project and 
+created Ruby bindings for it in a project called Rugged. More recently 
+Python bindings around libgit2 have emerged in an open source project 
+called pygit2. These three open source projects are maintained independently 
+of the Git core project.
 
 As you can see today there is a wide array of ways to integrate with Git.
 From the plumbing portion of the toolkit, procelain layer and now the
 linkable library, libgit2 and its offshoots in Ruby and Python.
+\end{aosasect1}
+
+\begin{aosasect1}{The Repository}
+
+Let us get our hands dirty and dive into using Git locally, if only to
+understand a few fundamental concepts.
+
+First let us create a new Git repository on our local filesystem. On a Unix 
+inspired operating system this could be done like so:
+\begin{aosaitemize}
+  \item \code{mkdir testgit}
+  \item \code{cd testgit}
+  \item \code{git init}
+\end{aosaitemize}
+
+Now we have an empty, but initialized Git repository sitting in our testgit 
+directory. We can branch, commit, tag and even communicate with other local
+and remote Git repositories. Even communication with other types of VCS
+repositories is possible.
+
 \end{aosasect1}
 
 \begin{aosasect1}{The Primitives}
@@ -114,6 +135,8 @@ repository is built on top of:
   \item Commit
   \item Tag
 \end{aosaitemize}
+
+\aosafigure{../images/git/git-objects.png}{Git Objects}{fig.git.objects}[scale=0.2]
 
 Each of the object types above all have the following elements: type, size and
 content.
