@@ -3,6 +3,13 @@
   <head>
     <style type="text/css">
       div.inline { float:left; }
+      code.class-name {
+        display: block;
+        background: #ccc;
+        border: 1px dotted #000;
+        width: 100%;
+        overflow: auto;
+      }
     </style>
     <meta name="provenance" content="$Id$" />
     <link rel="stylesheet" href="aosa.css" type="text/css" />
@@ -254,12 +261,56 @@
         <img src="../images/ffreleng/signing.png" alt="Signing Firefox installers" />
         <p>Figure&nbsp;6.4: Signing of Firefox installers, partially automated</p>
       </div>
-      <p></p>
+      <p>
+      In the not so distant past, the signing process was long and involved a significant break from the release automation. Originally we automated everything up to the signing, then after a while we added an FTPPoller to our buildbot change sources that watches for a win32_signing.log file to become available in the release candidates dir, signifying the end of human signing (uploaded along with the signed bits) so we were able to continue automation from that point on by attaching dependent builders to that change.  Recently though, an additional wrapper of automation allows us to start an automated signing process on our keymaster with minimal human contact and once that has been enabled the release engineer can go on about other work without having to check in on signing while a simple set makefile targets does the heavy lifting.
+      </p>
+      <p>
+      At some point after the release's build are underway, the release engineer will log on to our keymaster, set up a few variables in a cygwin shell pertaining to the release such as VERSION, BUILD, TAG, and a few other items needed by the make file and then after checking out the most recent version of our signing tools they simply do a 'make auto-sign' call to start a download loop that trolls our FTP candidates directory for the complete set of deliverables for a release.  This includes builds & localized repacks for each platform, the source tarball, and any partner-repacks for a release. Once the last item has showed up (all items progressively downloaded as available) signing can start right away. We use signcode.exe for the win32 bits and then do pgp signatures on the other platforms, all signed bits have an MD5SUM and SHA1SUM written to files of the same name. When all signed bits are available and verified (we do a quick and more in-depth verification process) they are uploaded back to FTP along with the signing log file that the automation is waiting for to proceed.
+      </p>
+      <h3>make-autosign targets</h3>
+      <dl>
+        <dt>df</dt>
+            <dd>Checks that enough disk space is available for signing - a Firefox release needs ~30 GB free</dd>
+        <dt>verify-gpg-passphrase</dt>
+            <dd>self-explanatory</dd>
+        <dt>verify-signcode-passphrase</dt>
+            <dd>self-explanatory</dd>
+        <dt>setup</dt>
+            <dd>Pull/copy the required tools: 7-Zip, mar.exe, upx, pgp-keys, signing scripts</dd>
+        <dt>stubs</dt>
+            <dd>Additional 7-Zip tools (from cvs or hg depending on release version)</dd>
+        <dt>download-loop</dt>
+            <dd>Perpetually checks the candidates directory for deliverables until all the bits for the release have been located and downloaded (compares against release configs)</dd>
+        <dt>verify-download</dt>
+            <dd>Confirms that all deliverables have been downloaded to an unsigned dir on keymaster</dd>
+        <dt>sign</dt>
+            <dd>Runs sub-targets: sign-files checksum-files create-sigs verify-sigs quick-verify.  This step generates the signatures, also the sums for MD5SUM and SHA1SUM files and does a quick-verify on a trimmed down list with a locale selected at random</dd>
+        <dt>stage</dt>
+            <dd>Runs sub-targets: create-contrib fix-permissions.  We have to generate a couple of directories for community releases (solaris & spark) and also make sure the files are owned by the right account prior to uploading back to FTP</dd>
+        <dt>verify</dt>
+            <dd>Runs sub-targets: verify-signatures verify-win32 verify-asc.  Verifies that installer signing is valid and can be traced back to a valid root certificate for all the win32 locales, ensures that every exe and mar in the signed-build directory differs from its unsigned counterpart, and finally makes sure we have asc files for every build in the signed dir</dd>
+        <dt>postsign</dt>
+            <dd>Runs sub-targets: upload upload-log verify-signatures2. Uploads the signed bits to FTP, the signing log, and then does one more in-depth signature verification comparing the full list of unsigned locales to their signed counterparts to make sure they are different</dd>
+      </dl>
     </div>
 
     <div class="sect">
       <h2>6.5 Updates</h2>
-      <p></p>
+      <p>
+      We generate a LOT of updates.  Every platform, every locale, every installer from Firefox N - Firefox NOW.  Depending on the version, our updates can go back as far as 4 or 5 versions, include dot releases from security fixes and sometimes even betas.  For the most 'normal' case we offer both partial and complete updates, as a .mar (Mozilla Archive) which is then offered to the user through prompts dubbed Major or Minor.
+      </p>
+      <h4>Sample Update Snippet</h4>
+      <code class="class-name">
+      &lt;updates&gt;<br />
+      &nbsp;&lt;update type="minor"  version="7.0.1" extensionVersion="7.0.1" buildID="20110928134238" detailsURL="https://www.mozilla.com/en-US/firefox/7.0.1/releasenotes/"&gt;<br />
+      &nbsp;&nbsp;&lt;patch type="complete" URL="http://download.mozilla.org/?product=firefox-7.0.1-complete&os=osx&lang=en-US&force=1" hashFunction="SHA512" hashValue="7ecdbc110468b9b4627299794d793874436353dc36c80151550b08830f9d8c5afd7940c51df9270d54e11fd99806f41368c0f88721fa17e01ea959144f473f9d" size="28680122"/&gt;<br />
+      &nbsp;&nbsp;&lt;patch type="partial" URL="http://download.mozilla.org/?product=firefox-7.0.1-partial-6.0.2&os=osx&lang=en-US&force=1" hashFunction="SHA512" hashValue="e9bb49bee862c7a8000de6508d006edf29778b5dbede4deaf3cfa05c22521fc775da126f5057621960d327615b5186b27d75a378b00981394716e93fc5cca11a" size="10469801"/&gt;<br />
+      &nbsp;&lt;/update&gt;<br />
+      &lt;/updates&gt;
+      </code>
+      <p>
+      Partial mars are created by diffing the old version to the new version and creating the mar containing the diff along with a manifest. As you can see from the sample above, this results in a much smaller download. Complete mars contain all the files and can be applied using the updater binary the main difference between a complete update and an installer is the lack of a defaults/prefs/channel-prefs.js in updates which sets the update channel the application reads from.
+      </p>
     </div>
     
     <div class="sect">
