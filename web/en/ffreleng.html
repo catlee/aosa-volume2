@@ -103,7 +103,10 @@
     when it's available for download (or update) to your computer or
     mobile device.
     </p>
-
+      <div class="figure" id="fig.ffreleng.timeline" class="inline">
+        <img src="../images/ffreleng/timeline.png" alt="Complete Release Timeline" />
+        <p>Figure&nbsp;6.0: Complete Release Timeline</p>
+      </div>
     <!-- XXX diagram of builds and their dependencies, along with
     times? something like a gantt chart ? XXX -->
 
@@ -324,7 +327,11 @@
     <div class="sect">
       <h2>6.5 Updates</h2>
       <p>
-      We generate a LOT of updates.  Every platform, every locale, every installer from Firefox N - Firefox NOW.  Depending on the version, our updates can go back as far as 4 or 5 versions, include dot releases from security fixes and sometimes even betas.  For the most 'normal' case we offer both partial and complete updates, as a .mar (Mozilla Archive) which is then offered to the user through prompts dubbed Major or Minor.
+      We generate a LOT of updates.  Every platform, every locale, every installer from Firefox N -> Firefox NOW in both complete and partial form.  Depending on the version, our updates can go back as far as 4 or 5 versions, include dot releases from security fixes, and sometimes even betas. Our automation bumps our patch & update configuration files on each run to maintain our list of what versions, platforms, and locales need to have snippets generated to be able to offer our users the newest release. Below you'll see an example of an update snippet, simply an xml pointer hosted on AUS that tells the user's Firefox where to get a complete and/or partial .mar (Mozilla Archive) file containing the update.
+      </p>
+      <h4>Major vs. Minor</h4>
+      <p>
+      As you'll see in the snippet sample below, we have a type setting for updates. Most updates fall into the "minor" category which means that, for the user, the downloading of the partial update package (though sometimes it's the complete when that is the only update available for a particular version/platform) happens quietly in the background and when it's ready to be applied the user is informed of this and given the option to apply & restart.  Minor updates are used to keep people up to date within their channel: beta releases update to the next beta release, nightlies to the following night's build.  Major updates are used when we need to try and coax users up to the latest & greatest release and when we want to do that a prompt to the user letting them know "A new version of Firefox is available" is displayed and they have the choice to download the update bits.
       </p>
       <h4>Sample Update Snippet</h4>
       <code class="class-name">
@@ -335,8 +342,9 @@
       &nbsp;&lt;/update&gt;<br />
       &lt;/updates&gt;
       </code>
+      <h4>What's in an update?</h4>
       <p>
-      Partial mars are created by diffing the old version to the new version and creating the mar containing the diff along with a manifest. As you can see from the sample above, this results in a much smaller download. Complete mars contain all the files and can be applied using the updater binary the main difference between a complete update and an installer is the lack of a defaults/prefs/channel-prefs.js in updates which sets the update channel the application reads from.
+      At build time we generate complete mars which contain all the bits for the new versions compressed with bz2 and then archived as a .mar (Mozilla Archive). Complete mars are applied using our updater binary and the main difference between a complete update and a standalone version is the lack of a defaults/prefs/channel-prefs.js in updates which sets the update channel the application reads from. Partial mars are then created by doing a binary diff of the old version's complete .mar to the new version's and creating a partial .mar containing this diff along with a manifest. As you can see in the sample snippet above, this results in a much smaller file size. In older versions of our update automation the generation of partial updates could take 6-7 hours as each locale, for each platform had the complete mars downloaded, diffed, then packed up for a partial update.  Eventually it was discovered that even across platforms, very few components actually had changes and with a script that started to cache the hashes for diffs our partial update creation time was brought down to ~40 minutes. After the snippets have been uploaded and are hosted on AUS, an update verification step is run to a) test downloading the snippets and b) run the updater with the snippet to confirm that it applies correctly.
       </p>
     </div>
     
