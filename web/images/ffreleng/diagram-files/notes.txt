@@ -1,0 +1,35 @@
+Catlee:
+    * write AUS section
+    * revising and continuing Tagging section
+    * collaborate with joduinn to flesh out the Murphy's Law/Chempsills section
+
+Joduinn:
+    * write 'go to build' section
+    * collaborate with catlee for Murphy's Law/Chemspills section
+
+Armen:
+    * write repacks & l10n
+    * write QA section
+
+Lukas:
+    * diagram the whole process with timings
+    * diagrams for updates, AUS sections
+    * write updates & signing sections
+
+Everyone needs to update their intro section (bio)
+
+6.1 - Go To Build (joduinn)
+6.2 - Tagging (catlee)
+6.3 - Repacks and L10N (armenzg)
+6.4 - Signing (lsblakk)
+6.5 - Updates (lsblakk) completes/partials generating them
+6.6 - Pushing Internal & QA (armenzg)
+6.7 - AUS and Pushing Public (catlee)
+6.8 - Murphy's Law (catlee)
+6.9 - Chemspills (catlee & joduinn)
+
+
+Poss. merge 6.8 and 6.9?
+Taking out 6.10
+
+Everyone get something written into their assigned sections (and intros) by next Wednesday, October 12th so that we can do a proof-reading round before Friday
