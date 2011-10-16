@@ -96,13 +96,95 @@
     when it's available for download (or update) to your computer or
     mobile device.
     </p>
+    <p>
+This chapter is about the mechanics of how we generate the release
+builds for the Firefox product. Most of this chapter details the complexity once the release builds start, but its worth noting that there is also plenty of complex cross-group communications to deal with before Release Engineering even starts to generate release builds, so lets start there.
+
+    </p>
       <div class="figure" id="fig.ffreleng.timeline" class="inline">
         <img src="../images/ffreleng/timeline.png" alt="Complete Release Timeline" />
         <p>Figure&nbsp;6.0: Complete Release Timeline</p>
       </div>
+    <p>
+When we started on the project to improve Mozilla's release process, we started with the premise that the more popular Firefox became, the more users we would have, the more attractive a target Firefox would become, and hence the more often we would need to quickly protect our users with a quick Firefox release fixing a security exploit. We even have a term for this - a "chemspill" release. Instead of being surprised by the occasional need for a  chemspill release in between our regularly scheduled releases, we decided to plan as if every release could be a chemspill release, and designed our release automation accordingly.
+    </p>
+    <p>
+This mindset had three important consequences:
+<ol><li>We do a postmortem after <b>every</b> release, and look to see where things could be made smoother, easier, faster next time. This constant polishing of our release automation ("kaizen") has us always looking for ways to speed things up, safely, with less human involvement. Even when we're already fast enough for regular, non-chemspill releases, we understand the value of each enhancement to our release automation if it will speed up a release, make the process more robust, or reduce the risk of any human error in a release.
+<li>This mindset means that when we do have a chemspill release, the humans in Release Engineering are not stressed by it. We're used to the idea of going as fast as possible with calm precision. Less stress means more calm precise work, which helps chemspill releases go smoothly.
+<li>We setup a "go to build" process. When it is not a chemspill release, its possible to have everyone looking through the same bug triage queries, have everyone see clearly when the last fix was landed, and tested just fine, and have consensus on when to start builds. However, in a chemspill release, where minutes matter, keeping track of all the details of the issue, following up bug confirmations and fixes, gets very tricky very quickly.  To reduce complexity, and risk of mistakes, Mozilla now has one fulltime person, explicitly not in Release Engineering, track the readiness of the release to "go to build".  Changing process during a chemspill is risky, so in order to make sure everyone is familiar with the process when minutes matter, we use this same process for "chemspill" and "regular" releaes.  </ol>
+
+
+
+    </p>
     <!-- Rough outline of sections -->
     <div class="sect">
       <h2>6.1 "Go to Build"</h2>
+    </p>
+
+<h3>Who can send the "go to build"?</h3>
+
+<p>Before the start of the release, Mozilla identifies one person who will assume this responsibility for the entire release. It is worth noting that this person is not in Release Engineering. This person needs to be someone that everyone trusts to attend triage meetings, have background context on all the work being landed, be able to referee bug severity disputes fairly, prioritize work by reviewing what competing companies are doing, and of course, coordinate with the different release day groups (websites, PR, marketing, developers, QA, Release Engineering, ...). Different companies use different titles for this type of role: Release Manager, Release Engineer (!), Program Manager, Project Manager, Product Czar, Release Driver... Personally, I prefer the term "Release Coordinator", but the important point is that the role is clearly understood by everyone, regardless of their background, or previous work experiences elsewhere.
+    </p>
+    <p>
+In the days leading up to the "go to build", Release Engineering
+reminds everyone that we will explicitly ignore everyone else, and ONLY
+listen to the Release Coordinator for a "go to build". 
+    </p>
+    <p>
+This Release Coordinator is also the only person who is authorized to send "stop builds" if a showstopper problem is discovered with the release. Any reports of "suspected showstopper problems" are redirected to the Release Coordinator, who will evaluate, make the final go/nogo decision and communicate that decision to everyone in a timely manner.
+    </p>
+    <p>
+(an interesting side effect is that questions like "when will builds be ready", "will we release by 5pm", etc are redirected from Release Engineering to the Release Coordinator. This leaves the Release Engineer with more quiet time to focus on getting the release builds generated accurately.)
+    </p>
+    <p>
+
+<h3>How to send the "go to build"?</h3>
+
+    <p>
+Early experiments with sending "go to build" by irc, or verbally by phone calls all had misunderstandings at some point, causing problems wit the release in progress. Therefore, we now require the "go to build" signal is done by email to an explicit mailing list that includes everyone across all groups in the company that care about upcoming releases. The subject of the email includes "go to build" and the explicit product name and version number, for example:
+"go to build Firefox 6.0.1"
+    </p>
+    <p>
+If an "all stop" email is needed, the Release Coordinator will send a new email to the same mailing list, with a new subject line. We found that it was not ok to just hit reply on the most-recent email about the release - email threading of some email clients caused some people to not cwnotice the "all stop" email if it was way down a long unrelated thread.
+
+
+
+<h3>What is in the "go to build" email?</h3>
+<ol>
+<li> The exact code to be built from. Ideally give the url to the explicit change in your source code repo that the release builds are to be created from.
+<ul>
+<li>Comments like "use the latest code" are never ok: In one release, after the "go to build" email was sent and before builds started, a well intentioned developer landed a change without approval in the wrong branch. RelEng included that unwanted change in the release builds. Thankfully, this mistake was caught before we shipped, but we did have to stop / rebuild everything. 
+
+<li> in a time-based VCS, like cvs, be fully explicit of the exact time to use. Give time down to seconds, and specify timezone. In one release, when Firefox was still based on cvs, the Release Coordinator specified the cutoff time to be used for the builds, but did not give the timezone. By the time RelEng noticed the missing timezone info, the Release Coordinator was asleep in his timezone. Release Engineering corrected guessed that the intent was local time (in California), but in a late-night mixup over PDT instead of PST, we ended up missing the last critical bugfix. This was caught by QA before we shipped, sp we had to stop builds and start over rebuilding using the correct cutoff time.
+</ul>
+
+
+<li>A clearly denoted sense of urgency.
+This sounds so obvious, you might be tempted to not bother including it. However, it is important when handling some important edge cases, so here is a quick summary:
+<ul>
+<li>Some releases are "routine", and can be worked on in normal working
+hours. They are a pre-scheduled release, they are on schedule, and there
+is no emergency. Of course, all release builds need to be created in a timely expedient manner, but there is no need for Release Engineers to pull all-nighters and burn out for a "routine" release. 
+<li>Some releases are "urgent", where minutes matter. In Mozilla we call
+these "chemspills". These are typically to fix a published security
+exploit, or fix a newly-introduced-top-crash problem, impacting a large
+percentage of our userbase. These need to be created as quickly as possible and are
+typically not pre-scheduled releases.
+<li>Some releases change from "routine" to "chemspill" or from "chemspill" to "routine". For example, if a security fix in a "routine" release was accidentally leaked, it is now a "chemspill" release. If a business requirement like a "special sneak preview" release needed for an upcoming conference announcement was suddenly delayed for business reasons, the release now changes from "chemspill" to "routine".
+<li>Some releases have different people each holding different opinions on whether the release is "normal" or "urgent", depending on their perspective on the fixes being shipped in the release. 
+</ul>
+It is the role of the Release Coordinator to balance all the opinions, and then communicate the urgency consistently across all groups. If urgency changes, the Release Coordinator reassesses, and then communicates the new urgency to all the same groups. Having some groups believe a release is "urgent", while other groups believe the release is "normal" can be very destructive to cross-group cohesion across an organization.
+</p>
+<p>
+</ol>
+Finally, these emails also became very useful to measure where time was spent during a release. While these are only accurate to wall-clock time resolution, this accuracy is really helpful when figuring out where next to focus our efforts on making things faster.  As the old adage goes, before you can improve something, first you have to be able to measure it.
+
+
+    <p>
+    </p>
+    <p>
+
       <div class="figure" id="fig.ffreleng.go_to_build" class="inline">
         <img src="../images/ffreleng/go_to_build.png" alt="Getting from code to a 'Go' to build" />
         <p>Figure&nbsp;6.1: Getting from code to a 'Go' to build</p>
