@@ -1,6 +1,201 @@
 \begin{aosachapter}{matplotlib}{s:matplotlib}{John Hunter and Michael Droettboom}
 
-Your chapter goes here---please look at /volume1/tex/en/wesnoth.tex for 
-formatting ideas.
+\begin{aosasect1}{Output backends}
+
+% [Write something about backends in general... - MGD]
+
+Over time, the drawing API of the output backends grew a large number
+of methods, including:
+
+\begin{verbatim}
+draw_arc, draw_image, draw_line_collection, draw_line, draw_lines, draw_point,
+draw_quad_mesh, draw_polygon_collection, draw_polygon, draw_rectangle,
+draw_regpoly_collection
+\end{verbatim}
+
+Unfortunately, having more backend methods meant it took much longer
+to write a new backend, and even maintaining the existing ones took
+considerable effort.  Adding a new feature, such as polygon
+collections, required adding support for it to each backend.  Since
+each of the backends was implemented by a single developer who was
+expert in the output file format, it sometimes took a long time for a
+new feature to arrive in all of the backends, causing confusion for
+the user about which features were available where.
+
+For matplotlib 0.98, the backends were refactored to require only the
+minimum necessary functionality in the backends themselves, with
+everything else moved into the core.  The number of required methods
+in the backend API was reduced considerably, to only:
+
+\begin{aosaitemize}
+
+  \item \code{draw\_path}: Draw compound polygons, with optional
+    B\'ezier segments
+
+  \item \code{draw\_image}: Draw raster images
+
+  \item \code{draw\_text}: Draw text with the given font properties
+
+  \item \code{get\_text\_width\_height\_descent}: Given a string of
+    text, return its metrics
+
+\end{aosaitemize}
+
+It is possible to implement all of the drawing necessary for a new
+backend using only these methods.  This is useful for getting a new
+backend up-and-running more easily.  However, in some cases, a backend
+may want to override the behavior of the core in order to create more
+efficient output.  For example, when drawing markers, it is more space
+efficient to write the marker's shape only once to the file, and then
+repeat it as a ``stamp'' everywhere it is used.  In that case, the
+backend can implement a \code{draw\_markers} method.  If it is
+implemented, the backend writes out the marker shape once as an
+``object'' and then writes out a much shorter command to reuse it in
+a number of locations.  If it is not implemented, the core simply
+draws the marker multiple times using multiple calls to
+\code{draw\_path}.
+
+The full list of optional backend API methods is:
+
+\begin{aosaitemize}
+
+  \item \code{draw\_markers}: Draw a set of markers
+
+  \item \code{draw\_path\_collection}: Draw a collection of paths
+
+  \item \code{draw\_quad\_mesh}: Draw a quadrilateral mesh
+
+\end{aosaitemize}
+
+\end{aosasect1}
+
+\begin{aosasect1}{Transforms}
+An important part of the work that matplotlib does when plotting is in
+transforming from one coordinate system to another.  Every artist has
+a transformation node that knows how to transform its logical
+coordinates (generally the coordinates the user provided) to output
+coordinates on the figure.  These transformation nodes are connected
+together in a tree, where each node is dependent on its parent.  When
+a parent's transformation changes, such as when a figure window is
+resized, the children are all invalidated and the location of any
+artists using those nodes must be recomputed.  This invalidation
+approach prevents unnecessary recomputations of the entire artist tree
+and contributes to better interactive performance.
+
+Transform nodes may be either simple affine transformations (scale,
+translation, rotation and skew) or non-affine transformations.
+Two-dimensional affine transformations are represented using a $3
+\times 3$ affine transformation matrix.  2D dimensional coordinates can
+then easily be transformed by simply multiplying them by the
+transformation matrix.  Affine transformations also have the useful
+property that they can be composed together using matrix
+multiplication.  This means that to perform a series of affine
+transformations, the transformation matrices can first be multiplied
+together only once, and the resulting matrix can be used to transform
+coordinates.  matplotlib's transformation framework automatically
+composes (freezes) affine transformation matrices together before
+transforming coordinates to reduce the amount of computation.
+
+The non-affine transformations in matplotlib are defined using Python
+functions, so they are truly arbitrary.  Within the matplotlib core,
+non-affine transformations are used for logarithmic scaling [EXAMPLE],
+polar plots [EXAMPLE] and geographical projections (Mercator etc.).
+These non-affine transformations can be freely mixed with affine ones
+in the transformation tree.  matplotlib will automatically simplify
+the affine portion and only fall back to the arbitrary functions for
+the non-affine portion.
+
+% Show an example transformation tree and how parts of it may get
+% invalidated
+
+\end{aosasect1}
+
+\begin{aosasect1}{The polyline pipeline}
+
+When plotting line plots, there are a number of steps that are
+performed to get from the raw data to the line drawn on screen.  In an
+earlier version of matplotlib, all of these steps were tangled
+together.  These have since been refactored so they are discrete steps
+in a ``path conversion'' pipeline.  This allows each backend to choose
+which parts of the pipeline to perform, since some are only relevant
+for certain backends.
+
+\begin{aosaenumerate}
+
+\item \textbf{Transformation:} The coordinates are transformed from data
+  coordinates to figure coordinates.  If this is a purely affine
+  transformation, as described above, this is as simple as a matrix
+  multiplication.  If this involves arbitrary transformations,
+  transformation functions are called to transform the coordinates
+  into figure space.
+
+\item \textbf{Handle missing data:} The data array may have portions
+  where the data is missing or invalid.  The user may indicate this
+  either by setting those values to NaN, or using Numpy masked arrays.
+  Vector output formats, such as PDF, do not have a concept of missing
+  data when plotting a polyline, so this step of the pipeline must
+  skip over the missing data segments using MOVETO commands.
+
+\item \textbf{Clipping:} Points outside of the boundaries of the
+  figure can increase the file size with invisible points, and, more
+  importantly, very large or very small coordinate values can cause
+  overflow errors in the rendering of the output file, resulting in
+  completely garbled output.  This step of the pipeline clips the
+  polyline as it exits and enters the edges of the figure to prevent
+  both of these problems.
+
+\item \textbf{Snapping:} Perfectly vertical and horizontal lines can
+  look fuzzy due to antialiasing when their centers are not aligned to
+  the center of a pixel.  The snapping step of the pipeline first
+  determines whether the entire polyline is made up of horizontal and
+  vertical segments (such as an axis-aligned rectangle), and if so,
+  rounds each resulting vertex to the nearest pixel center.  This step
+  is only produced for raster backends, since vector backends should
+  continue to have exact data points.  Some renderers of vector file
+  formats, such as Adobe Acrobat, perform pixel snapping when viewed
+  on screen.
+
+\item \textbf{Simplification:} When plotting really dense plots, many
+  of the points on the line may not actually be visible.  Including
+  these points in the plot increases file size, and may hit limits on
+  the number of points allowed in the file format.  Therefore, any
+  points that lie exactly on the line between their two neighboring
+  points are removed.
+
+\end{aosaenumerate}
+
+% TODO: Provide an example for each of the above
+
+\end{aosasect1}
+
+\begin{aosasect1}{Math text}
+
+It is often very useful to put richly-formatted math expressions
+directly on the plot.  Perhaps the most widely-used syntax for math
+expressions is from Donald Knuth's \TeX\ typesetting system.  It's a
+way to turn input like this:
+\begin{verbatim}
+\sqrt{\frac{\delta x}{\delta y}}
+\end{verbatim}
+into this:
+\begin{math}
+\sqrt{\frac{\delta x}{\delta y}}
+\end{math}
+
+matplotlib provides two ways to render math expressions.  The first,
+usetex, uses a full copy of \TeX\ on the user's machine to render the
+math expression and then inserts it into the plot.  However, the user
+may not always have a full working installation of \TeX\, so
+matplotlib also includes its own internal math rendering engine,
+called mathtext.
+
+mathtext is a direct port of the most important subset of the
+\TeX\ math-rendering engine, glued onto a much simpler parser written
+using the pyparsing (CITE) parsing framework.  This port was written
+based on the published copy of the \TeX\ source code (CITE).  The
+simple parser builds up a tree of boxes and glue (in
+\TeX\ nomenclature), that are then layed out by the layout engine.
+
+\end{aosasect1}
 
 \end{aosachapter}
