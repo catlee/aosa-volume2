@@ -3,25 +3,31 @@
   <head>
     <style type="text/css">
       div.inline { float:left; }
+      code.class-name {
+        display: block;
+        background: #ccc;
+        border: 1px dotted #000;
+        width: 100%;
+        overflow: auto;
+      }
     </style>
     <meta name="provenance" content="$Id$" />
     <link rel="stylesheet" href="aosa.css" type="text/css" />
     <title>The Architecture of Open Source Applications, Volume 2: Firefox Release Engineering</title>
   </head>
   <body>
-
     <div class="header">
       <table>
-	<tr>
-	  <td>
-	    <a href="index.html"><img src="../images/titlebar.jpg" alt="The Architecture of Open Source Applications, Volume 2" /></a>
-	  </td>
-	  <td>
-	    <strong><em>The Architecture of Open Source Applications, Volume 2</em></strong>
-	    <br/>
-	    <strong>Amy Brown and Greg Wilson (eds.)</strong>
-	  </td>
-	</tr>
+    <tr>
+      <td>
+        <a href="index.html"><img src="../images/titlebar.jpg" alt="The Architecture of Open Source Applications, Volume 2" /></a>
+      </td>
+      <td>
+        <strong><em>The Architecture of Open Source Applications, Volume 2</em></strong>
+        <br/>
+        <strong>Amy Brown and Greg Wilson (eds.)</strong>
+      </td>
+    </tr>
       </table>
       <h1 class="chaptitle">Firefox Release Engineering</h1>
       <h1 class="chapterauthor">
@@ -31,25 +37,20 @@
         <a href="intro.html#zambrano-gasparnian-armen">Armen Zambrano Gasparnian</a>
       </h1>
     </div>
-
 <!-- FORMATTING -->
 <!-- Sections go into divs
 <div class="sect"></div>
 -->
-
 <!-- Headers are level 2 with the following format:
 <h2>{Chapter#}.{Section#} {Section Title}</h2>
 -->
-
 <!-- Then mostly normal markup for paragraphs
 <p>Lorem Ipsum...</p>
 -->
-
 <!-- Example of how to incorporate a diagram
 <div class="figure" id="fig.ffreleng.arch">
   <img src="../images/ffreleng/diagram.png" alt="[Image Title]" />
   <p>Figure&nbsp;{Chapter#}.{Section#}: {Image Title}</p>
-
 </div>
 -->
     <!-- Introduction does not need a section div -->
@@ -58,22 +59,20 @@
     recently in how our release automation works and it's getting to
     be quite close to pushing a button, with minimal human
     interventions, eliminating many of the headaches and do-overs
-    often resulting with the old ways. In this chapter we will explore
+    that often resulted with our older, more manual processes. In this chapter we will explore
     and explain the infrastructure decisions as well as scripts that
     comprise the complete, and current, Firefox rapid release system.
     </p>
-
     <p>
     You'll see the system from the perspective of a release-worthy
-    changeset in the mozilla-beta repository as it is turned into a
-    release candidate, and then a public release. Accompanied by
-    diagrams, we'll start with builds &amp; signing, then on to how we
-    generate update snippets for every supported version and OS out in
-    the wild, finally stopping for loads of verification automation as
-    well as manual QA before being pushed out to a network of mirrors
-    for availability to our users.
+    changeset as it is turned into a release candidate, and then a
+    public release. Accompanied by diagrams, we'll start with builds
+    &amp; signing, then on to how we generate updates for every
+    supported version, platform and localization, stopping for
+    verification using automated QA tools as well as manual testing
+    before being pushed out to a network of mirrors that provide the
+    downloads to our users.
     </p>
-
     <p>
     We'll look at some of the newer decisions that have been made to improve
     this process like our sanity-checking script that helps eliminate much
@@ -82,27 +81,212 @@
     stream, and the land of patcher/AUS where updates are created and served
     to our over 400 million users across multiple versions of the software.
     </p>
-
+    
+    <!-- XXX TODO: talk about integration of mobile release -->
+    
+    <!-- XXX Delete this? -->
     <p>
     We'll show how the new rapid release process metrics and talk
     about how we've generalized much of the configuration we use to be
     able to maintain only one Mercurial repository for all our release
     code.
     </p>
-
     <p>
     Come along for a wild ride and follow a Mozilla Firefox release
     from the moment the release coordinator gives the official "Go" to
     when it's available for download (or update) to your computer or
     mobile device.
     </p>
-
-    <!-- XXX diagram of builds and their dependencies, along with
-    times? something like a gantt chart ? XXX -->
-
+    <p>
+    This chapter is about the mechanics of how we generate the release
+    builds for the Firefox product. Most of this chapter details the
+    complexity once the release builds start, but its worth noting that
+    there is also plenty of complex cross-group communications to deal
+    with before Release Engineering even starts to generate release
+    builds, so lets start there.
+    </p>
+      <div class="figure" id="fig.ffreleng.timeline" class="inline">
+        <img src="../images/ffreleng/timeline.png" alt="Complete Release Timeline" />
+        <p>Figure&nbsp;6.0: Complete Release Timeline</p>
+      </div>
+    <p>
+    When we started on the project to improve Mozilla's release
+    process, we started with the premise that the more popular Firefox
+    became, the more users we would have, the more attractive a target
+    Firefox would become, and hence the more often we would need to
+    quickly protect our users with a quick Firefox release fixing a
+    security exploit. We even have a term for this - a "chemspill"
+    release. Instead of being surprised by the occasional need for a
+    chemspill release in between our regularly scheduled releases, we
+    decided to plan as if every release could be a chemspill release,
+    and designed our release automation accordingly.
+    </p>
+    <p>
+    This mindset had three important consequences:
+    <ol><li>We do a postmortem after <b>every</b> release, and look to
+      see where things could be made smoother, easier, faster next
+      time. This constant polishing of our release automation
+      ("kaizen") has us always looking for ways to speed things up,
+      safely, with less human involvement. Even when we're already
+      fast enough for regular, non-chemspill releases, we understand
+      the value of each enhancement to our release automation if it
+      will speed up a release, make the process more robust, or reduce
+      the risk of any human error in a release.</li>
+    <li>This mindset means that when we do have a chemspill release,
+    the humans in Release Engineering are not stressed by it. We're
+    used to the idea of going as fast as possible with calm precision.
+    Less stress means more calm precise work, which helps chemspill
+    releases go smoothly.</li>
+    <li>We setup a "go to build" process. When it is not a chemspill
+    release, its possible to have everyone looking through the same
+    bug triage queries, have everyone see clearly when the last fix
+    was landed, and tested just fine, and have consensus on when to
+    start builds. However, in a chemspill release, where minutes
+    matter, keeping track of all the details of the issue, following
+    up bug confirmations and fixes, gets very tricky very quickly.  To
+    reduce complexity, and risk of mistakes, Mozilla now has one
+    full-time person, explicitly not in Release Engineering, track the
+    readiness of the release to "go to build".  Changing process
+    during a chemspill is risky, so in order to make sure everyone is
+    familiar with the process when minutes matter, we use this same
+    process for "chemspill" and "regular" releases.</li>
+  </ol>
+    </p>
     <!-- Rough outline of sections -->
     <div class="sect">
       <h2>6.1 "Go to Build"</h2>
+    </p>
+
+<h3>Who can send the "go to build"?</h3>
+
+    <p>Before the start of the release, Mozilla identifies one person
+    who will assume this responsibility for the entire release. It is
+    worth noting that this person is not in Release Engineering. This
+    person needs to be someone that everyone trusts to attend triage
+    meetings, have background context on all the work being landed, be
+    able to referee bug severity disputes fairly, prioritize work by
+    reviewing what competing companies are doing, and of course,
+    coordinate with the different release day groups (websites, PR,
+    marketing, developers, QA, Release Engineering, ...). Different
+    companies use different titles for this type of role: Release
+    Manager, Release Engineer (!), Program Manager, Project Manager,
+    Product Czar, Release Driver... Personally, I prefer the term
+    "Release Coordinator", but the important point is that the role is
+    clearly understood by everyone, regardless of their background, or
+    previous work experiences elsewhere.
+    </p>
+    <p>
+    In the days leading up to the "go to build", Release Engineering
+    reminds everyone that we will explicitly ignore everyone else, and
+    ONLY listen to the Release Coordinator for a "go to build". 
+    </p>
+    <p>
+    This Release Coordinator is also the only person who is authorized
+    to send "stop builds" if a showstopper problem is discovered with
+    the release. Any reports of "suspected showstopper problems" are
+    redirected to the Release Coordinator, who will evaluate, make the
+    final go/nogo decision and communicate that decision to everyone
+    in a timely manner.
+    </p>
+    <p>
+    (an interesting side effect is that questions like "when will
+    builds be ready", "will we release by 5pm", etc are redirected
+    from Release Engineering to the Release Coordinator. This leaves
+    the Release Engineer with more quiet time to focus on getting the
+    release builds generated accurately.)
+    </p>
+
+<h3>How to send the "go to build"?</h3>
+
+    <p>
+    Early experiments with sending "go to build" by irc, or verbally
+    by phone calls all had misunderstandings at some point, causing
+    problems wit the release in progress. Therefore, we now require
+    the "go to build" signal is done by email to an explicit mailing
+    list that includes everyone across all groups in the company that
+    care about upcoming releases. The subject of the email includes
+    "go to build" and the explicit product name and version number,
+    for example:
+    "go to build Firefox 6.0.1"
+    </p>
+    <p>
+    If an "all stop" email is needed, the Release Coordinator will
+    send a new email to the same mailing list, with a new subject
+    line. We found that it was not ok to just hit reply on the
+    most-recent email about the release - email threading of some
+    email clients caused some people to not notice the "all stop"
+    email if it was way down a long unrelated thread.
+    </p>
+
+
+<h3>What is in the "go to build" email?</h3>
+<ol>
+<li> The exact code to be built from. Ideally give the url to the
+explicit change in your source code repo that the release builds are
+to be created from.
+<ul>
+<li>Comments like "use the latest code" are never ok: In one release,
+after the "go to build" email was sent and before builds started, a
+well intentioned developer landed a change without approval in the
+wrong branch. RelEng included that unwanted change in the release
+builds. Thankfully, this mistake was caught before we shipped, but we
+did have to stop / rebuild everything. 
+
+<li> in a time-based VCS, like cvs, be fully explicit of the exact
+time to use. Give time down to seconds, and specify timezone. In one
+release, when Firefox was still based on cvs, the Release Coordinator
+specified the cutoff time to be used for the builds, but did not give
+the timezone. By the time RelEng noticed the missing timezone info,
+the Release Coordinator was asleep in his timezone. Release
+Engineering corrected guessed that the intent was local time (in
+California), but in a late-night mixup over PDT instead of PST, we
+ended up missing the last critical bugfix. This was caught by QA
+before we shipped, so we had to stop builds and start over rebuilding
+using the correct cutoff time.
+</ul>
+
+
+<li>A clearly denoted sense of urgency.  This sounds so obvious, you
+might be tempted to not bother including it. However, it is important
+when handling some important edge cases, so here is a quick summary:
+<ul> <li>Some releases are "routine", and can be worked on in normal
+  working hours. They are a pre-scheduled release, they are on
+  schedule, and there is no emergency. Of course, all release builds
+  need to be created in a timely expedient manner, but there is no
+  need for Release Engineers to pull all-nighters and burn out for a
+  "routine" release.  <li>Some releases are "urgent", where minutes
+  matter. In Mozilla we call these "chemspills". These are typically
+  to fix a published security exploit, or fix a
+  newly-introduced-top-crash problem, impacting a large percentage of
+  our userbase. These need to be created as quickly as possible and
+  are typically not pre-scheduled releases.  <li>Some releases change
+  from "routine" to "chemspill" or from "chemspill" to "routine". For
+  example, if a security fix in a "routine" release was accidentally
+  leaked, it is now a "chemspill" release. If a business requirement
+  like a "special sneak preview" release needed for an upcoming
+  conference announcement was suddenly delayed for business reasons,
+  the release now changes from "chemspill" to "routine".  <li>Some
+  releases have different people each holding different opinions on
+  whether the release is "normal" or "urgent", depending on their
+  perspective on the fixes being shipped in the release.  </ul> It is
+the role of the Release Coordinator to balance all the opinions, and
+then communicate the urgency consistently across all groups. If
+urgency changes, the Release Coordinator reassesses, and then
+communicates the new urgency to all the same groups. Having some
+groups believe a release is "urgent", while other groups believe the
+release is "normal" can be very destructive to cross-group cohesion
+across an organization.  </p> <p> </ol> Finally, these emails also
+became very useful to measure where time was spent during a release.
+While these are only accurate to wall-clock time resolution, this
+accuracy is really helpful when figuring out where next to focus our
+efforts on making things faster.  As the old adage goes, before you
+can improve something, first you have to be able to measure it.
+
+
+    <p>
+    </p>
+    <p>
+
       <div class="figure" id="fig.ffreleng.go_to_build" class="inline">
         <img src="../images/ffreleng/go_to_build.png" alt="Getting from code to a 'Go' to build" />
         <p>Figure&nbsp;6.1: Getting from code to a 'Go' to build</p>
@@ -115,16 +299,15 @@
       full release automation and is treated almost identically to our
       regular final releases.
       </p>
-
       <p>
       For each beta release, we're looking to see if bugs or crashes
       we've fixed internally fix the problems for users.
       </p>
-
       go/no-go decision
       </p>
+      <!-- XXX Define release driver(s) XXX -->
+      <!-- XXX leave this to John O'Duinn -->
     </div>
-
     <div class="sect">
       <h2>6.2 Tagging, Building, and Source Tarballs</h2>
       <div class="figure" id="fig.ffreleng.tagging">
@@ -137,8 +320,8 @@
         of the source, locales, and related tools was used for the
         release. A single Firefox release uses code from a half dozen
         version control repositories that host things such as the
-        product code , localization data, release automation code, and
-        helper utilities. Tagging all these repositories is therefore
+        product code, localization strings, release automation code, and
+        helper utilities. Tagging all these repositories is, therefore,
         critical to ensure that future steps of the release automation
         are all using a consistent set of revisions. It also has a
         number of other benefits: Linux distributions and other
@@ -149,25 +332,21 @@
         Firefox releases we use tag names such as
         FIREFOX_6_0_2_RELEASE.
         </p>
+        <p>TODO: source tarballs</p>
         <p>
         <!--
-
         XXX
-
         relbranches actually aren't that useful since we've
         moved to rapid release. version bumping is usually done by the
         aurora -> beta merge, and chemspills are done on the default
         branch in the release repo.
-
         That said, do we need to go into detail about relbranches?
-
         - catlee
-
         XXX
         -->
         For the main Firefox source repository, the first thing we
         actually do is to create a release branch (relbranch) based
-        from the signed-off revision given by the release driver.
+        on the signed-off revision given by the release driver.
         This release branch is implemented as an in-repository named
         branch whose parent changeset is the signed-off revision. The
         release branch is used to make release-specific modifications
@@ -177,24 +356,20 @@
         that requires an immediate fix (a "chemspill" situation), the
         minimal set of changes to address the vulnerability will be
         landed on this relbranch and a new version of Firefox
-        released.
-        </p>
-        <p>
-        how we handle buildN
+        released. When we have to do another round of builds for a particular release, buildN,  we use relbranches to be able to skip re-tagging.
         </p>
         <p>
         Our tagging process does a <em>lot</em> of operations with
         local and remote mercurial (hg) repositories. To factor out
         some of the most common operations we've written a few tools
-        to assist us: hgtool.py and retry.py.
+        to assist us: <em>hgtool.py</em> and <em>retry.py</em>.
         </p>
-
         <p>
-        retry.py is a simple wrapper that can take a given command and
+        <em>retry.py</em> is a simple wrapper that can take a given command and
         run it, retrying several times if it fails. It can also watch
         for exceptional output conditions and retry or report failure
         in those cases. We've found it useful to wrap retry.py around
-        most of the commands which can fail due to external resources.
+        most of the commands which can fail due to external dependencies.
         For tagging, the hg operations could fail due to temporary
         network outages, web server issues, or the backend hg server
         being temporarily overloaded. Being able to automatically
@@ -202,11 +377,10 @@
         time, since we don't have to manually recover and get the
         release automation running again.
         </p>
-
         <p>
-        hgtool.py is a utility that encapsulates several common
-        mercurial operations, like cloning/pulling/updating into a
-        single invocation. It also adds support for mercurial's share
+        <em>hgtool.py</em> is a utility that encapsulates several common
+        hg operations, like cloning/pulling/updating with a
+        single invocation. It also adds support for hg's share
         extension, which we use extensively to avoid having to have
         several full clones of repositories in different directories
         on the same machine. Adding support for shared local
@@ -214,7 +388,6 @@
         since most full clones of the product and locale repositories
         could be avoided.
         </p>
-
         <p>
         An important consideration for factoring out tools like these
         is to make our automation as testable as possible. Because
@@ -232,33 +405,119 @@
         product code repository is tagged without having to wait for
         all the locale repositories to be tagged. By the time these builds
         are finished, the rest of the repositories will have been
-        tagged so that l10n repacks and future steps can be completed.
+        tagged so that localization repackages and future steps can be completed.
         We estimate this can reduce the total time to have builds
-        ready by 15 minutes. <!-- XXX check this XXX -->
+        ready by 15 minutes.
         </p>
     </div>
-
     <div class="sect">
       <h2>6.3 Repacks and L10N</h2>
+      <!--- XXX Armen: add a partner repacks explanation. Either as a subsection or separate section -->
       <div class="figure" id="fig.ffreleng.repacks_l10n">
         <img src="../images/ffreleng/repacks_l10n.png" alt="Repacking Firefox for each localization" />
         <p>Figure&nbsp;6.3: Repacking Firefox for each localization</p>
       </div>
-        <p>Explain the process here of how we currently get our locale changesets, why they are in two different formats, and how the repacking code works.</p>
+        <p>Once the desktop builds are generated and uploaded to FTP, our
+        automation triggers the localization repack jobs. This consists of a
+        handful of jobs that take the original build (using the en-US locale), unpacking it and
+        stuffing in the strings for each locale that we are shipping for this release. Each job takes a
+        handful of locales. This approach allows us to parallelize the jobs
+        across many machines.
+        </p>
+        <p>
+        The process for mobile (Android) is slightly different as we produce
+        only two installers: an English version and a multi-language version with just a dozen
+        of languages built into the installer instead of a build per language. In the future, other languages will
+        be requested on demand as addons from addons.mozilla.org.
+        </p>
+        <p>
+        In Figure 6.3 you can see that we currently rely on three different sources for our
+        locale information. There is a plan to move all three into a unified json file.
+        </p>
+        TODO: explain how these 3 files are being used. Even the exceptions from shipped-locales like ja mac one.
+        TODO: remove tests from diagrams, show mobile builds
+        TODO: add shipped locales
+        TODO: update 4 desktop, 80+locales for desktop, 
+        TODO: show parallelization
+        <p>
+        Who decides which languages we ship? First of all, localizers
+        themselve nominate their specific changeset for a given
+        release. The nominated changeset gets reviewed by Mozilla's 
+        localization team and shows up in a web dashboard that lists
+        the changesets needed for each language. On the day of a
+        release we retrieve this list of changesets and we
+        repackage them accordingly.
+        </p>
     </div>
-
     <div class="sect">
       <h2>6.4 Signing</h2>
       <div class="figure" id="fig.ffreleng.signing">
         <img src="../images/ffreleng/signing.png" alt="Signing Firefox installers" />
         <p>Figure&nbsp;6.4: Signing of Firefox installers, partially automated</p>
       </div>
-      <p></p>
+      <p>
+      <!-- XXX TODO more detail about what is signing, what it used to involve and how we shifted the process to be more embedded in automation XXX -->
+      In the not so distant past, the signing process was long, and involved a significant break from the release automation. Originally we automated everything up to the signing then after a while we added an FTPPoller to our buildbot change sources that watched for a win32_signing.log file to become available in the release candidates directory.  This signified the end of human signing (uploaded along with the signed bits) so we were able to continue automation from that point on by attaching dependent builders to that change.  Recently though, an additional wrapper of automation allows us to start an automated signing process on our keymaster with minimal human contact and once that has been enabled the release engineer can go on about other work without having to check in on signing while a simple set makefile targets does the heavy lifting.
+      </p>
+      <p>
+      At some point after the release's builds are underway, the release engineer will log on to our keymaster, set up a few variables in a Cygwin shell pertaining to the release such as VERSION, BUILD, TAG, and a few other items needed by the makefile and then after checking out the most recent version of our signing tools they simply do a 'make autosign' call to start a download loop that trolls our FTP candidates directory for the complete set of deliverables for a release.  They will need to enter 2 passphrases, gpg and signcode. This includes builds & localized repacks for each platform, the source tarball, and any partner-repacks for a release. Once the last item has showed up (all items progressively downloaded as available) signing can start right away. We use signcode.exe for the win32 bits and then do gpg signatures on the other platforms, all signed bits have an MD5SUM and SHA1SUM written to files of the same name. When all signed bits are available and verified (we do a quick and more in-depth verification process) they are uploaded back to FTP along with the signing log file that the automation is waiting for to proceed.
+      </p>
+      <h3>make autosign targets</h3>
+      <dl>
+        <dt>df</dt>
+            <dd>Checks that enough disk space is available for signing - a Firefox release needs ~30 GB free</dd>
+        <dt>verify-gpg-passphrase</dt>
+            <dd>Compares the gpg passphrase entered by the release engineer to the one on disk to ensure they match</dd>
+        <dt>verify-signcode-passphrase</dt>
+            <dd>Compares the signcode passphrase entered by the release engineer to the one on disk to ensure they match</dd>
+        <dt>setup</dt>
+            <dd>Pull/copy the required tools: 7-Zip, mar.exe, upx, pgp-keys, signing scripts</dd>
+        <dt>stubs</dt>
+            <dd>Additional 7-Zip tools (from cvs or hg depending on release version)</dd>
+        <dt>download-loop</dt>
+            <dd>Periodically checks the candidates directory for deliverables until all the bits for the release have been located and downloaded. It uses the release configs to determine the complete set of deliverables</dd>
+        <dt>verify-download</dt>
+            <dd>Confirms that all deliverables have been downloaded to an unsigned directory on the signing machine</dd>
+        <dt>sign</dt>
+            <dd>Runs sub-targets: sign-files checksum-files create-sigs verify-sigs quick-verify. This step generates the signatures, also the sums for MD5SUM and SHA1SUM files and does a quick-verify on a trimmed down list with a locale selected at random</dd>
+        <dt>stage</dt>
+            <dd>Runs sub-targets: create-contrib fix-permissions.  We have to generate a couple of directories for community releases (solaris & spark) and also make sure the files are owned by the right account prior to uploading back to FTP</dd>
+        <dt>verify</dt>
+            <dd>Runs sub-targets: verify-signatures verify-win32 verify-asc.  Verifies that installer signing is valid and can be traced back to a valid root certificate for all the win32 locales, ensures that every exe and mar in the signed-build directory differs from its unsigned counterpart, and finally makes sure we have asc files for every build in the signed dir</dd>
+        <dt>postsign</dt>
+            <dd>Runs sub-targets: upload upload-log verify-signatures2. Uploads the signed bits to FTP, the signing log, and then does one more in-depth signature verification comparing the full list of unsigned locales to their signed counterparts to make sure they are different</dd>
+      </dl>
+      <p>
+      <!-- XXX add a paragraph here about the plans for sign-on-demand XXX -->
+      </p>
     </div>
-
     <div class="sect">
       <h2>6.5 Updates</h2>
-      <p></p>
+      <p>
+      We generate a LOT of updates.  Every platform, every locale, every installer from Firefox N -> Firefox NOW in both complete and partial forms.  Depending on the version, our updates can go back as far as 4 or 5 versions, include dot releases from security fixes, and sometimes even betas. Our automation bumps our update configuration files on each run to maintain our list of what versions, platforms, and locales need to have updates generated to be able to offer our users the newest release. We offer updates as 'snippets' which you'll see an example of below, simply an xml pointer file hosted on our AUS (Automated Update Server) that informs the user's Firefox of where complete and/or partial .mar (Mozilla Archive) files are hosted.
+      </p>
+      <h4>Major vs. Minor</h4>
+      <p>
+      As you'll see in the snippet sample below, we have a type setting for updates. Most updates fall into the "minor" category which means that, for the user, the downloading of the partial update package (though sometimes it's the complete when that is the only update available for a particular version/platform) happens quietly in the background and when it's ready to be applied the user is informed of this and given the option to apply & restart.  Minor updates are used to keep people up to date within their channel: beta releases update to the next beta release, nightlies to the following night's build.  Major updates have been used when we needed to advertise to our users that the latest & greatest release was available and to prompt the user letting them know "A new version of Firefox is available, would you like to update?". With our new rapid-release versions, we no longer need to do as many major updates. We'll do them only occasionally when we are hoping to pull more users up from supported versions that are prior to the rapid-release process.
+      </p>
+      <h4>Sample Update Snippet</h4>
+      <code class="class-name">
+      &lt;updates&gt;<br />
+      &nbsp;&lt;update type="minor"  version="7.0.1" extensionVersion="7.0.1" buildID="20110928134238" detailsURL="https://www.mozilla.com/en-US/firefox/7.0.1/releasenotes/"&gt;<br />
+      &nbsp;&nbsp;&lt;patch type="complete" URL="http://download.mozilla.org/?product=firefox-7.0.1-complete&os=osx&lang=en-US&force=1" hashFunction="SHA512" hashValue="7ecdbc110468b9b4627299794d793874436353dc36c80151550b08830f9d8c5afd7940c51df9270d54e11fd99806f41368c0f88721fa17e01ea959144f473f9d" size="28680122"/&gt;<br />
+      &nbsp;&nbsp;&lt;patch type="partial" URL="http://download.mozilla.org/?product=firefox-7.0.1-partial-6.0.2&os=osx&lang=en-US&force=1" hashFunction="SHA512" hashValue="e9bb49bee862c7a8000de6508d006edf29778b5dbede4deaf3cfa05c22521fc775da126f5057621960d327615b5186b27d75a378b00981394716e93fc5cca11a" size="10469801"/&gt;<br />
+      &nbsp;&lt;/update&gt;<br />
+      &lt;/updates&gt;
+      </code>
+      <h4>What's in an update?</h4>
+      <p>
+      <!-- XXX TODO - more clarity on what complete is comp. to standalone (not an installer, no channel prefs) -- we do complete updates so we can auto-update instead of pointing to new installers -- we strip out prefs.js to keep people in the auto-update streams on the right channels  XXX -->
+      At build time we generate complete mars which contain all the bits for the new version compressed with bz2 and then archived in a mar file. Complete mars are applied using our updater binary and the main difference between a complete update and a standalone version is the lack of a <em>defaults/prefs/channel-prefs.js</em> file which sets the update channel the application reads from. Partial mars are created by doing a binary diff of the old version's complete mar to the new version's and creating a mar containing the diff along with a manifest. As you can see in the sample snippet above, this results in a much smaller file size. In older versions of our update automation the generation of partial updates could take 6-7 hours as each locale, for each platform had the complete mars downloaded, diffed, then packed up for a partial update.  Eventually it was discovered that even across platforms, very few components actually had changes and with a script that started to cache the hashes for diffs our partial update creation time was brought down to ~40 minutes. After the snippets have been uploaded and are hosted on AUS, an update verification step is run to a) test downloading the snippets and b) run the updater with the snippet to confirm that it applies correctly.
+      </p>
+      <p>
+      <!-- XXX TODO: add a section for future improvements, doing update generation as part of build & repack, not having to deal with snippets anymore - what's balrog?  (aka AUS 3) it eats snippet for breakfast.   
+      -->
+      </p>
     </div>
     
     <div class="sect">
@@ -277,14 +536,12 @@
       users would be able to update from the previous release to the current
       one. 
       </p>
-
       <p>We also push the binaries to our internal mirrors to help us
       handle the load of users requesting their updates rather than
       reaching ftp directly. In the case of betas this is around
       of one million users. Notice that users don't get the updates until
       QA has signed them off and we get the request to push them live.
       </p>
-
       <p>
       The validation process after builds and updates are generated is:
       <ol>
@@ -303,12 +560,42 @@ updates.</li>
       following section.
       </p>
     </div>
-
     <div class="sect">
       <h2>6.7 AUS and Pushing Public</h2>
-      <p></p>
+      <p>
+      Pushing this latest Firefox release public is then pretty
+      straightforward. The release driver gives the go ahead to have
+      the files pushed to our community mirror network. We rely on our
+      community mirrors to be able to handle a few hundred million
+      users downloading updates over the next few days. All the
+      installers, complete and partial updates for all platforms and
+      locales are already on our internal mirror network at this
+      point. Publishing the files to our external mirrors involves
+      changes to an rsync exclude file for the public mirrors module.
+      Once this change is made, the mirrors will start to synchronize
+      the new release files. Each mirror has a score or weighting
+      associated with it, and we monitor which mirrors have
+      synchronized the files and sum their individual scores to
+      compute a total "uptake" score. Once a certain uptake is
+      reached, we notify the release driver that the mirrors have
+      enough uptake to handle the release.
+      </p>
+      <p>
+      This is the point at which the release becomes "official". The
+      release driver sends the final "go", and we update some symlinks
+      on the web server so that visitors to our web and ftp sites can
+      find the latest version. We also publish all the update snippets
+      for past versions of Firefox to our AUS (automated update
+      service) system. Firefox on users' machines regularly checks the
+      AUS servers to see if there's an updated version of Firefox
+      available for them. Once we publish these update snippets, users
+      are able to automatically update Firefox on their machines to
+      the latest version.
+      </p>
+      <p>
+      Bouncer
+      </p>
     </div>
-
     <div class="sect">
       <h2>6.8 Murphy's Law</h2>
       <p>One thing you learn when trying to coordinate work across
@@ -322,7 +609,6 @@ updates.</li>
       yay!)
       </p>
     </div>
-
     <div class="sect">
       <h2>6.9 Chemspills - Turning it up to 11</h2>
       <p>The internet can be a dangerous place. There are people
@@ -337,7 +623,6 @@ updates.</li>
       resilient to failure. Every minute counts.
       </p>
     </div>
-
     <div class="sect">
       <h2>6.10 Working in the open</h2>
       <p>
@@ -357,7 +642,6 @@ updates.</li>
         release.</li>
       </ul>
     </div>
-
     <div class="footer">
     </div>
   </body>
