@@ -20,6 +20,7 @@ study the program's behavior closely, hopefully in enough detail to
 find the bugs and figure out how to fix them.  The most common usage
 looks something like this:
 
+\begin{verbatim}
 % gdb myprog
 [...]
 (gdb) break buggy_function
@@ -29,6 +30,7 @@ Stopped at buggy_function
 (gdb) print variable_that_should_be_positive
 $$1 = -34
 (gdb)
+\end{verbatim}
 
 So GDB shows something that is not right, and then it is up to the developer
 to figure out why.
