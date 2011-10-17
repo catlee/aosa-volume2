@@ -6,7 +6,7 @@ CHAPTERS = \
 	dbevol \
 	diaspora \
 	distsys \
-	erlang \ 
+	erlang \
 	ffreleng \
 	freertos \
 	gdb \
