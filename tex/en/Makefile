@@ -3,7 +3,6 @@ BIBTEX = bibtex
 
 CHAPTERS = \
 	intro \
-	aderby \
 	gdb \
 	ghc \
 	gpsd \
@@ -11,7 +10,6 @@ CHAPTERS = \
 	ironlang \
 	itk \
 	jquery \
-	k9mail \
 	mailman \
 	openmpi \
 	parrot \
