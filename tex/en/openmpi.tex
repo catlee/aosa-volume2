@@ -1,5 +1,348 @@
-\begin{aosachapter}{Open MPI}{s:openmpi}{Jeff Squyres}
+\begin{aosachapter}{Open MPI}{s:openmpi}{Jeffrey M.\ Squyres}
 
-Your chapter goes here---please look at wesnoth.tex for formatting ideas.
+%\begin{aosasect1}{Section Title}
+%\begin{aosasect2}{Subsection Title}
+%\end{aosasect2}
+%\end{aosasect1}
+
+%\aosafigure{../images/wesnoth/architecture.eps}{Program Architecture}{fig.wes.arch}
+
+%\begin{aosaitemize}
+%\end{aosaitemize}
+
+%\begin{aosabox}{Another Network}
+%\end{aosabox}
+
+\begin{aosasect1}{Background}
+
+%\begin{aosaitemize}
+%\item MPI is a high-abstraction IPC mechanism
+%\item Standardized by the MPI Forum
+%\item Used in high-performance computing
+%\item High performance and low resource utilization are king and queen
+%\item No concept of connections -- just ``send to 17''
+%\item Discrete, typed messages
+%\item Point to point, collective, ...others
+%\item Several different implementations: vendor-provided, several open
+%  source implementations.  Open MPI combined several of the open
+%  source implementations in a next-gen implementation in 2004.
+%\end{aosaitemize}
+
+Open MPI~\cite{gabriel04:_open_mpi} is an open source software
+implementation of The Message Passing Interface (MPI) standard.
+%
+Before the architecture and innards of Open MPI will make any sense,
+a little background on the MPI standard must be discussed.
+
+%--------------------------------------------------------------------------
+
+\begin{aosasect2}{The Message Passing Interface (MPI)}
+
+The MPI standard is defined by the MPI
+Forum\footnote{\url{http://www.mpi-forum.org/}}; an open group
+consisting of parallel computing experts from both industry and
+academia.
+%
+MPI defines an API that is used for a specific type of portable,
+high-performance inter-process communication: {\em message passing}.
+Specifically, MPI defines reliable transfer of discrete, typed
+messages between MPI processes.  
+%
+Although the definition of an ``MPI process'' is subject to
+interpretation on a given platform, it usually corresponds to the
+operating system's concept of a process (e.g., a POSIX process).
+%
+MPI is specifically intended to be implemented as middleware, meaning
+that upper-level applications call MPI functions to perform message
+passing.
+
+MPI defines a high-level API, meaning that it provides abstraction
+away from whatever underlying transport is actually used to pass
+messages between processes.  The idea is that a sending process can
+effectively say ``take this array of 1,073 double precision values and
+send them to process X.''  The corresponding process X effectively
+says ``receive an array of 1,073 double precision values from process
+Y.''  A miracle occurs, and the array of 1,073 double precision values
+arrives in the receiving process' waiting buffer.
+
+Notice what is absent in this exchange: there is no concept of a
+connection occurring, no stream of bytes to interpret, and no network
+addresses exchanged.  MPI abstracts all of that away, not only to hide
+such complexity from the upper-level application, but also to make the
+application portable across different environments and underlying
+message-passing transports.  Specifically, a correct MPI application
+is source compatible across a wide variety of platforms and networks.
+
+MPI defines not only point-to-point communication (e.g., send and
+receive); it also defines other communication patterns, such as {\em
+  collective} communication.  Collective operations are where multiple
+processes are involved in a single communication action.  Reliable
+broadcast, for example, is where one process has a message at the
+beginning of the operation. At the end of the operation, all processes
+in a group have the message.
+
+MPI defines other concepts and communications patterns that are not
+described here.\footnote{As of this writing, the most recent version
+  of the MPI standard is MPI-2.2~\cite{mpi-2.2}.  Multiple draft
+  versions of the upcoming MPI-3 standard have been published; it may
+  be finalized as early as late 2012.}
+
+\end{aosasect2}
+
+%--------------------------------------------------------------------------
+
+\begin{aosasect2}{Uses of MPI}
+
+There are many implementations of the MPI standard -- some are open
+source, some are closed source -- that support a wide variety of
+platforms, operating systems, and network types.  
+%
+Typical networks include (but are not limited to): various protocols
+over Ethernet, shared memory, and InfiniBand.
+
+MPI implementations are typically used in high-performance computing
+environments.  MPI essentially provides the IPC for simulation codes,
+computational algorithms, and other ``big number crunching'' types of
+applications.
+
+Specifically, the applications using MPI are parallel in nature; they
+can be run on a few cores in a single server, or scale up to thousands
+of servers.  These applications are highly compute-intensive, it is
+not unusual for them to run all CPU cores at 100\% utilization.  To be
+clear, MPI jobs typically run in dedicated environments where the MPI
+processes are the {\em only} application running on the machine
+(besides bare-bones operating system functionality, of course).
+
+As such, MPI implementations are typically focused on providing
+extremely high performance, measured in metrics such as:
+
+\begin{aosaitemize}
+\item Extremely low latency for short message passing.  As an example,
+  a 1-byte message can be sent from a user-level Linux process on one
+  server, through an InfiniBand switch, and received in at the target
+  user-level Linux process on a different server in a little over 1
+  microsecond.
+\item Extremely high message network injection rate for short
+  messages.  As an example, MPI can inject JMS NEED TO CITE...
+\item Quick ramp-up (as a function of message size) to the maximum
+  bandwidth supported by the underlying transport.
+\item Low resource utilization.  All resources used by MPI (e.g.,
+  memory, cache, and bus bandwidth) cannot be used by the application.
+  MPI implementations therefore try to maintain a balance of low
+  resource utilization while still providing high performance.
+\end{aosaitemize}
+
+\end{aosasect2}
+
+%--------------------------------------------------------------------------
+
+\begin{aosasect2}{Open MPI}
+
+The first version of the MPI standard, MPI-1.0, was published in
+1994~\cite{mpi_forum93:_mpi}.  
+%
+MPI-2.0, a set of additions on top of MPI-1, was completed in
+1996~\cite{geist96:_mpi2_lyon}.
+
+During the first decade of its life, a variety of MPI implementations
+sprung up.  Many were provided by vendors for their proprietary
+network interconnects.  But many more implementations arose from the
+research and academic communities.  Such implementations were
+typically research-quality, meaning that their purpose was to research
+various high-performance networking concepts and provide
+proofs-of-concept of their work.  However, some were high enough
+quality that they gained popularity and a number of users.
+
+Open MPI represents the union of four research/academic, open source
+MPI implementations: LAM/MPI~\cite{squyres03:_compon_archit_lam_mpi},
+LA/MPI (Los Alamos MPI)~\cite{lampi:ijjp}, and FT-MPI (Fault-Tolerant
+MPI)~\cite{fagg04:_fault_toler_commun_librar_applic_high_perof}.
+%
+The members of the PACX-MPI~\cite{keller2003:pacx:jogc} team joined
+the Open MPI group shortly after its inception.
+
+The members of these four development teams decided to collaborate
+when we had the collective realization that our software code bases
+did essentially the same thing.  Each of the four code bases had their
+own strengths and weaknesses, but on the whole, they more-or-less did
+the same thing.  So why compete -- why not work together to make an
+{\em even better} MPI implementation?
+
+After {\em much} discussion, the decision was made to abandon our four
+existing code bases and take only the best {\em ideas} from the prior
+projects.  This decision was mainly predicated upon the following
+premises:
+
+\begin{aosaitemize}
+\item Each of the four code bases were radically different in
+  implementation architecture, and would be incredible difficult (if
+  not impossible) to merge.
+\item Each of the four also had their own (significant) strengths and
+  (significant) weaknesses.  Specifically, there were features and
+  architecture decisions from each of the four that were desirable to
+  carry forward.  Likewise, there were poorly optimized and badly
+  designed code in each of the four that were desirable to leave
+  behind.
+\item The members of the four developer groups had also not worked
+  directly together before.  Starting with an entirely new code base
+  (rather than advancing one of the existing code bases) put all
+  developers on equal ground.
+\end{aosaitemize}
+
+Thus, Open MPI was born.  Its first Subversion commit was on November
+22, 2003.
+
+\end{aosasect2}
+
+\end{aosasect1}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{aosasect1}{Architecture}
+
+When Open MPI was started, we knew that it would be a large, complex
+code base:
+
+\begin{aosaitemize}
+\item In 2003, MPI-2.0 was the current version of the standard.  It
+  defined over 300 API functions.
+\item Each of the four prior projects were large in themselves.  For
+  example, LAM/MPI had over 1,900 files of source code, comprising
+  over 300,000 lines (including comments and blanks).
+\item We wanted Open MPI to support more features, environments, and
+  networks than all four prior projects put together.
+\end{aosaitemize}
+
+We therefore spent a considerable amount of time planning and
+designing before implementing.  The overall design focused on three
+key aspects: performance, abstraction layers, and plug-ins.
+
+%--------------------------------------------------------------------------
+
+\begin{aosasect2}{Performance}
+
+As described above, (message passing) performance and resource
+utilization are the king and queen of high performance computing.
+%
+Open MPI had to be designed in such a way that it could operate that
+the very bleeding edge of high performance: incredibly low latencies
+for sending short messages, extremely high short message injection
+rates on supported networks, fast ramp-ups to maximum bandwidth for
+large messages, etc.  Abstraction is good, but it must be designed
+with care so that it does not get in the way of performance.  Or, put
+differently, carefully choose abstractions that lend themselves to
+shallow, performant call stacks (vs.\ deep, feature-rich API call
+stacks).
+
+That being said, we also accept that in some cases, abstraction must
+be thrown out the window.  Case in point: Open MPI has hand-coded
+assembly for some of its most performance-critical operations, such as
+shared memory locking and atomic operations.
+
+To be clear: it is acceptable (and unfortunately sometimes necessary),
+albeit undesirable, to have gross, complex code in the name of
+performance (e.g., the aforementioned assembly code).  However, it is
+{\em always} preferable to spend time trying to figure out how to have
+good abstractions to discretize and hide complexity whenever possible.
+A few weeks of design can literally save hundreds or thousands of
+man-hours of maintenance on tangled, subtle spaghetti code.
+
+\end{aosasect2}
+
+%--------------------------------------------------------------------------
+
+\begin{aosasect2}{Abstraction Layers}
+
+\begin{aosaitemize}
+\item Three layers: OPAL, ORTE, OMPI
+  \begin{aosaitemize}
+  \item Keep them as separate layers so that the linker punishes
+    abstraction violation
+  \item Principle: use tools to catch programmer errors (compiler,
+    linker, etc.)
+  \item Principle: setup costs don't matter (too) much.  Do
+    pre-optimization efforts during setup so that repeated later
+    execution is optimized.
+  \item Principle: resource consumption matters.  Must be social,
+    particularly as core counts keep going up -- there's only so much
+    hardware around that must be shared by (usually) 1 process per
+    core.
+  \end{aosaitemize}
+
+\item Difficult to replace any individual layer because interactions
+  between upper and lower layers is complex and changes frequently.
+
+\item In each layer
+  \begin{aosaitemize}
+  \item Core data structures and glue (e.g., inti and finalize)
+  \item Frameworks with associated components
+  \end{aosaitemize}
+
+\item OPAL
+  \begin{aosaitemize}
+  \item Single-process abstraction
+  \item Hardware, platform, and OS differences abstracted away here
+  \end{aosaitemize}
+
+\item ORTE
+  \begin{aosaitemize}
+  \item Launching and monitoring sets of processes across multiple
+    nodes as a single ``job'' -- a surprisingly difficult job
+  \item Many different run-time systems available in the HPC world
+  \end{aosaitemize}
+
+\item OMPI
+  \begin{aosaitemize}
+  \item The only public API exposed to applications
+  \item Frameworks with associated components
+  \end{aosaitemize}
+\end{aosaitemize}
+
+\end{aosasect2}
+
+%--------------------------------------------------------------------------
+
+\begin{aosasect2}{Plug-Ins}
+
+\begin{aosaitemize}
+\item Principle: performance matters:
+  \begin{aosaitemize}
+  \item Abstraction cannot hinder performance
+  \item Code is allowed to get grotty when necessary
+  \end{aosaitemize}
+
+\item Fundamentally based on plug-ins (aka components)
+  \begin{aosaitemize}
+  \item Frameworks, Components, Modules
+  \item Want to support a lot of different types of systems,
+    algorithms, and implementations of the same functionality
+  \end{aosaitemize}
+
+\end{aosaitemize}
+
+\end{aosasect2}
+
+\end{aosasect1}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{aosasect1}{Lessons Learned}
+
+\begin{aosaitemize}
+\item We were fortunate to draw upon 15+ years of HPC research and
+  make designs that have (mostly) successfully carried us 5+ years
+\item Components have saved our keister multiple times.  Both
+  technically and politically.
+\item When they didn't save of keister, we added a framework so that
+  they {\em would} save our keister
+\item Would design the projects better somehow so that they could be
+  wholesale replaced.
+\item Accelerators (e.g., GPUs) are challenging some of our initial
+  designs; we didn't account for their cross-cutting behavior in our
+  initial designs 6 years ago.
+\item People and community matter.  A lot.
+\end{aosaitemize}
+
+\end{aosasect1}
 
 \end{aosachapter}
