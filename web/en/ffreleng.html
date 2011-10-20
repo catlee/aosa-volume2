@@ -411,18 +411,24 @@ can improve something, first you have to be able to measure it.
         </p>
     </div>
     <div class="sect">
-      <h2>6.3 Repacks and L10N</h2>
-      <!--- XXX Armen: add a partner repacks explanation. Either as a subsection or separate section -->
+      <h2>6.3 Partner and localization repacks</h2>
       <div class="figure" id="fig.ffreleng.repacks_l10n">
         <img src="../images/ffreleng/repacks_l10n.png" alt="Repacking Firefox for each localization" />
         <p>Figure&nbsp;6.3: Repacking Firefox for each localization</p>
       </div>
         <p>Once the desktop builds are generated and uploaded to FTP, our
-        automation triggers the localization repack jobs. This consists of a
-        handful of jobs that take the original build (using the en-US locale), unpacking it and
-        stuffing in the strings for each locale that we are shipping for this release. Each job takes a
+        automation triggers the localization repackaging jobs. This consists of a
+        handful of jobs that take the original build (using the en-US locale),
+        unpacking it and stuffing in the strings for each locale that we are shipping
+        for this release (this is why we call them repackages). Each job takes a
         handful of locales. This approach allows us to parallelize the jobs
-        across many machines.
+        across many machines. More explicitely, instead of doing all 84
+        localization in one machine localization we can split them accross
+        six different machines and take approximately a sixth of the time it
+        would have required to do so in one machine. We could split it
+        even further but we would take away too many machines from the
+        pool which would affect jobs triggered by our developer's as part of
+        our CI systems. 
         </p>
         <p>
         The process for mobile (Android) is slightly different as we produce
@@ -433,12 +439,16 @@ can improve something, first you have to be able to measure it.
         <p>
         In Figure 6.3 you can see that we currently rely on three different sources for our
         locale information. There is a plan to move all three into a unified json file.
+        These files contain information about the different
+        localizations we have and certain platform exceptions.
+        Specifically, for a given localization we need to know which
+        revision of the repository to use for a given release and we need to
+        know if the localization can build on all of our supported platforms
+        (e.g. Japanese for Mac comes from a different repo all together).
+        Two of these files are used for the Desktop releases and one for the
+        Mobile release (this json file contains both the list of
+        platforms and the changesets). 
         </p>
-        TODO: explain how these 3 files are being used. Even the exceptions from shipped-locales like ja mac one.
-        TODO: remove tests from diagrams, show mobile builds
-        TODO: add shipped locales
-        TODO: update 4 desktop, 80+locales for desktop, 
-        TODO: show parallelization
         <p>
         Who decides which languages we ship? First of all, localizers
         themselve nominate their specific changeset for a given
@@ -447,6 +457,15 @@ can improve something, first you have to be able to measure it.
         the changesets needed for each language. On the day of a
         release we retrieve this list of changesets and we
         repackage them accordingly.
+        </p>
+        <p>
+        Besides localization repackages we also generate partner
+        repackages. These are customized builds for various partners we have
+        who want to customize the experience for their customers.
+        The main type of changes are custom bookmarks, custom
+        homepage and custom search engines but many other things can
+        be changed. These customized builds are generated for the
+        latest Firefox release and not for betas.
         </p>
     </div>
     <div class="sect">
