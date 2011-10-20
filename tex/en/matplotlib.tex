@@ -585,8 +585,6 @@ in certain contexts.
   vertices, and therefore is
   redundant.}{fig.matplotlib.pathsimplification}
 
-% TODO: Provide an example for each of the above
-
 \end{aosasect1}
 
 \begin{aosasect1}{Math text}
@@ -595,9 +593,9 @@ Since the users of matplotlib are often scientists, it is often useful
 to put richly-formatted math expressions directly on the plot.
 Perhaps the most widely-used syntax for math expressions is from
 Donald Knuth's \TeX\ typesetting system.  It's a way to turn input in
-programming language like this \verb+\sqrt{\frac{\delta x}{\delta y}}+
-into a properly formatted math expression like this
-$\sqrt{\frac{\delta x}{\delta y}}$.
+a plain-text language like this
+\verb+\sqrt{\frac{\delta x}{\delta y}}+ into a properly formatted math
+expression like this $\sqrt{\frac{\delta x}{\delta y}}$.
 
 matplotlib provides two ways to render math expressions.  The first,
 usetex, uses a full copy of \TeX\ on the user's machine to render the
@@ -617,6 +615,79 @@ expressions.
 
 \end{aosasect1}
 
+\begin{aosasect1}{Regression testing}
+
+  Historically, matplotlib has not had a large number of low-level
+  unit tests.  Occasionally, if a serious bug was reported, a script
+  to reproduce it would be added to a directory of such files in the
+  source tree.  The lack of automated tests created all of the usual
+  problems, most importantly regressions in features that previously
+  worked.  (We probably don't need to sell you on the idea that
+  automated testing is a good thing.)  Of course, with so much code
+  and so many configuration options and interchangable pieces
+  (e.g. the backends), it is arguable that low-level unit tests alone
+  would never be enough: instead we've followed the belief that it is
+  most cost-effective to test all of the pieces working together in
+  concert.
+
+To this end, as a first effort, a script was written that generated a
+number of plots exercising various features of matplotlib,
+particularly those that were hard to get right.  This made it a little
+easier to detect when a new change caused inadvertent breakage, but
+the correctness of the images still needed to be verified by hand.
+Since this required a lot of manual effort, it wasn't done very often.
+
+As a second pass, this general approach was automated.  The matplotlib
+testing framework generates a number of plots, but instead of
+requiring manual intervention, those plots are automatically compared
+to baseline images.  All of the tests are run inside of the nose
+testing framework, which makes it very easy to generate a report of
+which tests failed.
+
+Complicating matters is that the image comparison can not be exact.
+Subtle changes in versions of the Freetype font-rendering library can
+make the output of text slightly different across different machines.
+These differences are not enough to be considered ``wrong'', but are
+enough to throw off any exact bit-for-bit comparison.  Instead, the
+testing framework computes the histogram of both images, and
+calculates the root-mean-square of their difference.  If that
+difference is greater than a given threshold, the images are
+considered too different and the comparison test fails.  When tests
+fail, we can generate difference images which show where on the plot a
+change has occurred (see Figure \ref{fig.matplotlib.regression}).  The
+developer can then decide whether the failure is due to an intentional
+change, and update the baseline image to match the new image, or
+decide the image is in fact incorrect and track down and fix the bug
+that caused the change.
+
+\aosafigure{../images/matplotlib/regression.pdf}{A regression test
+  image comparison.  From left to right: a) The expected image, b) the
+  result of broken legend placement, c) the difference between the two
+  images.}{fig.matplotlib.regression}
+
+Since different backends can contribute different bugs, the testing
+framework tests multiple backends for each plot: PNG, PDF and SVG.
+For the vector formats, we don't compare the vector information
+directly, since there are multiple ways to represent something that
+has the same end result when rasterized.  The vector backends should
+be free to change the specifics of their output to increase efficiency
+etc. without causing all of the tests to fail.  Therefore, for vector
+backends, the testing framework first renders the file to a raster
+using an external tool (ghostscript for PDF and Inkscape for SVG) and
+then uses those rasters for comparison.
+
+Using the approach, we were able to bootstrap a reasonably effective
+testing framework from scratch more easily than if we had gone on to
+write many low-level unit tests.  It is still not perfect.  The code
+coverage of the tests not very complete.  They take a long time to
+run.\footnote{Around 15 minutes on a 2.33 GHz Intel Core 2 E6550.}
+(We did have a buildbot instance running for a while developers did
+not always have to run the tests on their own machines.)  Therefore,
+some regressions do still fall through the cracks, but overall the
+quality of the releases is up considerably thanks in no small part to
+the testing framework.
+
+\end{aosasect1}
 
 \end{aosachapter}
 
