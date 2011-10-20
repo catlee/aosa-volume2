@@ -26,15 +26,15 @@ Our primary concern at the time was with the performance: If there's a server in
 
 Secondary concern was related to large-scale deployments. When there are several servers involved, say one server per branch office, or even servers in different firms, the whole idea of central authority managing the message flows becomes blurred and leads to all kinds of problems.
 
-ØMQ project was started when we've got an idea of how to make messaging work without a central server. It required turning the whole concept of messaging upside down and replacing the model of autonomous centralised store of messages in the center of the network by a "smart endpoint, dumb network" architecture based on end-to-end principle[[footnote]]http://en.wikipedia.org/wiki/End-to-end_principle[[/footnote]].
+ØMQ project was started when we've got an idea of how to make messaging work without a central server. It required turning the whole concept of messaging upside down and replacing the model of an autonomous, centralised store of messages in the center of the network with a "smart endpoint, dumb network" architecture based on the end-to-end principle[[footnote]]http://en.wikipedia.org/wiki/End-to-end_principle[[/footnote]].
 
 The technical consequence of that decision was that ØMQ, from the very beginning, was a library, not an application.
 
-In the meantime we've been able to prove that this architecture is both more efficient (lower latency, higher throughput) and more flexible (it's easy to build arbitrary complex topologies instead of being tied to classic hub-and-spoke model).
+In the meantime we've been able to prove that this architecture is both more efficient (lower latency, higher throughput) and more flexible (it's easy to build arbitrary complex topologies instead of being tied to a classic hub-and-spoke model).
 
 One of the unintended consequences, however, was that opting for the library model improved the usability of the product. Over and over again users express their happiness about the fact that they don't have to install and manage a stand-alone messaging server. It turns out that not having a server is a preferred option as it cuts operational cost (no need to have a messaging server admin) and improves time-to-market (no need to negotiate the need to run the server with the client, the management or the operations team).
 
-The lesson learned is that when starting a new project, you should opt for the library design if at all possible. It's pretty easy to create an application from a library by invoking it from a trivial program, however, it's almost impossible to create a library from the existing executable. Library offers much more flexibility to the users at the same time sparing them non-trivial administrative effort.
+The lesson learned is that when starting a new project, you should opt for the library design if at all possible. It's pretty easy to create an application from a library by invoking it from a trivial program, however, it's almost impossible to create a library from the existing executable. A library offers much more flexibility to the users, at the same time sparing them non-trivial administrative effort.
 
 + Global State
 
@@ -78,7 +78,7 @@ To make the long story short: Latency and throughput are two different metrics. 
 
 As for the relationship between throughput and latency it turns out there really is a relationship, however, the formula involves integrals and we won't discuss it here. For more information check literature on queueing theory[[footnote]]http://en.wikipedia.org/wiki/Queueing_theory[[/footnote]].
 
-There are many more pitfalls in benchmarking the messaging systems that we won't go further into. The stress should rather be placed on the lesson learned: Make sure you understand the problem you are solving. Even a problem as simple as "make it fast" can take lot of work to understand properly. What's more, if you don't understand the problem, you are likely to build implicit assumptions and popular myths into your code, making the solution either flawed or at least much more complex or much less useful than it can possibly be.
+There are many more pitfalls in benchmarking a messaging system that we won't go further into. The stress should rather be placed on the lesson learned: Make sure you understand the problem you are solving. Even a problem as simple as "make it fast" can take lot of work to understand properly. What's more, if you don't understand the problem, you are likely to build implicit assumptions and popular myths into your code, making the solution either flawed or at least much more complex or much less useful than it can possibly be.
 
 + Critical Path
 
