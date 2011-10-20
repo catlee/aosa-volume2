@@ -1,7 +1,4 @@
-\begin{aosachapter}{matplotlib}{s:matplotlib}{John Hunter and Michael Droettboom}
-
-
-
+`<\begin{aosachapter}{matplotlib}{s:matplotlib}{John Hunter and Michael Droettboom}
 
 matplotlib is a Python-based plotting library widely used in the
 scientific Python computing community with full support for 2D
@@ -182,8 +179,8 @@ class SomeArtist(Artist):
         'call the approriate renderer methods to paint self onto canvas'
         if not self.get_visible():  return
 
-	# create some objects and use renderer to draw self here
-	renderer.draw_path(graphics_context, path, transform)
+        # create some objects and use renderer to draw self here
+        renderer.draw_path(graphics_context, path, transform)
 
 \end{verbatim}
 
@@ -223,7 +220,144 @@ methods that create plot objects and store them in the Axes instance.
 
 \end{aosasect2}
 
+Here is a simple python script illustrating the architecture above
+which defines the backend, connects a Figure to is, uses the array
+library numpy to create 10,000 normally distributed random numbers,
+and plots a histogram of these.
+
+\begin{verbatim}
+# import the FigureCanvas from the backend of your choice
+# and attach the Figure artist to it
+from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
+from matplotlib.figure import Figure
+fig = Figure()
+canvas = FigureCanvas(fig)
+
+# import the numpy library to generate the random numbers
+import numpy as np
+x = np.random.randn(10000)
+
+# now use a figure method to create an Axes artist; the Axes artist is
+# added automatically to the figure container fig.axes
+ax = fig.add_subplot(111)
+
+# call the Axes method hist to generate the histogram; hist creates a
+# sequence of Rectangle artists for each histogram bar and adds them
+# to the Axes container
+ax.hist(x, 100)
+
+# decorate the figure with a title and save it
+ax.set_title(r'Normal distribution with $\mu=0,\ \sigma=1$')
+fig.savefibg('matplotlib_histogram.png')
+\end{verbatim}
+
 \begin{aosasect2}{Scripting layer (pyplot)}
+
+
+This API script above works great, especially for programmers, and is
+usually the appropriate programming paradigm when writing a web
+application server, a UI application, or perhaps a production quality
+script.  For everyday purposes, particularly for interactive
+exploratory work by bench scientists who are not professional
+programmers, it is a bit syntactically heavy.  Most special purpose
+languages for data analysis and visualization provide a lighter
+scripting interface to simplify common tasks, and matplotlib does so
+as well in its \code{matplotlib.pyplot} interface.  The same code
+above, using pyplot, reads
+
+\begin{verbatim}
+import matplotlib.pyplot as plt
+import numpy as np
+
+x = np.random.randn(10000)
+plt.hist(x, 100)
+plt.title(r'Normal distribution with $\mu=0,\ \sigma=1$')
+plt.savefig('matplotlib_histogram.png')
+plt.show()
+\end{verbatim}
+
+\aosafigure{../images/matplotlib/histogram_demo.pdf}{A histogram created using pyplot}{fig.matplotlib.hist}[scale=0.3]
+
+
+pyplot is a stateful interface that handles much of the boilerplate
+for creating figures and axes and connecting them to the backend of
+your choice, and maintains a module level internal data structures
+representing the current figure and axes to which to direct plotting
+commands.
+
+Let's dissect the important lines in the script to see how this
+internal state is managed.
+
+\begin{aosaitemize}
+
+  \item \code{import matplotlib.pyplot as plt}: When the pyplot module
+    is loaded, it parses a local configuration file in which the user
+    states, among many other things, their preference for a default
+    backend.  This might be a user interface backend like ``QtAgg'',
+    in which case the script above will import the GUI framework and
+    launch a Qt window with the plot embedded, or it might be a pure
+    image backend like ``Agg'' in which case the script will generate
+    the hard-copy output and exit.
+
+  \item \code{plt.hist(x, 100)}: This is the first plotting command
+    in the script.  pyplot will check its internal data structures to
+    see if there is a current Figure instance.  If so, it will extract
+    the current Axes and direct plotting to the \code{Axes.hist} API
+    call.  In this case, there is none, so it will create a Figure and
+    Axes, set these as current, and direct the plotting to
+    \code{Axes.hist}.
+
+  \item \code{plt.title(r'Normal distribution with $\mu=0,\ \sigma=1$')}:
+    \textbf{XXX TODO: quote the dollar signs above.}
+    As above, pyplot will look to see if there
+    is a current Figure and Axes.  Finding that there is, it will not
+    create new instances but will direct the call to the existing Axes
+    instance method \code{Axes.set\_title}
+
+  \item \code{plt.show()}: This will force the Figure to render, and
+    if the user has indicated a default GUI backend in their
+    configuration file, will start the GUI mainloop and raise any
+    figures created to the screen.
+
+\end{aosaitemize}
+
+A somewhat stripped down and simplified version of matplotlib's core
+line plotting function \code{matplotlib.pyplot.plot} is shown below to
+illustrate the core functionality (all other pyplot scripting
+interface functions follow the same design).
+
+\begin{verbatim}
+
+@autogen_docstring(Axes.plot)
+def plot(*args, **kwargs):
+    ax = gca()
+
+    ret = ax.plot(*args, **kwargs)
+    draw_if_interactive()
+
+    return ret
+
+\end{verbatim}
+
+The python decorator \code{@autogen\_docstring(Axes.plot)} extracts
+the documentation string from the corresponding API method and
+attaches a properly formatted version to the \code{pyplot.plot}
+method; we have a dedicated module \code{matplotlib.docstring} to
+handle this doc string magic.  The \code{*args} and \code{*kwargs} in
+the documentation signature are special conventions in python to mean:
+all the arguments and keyword arguments that are passed to the method.
+This allows us to forward them on to the corresponding API method.
+The call \code{ax = gca()} invokes the stateful machinery to ``get
+current Axes'', and will create the Figure and Axes if necessary.  The
+call to \code{ret = ax.plot(*args, **kwargs)} forwards the function
+call and its arguments to the appropriate Axes method, and stores the
+return value to be returned later.  Thus the pyplot interface is a
+fairly thin wrapper around the core Artist API which tries to avoid as
+much code duplication as possible by exposing the API function, call
+signature and docstring in the scripting interface with a minimal
+amount of boilerplate code.
+
+
 \end{aosasect2}
 
 
