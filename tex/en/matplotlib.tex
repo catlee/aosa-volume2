@@ -248,7 +248,7 @@ ax.hist(x, 100)
 
 # decorate the figure with a title and save it
 ax.set_title(r'Normal distribution with $\mu=0,\ \sigma=1$')
-fig.savefibg('matplotlib_histogram.png')
+fig.savefig('matplotlib_histogram.png')
 \end{verbatim}
 
 \begin{aosasect2}{Scripting layer (pyplot)}
@@ -307,8 +307,7 @@ internal state is managed.
     Axes, set these as current, and direct the plotting to
     \code{Axes.hist}.
 
-  \item \code{plt.title(r'Normal distribution with $\mu=0,\ \sigma=1$')}:
-    \textbf{XXX TODO: quote the dollar signs above.}
+  \item \verb+plt.title(r'Normal distribution with $\mu=0,\ \sigma=1$')+:
     As above, pyplot will look to see if there
     is a current Figure and Axes.  Finding that there is, it will not
     create new instances but will direct the call to the existing Axes
@@ -343,7 +342,7 @@ The python decorator \code{@autogen\_docstring(Axes.plot)} extracts
 the documentation string from the corresponding API method and
 attaches a properly formatted version to the \code{pyplot.plot}
 method; we have a dedicated module \code{matplotlib.docstring} to
-handle this doc string magic.  The \code{*args} and \code{*kwargs} in
+handle this doc string magic.  The \code{*args} and \code{**kwargs} in
 the documentation signature are special conventions in python to mean:
 all the arguments and keyword arguments that are passed to the method.
 This allows us to forward them on to the corresponding API method.
