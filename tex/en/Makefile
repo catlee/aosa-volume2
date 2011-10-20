@@ -2,6 +2,7 @@ LATEX = pdflatex
 BIBTEX = bibtex
 
 CHAPTERS = \
+  frontmatter \
 	intro \
 	dbevol \
 	diaspora \
