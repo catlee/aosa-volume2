@@ -4,11 +4,15 @@
     <style type="text/css">
       div.inline { float:left; }
       code.class-name {
-        display: block;
+        margin: 1em;
+        padding: 1em;
+        display: inline-block;
         background: #ccc;
         border: 1px dotted #000;
-        width: 100%;
         overflow: auto;
+      }
+      .figure {
+        font-style: italic;
       }
     </style>
     <meta name="provenance" content="$Id$" />
@@ -315,10 +319,8 @@ can improve something, first you have to be able to measure it.
         <p>Figure&nbsp;6.2: Automated tagging</p>
       </div>
         <p>
-        One of the first steps in building Firefox is tagging all of
-        the related source code repositories to record which revision
-        of the source, locales, and related tools was used for the
-        release. A single Firefox release uses code from a half dozen
+        After a release enginneer prepares and tests the release configuration, the first automated step in the Firefox release process is tagging all of the related source code repositories to record which revision
+        of the source, language repos, and related tools are used for this version and build number of a release candidate. A single Firefox release uses code from about 85
         version control repositories that host things such as the
         product code, localization strings, release automation code, and
         helper utilities. Tagging all these repositories is, therefore,
@@ -356,16 +358,16 @@ can improve something, first you have to be able to measure it.
         that requires an immediate fix (a "chemspill" situation), the
         minimal set of changes to address the vulnerability will be
         landed on this relbranch and a new version of Firefox
-        released. When we have to do another round of builds for a particular release, buildN,  we use relbranches to be able to skip re-tagging.
+        released. When we have to do another round of builds for a particular release, buildN,  we use these relbranches to grab the same code that was signed off on for 'go to build' which is where any changes to that release code will have been landed, the automation starts again and bumps the tagging to the new changeset on that relbranch.
         </p>
         <p>
         Our tagging process does a <em>lot</em> of operations with
         local and remote mercurial (hg) repositories. To factor out
         some of the most common operations we've written a few tools
-        to assist us: <em>hgtool.py</em> and <em>retry.py</em>.
+        to assist us: <em><a href=http://hg.mozilla.org/build/mozharness/file/a0fce0162fd5/scripts/hgtool.py">hgtool.py</a></em> and <em><a href="http://hg.mozilla.org/build/tools/file/7adc08bd1386/lib/python/util/retry.py">retry.py</a></em>.
         </p>
         <p>
-        <em>retry.py</em> is a simple wrapper that can take a given command and
+        <em><a href="http://hg.mozilla.org/build/tools/file/7adc08bd1386/lib/python/util/retry.py">retry.py</a></em> is a simple wrapper that can take a given command and
         run it, retrying several times if it fails. It can also watch
         for exceptional output conditions and retry or report failure
         in those cases. We've found it useful to wrap retry.py around
@@ -378,7 +380,7 @@ can improve something, first you have to be able to measure it.
         release automation running again.
         </p>
         <p>
-        <em>hgtool.py</em> is a utility that encapsulates several common
+        <em><a href=http://hg.mozilla.org/build/mozharness/file/a0fce0162fd5/scripts/hgtool.py">hgtool.py</a></em> is a utility that encapsulates several common
         hg operations, like cloning/pulling/updating with a
         single invocation. It also adds support for hg's share
         extension, which we use extensively to avoid having to have
@@ -475,49 +477,24 @@ can improve something, first you have to be able to measure it.
         <p>Figure&nbsp;6.4: Signing of Firefox installers, partially automated</p>
       </div>
       <p>
-      <!-- XXX TODO more detail about what is signing, what it used to involve and how we shifted the process to be more embedded in automation XXX -->
-      In the not so distant past, the signing process was long, and involved a significant break from the release automation. Originally we automated everything up to the signing then after a while we added an FTPPoller to our buildbot change sources that watched for a win32_signing.log file to become available in the release candidates directory.  This signified the end of human signing (uploaded along with the signed bits) so we were able to continue automation from that point on by attaching dependent builders to that change.  Recently though, an additional wrapper of automation allows us to start an automated signing process on our keymaster with minimal human contact and once that has been enabled the release engineer can go on about other work without having to check in on signing while a simple set makefile targets does the heavy lifting.
+      Until recently doing so involved a release engineer on a signing master for almost an hour doing the steps of downloading builds, signing them, and uploading them back to FTP before the automation could continue. Once signing on the master is completed and all files have been uploaded a win32_signing.log file is uploaded to the release candidates directory.  This signifies the end of human signing and dependent builders watching for that file continue automation from that point on.  Recently though we've added an additional wrapper of automation around the signing steps. The release engineer merely starts an automated signing process on the signing master then goes off to do other work while a simple set makefile targets does the heavy lifting.
       </p>
       <p>
-      At some point after the release's builds are underway, the release engineer will log on to our keymaster, set up a few variables in a Cygwin shell pertaining to the release such as VERSION, BUILD, TAG, and a few other items needed by the makefile and then after checking out the most recent version of our signing tools they simply do a 'make autosign' call to start a download loop that trolls our FTP candidates directory for the complete set of deliverables for a release.  They will need to enter 2 passphrases, gpg and signcode. This includes builds & localized repacks for each platform, the source tarball, and any partner-repacks for a release. Once the last item has showed up (all items progressively downloaded as available) signing can start right away. We use signcode.exe for the win32 bits and then do gpg signatures on the other platforms, all signed bits have an MD5SUM and SHA1SUM written to files of the same name. When all signed bits are available and verified (we do a quick and more in-depth verification process) they are uploaded back to FTP along with the signing log file that the automation is waiting for to proceed.
+      The engineer will open a Cygwin shell on the signing master and set up a few environment variables pertaining to the release like VERSION, BUILD, TAG, RELEASE_CONFIG that help the script find the right directories on FTP and know when all the deliverables for a release have been downloaded so that the signing can start. After checking out the most recent version of our signing tools they simply do a 'make autosign'. The engineer will need to manually enter 2 passphrases, gpg and signcode which are verified by the make scripts then it starts a download loop that watches for uploaded builds & repacks from the release automation.  Once the last item has showed up (all items progressively downloaded as available) signing starts right away which is a great improvement as this can happen during non-work hours and provide our QA team with signed installers to test promptly without waiting for an engineer to come on shift. The win32 installers are signed with Authenticode and then we generate gpg signatures for the other platforms, all delieverables will have an MD5SUM and SHA1SUM generated for them and those hash values are written to files of the same name. These files will be uploaded back to the release-candidates directory as well as synced into the final home of a release once it is live so that anyone who downloads a Firefox installer from our mirrors can ensure they got the correct object. When all signed bits are available and verified (we do a quick and more in-depth verification process) they are uploaded back to FTP along with the signing log file that the automation is waiting for to proceed.
       </p>
-      <h3>make autosign targets</h3>
-      <dl>
-        <dt>df</dt>
-            <dd>Checks that enough disk space is available for signing - a Firefox release needs ~30 GB free</dd>
-        <dt>verify-gpg-passphrase</dt>
-            <dd>Compares the gpg passphrase entered by the release engineer to the one on disk to ensure they match</dd>
-        <dt>verify-signcode-passphrase</dt>
-            <dd>Compares the signcode passphrase entered by the release engineer to the one on disk to ensure they match</dd>
-        <dt>setup</dt>
-            <dd>Pull/copy the required tools: 7-Zip, mar.exe, upx, pgp-keys, signing scripts</dd>
-        <dt>stubs</dt>
-            <dd>Additional 7-Zip tools (from cvs or hg depending on release version)</dd>
-        <dt>download-loop</dt>
-            <dd>Periodically checks the candidates directory for deliverables until all the bits for the release have been located and downloaded. It uses the release configs to determine the complete set of deliverables</dd>
-        <dt>verify-download</dt>
-            <dd>Confirms that all deliverables have been downloaded to an unsigned directory on the signing machine</dd>
-        <dt>sign</dt>
-            <dd>Runs sub-targets: sign-files checksum-files create-sigs verify-sigs quick-verify. This step generates the signatures, also the sums for MD5SUM and SHA1SUM files and does a quick-verify on a trimmed down list with a locale selected at random</dd>
-        <dt>stage</dt>
-            <dd>Runs sub-targets: create-contrib fix-permissions.  We have to generate a couple of directories for community releases (solaris & spark) and also make sure the files are owned by the right account prior to uploading back to FTP</dd>
-        <dt>verify</dt>
-            <dd>Runs sub-targets: verify-signatures verify-win32 verify-asc.  Verifies that installer signing is valid and can be traced back to a valid root certificate for all the win32 locales, ensures that every exe and mar in the signed-build directory differs from its unsigned counterpart, and finally makes sure we have asc files for every build in the signed dir</dd>
-        <dt>postsign</dt>
-            <dd>Runs sub-targets: upload upload-log verify-signatures2. Uploads the signed bits to FTP, the signing log, and then does one more in-depth signature verification comparing the full list of unsigned locales to their signed counterparts to make sure they are different</dd>
-      </dl>
       <p>
-      <!-- XXX add a paragraph here about the plans for sign-on-demand XXX -->
+      Our next round of improvements to the signing process will be creating a sign-on-demand tool. Signing each delieverable as it's ready will even further decrease the end to end time and will also allow the signing of other deliverables outside of a release, for example nightly builds.
+      <!-- XXX I don't know what else to say here, Catlee do you want to talk about how it will work? -->
       </p>
     </div>
     <div class="sect">
       <h2>6.5 Updates</h2>
       <p>
-      We generate a LOT of updates.  Every platform, every locale, every installer from Firefox N -> Firefox NOW in both complete and partial forms.  Depending on the version, our updates can go back as far as 4 or 5 versions, include dot releases from security fixes, and sometimes even betas. Our automation bumps our update configuration files on each run to maintain our list of what versions, platforms, and locales need to have updates generated to be able to offer our users the newest release. We offer updates as 'snippets' which you'll see an example of below, simply an xml pointer file hosted on our AUS (Automated Update Server) that informs the user's Firefox of where complete and/or partial .mar (Mozilla Archive) files are hosted.
+      We generate a LOT of updates.  Every platform, every locale, every installer from Firefox N -> Firefox NOW in both complete and partial forms.  Depending on the branch, we generate updates for all supported previous releases from that branch. Our automation bumps the update configuration files of each release's build off a branch to maintain our cannonical list of what version numbers, platforms, and localizations need to have updates created to offer users this newest release. We offer updates as 'snippets' which you'll see an example of below, simply an xml pointer file hosted on our AUS (Application Update Service) that informs the user's Firefox of where complete and/or partial .mar (Mozilla Archive) files are hosted.
       </p>
       <h4>Major vs. Minor</h4>
       <p>
-      As you'll see in the snippet sample below, we have a type setting for updates. Most updates fall into the "minor" category which means that, for the user, the downloading of the partial update package (though sometimes it's the complete when that is the only update available for a particular version/platform) happens quietly in the background and when it's ready to be applied the user is informed of this and given the option to apply & restart.  Minor updates are used to keep people up to date within their channel: beta releases update to the next beta release, nightlies to the following night's build.  Major updates have been used when we needed to advertise to our users that the latest & greatest release was available and to prompt the user letting them know "A new version of Firefox is available, would you like to update?". With our new rapid-release versions, we no longer need to do as many major updates. We'll do them only occasionally when we are hoping to pull more users up from supported versions that are prior to the rapid-release process.
+      As you'll see in the snippet sample below, we have a type setting for updates. Most updates fall into the "minor" category which means that, for the user, the downloading of the partial update package (though sometimes it's the complete when that is the only update available for a particular version/platform) happens quietly in the background and when it's ready to be applied the user is informed of this and given the option to apply & restart.  Minor updates are used to keep people up to date within their channel: beta releases update to the next beta release, nightlies to the following night's build.  Major updates have been used when we needed to advertise to our users that the latest & greatest release was available and to prompt the user letting them know "A new version of Firefox is available, would you like to update?". Our new rapid-release versions means no longer needing to do as many major updates, we'll be able to stop generating them once 3.6.* is no longer supported.
       </p>
       <h4>Sample Update Snippet</h4>
       <code class="class-name">
@@ -530,8 +507,7 @@ can improve something, first you have to be able to measure it.
       </code>
       <h4>What's in an update?</h4>
       <p>
-      <!-- XXX TODO - more clarity on what complete is comp. to standalone (not an installer, no channel prefs) -- we do complete updates so we can auto-update instead of pointing to new installers -- we strip out prefs.js to keep people in the auto-update streams on the right channels  XXX -->
-      At build time we generate complete mars which contain all the bits for the new version compressed with bz2 and then archived in a mar file. Complete mars are applied using our updater binary and the main difference between a complete update and a standalone version is the lack of a <em>defaults/prefs/channel-prefs.js</em> file which sets the update channel the application reads from. Partial mars are created by doing a binary diff of the old version's complete mar to the new version's and creating a mar containing the diff along with a manifest. As you can see in the sample snippet above, this results in a much smaller file size. In older versions of our update automation the generation of partial updates could take 6-7 hours as each locale, for each platform had the complete mars downloaded, diffed, then packed up for a partial update.  Eventually it was discovered that even across platforms, very few components actually had changes and with a script that started to cache the hashes for diffs our partial update creation time was brought down to ~40 minutes. After the snippets have been uploaded and are hosted on AUS, an update verification step is run to a) test downloading the snippets and b) run the updater with the snippet to confirm that it applies correctly.
+      At build time we generate complete mars which contain all the bits for the new release compressed with bz2 and then archived in a mar file. Complete updates are created so users can be auto-updated using our updater binary instead of having to point to (and having the user download) a standalone installer. Both complete and partial updates are downloaded automatically through the update channel a user is on. Partial update mars are created by doing a binary diff of the old version's complete mar to the new version's and creating the mar with the diff and a manifest file. As you can see in the sample snippet above, this results in a much smaller file size for partial updates. In older versions of our update automation the generation of partial updates could take 6-7 hours as each locale, for each platform had the complete mars downloaded, diffed, then packed up for a partial update.  Eventually it was discovered that even across platforms, many component changes were identical and so with a script that cached the hash for each part of the diff our partial update creation time was brought down to ~40 minutes since so many changes could be re-used. After the snippets have been uploaded and are hosted on AUS, an update verification step is run to a) test downloading the snippets and b) run the updater with the downloaded mar to confirm that the updates apply correctly.
       </p>
       <p>
       <!-- XXX TODO: add a section for future improvements, doing update generation as part of build & repack, not having to deal with snippets anymore - what's balrog?  (aka AUS 3) it eats snippet for breakfast.   
@@ -555,7 +531,7 @@ can improve something, first you have to be able to measure it.
       users would be able to update from the previous release to the current
       one. 
       </p>
-      <p>We also push the binaries to our internal mirrors to help us
+      <p>We also push the binaries to our internal mirrors (mozilla hosted storage, later we make this available to our community mirrors for wider availability) to help us
       handle the load of users requesting their updates rather than
       reaching ftp directly. In the case of betas this is around
       of one million users. Notice that users don't get the updates until
