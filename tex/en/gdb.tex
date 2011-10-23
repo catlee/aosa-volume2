@@ -80,7 +80,7 @@ To take a simple case of how it all ties together, consider the
 print command from above.  The command interpreter find the printing
 code, which parses the expression into a simple tree structure and
 then evaluates it by walking the tree.  At some point the evaluator
-will consult the symbol table to find out that variable_... is a global
+will consult the symbol table to find out that variable\_... is a global
 variable that is stored at memory address 0x123456.  It then uses a
 target side routine to read the contents of memory at that address,
 which is then handed to a print function that does the formatting.
@@ -291,7 +291,7 @@ when describing single-stepping over a line - the process entailed looping
 over multiple instructions until finding one associated with a different
 source line.
 
-The loop is called ''wait_for_inferior'', or ``wfi'' for short.
+The loop is called ''wait\_for\_inferior'', or ``wfi'' for short.
 
 Conceptually it is inside the main command loop, and is only entered for
 commands that cause the program to resume execution.  When the user types
@@ -304,7 +304,7 @@ trap, single-steps the original instruction, re-inserts the trap, and then
 lets the program resume.  Similarly, if a signal is raised, GDB may choose
 to ignore it, or handle it one of several ways specified in advance.
 
-All of this activity is managed by wait_for_inferior.  Originally this
+All of this activity is managed by wait\_for\_inferior.  Originally this
 was a simple loop, waiting for the target to stop and then deciding
 what to do about it, but as ports to unusual systems needed special
 handling, it grew to a thousand lines, with gotos criss-crossing it
@@ -314,7 +314,7 @@ user wants to interact with GDB while some or all of the program is
 still running.
 
 The conversion to an event-oriented model took several years.  I broke
-up wait_for_inferior in 1999, introducing an execution control state
+up wait\_for\_inferior in 1999, introducing an execution control state
 structure to replace the pile of local and global variables, and
 converting the tangle of jumps into smaller independent functions.  At
 the same time Elena Zannoni and others introduced event queues that
