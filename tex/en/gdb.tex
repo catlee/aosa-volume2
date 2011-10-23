@@ -3,8 +3,8 @@
 GDB, the GNU Debugger, was among the first programs to be written for
 the Free Software Foundation, and it has been a staple of GNU systems
 ever since.  Originally designed as a plain Unix-type debugger, it has
-since been expanded to a wide range of uses, including many embedded
-systems, and has grown by an order of magnitude.
+since been expanded to a wide range of uses, including with many
+embedded systems, and has grown by an order of magnitude.
 
 This chapter will retrace the development of GDB, showing how the
 internal structure derives from new demands, and new features added
@@ -76,6 +76,78 @@ pure machine-language debugging even if no symbols are avaiable.
 In the middle, tying the two sides together, is the command interpreter
 and the main execution control loop.
 
+To take a simple case of how it all ties together, consider the
+print command from above.  The command interpreter find the printing
+code, which parses the expression into a simple tree structure and
+then evaluates it by walking the tree.  At some point the evaluator
+will consult the symbol table to find out that variable_... is a global
+variable that is stored at memory address 0x123456.  It then uses a
+target side routine to read the contents of memory at that address,
+which is then handed to a print function that does the formatting.
+
+A more complicated example is single-stepping, in which the simple
+command ``step'' conceals the complicated dance going on behind the
+scenes.  When the user asks to single-step to the next line in the
+program, the target side is asked to execute only a single instruction
+of the program and then stop it again (most systems have this
+capability built into hardware and/or the operating system).  Upon
+being informed that the program has stopped, GDB asks for the program
+counter (target side) and then compares it with the range of addresses
+that the symbol side says is associated with the current line.  It the
+PC is outside that range, then GDB leaves the program stopped, figures
+out the new source line, and reports that to the user.  If the PC is
+still in the range, then GDB single-steps again and checks again until
+the PC gets to a different line.  This basic algorithm has the
+advantage that it always does the right thing, whether the line has
+jumps, subroutine calls, etc, and does not require interpretation of
+each instruction.  A disadvantage is that there is a lot of interaction
+with the target for each single-step, which for some embedded targets
+results in slow single-stepping.
+
+Portability
+
+From the beginning, and as a program needing extensive access to the
+lowest levels, GDB was designed to be portable across a variety of
+systems.  However, its portability strategy has changed considerably
+over the years.
+
+Originally, GDB started out similar to the other GNU programs of the
+time; code in a common subset of C (no GCC features for instance), and
+use a combination of preprocessor macros and makefile fragments to
+adapt to a specific architecture and operating system.  Although the
+stated goal was a self-contained ``GNU operating system'',
+bootstrapping would have to be done on a variety of systems; the Linux
+kernel was still several years in the future.  The ``configure'' script
+was the first step of the process, adding links and constructing files,
+in particular the makefile used for the actual build.
+
+As GDB developed, we eventually came to understand that there were three
+distinct classes of portability bits to consider.
+
+* ''Host'' definitions are for the machine that GDB is running on, and
+might include things like the size of integer types.  Nearly all of these
+are easily discovered just by automated testing of the host, and the
+formerly-handwritten host definition files have been superseded by
+an ''autoconf''-generated configure script.
+
+* ''Target'' definitions are specific to the machine that the program
+being debugged is running on.  If same as the host, then we are doing
+''native'' debugging, otherwise it is ''cross'' debugging, using some
+kind of wire connecting the two systems.  Target definitions fall into
+two main classes:
+
+** ''Architecture'' definitions - the machine language byte(s) for a
+trap instructions, how to disassemble machine code, how to walk
+through the call stack.  These are currently handled by ''gdbarch''
+objects, of which more later.
+
+** ''Native'' definitions - these define the specifics of arguments to
+ptrace() (which vary considerably between flavors of Unix), how to
+find shared libraries that have been loaded, and so forth, which only
+apply to the native debugging case.  Native definitions are the last
+holdout of old-style C macros, although most are now figured out using
+autoconf.
+
 Symbol Side
 
 The symbol side starts by reading the compiled program and extracting
@@ -119,6 +191,28 @@ function is filled in only when the user stops inside it.
 Partial symbol tables allow GDB to start up in only a few seconds, even
 for large programs.
 
+Language Support
+
+Source language support mainly consists of expression parsing and value
+printing.
+
+(describe expressions and values earlier?)
+
+The details of expression parsing are left up to each language, but in
+the general the parser is based on a yacc grammar fed by a handwritten
+lexer.  In keeping with GDB's goal of providing more flexibility to the
+interactive user, the parser is not expected to be especially stringent;
+for instance, if it can guess at a reasonable type for an expression,
+it will simply assume that type, rather than require the user to add
+a cast or type conversion.
+
+Also, since the parser need not handle statements or type declarations,
+it is considerably simpler than the full language grammar.
+
+Similarly for printing; there are just a handful of types of values that
+need to be displayed, and oftentimes the language-specific printer can
+call out to generic function to finish the job.
+
 Target Side
 
 Target Vectors and the Target Stack
@@ -131,7 +225,7 @@ This is not sufficiently flexible for long-running debugging session,
 in which the user might switch from local to remote debugging, switch
 from files to live programs, attach and detach, and so forth.
 
-So in 1990 the target side of GDB was redesigned to send all
+So in 1990 John Gilmore redesigned the target side of GDB to send all
 platform-specific operation through the ''target vector'', which is
 basically a class of objects, each of what defines the the specifics
 of a type of target.  In practice, each target vector is a structure
@@ -161,6 +255,69 @@ which process-like target vectors are all one level, while file-like
 target vectors get assigned to a lower level.
 
 While GDBers grumble about the target stack regularly, nobody has yet
-come up with (and implemented!) a better replacement.xs
+come up with (and implemented!) a better replacement.
+
+Gdbarch
+
+As disassembly is a generic feature also needed for objdump in the
+binutils, it was separated into its own library early on.
+
+The general definitions for an architecture gradually became more and
+more complicated, as chip designers introduced dozens of extensions
+and variants on each basic architecture, and as compiler designers
+introduced new kinds of architecture-specific optimizations.  Worse,
+GDB has to look at both correct and incorrect state (after all, the
+program has bugs), and architecture-specific code often needs
+heuristic analysis code to make sense of messes like
+partially-overwritten call stacks.
+
+The original macro definition scheme was simply unequal to the task,
+and worse, multiple-architecture designs were on the horizon, for
+which macros would not work at all.  I proposed changing to an
+object-based design in 1995, and starting in 1998 Cygnus Solutions
+funded Andrew Cagney to start the changeover.  It took several years,
+and contributions from dozens of hackers to finish the job, affecting
+perhaps 80,000 lines of code.
+
+The introduced objects are called ''gdbarch'' objects, and at this
+point are now up to 130 methods and variables available to define a
+target architecture.  On the average, most aren't needed, and a
+simple target might only need a dozen or so methods.
+
+Execution control
+
+The heart of GDB is its execution control loop.  We touched on it earlier
+when describing single-stepping over a line - the process entailed looping
+over multiple instructions until finding one associated with a different
+source line.
+
+The loop is called ''wait_for_inferior'', or ``wfi'' for short.
+
+Conceptually it is inside the main command loop, and is only entered for
+commands that cause the program to resume execution.  When the user types
+``continue'' or ``step'' and then waits while nothing seems to be happening,
+GDB may in fact be quite busy.  In addition to the stepping loop mentioned
+above, the program may be hitting trap instructions and reporting the exception
+to GDB.  If the exception is due to the trap being a breakpoint inserted by
+GDB, it then tests the breakpoint's condition, and if false, it removes the
+trap, single-steps the original instruction, re-inserts the trap, and then
+lets the program resume.  Similarly, if a signal is raised, GDB may choose
+to ignore it, or handle it one of several ways specified in advance.
+
+All of this activity is managed by wait_for_inferior.  Originally this
+was a simple loop, waiting for the target to stop and then deciding
+what to do about it, but as ports to unusual systems needed special
+handling, it grew to a thousand lines, with gotos criss-crossing it
+for poorly-understood reasons.  It was also a problem for any kind of
+asynchronous handling or debugging of threaded programs, in which the
+user wants to interact with GDB while some or all of the program is
+still running.
+
+The conversion to an event-oriented model took several years.  I broke
+up wait_for_inferior in 1999, introducing an execution control state
+structure to replace the pile of local and global variables, and
+converting the tangle of jumps into smaller independent functions.  At
+the same time Elena Zannoni and others introduced event queues that
+included both input from the user and notifications from the inferior.
 
 \end{aosachapter}
