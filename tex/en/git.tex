@@ -127,7 +127,6 @@ more definite ways than the RCS family. Namely:
   RCS family of VCSes) determine common ancestors.
 \end{aosaitemize}
 
-
 TODO: Flesh out this section. Overview:
 * This section will describe the two primary classification dimensions to
 Version Control Systems (VCS) today:
@@ -233,6 +232,7 @@ Let us have a peak inside of it:
 The .git directory above is by default located inside the root working
 directory, testgit. It contains a few different types of files and
 directories:
+
 \begin{aosaitemize}
   \item \emph{Configuration}: the .git/config, .git/description and
   .git/info/exclude files essentially help configure the local repository.
@@ -249,12 +249,39 @@ directories:
   heads.
 \end{aosaitemize}
 
+This is the actual repository. The directory that contains the working set
+of files is the \emph{working directory}, which is typically the parent of
+the .git directory (or \emph{repository}). If you were creating a Git
+remote repository that wouldn't have a working directory you might
+initialize it using the \code{git init --bare} command.
+
+Another file of great importance is the \emph{Git index}. It provides the
+staging area between the local working directory and the local repository.
+The index is used to staging specific changes within a file (or more) to
+be committed all together. Even if you make various changes related to
+multiple types of changes, the commits can be made with like changes
+together to better describe them. To selectively staging specific changes
+in a file or set of files you can using \code{git add -p}.
+
+The \emph{Git index}, by default, is stored as a single file inside the
+repository directory. The paths to these three areas can be customized
+using the following environment variables:
+\begin{aosaitemize}
+  \item \code{GIT\_DIR}: sets the repository directory or the \emph{.git}
+  directory.
+  \item \code{GIT\_INDEX}: sets the path to the \emph{index}.
+  \item \code{GIT\_WORK\_DIR}: sets the path to the \emph{working directory}
+  for the local Git repository.
+\end{aosaitemize}
+
 \end{aosasect1}
 
 \begin{aosasect1}{The Object Database}
 
-Git has four basic primitive objects that every containing content in the
-local repository is built on top of. Each object type above has the following
+\aosafigure{../images/git/object-hierarchy.png}{Git Objects}{fig.git.objects}
+
+Git has four basic primitive objects that every type of content in the
+local repository is built around. Each object type has the following
 attributes: \emph{type}, \emph{size} and \emph{content}. The primitive object
 types are:
 \begin{aosaitemize}
@@ -267,8 +294,6 @@ types are:
   \item \emph{Tag}: a tag has a name and points to a commit at the point in
   the repository history that the tag represents
 \end{aosaitemize}
-
-\aosafigure{../images/git/git-objects.png}{Git Objects}{fig.git.objects}
 
 All object primitives are referenced by a SHA, a 40-digit object identity,
 which has the following properties:
