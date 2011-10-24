@@ -74,6 +74,45 @@ of this title series.
 
 \end{aosasect1}
 
+\begin{aosasect1}{Version Control System (VCS) Landscape}
+
+Now is a good time to take a step back and look at the alternative VCS soltuions
+to Git. How the solutions differ will help us use Git in ways congruent with
+its underlying design philosophy and hopefully avoid common mistakes when
+migrating to Git from fundamentally different VCSes.
+
+As mentioned previously in this chapter, Git is a distributed VCS. What does
+this mean?
+
+On a fundamental level it means it is not \emph{necessary} to have
+a centralized, all-knowing repository that will be the only canonical source
+of truth for the repository. However, that doesn't prevent us for using it
+in this way if we so wish to do so. Though it still may not behave exactly like
+some of the centralized VCS solutions you might be familiar with already. For
+example, a commit can only be created if the centralized Subversion repository
+accepts it at the moment of submission. Whereas a local commit could be created
+in Git and when attempting to push to the "centralized" remote Git repository,
+we may be required to rebase or otherwise rewrite our local history to
+successfully record our changes with this remote (e.g. to share with others).
+
+...
+
+TODO: Flesh out this section. Overview:
+* This section will describe the two primary classification dimensions to
+Version Control Systems (VCS) today:
+
+\begin{aosaitemize}
+  \item Distribution mode: local, client/server, distributed
+  \item Storage mode: changeset based vs directed acyclic graph (DAG) based
+\end{aosaitemize}
+
+Provide examples of different VCSes and how they fit in to these
+classifications, e.g. Subversion (client/server + changeset), Mercurial
+(distributed + changeset), BitKeeper (client/server + DAG), etc.
+
+\end{aosasect1}
+
+
 \begin{aosasect1}{The Toolkit}
 
 Today the Git ecosystem posesses many GUIs on a number of operating systems.
@@ -219,27 +258,6 @@ of your existing filesystem.
 
 TODO: More to discuss here. Use plumbing commands like 'git show' and 'git cat-file'
 to demonstrate how the primitives work together and build on top of each other.
-
-\end{aosasect1}
-
-\begin{aosasect1}{Version Control System (VCS) Landscape}
-
-Now is a good time to take a step back and look at the alternative VCS soltuions
-to Git. How the solutions differ will help us understand Git's importance and why
-developers have been rapidly adopting it.
-
-TODO: Flesh out this section. Overview:
-* This section will describe the two primary classification dimensions to
-Version Control Systems (VCS) today:
-
-\begin{aosaitemize}
-  \item Distribution mode: local, client/server, distributed
-  \item Storage mode: changeset based vs directed acyclic graph (DAG) based
-\end{aosaitemize}
-
-Provide examples of different VCSes and how they fit in to these
-classifications, e.g. Subversion (client/server + changeset), Mercurial
-(distributed + changeset), BitKeeper (client/server + DAG), etc.
 
 \end{aosasect1}
 
