@@ -68,27 +68,26 @@ Torvald's goals for Git from the outset were:
 
 \begin{aosasect1}{The Toolkit}
 
-Today the Git ecosystem posesses many GUIs on a number of operating systems.
-These are all built on top of Git core.
+Today the Git ecosystem posesses many user interfaces on a number of operating
+systems. These are all built on top of Git core.
 
 Due to the way it was originally written by Linus and its inception within
-the Linux community it was written around
-a toolkit design philosphy very much in the Unix tradition of command line
-tools.
+the Linux community it was written around a toolkit design philosphy very
+much in the Unix tradition of command line tools.
 
 The Git toolkit is divided into two parts: the plumbing and
 the porcelain. The plumbing consists of low-level commands that enable
 the manipulation of directed acyclic graphs (DAG) and basic content
 tracking. The porcelain is the smaller subset of git commands that most
-end-users of Git are likely to need to use for maintaining repositories and
-communicating between repositories for collaboration.
+end-users of Git are likely to use for maintaining and communicating between
+repositories for collaboration.
 
 While the toolkit design has provided enough commands to offer
 fine grained access to functionality for many scripters, application developers
 complained about the lack of a linkable library for Git. The argument was
-that since the Git binary calls die(), it was not
-reentrant and GUIs, web interfaces or longer running services would have
-to fork/exec a call to the Git binary, which is often slow.
+that since the Git binary calls die(), it is not reentrant and GUIs, web
+interfaces or longer running services would have to fork/exec a call to the
+Git binary, which is often slow.
 
 Shawn Pearce spearheaded an effort to create a linkable Git library with
 more permissive licensing that didn't inhibit use of the library. This was 
