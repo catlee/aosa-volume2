@@ -46,62 +46,69 @@ open source projects including the Linux Kernel. For a few years the
 Linux Kernel would be maintained across two VCS systems in this way.
 
 This ended during the first half of 2005, when BitMover retracted its
-"Free Use" version for many of the Linux Kernel developers and Git was born
-to fill the void.
+"Free Use" version for a number of key Linux Kernel developers and Git
+was born to fill the void.
 
 In April 2005, days after the BitMover announcement, Linus Torvalds began
 development in haste of what was to become Git as we know it today. He began
 by writing a collection of scripts to help him manage email patches
 to apply one after the other. The aim of this initial collection of scripts
 was to fail merges quickly so the maintainer could modify the codebase mid-
-patch stream to continue merging contributed patches once cleanly able to.
+patch stream and continue merging contributed patches once cleanly able to.
 
-Torvald's goals for Git from the outset were:
+Torvald's had one philosphical goal for Git - to embody the anti-CVS - plus
+three technical goals from the outset:
 \begin{aosaitemize}
-  \item Be the anti-CVS
-  \item Support distributed workflows like those enabled by BitKeeper
-  \item Offer safeguards against content corruption
-  \item Offer high performance
+  \item support distributed workflows like those enabled by BitKeeper
+  \item offer safeguards against content corruption
+  \item offer high performance
 \end{aosaitemize}
+
+Despite BitKeeper influencing the original design of Git, it is implemented
+in fundamentally different ways and allows even more distributed and even
+local-only workflows, which weren't possible with BitKeeper.
+
+Around this time (c2005) three other open source distributed VCS projects
+were initiated, including Mercurial, which was a project covered in volume 1
+of this title series.
 
 \end{aosasect1}
 
 \begin{aosasect1}{The Toolkit}
 
-Today the Git ecosystem posesses many user interfaces on a number of operating
-systems. These are all built on top of Git core.
+Today the Git ecosystem posesses many GUIs on a number of operating systems.
+These are mostly built on top of the Git core toolkit.
 
-Due to the way it was originally written by Linus and its inception within
-the Linux community it was written around a toolkit design philosphy very
-much in the Unix tradition of command line tools.
+Due to the way Git was originally written by Linus and its inception within
+the Linux community it was written with a toolkit design philosphy very much
+in the Unix tradition of command line tools.
 
 The Git toolkit is divided into two parts: the plumbing and
 the porcelain. The plumbing consists of low-level commands that enable
 the manipulation of directed acyclic graphs (DAG) and basic content
 tracking. The porcelain is the smaller subset of git commands that most
-end-users of Git are likely to use for maintaining and communicating between
-repositories for collaboration.
+end-users of Git are likely to need to use for maintaining repositories and
+communicating between repositories for collaboration.
 
-While the toolkit design has provided enough commands to offer
-fine grained access to functionality for many scripters, application developers
-complained about the lack of a linkable library for Git. The argument was
-that since the Git binary calls die(), it is not reentrant and GUIs, web
-interfaces or longer running services would have to fork/exec a call to the
-Git binary, which is often slow.
+While the toolkit design has provided enough commands to offer fine grained
+access to functionality for many scripters, application developers
+complained about the lack of a linkable library for Git. Since the Git binary
+calls die(), it was not reentrant and GUIs, web interfaces or longer running
+services would have to fork/exec a call to the Git binary, which can be slow.
 
 Shawn Pearce spearheaded an effort to create a linkable Git library with
-more permissive licensing that didn't inhibit use of the library. This was 
-called libgit2. It didn't find much traction until a student named, Vincent 
-Marti chose it for his Google Summer of Code project last year. Since then 
-Vincent and GitHub have continued contributing to the libgit2 project and 
-created Ruby bindings for it in a project called Rugged. More recently 
-Python bindings around libgit2 have emerged in an open source project 
-called pygit2. These three open source projects are maintained independently 
+more permissive licensing that didn't inhibit use of the library. This was
+called libgit2. It didn't find much traction until a student named, Vincent
+Marti chose it for his Google Summer of Code project last year. Since then
+Vincent and GitHub have continued contributing to the libgit2 project and
+created Ruby bindings for it in a project called Rugged. More recently
+Python bindings around libgit2 have emerged in an open source project
+called pygit2. These three open source projects are maintained independently
 of the Git core project.
 
 As you can see today there is a wide array of ways to integrate with Git.
 From the plumbing portion of the toolkit, procelain layer and now the
-linkable library, libgit2 and its offshoots in Ruby and Python.
+linkable library, libgit2 and its offshoots.
 \end{aosasect1}
 
 \begin{aosasect1}{The Repository}
@@ -109,38 +116,90 @@ linkable library, libgit2 and its offshoots in Ruby and Python.
 Let us get our hands dirty and dive into using Git locally, if only to
 understand a few fundamental concepts.
 
-First let us create a new Git repository on our local filesystem. On a Unix 
-inspired operating system this could be done like so:
+First to create a new initialized Git repository on our local filesystem
+(using a Unix inspired operating system) we can do:
 \begin{aosaitemize}
   \item \code{mkdir testgit}
   \item \code{cd testgit}
   \item \code{git init}
 \end{aosaitemize}
 
-Now we have an empty, but initialized Git repository sitting in our testgit 
+Now we have an empty, but initialized Git repository sitting in our testgit
 directory. We can branch, commit, tag and even communicate with other local
 and remote Git repositories. Even communication with other types of VCS
-repositories is possible.
+repositories is possible with just a handful of \code{git} commands.
+
+The \code{git init} command creates a .git subdirectory inside of testgit.
+Let us have a peak inside of it:
+\begin{aosaitemize}
+  \item \code{tree .git/}\newline
+  \code{
+.git/\newline
+|-- HEAD\newline
+|-- config\newline
+|-- description\newline
+|-- hooks\newline
+|   |-- applypatch-msg.sample\newline
+|   |-- commit-msg.sample\newline
+|   |-- post-commit.sample\newline
+|   |-- post-receive.sample\newline
+|   |-- post-update.sample\newline
+|   |-- pre-applypatch.sample\newline
+|   |-- pre-commit.sample\newline
+|   |-- pre-rebase.sample\newline
+|   |-- prepare-commit-msg.sample\newline
+|   |-- update.sample\newline
+|-- info\newline
+|   |-- exclude\newline
+|-- objects\newline
+|   |-- info\newline
+|   |-- pack\newline
+|-- refs\newline
+    |-- heads\newline
+    |-- tags\newline
+}
+\end{aosaitemize}
+
+The .git directory above is by default located inside the root working
+directory, testgit. It contains a few different types of files and
+directories:
+\begin{aosaitemize}
+  \item \emph{Configuration}: the .git/config, .git/description and
+  .git/info/exclude files essentially help configure the local repository.
+  \item \emph{Hooks}: the .git/hooks directory contains scripts that can
+  be run on certain lifecycle events of the repository.
+  \item \emph{Staging Area}: the .git/index file (which is not yet
+  present in our tree listing above) will provide a staging area for our
+  working directory.
+  \item \emph{Object Database}: the .git/objects directory is the default
+  Git object database, which contains all content or pointers to local content.
+  \item \emph{References}: the .git/refs directory is the default location
+  for storing reference pointers for both local and remote branches, tags and
+  heads.
+\end{aosaitemize}
+
 
 \end{aosasect1}
 
-\begin{aosasect1}{The Primitives}
+\begin{aosasect1}{The Object Database}
 
-Git has four basic primitive objects that everything else in the local
-repository is built on top of:
+Git has four basic primitive objects that every containing content in the local
+repository is built on top of. Each object type above has the following
+attributes: \emph{type}, \emph{size} and \emph{content}. The primitive object
+types are:
 \begin{aosaitemize}
-  \item Tree
-  \item Blob
-  \item Commit
-  \item Tag
+  \item \emph{Tree}: elements in a tree can be another tree or a blob when
+  representing a content directory.
+  \item \emph{Blob}: a blob represents a file stored in the repository.
+  \item \emph{Commit}: a commit points to a tree representing the top level
+  directory for that commit as well as parent commits and standard attributes.
+  \item \emph{Tag}: a tag has a name and points to a commit at the point in the
+  repository history that the tag represents
 \end{aosaitemize}
 
-\aosafigure{../images/git/git-objects.png}{Git Objects}{fig.git.objects}[scale=0.2]
+\aosafigure{../images/git/git-objects.png}{Git Objects}{fig.git.objects}
 
-Each of the object types above all have the following elements: type, size and
-content.
-
-Each of these primitives is references by a SHA, a 40-digit object identity,
+All object primitives are referenced by a SHA, a 40-digit object identity,
 which has the following properties:
 \begin{aosaitemize}
   \item if two objects are identical they will have the same SHA
@@ -166,7 +225,7 @@ to demonstrate how the primitives work together and build on top of each other.
 \begin{aosasect1}{Version Control System (VCS) Landscape}
 
 Now is a good time to take a step back and look at the alternative VCS soltuions
-to Git. How the solutions differ will help us understand Git's importance and why 
+to Git. How the solutions differ will help us understand Git's importance and why
 developers have been rapidly adopting it.
 
 TODO: Flesh out this section. Overview:
@@ -187,7 +246,7 @@ classifications, e.g. Subversion (client/server + changeset), Mercurial
 \begin{aosasect1}{Gitting Started}
 
 TODO: This may still be included to show off more plumbing commands as well as the major
-porcelain commands and also help explain repository-to-repository commands and 
+porcelain commands and also help explain repository-to-repository commands and
 collaboration.
 
 Here I will describe the most rudimentary workflow of installing, configuring
