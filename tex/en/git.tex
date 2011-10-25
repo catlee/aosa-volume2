@@ -252,16 +252,16 @@ directories:
 This is the actual repository. The directory that contains the working set
 of files is the \emph{working directory}, which is typically the parent of
 the .git directory (or \emph{repository}). If you were creating a Git
-remote repository that wouldn't have a working directory you might
+remote repository that wouldn't have a working directory you could
 initialize it using the \code{git init --bare} command.
 
 Another file of great importance is the \emph{Git index}. It provides the
 staging area between the local working directory and the local repository.
-The index is used to staging specific changes within a file (or more) to
-be committed all together. Even if you make various changes related to
-multiple types of changes, the commits can be made with like changes
-together to better describe them. To selectively staging specific changes
-in a file or set of files you can using \code{git add -p}.
+The index is used to stage specific changes within a file (or more) to
+be committed all together. Even if you make changes related to various types
+of changes, the commits can be made with like changes together to more
+logically describe them in the commit message. To selectively staging
+specific changes in a file or set of files you can using \code{git add -p}.
 
 The \emph{Git index}, by default, is stored as a single file inside the
 repository directory. The paths to these three areas can be customized
