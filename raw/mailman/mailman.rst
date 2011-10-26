@@ -18,20 +18,14 @@ the Python world to be running a Perl-based mailing list, and besides, it was
 too difficult to make the changes we needed to Majordomo.  Ken Manheimer was
 instrumental in resurrecting an early version of Mailman from John's failed
 hard drive.  Many excellent developers have contributed to Mailman since then,
-and today, Mark Sapiro is maintaining the stable 2.1 branch, while I
-concentrate on the new 3.0 version.
+and today, Mark Sapiro is maintaining the stable 2.1 branch, while Barry
+Warsaw concentrates on the new 3.0 version.
 
-Many of the early architectural decisions John made have lived on in the code
-right up until the Mailman 3 branch, and in fact can still be seen in the
-stable branch.  Given that Mailman is at least 15 years old, this is a
-testament to the good decisions John made originally, as well as to the
-strengths of Python to allow us to evolve and improve some of the more fragile
-parts of the system.  It also goes to show you how a vibrant community can
-work around well-known limitations that can't be fixed with anything short of
-a rewrite.  In the sections that follow, I touch on some of the more
-problematic design decisions that have been (hopefully) fixed by the new
-Mailman 3 code base.
-
+Many of the original architectural decisions John made have lived on in the
+code right up until the Mailman 3 branch, and in fact can still be seen in the
+stable branch.  In the sections that follow, I touch on how we've addressed
+some of the more problematic design decisions in Mailman 3.
+    
 In the early Mailman 1.x days, we had a lot of problems with messages getting
 lost, or bugs causing messages to be re-delivered over and over again.  This
 prompted us to articulate two overriding principles that I think were critical
@@ -40,74 +34,69 @@ to Mailman's ongoing success:
  * No message should ever get lost
  * No message should ever be delivered twice
 
-In the Mailman 2.0 time frame, we really hammered on the architecture, and
-specifically the design of the queue runner system, to ensure that these two
-principles would always be of prime importance.  I'll talk about this system
-later, but I do strongly feel that its delivery reliability, which has been
-stable for at least a decade now, is one of the key reasons that Mailman is as
-ubiquitous as it is today.  Despite the modernization to this subsystem in
-Mailman 3, the design and implementation remains largely unchanged.
+In Mailman 2.0 we re-design the message handling system, to ensure that these
+two principles would always be of prime importance.  This part of the system
+has been stable for at least a decade now, and is one of the key reasons that
+Mailman is as ubiquitous as it is today.  Despite modernizing this subsystem
+in Mailman 3, the design and implementation remains largely unchanged.
 
 
 The anatomy of a message
 ========================
 
-As you might guess, one of the core data structures in the system is the
-*email message*.  In fact, many of the interfaces, functions, and methods in
-the system take three arguments: the mailing list object, the message object,
-and a metadata dictionary that is used to record and communicate state while a
-message is processed through the system.
+One of the core data structures in Mailman is the *email message*.  Many of
+the interfaces, functions, and methods in the system take three arguments: the
+mailing list object, the message object, and a metadata dictionary that is
+used to record and communicate state while a message is processed through the
+system.
 
 On the face of it, an email message is a simple object.  It consists of a
 number of colon-separated key-value pairs, called the headers, followed by an
-empty line which separates the headers from the message body.  You'd think
-this type of textural representation would be easy to parse, generate, reason
-about, and manipulate, but in fact you'd be wrong!  There are countless RFCs
-that describe all the crazy variations that can occur, such as handling
-complex data types like images, audio, and more.  Email can contain ASCII
-English, or just about any language and character set in existence.  The basic
-structure of an email message has been borrowed over and over again for other
-protocols, such as NNTP and HTTP, yet each is slightly different.  Work on
-Mailman has spawned several libraries just to deal with the vagaries of email,
-and development is ongoing even today to fix and improve the email package in
-the Python standard library so that it is more standards-compliant and robust.
+empty line which separates the headers from the message body.  This textural
+representation should be easy to parse, generate, reason about, and
+manipulate, but in fact, it quickly gets quite complicated.  There are
+countless RFCs that describe all the variations that can occur, such as
+handling complex data types like images, audio, and more.  Email can contain
+ASCII English, or just about any language and character set in existence.  The
+basic structure of an email message has been borrowed over and over again for
+other protocols, such as NNTP and HTTP, yet each is slightly different.  Work
+on Mailman has spawned several libraries just to deal with the vagaries of
+this format (often called *RFC822* for the founding IETF standard), and
+development is ongoing even today to fix and improve the email package in the
+Python standard library so that it is more standards-compliant and robust.
 
 Within Mailman, an email message is represented as a tree of connected message
-objects, with a single message at the root.  Those of you poor souls
-intimately familiar with the email-related RFCs, and in particular the MIME
-standards, will know that a message can be a *multipart*, which is actually a
-container object with various types and numbers of sub-message parts.  In
-Mailman, we usually talk about this as the *message object tree*, and we pass
-this tree around by reference to the root message object.
+objects, with a single message at the root.  The MIME standards define an
+extension to messages, where they can also be a container object with various
+types and numbers of sub-message parts.  Mailman often refers to the *message
+object tree*, and we pass this tree around by reference to the root message
+object.
 
 Mailman will almost always modify the original message in some way.
 Sometimes, the transformations can be fairly benign, such as adding or
 removing headers.  Sometimes, we'll completely change the structure of this
-message object tree, such as when the content filter rips out certain content
+message object tree, such as when the content filter removes certain content
 types like HTML, images, or other non-text parts.  Mailman might even collapse
-multipart/alternatives (i.e. where a message appears as both plain text and as
-some rich text type), or add addition parts to contain information about the
-mailing list itself.
+`multipart/alternatives` (i.e. where a message appears as both plain text and
+as some rich text type), or add additional parts containing information about
+the mailing list itself.
 
-As you'll see in the section about the queue system, we generally parse the
-*on the wire* bytes representation of a message just once, when it first comes
-into the system.  From then on, we deal only with the message object tree
-until we're ready to send it back out to the outgoing mail server.  It's at
-that point that we flatten the tree back to a bytes representation.  Along the
-way, we might pickle the message object tree for quick storage to, and
-reconstruction from, the file system.  *Pickles* are a Python technology for
-serializing any Python object, including all its subobjects, and it's
-perfectly suited to optimizing the handling of email message object trees.
+Mailman generally parses the *on the wire* bytes representation of a message
+just once, when it first comes into the system.  From then on, it deals only
+with the message object tree until it's ready to send it back out to the
+outgoing mail server.  It's at that point that Mailman flattens the tree back
+into a bytes representation.  Along the way, Mailman pickles the message
+object tree for quick storage to, and reconstruction from, the file system.
+*Pickles* are a Python technology for serializing any Python object, including
+all its subobjects, and it's perfectly suited to optimizing the handling of
+email message object trees.
 
 
 The mailing list
 ================
 
-As you've probably inferred, the *mailing list* is another core object in the
-Mailman system.  Mailing list objects have undergone some radical redesigns in
-Mailman 3, and I'll go into some details of that in a bit.  For now, it's
-important to understand that most of the operations in Mailman are mailing
-list-centric.  Here are some examples:
+The *mailing list* is obviously another core object in the Mailman system, and
+most of the operations in Mailman are mailing list-centric, such as:
 
  * Membership is defined in terms of a user or address being subscribed to a
    specific mailing list.
@@ -121,7 +110,11 @@ list-centric.  Here are some examples:
  * Users post new messages to a specific mailing list.
 
 and so on.  Almost every operation in Mailman takes a mailing list as an
-argument, it's that fundamental.
+argument, it's that fundamental.  Mailing list objects have undergone a
+radical redesign in Mailman 3 to make them more efficient and to expand their
+flexibility.
+
+**[XXX pick up second draft pass from here - Barry]**
 
 One of John's earliest design decisions was how to represent a mailing list
 object inside the system.  Naturally, he chose a Python class, with attributes
@@ -132,6 +125,7 @@ parameters.  This made it really easy to add entirely new functionality.  By
 grafting on a new mixin class, the core ``MailList`` class could easily
 accommodate something new and cool.
 **[Will readers know what a mixin class is? - Amy]**
+**[Good question - I can address this in the next draft pass - Barry]**
 
 For example, in Mailman 2, when we wanted to add an auto-responder, we just
 created a mixin to hold the data specific to that feature, and they would get
