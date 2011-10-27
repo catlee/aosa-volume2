@@ -25,7 +25,7 @@ Many of the original architectural decisions John made have lived on in the
 code right up until the Mailman 3 branch, and in fact can still be seen in the
 stable branch.  In the sections that follow, I touch on how we've addressed
 some of the more problematic design decisions in Mailman 3.
-    
+
 In the early Mailman 1.x days, we had a lot of problems with messages getting
 lost, or bugs causing messages to be re-delivered over and over again.  This
 prompted us to articulate two overriding principles that I think were critical
@@ -114,40 +114,43 @@ argument, it's that fundamental.  Mailing list objects have undergone a
 radical redesign in Mailman 3 to make them more efficient and to expand their
 flexibility.
 
-**[XXX pick up second draft pass from here - Barry]**
-
 One of John's earliest design decisions was how to represent a mailing list
-object inside the system.  Naturally, he chose a Python class, with attributes
-and methods to represent the configuration and operations of the mailing list.
-In fact, he structured the code in a clever way: by using multiple
-inheritance, each mixin class provided a related set of operations and
-parameters.  This made it really easy to add entirely new functionality.  By
-grafting on a new mixin class, the core ``MailList`` class could easily
-accommodate something new and cool.
-**[Will readers know what a mixin class is? - Amy]**
-**[Good question - I can address this in the next draft pass - Barry]**
+object inside the system.  For this central data type, he chose a Python class
+with multiple base classes, each of which implements a small part of the
+mailing list's responsibility.  These cooperating base classes, called *mixin
+classes* were a clever way to organize the code so that it was easy to add
+entirely new functionality.  By grafting on a new mixin base class, the core
+``MailList`` class could easily accommodate something new and cool.
 
-For example, in Mailman 2, when we wanted to add an auto-responder, we just
-created a mixin to hold the data specific to that feature, and they would get
-automatically initialized when a new mailing list was created.
+For example, to add an auto-responder to Mailman 2, a mixin class was created
+that held the data specific to that feature, which would get automatically
+initialized when a new mailing list was created.  The mixin class also
+provided the methods necessary to support the auto-responder feature.
 
 This structure was even more useful when it came to the question of
-persistence.  Obvious, we would have to somehow store the state of a mailing
-list on disk to preserve it when Mailman was stopped and started.  Another of
-John's early design decisions was to use pickles here too.  The ``MailList``'s
-state was stored in a file called ``config.pck``, which was just the pickled
-representation of the ``MailList``'s dictionary.  Every Python object has an
-attribute dictionary called ``__dict__``.  Saving a mailing list object then
-was just a matter of pickling its ``__dict__`` to a file, and loading it just
-involved reading the pickle from the file and reconstituting its ``__dict__``.
+persistence.  *Persistence* is the storage and retrieval of program state in
+order to preserve it between stops and starts.  Another of John's early design
+decisions was to use Python *pickles* ``MailList`` state persistence.
+*Pickling* is a Python technology for serializing an object's state to a byte
+stream, and *unpickling* is deserializing this byte stream back into a live
+object.  By storing these byte streams in a file, Python programs gain low
+cost persistence.
 
-Thus, when we added a new mixin class to implement some new functionality, all
-the attributes of the mixin were automatically pickled and unpickled
+In Mailman 2, the ``MailList`` object's state is stored in a file called
+``config.pck``, which is just the pickled representation of the ``MailList``
+object's dictionary.  Every Python object has an attribute dictionary called
+``__dict__``.  Saving a mailing list object then was just a matter of pickling
+its ``__dict__`` to a file, and loading it just involved reading the pickle
+from the file and reconstituting its ``__dict__``.
+
+Thus, when a new mixin class was added to implement some new functionality,
+all the attributes of the mixin were automatically pickled and unpickled
 appropriately.  The only extra work we had to do was to maintain a *schema
 version number* to automatically upgrade older mailing list objects when new
-features were added.
+attributes were added via the mixin, since the pickled representation of older
+``MailList`` objects would be missing the new attributes.
 
-As cool as this was, both the mixin architecture and pickle persistence
+As convenient as this was, both the mixin architecture and pickle persistence
 eventually crumbled under their own weight.  Site administrators often
 requested ways to access the mailing list configuration variables via
 external, non-Python systems.  But the pickle protocol is entirely
@@ -160,20 +163,21 @@ part of Mailman wants to change the state of a mailing list, it must acquire
 the lock, write out the change, then release the lock.  This serialization of
 operations on a mailing list turned out to be horribly slow and inefficient.
 
-For these reason, Mailman 3 moved everything into a SQL database.  By default
-SQLite3 is used, though this is easily changed, since Mailman 3 utilizes the
-Object Relational Mapper called Storm, which supports a wide variety of
-databases.
+For these reasons, Mailman 3 stores all of its data in a SQL database.  By
+default SQLite3 is used, though this is easily changed, since Mailman 3
+utilizes the Object Relational Mapper called Storm, which supports a wide
+variety of databases.  PostgreSQL support was added with just a few lines of
+code, and a site administrator can enable it by changing one configuration
+variable.
 
 Another, bigger problem is that in Mailman 2, each mailing list is a silo.
-Sometimes, we want to do operations across many mailing lists, or even all of
-them.  For example, a user might want to temporarily suspend all their
-subscriptions when they go on vacation.  Or a site administrator might want to
-add some disclaimer to the welcome message of all of the mailing lists on her
-system.  Even the simple matter of figuring out which mailing lists a single
-address was subscribed to, required unpickling the state of every mailing list
-on the system, since membership information was kept in the ``config.pck``
-file too.
+Often operations span across many mailing lists, or even all of them.  For
+example, a user might want to temporarily suspend all their subscriptions when
+they go on vacation.  Or a site administrator might want to add some
+disclaimer to the welcome message of all of the mailing lists on her system.
+Even the simple matter of figuring out which mailing lists a single address
+was subscribed to required unpickling the state of every mailing list on the
+system, since membership information was kept in the ``config.pck`` file too.
 
 Another problem was that each ``config.pck`` file lived in a directory named
 after the mailing list, but Mailman was originally designed without
@@ -181,17 +185,18 @@ consideration of virtual domains.  This lead to a very unfortunate problem
 where two mailing lists could not have the same name in different domains.
 For example, if you owned both the ``example.com`` and ``example.org``
 domains, and you wanted them to act independently and allow for a different
-``foo`` mailing list in each, you cannot do this in Mailman 2, without
+``support`` mailing list in each, you cannot do this in Mailman 2, without
 modifications to the code, a barely-supported hook, or conventional
-workarounds that forced a different list name under the covers.
+workarounds that forced a different list name under the covers (such as what
+SourceForge does).
 
 This has been solved in Mailman 3 by changing the way mailing lists are
-identified, along with moving all the data into a traditional database.
-The *primary key* for the mailing list table is the *fully qualified list
-name* or as you'd probably recognize it, the posting address.  Thus
-``foo@example.com`` and ``foo@example.org`` are now completely independent
-rows in the mailing list table, and can easily co-exist in a single Mailman
-system.
+identified, along with moving all the data into a traditional database.  The
+*primary key* for the mailing list table is the *fully qualified list name* or
+as you'd probably recognize it, the posting address.  Thus
+``support@example.com`` and ``support@example.org`` are now completely
+independent rows in the mailing list table, and can easily co-exist in a
+single Mailman system.
 
 
 Runners
@@ -201,23 +206,23 @@ Messages flow through the system by way of a set of independent processes
 called *runners*.  Originally conceived as a way of predictably processing all
 the files found in a particular directory, there are now a few runners which
 don't process files in a directory but instead are simply independent
-processes that perform a specific task and are managed by a master runner.
-More on that later.  When a runner does manage the files in a directory, we
-sometimes call it a *queue runner*.
+processes that perform a specific task and are managed by a master process.
+More on that later.  When a runner does manage the files in a directory, it is
+called a *queue runner*.
 
 Mailman is religiously single threaded, even though there is significant
-parallelism to exploit.  For example, we can be accepting messages from the
-mail server at the same time we're sending messages out to recipients, or
-processing bounces, or archiving a message.  Parallelism in Mailman is
-achieved through the use of multiple processes, in the form of these runners.
-For example, there is an *incoming* queue runner with the sole job of
-accepting (or rejecting) messages from the upstream mail server.  There is an
-outgoing queue runner with the sole job of communicating with the upstream
-mail server over SMTP in order to send messages out to the final recipients.
-There's an archiver queue runner, a bounce processing queue runner, a queue
-runner for forwarding messages to an NNTP server, a queue runner for composing
-digests, and several others.  Runners which don't manage a queue include an
-LMTP runner and a REST HTTP runner.
+parallelism to exploit.  For example, Mailman can accep messages from the mail
+server at the same time it's sending messages out to recipients, or processing
+bounces, or archiving a message.  Parallelism in Mailman is achieved through
+the use of multiple processes, in the form of these runners.  For example,
+there is an *incoming* queue runner with the sole job of accepting (or
+rejecting) messages from the upstream mail server.  There is an outgoing queue
+runner with the sole job of communicating with the upstream mail server over
+SMTP in order to send messages out to the final recipients.  There's an
+archiver queue runner, a bounce processing queue runner, a queue runner for
+forwarding messages to an NNTP server, a runner for composing digests, and
+several others.  Runners which don't manage a queue include an LMTP runner and
+a REST HTTP runner.
 
 Each queue runner is responsible for a single directory, i.e. its *queue*.
 While the typical Mailman system can perform perfectly well with a single
@@ -232,11 +237,11 @@ pickle library is able to serialize and deserialize multiple objects to a
 single file, so we can pickle both the message object tree and metadata
 dictionary into one file.
 
-There is a core Mailman class called Switchboard which provides an interface
-for enqueuing (i.e. writing) and dequeuing (i.e. reading) the message object
-tree and metadata dictionary to files in a specific queue directory.  Every
-queue directory has at least one switchboard instance, and every queue runner
-instance has exactly one switchboard.
+There is a core Mailman class called ``Switchboard`` which provides an
+interface for enqueuing (i.e. writing) and dequeuing (i.e. reading) the
+message object tree and metadata dictionary to files in a specific queue
+directory.  Every queue directory has at least one switchboard instance, and
+every queue runner instance has exactly one switchboard.
 
 Pickle files all end in the ``.pck`` suffix, though you may also see ``.bak``,
 ``.tmp``, and ``.psv`` files in a queue.  These are used to ensure one of the
@@ -248,40 +253,40 @@ For really busy sites, Mailman supports running more than one runner process
 per queue directory, completely in parallel, with no communication between
 them or locking necessary to process the files.  It does this by naming the
 pickle files with a SHA1 hash, and then allowing a single queue runner to
-manage just a slice of the hash space.  So if you want to run two runners on
-the ``bounces`` queue, one would only process files from the top half of the
-hash space, and the other would only process files from the bottom half of the
-hash space.  The hashes are calculated using the contents of the pickled
-message object tree, plus the name of the mailing list that the message is
-destined for, plus a time stamp.  This makes the SHA1 hash effectively random,
-and thus on average a two-runner queue directory will have about equal amounts
-of work per process.  And because the hash space can be statically divided,
-these processes can operate on the same queue directory with no interference
-or communication necessary.
+manage just a slice of the hash space.  So if a site wants to run two runners
+on the ``bounces`` queue, one would process files from the top half of the
+hash space, and the other would process files from the bottom half of the hash
+space.  The hashes are calculated using the contents of the pickled message
+object tree, plus the name of the mailing list that the message is destined
+for, plus a time stamp.  This makes the SHA1 hash effectively random, and thus
+on average a two-runner queue directory will have about equal amounts of work
+per process.  And because the hash space can be statically divided, these
+processes can operate on the same queue directory with no interference or
+communication necessary.
 
-You might have noticed that there's an interesting limitation to this
-algorithm: the number of runners per queue directory must be a power of 2.
-So, you can run 1, 2, 4, or 8 processes, but not for example, 5.  In practice
-this has never been a problem, since in practice few sites will ever need more
-than 4 processes to handle their load.
+There's an interesting limitation to this algorithm: the number of runners per
+queue directory must be a power of 2.  This means there can be 1, 2, 4, or 8
+runner processes per queue, but not for example, 5.  In practice this has
+never been a problem, since few sites will ever need more than 4 processes to
+handle their load.
 
-There's another side effect of this algorithm that did hurt us during the
-early design of this system.  It turns out to be really important to process
-queue files in FIFO order.  That's because, despite the unpredictability of
-email delivery, you'd like that replies to a mailing list get sent out in
-roughly chronological order.  Not making your best attempt at doing so can
-cause even greater confusion to members.  But using SHA1 hashes as file names
-obliterates any timestamps, and for performance reasons you do not want to do
-a stat(2) of the file or have to unpickle the contents (e.g. to read a time
-stamp in the metadata) before you can sort the messages for processing.
+There's another side effect of this algorithm that did cause problems during
+the early design of this system.  Despite the unpredictability of email
+delivery in general, the best user experience is provided by processing the
+queue files in FIFO order, so that replies to a mailing list get sent out in
+roughly chronological order.  Not making a best effort attempt at doing so can
+cause confusion for members.  But using SHA1 hashes as file names obliterates
+any timestamps, and for performance reasons ``stat(2)`` calls on queue files,
+or unpickling the contents (e.g. to read a time stamp in the metadata) should
+be avoided.
 
-Our solution to this was to extend the file naming algorithm to include a time
-stamp prefix, as the number of seconds since the epoch.  Thus our files are
-named ``<timestamp>+<sha1hash>.pck``.  So, each loop through the queue runner
-only needs to do an ``os.listdir()`` to get all the files waiting to be
-processed, then split the file name and ignore any where the SHA1 hash doesn't
-match its slice of responsibility, then sort the files based on the timestamp
-part of the file name.
+Mailman's solution to this was to extend the file naming algorithm to include
+a time stamp prefix, as the number of seconds since the epoch, e.g.
+``<timestamp>+<sha1hash>.pck``.  Thus each loop through the queue runner only
+needs to do an ``os.listdir()`` to get all the files waiting to be processed,
+then split the file name and ignore any where the SHA1 hash doesn't match its
+slice of responsibility, then sort the files based on the timestamp part of
+the file name.
 
 In practice this has worked extremely well for at least a decade, with only
 the occasional minor bug fix or elaboration to handle obscure corner cases and
@@ -289,31 +294,31 @@ failure modes.  It's one of the most stable parts of Mailman and was largely
 ported untouched from Mailman 2 to Mailman 3.
 
 
-The master queue runner
-=======================
+The master runner
+=================
 
 "One process to rule them all."
 
-With all these runner processes, we needed a simple way to start and stop them
-consistently.  Thus the master runner process was born, and it must be able to
-handle both queue runners, and runners which do not manage a queue.  For
-example, in Mailman 3, we accept messages from the incoming upstream mail
+With all these runner processes, Mailman needed a simple way to start and stop
+them consistently.  Thus the master runner process was born, and it must be
+able to handle both queue runners, and runners which do not manage a queue.
+For example, in Mailman 3, we accept messages from the incoming upstream mail
 server via LMTP, which is a protocol similar to SMTP, but which operates only
 for local delivery and thus can be much simpler, as it doesn't need to deal
-with the vagaries of delivering mail over the wild and crazy unpredictable
-internet.  The LMTP runner simply listens on a port, waiting for its upstream
-mail server to connect and send it some message bytes.  It then parses this
-byte stream into a message object tree, creates an initial metadata dictionary
-and enqueues this into a processing queue directory.
+with the vagaries of delivering mail over an unpredictable internet.  The LMTP
+runner simply listens on a port, waiting for its upstream mail server to
+connect and send it a byte stream.  It then parses this byte stream into a
+message object tree, creates an initial metadata dictionary and enqueues this
+into a processing queue directory.
 
-We also have a runner that listens on another port and processes REST requests
-over HTTP.  More on this later, but this process doesn't actually touch any
-files on disk at all.
+Mailman also has a runner that listens on another port and processes REST
+requests over HTTP.  More on this later, but this process doesn't actually
+handle queue files at all.
 
-Still, a typical running Mailman system might have 8 or 10 processes, and they
-all need to be stopped and started appropriately and conveniently.  They can
-also crash occasionally, for example when a bug in Mailman causes an exception
-to occur that isn't caught.  In cases like this, the master will restart the
+A typical running Mailman system might have 8 or 10 processes, and they all
+need to be stopped and started appropriately and conveniently.  They can also
+crash occasionally, for example when a bug in Mailman causes an exception to
+occur that isn't caught.  In cases like this, the master will restart the
 runner process, and because of the "never lose a message" and "never deliver a
 message twice" mantras, it will generally just pick up where it left off.
 
@@ -341,7 +346,7 @@ handlers with the following semantics:
  * SIGINT - also used to intentionally stop the subprocess, it's the signal
    that occurs when *control-C* is used in a shell.  The runner is not
    restarted.
- * SIGHUP - tells the process to close and reopen their log files, but to keep
+ * SIGHUP - tells the process to close and reopen its log files, but to keep
    running.  This is used when rotating log files.
  * SIGUSR1 - initially stop the subprocess, but allow the master to restart
    the process.  This is used in the ``restart`` command of init scripts.
@@ -358,25 +363,25 @@ because the master acquires a file lock with a lifetime of about a day and a
 half, to ensure that only one master is running at any one time.  Multiple
 masters would really screw things up!  Just to be safe though, the master
 wakes up about once a day and refreshes this file lock.  So the lock should
-never time out or be broken while Mailman is running, unless of course your
+never time out or be broken while Mailman is running, unless of course the
 system crashes, or the master is killed with an uncatchable signal.  In those
-cases, the command line interface to the master process provides a switch to
+cases, the command line interface to the master process provides an option to
 override a stale lock.
 
-This leads me to the last bit of the master watcher story, the command line
+This leads to the last bit of the master watcher story, the command line
 interface to it.  The actual master script takes very few command line
 options.  Both it and the queue runner scripts are intentionally kept simple.
 This wasn't the case in Mailman 2, where the master script was fairly complex
-and tried to do too much.  This made it more difficult to understand and
-debug.  In Mailman 3, the real CLI for the master process is in the
-``bin/mailman`` script, a kind of uber-script that contains a number of
-subcommands, in a style made popular by programs like Subversion.  This is
-nice because you only have a few programs that need to be installed on your
-shell's ``PATH``.  ``bin/mailman`` has subcommands to start, stop, and restart
-the master, as well as all the subprocesses, and also to cause all the log
-files to be reopened.  The ``start`` subcommand forks and execs the master
-process, while the others simply send the appropriate signal to the master,
-which then propagates it to its subprocesses as described above.
+and tried to do too much, which made it more difficult to understand and
+debug.  In Mailman 3, the real command line interface for the master process
+is in the ``bin/mailman`` script, a kind of meta-script that contains a number
+of subcommands, in a style made popular by programs like Subversion.  This
+reduces the number of programs that need to be installed on your shell's
+``PATH``.  ``bin/mailman`` has subcommands to start, stop, and restart the
+master, as well as all the subprocesses, and also to cause all the log files
+to be reopened.  The ``start`` subcommand forks and execs the master process,
+while the others simply send the appropriate signal to the master, which then
+propagates it to its subprocesses as described above.
 
 This improved separation of responsibility make it much easier to understand
 each individual piece.
@@ -414,65 +419,60 @@ right pipeline in the right location to accomplish the custom operation.
 One problem with this though was that mixing moderation and modification in
 the same pipeline became problematic.  The handlers had to be sequenced in the
 pipeline just so, or unpredictable or undesirable things would happen.
-Sometimes, you might just want to moderate the message without modifying it,
-or vice versa.  So in Mailman 3, we've split these two operations into
-separate subsystems.
+Sometimes it was desirable to moderate the message without modifying it, or
+vice versa.  In Mailman 3, these two operations have been split into separate
+subsystems.
 
-In Mailman 3, the LMTP runner parses the messages bytes into a message object
-tree and creates an initial metadata dictionary for the message.  It then
-enqueues these to one or another queue directory.  Some messages may be *email
-commands* (e.g. to join or leave a mailing list, to get automated help, etc.)
-which are handled by a separate queue.  Most messages are postings to the
-mailing list, and these get put in the *incoming* queue.  The incoming queue
-runner processes each message sequentially through a *chain* consisting of any
-number of *links*.  There is a built-in chain that most mailing lists use, but
-even this is configurable.
+As described previously, the LMTP runner parses an incoming byte stream into a
+message object tree and creates an initial metadata dictionary for the
+message.  It then enqueues these to one or another queue directory.  Some
+messages may be *email commands* (e.g. to join or leave a mailing list, to get
+automated help, etc.)  which are handled by a separate queue.  Most messages
+are postings to the mailing list, and these get put in the *incoming* queue.
+The incoming queue runner processes each message sequentially through a
+*chain* consisting of any number of *links*.  There is a built-in chain that
+most mailing lists use, but even this is configurable.
 
 Each link in the chain contains three pieces of information: a rule name, an
 action, and a parameter for the action.  *Rules* are simple pieces of code
-which gets passed the typical three parameters, the mailing list, the message
+which gets passed the typical three parameters: the mailing list, the message
 object, and the metadata dictionary.  Rules are not supposed to modify the
-message, and make and return just a binary decision.  Did the rule match or
-not?  There are rules for recognizing pre-approved postings, for catching mail
-loops, and for recognizing various conditions which allow or disallow a
-posting.  It's important to note that the rule itself does not dispose of a
-disallowed posting, it just indicates whether the condition to disallow it
-matched or not.  Each rule that matches gets added to a list in the metadata
-dictionary, and each rule that misses gets added to a different list.  That
-way, later on, Mailman will know exactly which rules matched and which ones
-missed.
+message; they just make a binary decision and return a boolean, answering the
+question "did the rule match or not"?  There are rules for recognizing
+pre-approved postings, for catching mail loops, and for recognizing various
+conditions which allow or disallow a posting.  It's important to note that the
+rule itself does not dispose of a disallowed posting, it just indicates
+whether the condition to disallow it matched or not.  Each rule that matches
+gets added to a list in the metadata dictionary, and each rule that misses
+gets added to a different list.  That way, later on, Mailman will know exactly
+which rules matched and which ones missed.
 
-The central chain-processing loop then calls each rule in turn, and if the
-rule matches, it executes the chain link's action.  Most links defer action
-until later, which has the effect of grouping the moderation rules together, so
-that every cause for discarding a message can be recorded.  Actions can also
-*jump* to another chain, and there are chains which discard, reject
-(i.e. bounce back to the original author), and accept messages, as well as
-hold them for manual moderation.  Thus accepting a message is implemented in
-the chain as a jump to the standard *accept* chain.
+The central chain-processing loop then calls each link's rule in turn, and if
+the rule matches, it executes the link's action.  Most defer action until
+later, which has the effect of grouping the moderation rules together, so that
+every cause for discarding a message can be recorded.  Actions can also *jump*
+to another chain, and there are chains which discard, reject (i.e. bounce back
+to the original author), and accept messages, as well as hold them for manual
+moderation.  Thus accepting a message is implemented in the chain as a jump to
+the standard *accept* chain.
 
-A special action called *detour* can also be taken.  You can think of a detour
-as suspending the processing of the current chain, pushing its state on a
-stack, and jumping to a new chain.  When that new chain is exhausted, the old
-chain is popped off the stack and resumed at the next link.  Detours are
-currently only used to process a message through dynamically created chains,
-such as those that match header values based on database or configuration file
-entries.
-
-Because chains and rules are extensible and customizable, just about any
-processing pipeline you can imagine can be implemented.
+A special action called *detour* can also be taken.  A detour suspends the
+processing of the current chain, pushing its state on a stack, and jumping to
+a new chain.  When that new chain is exhausted, the old chain is popped off
+the stack and resumed at the next link.  Detours are used for example, to
+process a message through dynamically created chains, such as those that match
+header values based on database or configuration file entries.
 
 
 Handlers and pipelines
 ======================
 
-Let's say that once a message as made its way through the chains and rules,
-Mailman has determined that it can be posted to the mailing list.  Every
-subscribed member will get a copy of the message, but Mailman must first
-modify the message to meet its standards.  For example, some headers may get
-added or deleted, and some messages may get some extra decorations that
-provide useful information, such as how to leave the mailing list.  These
-modifications are performed by a *pipeline* which contains a sequence of
+Once a message as made its way through the chains and rules, and a message is
+accepted for posting, the message must be further processed before it can be
+delivered to the final recipients.  For example, some headers may get added or
+deleted, and some messages may get some extra decorations that provide
+important disclaimers or information, such as how to leave the mailing list.
+These modifications are performed by a *pipeline* which contains a sequence of
 *handlers*.  In a manner similar to chains and rules, pipelines and handlers
 are extensible, but there are a number of built-in pipelines for the common
 cases.  Handlers have a similar interface as rules, accepting a mailing list,
@@ -481,36 +481,36 @@ and do modify the message.
 
 For example, a posted message needs to have a ``Precedence:`` header added
 which tells other automated software that this message came from a mailing
-list.  This header is a defacto standard to prevent e.g. vacation programs
-from responding back to the mailing list.  Adding this header (among other
-header modifications) is done by the ``cook-headers`` handler.  Unlike with
-rules, handler order generally doesn't matter, although enqueuing the message
-to the outgoing, archiver, digest, and NNTP queue runners also happens via
-handlers, so these usually appear at the end of the pipeline.
+list.  This header is a defacto standard to prevent vacation programs from
+responding back to the mailing list.  Adding this header (among other header
+modifications) is done by the ``cook-headers`` handler.  Unlike with rules,
+handler order generally doesn't matter, although enqueuing copies of the
+message to the outgoing, archiver, digest, and NNTP queue runners also happens
+via handlers, so these usually appear at the end of the pipeline.
 
 
 VERP
 ====
 
 *VERP* stands for *Variable Envelope Return Path*, and it is a well-known
-technique that mailing lists can use to unambiguously determine recipient
-addresses which bounce.  When an address on a mailing list is no longer
-active, the recipient's mail server will bounce the message.  In the case of a
-mailing list, you want this bounce to go back to the mailing list, not to the
-original author of the message.  The author can't do anything about the
-bounce, and worse, sending the bounce back to the author can leak information
-about who is subscribed to the mailing list.  When the mailing list gets the
-bounce, it can does something useful, such as disable the bouncing address or
-remove it from the list's membership.
+technique that mailing lists can use to unambiguously determine bouncing
+recipient addresses.  When an address on a mailing list is no longer active,
+the recipient's mail server will send a notification back to the sender.  In
+the case of a mailing list, you want this bounce to go back to the mailing
+list, not to the original author of the message.  The author can't do anything
+about the bounce, and worse, sending the bounce back to the author can leak
+information about who is subscribed to the mailing list.  When the mailing
+list gets the bounce, it can do something useful, such as disable the bouncing
+address or remove it from the list's membership.
 
 There are two general problems with this.  First, even though there is a
-standard format for these bounces (called "delivery status notifications")
+standard format for these bounces (called *delivery status notifications*)
 many mail servers out there do not conform to it.  Instead, the body of their
 bounce messages can contain just about any amount of
-difficult-to-machine-parse gobbledygook, and of course you really want to
-automate the process of bounce detection.  In fact, Mailman uses a library
-that contains dozens of bounce format heuristics, which at least do better
-than nothing.
+difficult-to-machine-parse gobbledygook, which makes automated parsing
+difficult.  In fact, Mailman uses a library that contains dozens of bounce
+format heuristics, all of which have been seen in the wild during the 15 years
+of Mailman's existence.
 
 Second, imagine the situation where a member of a mailing list has several
 forwards.  She might be subscribed to the list with her anne@example.com
@@ -519,26 +519,27 @@ forward the message to me@example.net.  When the server at example.net gets
 the message at the final destination, it will usually just send a bounce
 saying that me@example.net is no longer valid.  But the Mailman server that
 sent the message only knows the member as anne@example.com, so the bounce
-flagging me@example.net will not contain a subscribed address, and will just
-get discarded.
+flagging me@example.net will not contain a subscribed address, and Mailman
+will ignore it.
 
 Along comes VERP, which exploits a requirement of the fundamental SMTP
 protocol to provide unambiguous bounce detection, by returning such bounce
 messages to the *envelope sender*.  This is not the ``From:`` field in the
-message body, but in fact the ``MAIL FROM`` value during the SMTP dialog.
+message body, but in fact the ``MAIL FROM`` value set during the SMTP dialog.
 This is preserved along the delivery route, and the ultimate receiving mail
-server is required by the protocol to send the bounces to this address.  We
-can use this fact to encode the original recipient email address into the
+server is required by the standards to send the bounces to this address.
+Mailman uses this fact to encode the original recipient email address into the
 ``MAIL FROM`` value.
 
-For example, let's say that the recipient is anne@example.com and the Mailman
-server is mylist@example.org.  The envelope sender for a mailing list posting
-sent to anne@example.com will be mylist-bounce+anne=example.com@example.org.
-The ``+`` here is a local address separator, which is a format supported by
-most modern mail servers.  So when the bounce comes back, it will actually get
-delivered to ``mylist-bounce@example.com`` but with the ``To:`` header still
-set to the encoded recipient address.  Mailman can then parse this ``To:``
-header to decode the original recipient, e.g. anne@example.com.
+If the recipient is anne@example.com and the Mailman server is
+mylist@example.org, then the VERP'd envelope sender for a mailing list posting
+sent to anne@example.com will be
+``mylist-bounce+anne=example.com@example.org``.  The ``+`` here is a local
+address separator, which is a format supported by most modern mail servers.
+So when the bounce comes back, it will actually get delivered to
+``mylist-bounce@example.com`` but with the ``To:`` header still set to VERP'd
+encoded recipient address.  Mailman can then parse this ``To:`` header to
+decode the original recipient, e.g. anne@example.com.
 
 While VERP is an extremely powerful tool for culling bad addresses from the
 mailing list, it does have one potentially important disadvantage.  Using VERP
@@ -561,102 +562,111 @@ REST
 One of the key architectural changes in Mailman 3 addresses a common request
 over the years: allow Mailman to be more easily integrated with external
 systems.  When I was hired by Canonical in 2007, my job was originally to add
-mailing lists to Launchpad.  I knew that Mailman 2 could do the job, but we
-had the pesky problem that the web ui would have to be thrown away because we
-did not want to expose Mailman's ancient circa-1996 user interface to users.
-Since Launchpad mailing lists were almost always going to be discussion lists,
-we wanted very little variability in the way they operated.  List
-administrators would not need the plethora of options available in the typical
-Mailman site, and what few options they would need could be specified through
-the Launchpad web ui.
+mailing lists to Launchpad.  I knew that Mailman 2 could do the job, but there
+was a requirement to use Launchpad's web user interface instead of Mailman's
+default user interface.  Since Launchpad mailing lists were almost always
+going to be discussion lists, we wanted very little variability in the way
+they operated.  List administrators would not need the plethora of options
+available in the typical Mailman site, and what few options they would need
+would be exposed through the Launchpad web ui.
 
-At the time, Launchpad was not open source, so we had to design the integration
-in such a way that Mailman 2's GPLv2 code could not infect Launchpad.  This
-led to a number of architectural decision during that integration design that
-were quite tricky and somewhat inefficient.  Because Launchpad is now open
-source, these hacks wouldn't be necessary today, but having to do it this way
-did provide some very valuable lessons on how a web ui-less Mailman could be
-integrated with external systems.  The vision I started to form was of a core
-engine that implemented mailing list operations efficiently and reliably, and
-that could be managed by any kind of web front-end, including ones written in
-Zope, Django, even non-Python frameworks such as PHP, or with no web ui at
-all.
+At the time, Launchpad was not open source (this changed in 2009), so we had
+to design the integration in such a way that Mailman 2's GPLv2 code could not
+infect Launchpad.  This led to a number of architectural decision during that
+integration design that were quite tricky and somewhat inefficient.  Because
+Launchpad is now open source, these hacks wouldn't be necessary today, but
+having to do it this way did provide some very valuable lessons on how a web
+ui-less Mailman could be integrated with external systems.  The vision that
+emerged was of a core engine that implemented mailing list operations
+efficiently and reliably, and that could be managed by any kind of web
+front-end, including ones written in Zope, Django, even non-Python frameworks
+such as PHP, or with no web ui at all.
 
 There were a number of technologies at the time that would allow this, and in
 fact Mailman's integration with Launchpad is based on XMLRPC.  But XMLRPC has
 a number of problems that make it a less than ideal protocol.
 
-A year or so after mailing lists became operational in Launchpad, we hired
-Leonard Richardson to design and implement an API for Launchpad so that it too
-could be managed, controlled, and queried without the use of the web ui.
-Leonard is an expert on REST (Representational State Transfer) defined by Roy
-Fielding in 2000, but only really becoming widely known years later.  Leonard
-had written the definitive O'Reilly book on REST, and was instrumental in
-teaching the Launchpad team the techniques and principles behind it.  He was
-one of the key architects and developers behind Launchpad's adoption of REST,
-but all the Launchpad developers at the time began exposing bits of Launchpad
-in the API.
+A year or so after mailing lists became operational in Launchpad, Canonical
+hired Leonard Richardson to design and implement an API for Launchpad so that
+it too could be managed, controlled, and queried without the use of the web
+ui.  Leonard is an expert on REST (Representational State Transfer) defined by
+Roy Fielding in 2000, but only really becoming widely known years later.
+Leonard had written the definitive O'Reilly book on REST, and was instrumental
+in teaching the Launchpad team the techniques and principles behind it.  He
+was one of the key architects and developers behind Launchpad's adoption of
+REST, and all the Launchpad developers at the time began exposing bits of
+Launchpad in the API.
 
-I drank the Kool-aid and became a big fan.  I soon realized that this was the
-perfect fit for Mailman 3 and began building an infrastructure for exposing
-Mailman's functionality though a REST API.
+REST was the perfect fit for Mailman 3, and now much of its functionality is
+exposed through a REST API.
 
-One problem was finding an appropriate toolkit to do this with.  It's not a
-particular goal of mine to implement all the HTTP bits and pieces, along with
-the dispatcher, response code, and object representation encoding necessary to
-make this work.  Fortunately Leonard and the other Launchpad developers had
-written a nice GPL-compatible library to hook Zope interfaces up to an API
-almost automatically.  I began using this library and had some initial
-successes.  But I soon ran into several roadblocks which caused me to abandon
-this library.  The primary reason was that, even though Mailman heavily uses
-Zope interfaces internally, it's not at all a Zope application the way
-Launchpad was.  Leonard's library worked beautifully for Zope applications,
-but it was unwieldy and much too heavyweight for a non-Zope application like
-Mailman.
-
-It was about this time that I attended a Python conference where a talk on
-``restish.io`` was given.  This seemed like exactly the kind of lightweight
-toolkit I needed, and indeed it was effortless (and kind of joyful) to rip
-out all the old REST stuff and re-implement it on top of restish.io.  Now, it
-takes me just minutes to expose some new functionality over REST.
-
-I'm convinced this is a powerful paradigm that more applications should
-adopt.  A core engine that implements its basic functionality well, with a
-REST API used to query and control it, is an architecture that is extremely
-flexible and can be used and integrated in ways that are beyond the initial
-vision of the system designers.  I'm excited when I hear how people want to
-use Mailman 3 in ways I didn't imagine, and I think "yes, you can do that via
-the REST API".
+This is a powerful paradigm that more applications should adopt: deliver a
+core engine that implements its basic functionality well, exposing a REST API
+to query and control it.  This architecture is extremely flexible and can be
+used and integrated in ways that are beyond the initial vision of the system
+designers.  The REST API provides yet another way of integrating with Mailman,
+the others being utilizing the command line interface, and writing Python code
+to access the internal API.
 
 Not only does this design allow for much greater choices for deployment, even
 the official components of the system can be designed and implemented
 independently.  For example, the new official web ui for Mailman 3 is
-technically a separate project with its own codebase, and in fact while I help
-inform its direction, I can leave the creation of it to much more talented web
-designers.  These outstanding developers are empowered to make decisions,
-create designs, and execute implementations without my being a bottleneck, or
-(hopefully!) a hindrance.  The web ui can feed back into the core engine
-implementation by requesting additional functionality, exposed through the
-REST API, but they needn't wait for it, since they can mock up the server side
-on their end and continue experimenting and developing the web ui.  Once the
-core engine catches up, they can hook it all together and watch it work for
-real.
+technically a separate project with its own code base, driven primarily by
+experienced web designers.  These outstanding developers are empowered to make
+decisions, create designs, and execute implementations without the core engine
+development being a bottleneck.  The web ui work feeds back into the core
+engine implementation by requesting additional functionality, exposed through
+the REST API, but they needn't wait for it, since they can mock up the server
+side on their end and continue experimenting and developing the web ui.  Once
+the core engine catches up, they can hook it all together and watch it work
+for real.
 
 We plan to use the REST API for many more things, including allowing the
 scripting of common operations, and even integration with IMAP or NNTP servers
 for alternative access to the archives.
 
 
+Internationalization
+====================
+
+GNU Mailman was one of the first Python programs to embrace
+internationalization.  Of course, because Mailman does not usually modify the
+contents of email messages posted through it, those messages can be in any
+language of the original author's choosing.  However, when interacting
+directly with Mailman, either through the web interface, or via email
+commands, users would prefer to use their own natural language.
+
+Mailman pioneered many of the technologies used in the Python world to
+internationalize applications, but it is actually much more complex than most
+applications.  In a typical desktop environment, the natural language is
+chosen when the user logs in, and remains static throughout the desktop
+session.  Mailman however is a server application, so it must be able to
+handle dozens of languages, separate from the language of the system on which
+it runs.  In fact, Mailman must somehow determine the *language context* that
+a response is to be returned under, and translate its text to that language.
+Sometimes a response may even involve multiple language, for example if a
+bounce message from a Japanese user is to be forwarded to list administrators
+who speak German, Italian, and Catalan.
+
+Again, Mailman pioneered some key Python technologies to handle complex
+language contexts such as these.  It utilizes a library that manages a stack
+of languages, which can be pushed onto and popped from as the context changes,
+even within the processing of a single message.  It also implements an
+elaborate scheme for customizing its response templates based on site
+preferences, list owner preferences, and language choice.
+
+
 Lessons
 =======
 
-Well, I've pretty much ran out of time, and there are lots of other
-interesting architectural decisions in Mailman which I can't cover.  These
-include the configuration subsystem, the testing infrastructure, the database
-layer, the use of interfaces, archiving, mailing list styles, the email
-commands and command line interface, internationalization, and integration
-with the outgoing mail server.  Contact us on the developers mailing list and
-I'm happy to go into more detail.
+While this article has provided an overview of Mailman 3's architecture, and
+insight into how that architecture has evolved over the 15 years of its
+existence (through three major rewrites), there are lots of other interesting
+architectural decisions in Mailman which I can't cover.  These include the
+configuration subsystem, the testing infrastructure, the database layer, the
+use of interfaces, archiving, mailing list styles, the email commands and
+command line interface, and integration with the outgoing mail server.
+Contact us on the developers mailing list if you're interested in more detail.
 
 To wrap up, here are some lessons I've learned while rewriting a popular,
 established, and stable piece of the open source ecosystem.
@@ -665,12 +675,12 @@ established, and stable piece of the open source ecosystem.
   largely lacks an automated test suite, and while it's true that not all of
   the Mailman 3 code base is covered by its test suite, most of it is, and all
   new code is required to be accompanied by tests, using either unittests or
-  doctests.  Doing TDD is the only way to give you confidence that the changes
+  doctests.  Doing TDD is the only way to gain the confidence that the changes
   you make today do not introduce regressions in existing code.  Yes, TDD can
   sometimes take longer, but think of it as an investment in the future
   quality of your code.  In that way, *not* having a good test suite means
   you're just wasting your time.  Remember the mantra: untested code is broken
-  code. 
+  code.
 
 * Get your bytes/strings story straight from the beginning.  In Python 3, a
   sharp distinction is made between unicode text strings and byte arrays,
@@ -687,20 +697,19 @@ established, and stable piece of the open source ecosystem.
   things like finding a ``Re:`` prefix in a ``Subject:`` header will be text
   operations, not byte operations.  Mailman's principle is to convert all text
   to unicode as early as possible, deal with the text as unicode internally,
-  and only convert it back to bytes on the way out.  It's critical to be clear
-  in your mind right from the start when you're dealing with bytes and when
-  you're dealing with text (unicode), since it's very difficult to retrofit
-  this fundamental model shift later.
+  and only convert it back to bytes on the way out.  It's critical to be
+  crystal clear from the start when you're dealing with bytes and when you're
+  dealing with text (unicode), since it's very difficult to retrofit this
+  fundamental model shift later.
 
 * Internationalize your application from the start.  Do you want your
-  application to only be used by the minority of the world that speaks English?
-  Think about how many fantastic users this ignores!  It's not hard to
-  set up internationalization, and Python provides lots of good tools for
-  making this easy, many of which were pioneered in Mailman.  I've even spun
-  off some higher level libraries that provide a very nice API for
-  internationalization.  Don't worry about the translations to start with, if
-  your application is accessible to the world's wealth of languages, you will
-  have volunteer translators knocking down your door to help.
+  application to only be used by the minority of the world that speaks
+  English?  Think about how many fantastic users this ignores!  It's not hard
+  to set up internationalization, and there are lots of good tools for making
+  this easy, many of which were pioneered in Mailman.  Don't worry about the
+  translations to start with, if your application is accessible to the world's
+  wealth of languages, you will have volunteer translators knocking down your
+  door to help.
 
 GNU Mailman is a vibrant project with a healthy user base, and lots
 of opportunities for contributions.  Here are some resources you can use if
