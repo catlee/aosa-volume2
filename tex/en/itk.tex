@@ -3,18 +3,18 @@
 % Your chapter goes here---please look at /volume1/tex/en/wesnoth.tex for
 % formatting ideas.
 
-\aosafigure{../images/itk/SoftwareAndCommunitySynergy.pdf}{Synergy between Software and Community}{fig.itk.synergy}
-
 \begin{aosasect1}{What Is ITK?}
-The Insight Toolkit ITK is a library for image analysis that was developed by
-the initiative, and mainly with the funding, of the US National Library of
-Medicine. ITK can be tought of as a usable encyclopedia of image analysis
-algorithms, in particular for image filtering, image segmentation and image
-registration. The library was developed by a consortium involving universities,
-commercial companies, and many individual contributors from around the world.
-Development of ITK started in 1999, and recently after its 10th anniversary
-the library underwent a refactoring process intended to remove crusty code and
-to reshape it for the next decade.
+The Insight Toolkit ITK\footnote{\url{http://www.itk.org}} is a library for
+image analysis that was developed by the initiative, and mainly with the
+funding, of the US National Library of
+Medicine\footnote{\url{http://www.nlm.nih.gov}}. ITK can be tought of as a
+usable encyclopedia of image analysis algorithms, in particular for image
+filtering, image segmentation and image registration. The library was developed
+by a consortium involving universities, commercial companies, and many
+individual contributors from around the world.  Development of ITK started in
+1999, and recently after its 10th anniversary the library underwent a
+refactoring process intended to remove crusty code and to reshape it for the
+next decade.
 \end{aosasect1}
 
 \begin{aosasect1}{Architectural Features}
@@ -37,6 +37,8 @@ Taken one step further, \emph{Conway's Law} can be extended to say that the
 design of the system also reflects the structure of the community that uses the
 software and the nature of the work they do with it. At least in the case of
 ITK this holds true. In short: \emph{Form follows Function}.
+
+\aosafigure{../images/itk/SoftwareAndCommunitySynergy.pdf}{Synergy between Software and Community}{fig.itk.synergy}
 
 This situation is really the consequence that software and community are not
 independent. Instead, they shape one another in a continuous synergistic
@@ -78,6 +80,7 @@ with a median filter to reduce its level of noise, as well as the outcome of an
 edge detection filter used to identify the borders of anatomical structures.
 
 \aosafigure{../images/itk/ExampleImageProcessingPipeline.pdf}{Image Processing Pipeline}{fig.itk.pipeline}
+
 
 %
 % NOTE to the EDITOR: We meant for these images to be rather small, and to be
@@ -150,12 +153,12 @@ into the main features of the architecture:
 
 \begin{aosasect2}{Modularity}
 Modularity is of the main characteristics of ITK. This is a requirement that
-emerges from the way the image analysis community work when solving their
-problems. Most image analysis problems require to put one or more input images
-through a combination of processing filters that enhance or extract particular
-pieces of information from the images. There is therefore, no single large
-processing object, but a myriad of small ones. This structural nature of the
-image processing problem maps to implement the software as well as a large
+emerges from the way people in the image analysis community work when solving
+their problems. Most image analysis problems require to put one or more input
+images through a combination of processing filters that enhance or extract
+particular pieces of information from the images. There is therefore, no single
+large processing object, but a myriad of small ones. This structural nature of
+the image processing problem maps to implement the software as a large
 collection of image processing filters that can be combined in many different
 ways.
 
@@ -178,7 +181,8 @@ groups filters together, according to the nature of the processing that they
 perform. For example, all filters that are related to Fourier Transforms will
 be put together into a Module. At the C++ level, Modules maps to directories in
 the source tree, and to libraries once the software is compiled. ITK currently
-has about 98 modules of different sizes. The size distribution is presented in
+has 98 modules, that are in turn aggregated into 16 major groups. The modules
+have a variety of different sizes. The size distribution is presented in
 Figure~\ref{fig.itk.modulesize}.
 
 \aosafigure{../images/itk/moduleSizePlot.pdf}{Distribution of Module Size in Bytes}{fig.itk.modulesize}
@@ -201,6 +205,7 @@ The modular architecture of ITK enables and facilitates:
 \item Evaluation of quality metric per module
 \item Building selected subsets of the toolkit
 \item Packaging selected subsets for redistribution
+\item Continued growth by progressive addition of more modules
 \end{itemize}
 \end{aosasect2}
 
