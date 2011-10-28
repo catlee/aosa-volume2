@@ -1,4 +1,5 @@
 <!-- vim: set ts=2 sw=2 tw=70: -->
+<!-- vim: set autoindent -->
 <html>
   <head>
     <style type="text/css">
@@ -63,9 +64,10 @@
     recently in how our release automation works and it's getting to
     be quite close to pushing a button, with minimal human
     interventions, eliminating many of the headaches and do-overs
-    that often resulted with our older, more manual processes. In this chapter we will explore
-    and explain the infrastructure decisions as well as scripts that
-    comprise the complete, and current, Firefox rapid release system.
+		that often resulted with our older, more manual processes. In this
+		chapter we will explore and explain the infrastructure decisions
+		as well as scripts that comprise the complete, and current,
+		Firefox rapid release system.
     </p>
     <p>
     You'll see the system from the perspective of a release-worthy
@@ -117,40 +119,51 @@
     When we started on the project to improve Mozilla's release
     process, we began with the premise that the more popular Firefox
     became, the more users we would have, the more attractive a target
-    Firefox would become, and hence the more often we would need to
-    quickly protect our users with a quick Firefox release fixing a
-    security exploit. We even have a term for this - a "chemspill"
-    release. Instead of being surprised by the occasional need for a
-    chemspill release in between our regularly scheduled releases, we
-    decided to plan as if every release could be a chemspill release,
-    and designed our release automation accordingly.
+    Firefox would become to "blackhat hackers" looking for security
+		vulnerabilities to exploit. Also, the more popular Firefox
+		becaome, the more users we would have to protect from a newly
+		discovered security vulnerability, so the more important it would
+		become to deliver the security fix as quickly as possible.  We
+		even have a term for this - a "chemspill" release. Instead of
+		being surprised by the occasional need for a chemspill release in
+		between our regularly scheduled releases, we decided to plan as if
+		every release could be a chemspill release, and designed our
+		release automation accordingly.
     </p>
     <p>
     This mindset had three important consequences:
     <ol><li>We do a postmortem after <b>every</b> release, and look to
-      see where things could be made smoother, easier, faster next
-      time. This constant polishing of our release automation
-      ("kaizen") has us always looking for ways to speed things up,
-      safely, with less human involvement. Even when we're already
-      fast enough for regular, non-chemspill releases, we understand
-      the value of each enhancement to our release automation if it
-      will speed up a release, make the process more robust, or reduce
-      the risk of any human error in a release.</li>
+			see where things could be made smoother, easier, faster next
+			time. If at all possible, we find and fix even just one thing,
+			no matter how small, before the next release. This constant
+			polishing of our release automation ("kaizen") has us always
+			looking for ways to enhance robustness, or speed things up,
+			safely, with less human involvement.  A lot of effort is spent
+			making our tools and processes bulletproof so that "rare" events
+			like network hiccups, disk space issues or typos made by real
+			live humans are caught and handled as early as possible.  Even
+			when we're already fast enough for regular, non-chemspill
+			releases, we understand the importance of each enhancement to
+			our release automation if it will speed up a release, make the
+			process more robust, or reduce the risk of any human error in a
+			future chemspill release.</li>
     <li>This mindset means that when we do have a chemspill release,
-    the humans in Release Engineering are not stressed by it. We're
-    used to the idea of going as fast as possible with calm precision.
-    Less stress means more calm precise work, which helps chemspill
-    releases go smoothly.</li>
-    <li>We setup a "go to build" process. When it is not a chemspill
-    release, its possible to have everyone looking through the same
+		the humans in Release Engineering are not stressed by it. We're
+		used to the idea of going as fast as possible with calm precision,
+		and we've built tools to do this as safely and robustly as we know
+		how. Less stress means more calm precise work, which in turn helps
+		chemspill releases go smoothly.</li>
+		<li>We setup a Mozilla-wide "go to build" process. When it is not
+		a chemspill release, its possible to have everyone looking through
+		the same
     bug triage queries, have everyone see clearly when the last fix
     was landed, and tested just fine, and have consensus on when to
     start builds. However, in a chemspill release, where minutes
     matter, keeping track of all the details of the issue, following
     up bug confirmations and fixes, gets very tricky very quickly.  To
-    reduce complexity, and risk of mistakes, Mozilla now has one
+    reduce complexity, and risk of mistakes, Mozilla now has a 
     full-time person, explicitly not in Release Engineering, track the
-    readiness of the release to "go to build".  Changing process
+    readiness of the code to "go to build".  Changing process
     during a chemspill is risky, so in order to make sure everyone is
     familiar with the process when minutes matter, we use this same
     process for "chemspill" and "regular" releases.</li>
@@ -167,17 +180,26 @@
     who will assume this responsibility for the entire release. It is
     worth noting that this person is not in Release Engineering. This
     person needs to be someone that everyone trusts to attend triage
-    meetings, have background context on all the work being landed, be
-    able to referee bug severity disputes fairly, prioritize work by
-    reviewing what competing companies are doing, and of course,
-    coordinate with the different release day groups (websites, PR,
-    marketing, developers, QA, Release Engineering, ...). Different
-    companies use different titles for this type of role: Release
-    Manager, Release Engineer (!), Program Manager, Project Manager,
-    Product Czar, Release Driver... Personally, I prefer the term
-    "Release Coordinator", but the important point is that the role is
-    clearly understood by everyone, regardless of their background, or
-    previous work experiences elsewhere.
+		meetings, have background context on all the work being landed,
+		referee bug severity disputes fairly, approve landing of late
+		breaking changes, make tough backout decisions and prioritize work
+		by reviewing what competing companies are doing amongst other
+		roles.  Additionally, for the actual release day, this person
+		coordinates with the different groups (developers, QA, Release
+		Engineering, website developers, PR, marketing, ...). 
+	
+
+		Different companies use different titles for this type of role.
+		Some titles we've encountered are: Release Manager, Release
+		Engineer (!), Program Manager, Project Manager, Product Manager,
+		Product Czar, Release Driver... Personally, I prefer the term
+		"Release Coordinator" as I find it most clearly defines the role,
+		but the important point is that the role, and the final authority
+		of the role, is clearly understood by everyone before the release
+		starts, regardless of their background, or previous work
+		experiences elsewhere. In the heat of the moment of a release day,
+		we all have to abide by, and trust, the final decision that this
+		person makes.
     </p>
     <p>
     In the days leading up to the "go to build", Release Engineering
@@ -193,11 +215,11 @@
     in a timely manner.
     </p>
     <p>
-    (an interesting side effect is that questions like "when will
-    builds be ready", "will we release by 5pm", etc are redirected
-    from Release Engineering to the Release Coordinator. This leaves
-    the Release Engineer with more quiet time to focus on getting the
-    release builds generated accurately.)
+		(an interesting side effect of this process is that questions like
+		"will we release by 5pm", etc are redirected from Release
+		Engineering to the Release Coordinator. This leaves the Release
+		Engineer with more quiet time to focus on getting the release
+		builds generated accurately.)
     </p>
 
 <h3>How to send the "go to build"?</h3>
@@ -205,21 +227,21 @@
     <p>
     Early experiments with sending "go to build" by irc, or verbally
     by phone calls all had misunderstandings at some point, causing
-    problems wit the release in progress. Therefore, we now require
-    the "go to build" signal is done by email to an explicit mailing
-    list that includes everyone across all groups in the company that
-    care about upcoming releases. The subject of the email includes
-    "go to build" and the explicit product name and version number,
-    for example:
+		problems for the release in progress. Therefore, we now require
+		that the "go to build" signal for every release is done by email
+		to an explicit mailing list that includes everyone across all
+		groups involved in the upcoming releases. The subject of the email
+		includes "go to build" and the explicit product name and version
+		number, for example:
     "go to build Firefox 6.0.1"
     </p>
     <p>
-    If an "all stop" email is needed, the Release Coordinator will
-    send a new email to the same mailing list, with a new subject
-    line. We found that it was not ok to just hit reply on the
-    most-recent email about the release - email threading of some
-    email clients caused some people to not notice the "all stop"
-    email if it was way down a long unrelated thread.
+		Similarly, if a problem found in the release, then the Release
+		Coordinator will send a new "all stop" email to the same mailing
+		list, with a new subject line. We found that it was not ok to just
+		hit reply on the most-recent email about the release - email
+		threading of some email clients caused some people to not notice
+		the "all stop" email if it was way down a long unrelated thread.
     </p>
 
 
@@ -245,8 +267,8 @@ the Release Coordinator was asleep in his timezone. Release
 Engineering corrected guessed that the intent was local time (in
 California), but in a late-night mixup over PDT instead of PST, we
 ended up missing the last critical bugfix. This was caught by QA
-before we shipped, so we had to stop builds and start over rebuilding
-using the correct cutoff time.
+before we shipped, but we did have to stop builds and start over
+rebuilding using the correct cutoff time.
 </ul>
 
 
@@ -257,36 +279,40 @@ when handling some important edge cases, so here is a quick summary:
   working hours. They are a pre-scheduled release, they are on
   schedule, and there is no emergency. Of course, all release builds
   need to be created in a timely expedient manner, but there is no
-  need for Release Engineers to pull all-nighters and burn out for a
-  "routine" release.  <li>Some releases are "urgent", where minutes
-  matter. In Mozilla we call these "chemspills". These are typically
-  to fix a published security exploit, or fix a
-  newly-introduced-top-crash problem, impacting a large percentage of
-  our userbase. These need to be created as quickly as possible and
-  are typically not pre-scheduled releases.  <li>Some releases change
-  from "routine" to "chemspill" or from "chemspill" to "routine". For
-  example, if a security fix in a "routine" release was accidentally
-  leaked, it is now a "chemspill" release. If a business requirement
-  like a "special sneak preview" release needed for an upcoming
-  conference announcement was suddenly delayed for business reasons,
-  the release now changes from "chemspill" to "routine".  <li>Some
-  releases have different people each holding different opinions on
-  whether the release is "normal" or "urgent", depending on their
-  perspective on the fixes being shipped in the release.  </ul> It is
-the role of the Release Coordinator to balance all the opinions, and
-then communicate the urgency consistently across all groups. If
-urgency changes, the Release Coordinator reassesses, and then
-communicates the new urgency to all the same groups. Having some
-groups believe a release is "urgent", while other groups believe the
-release is "normal" can be very destructive to cross-group cohesion
-across an organization.  </p> <p> </ol> Finally, these emails also
-became very useful to measure where time was spent during a release.
-While these are only accurate to wall-clock time resolution, this
-accuracy is really helpful when figuring out where next to focus our
-efforts on making things faster.  As the old adage goes, before you
-can improve something, first you have to be able to measure it.
-
-
+	need for Release Engineers to pull all-nighters and burn out humans
+	for a "routine" release. Instead, we schedule this out properly in
+	advance, so everything stays on schedule with people working normal
+	hours. This keeps people fresh and better able to handle unscheduled
+	urgent work if the need arises.
+	<li>Some releases are "urgent", where minutes matter. In Mozilla we
+	call these "chemspills". These are typically to fix a published
+	security exploit, or fix a newly-introduced-top-crash problem,
+	impacting a large percentage of our userbase. These need to be
+	created as quickly as possible and are typically not pre-scheduled
+	releases.  
+	<li>Some releases change from "routine" to "chemspill" or from
+	"chemspill" to "routine". For example, if a security fix in a
+	"routine" release was accidentally leaked, it is now a "chemspill"
+	release. If a business requirement like a "special sneak preview"
+	release needed for an upcoming conference announcement was suddenly
+	delayed for business reasons, the release now changes from
+	"chemspill" to "routine".  
+	<li>Some releases have different people each holding different
+	opinions on whether the release is "normal" or "urgent", depending
+	on their perspective on the fixes being shipped in the release.
+	</ul> It is the role of the Release Coordinator to balance all the
+	opinions, make a decision and then communicate that decision about
+	urgency consistently across all groups. If new information arrives,
+	the Release Coordinator reassesses, and then communicates the new
+	urgency to all the same groups. Having some groups believe a release
+	is "urgent", while other groups believe the release is "normal" can
+	be very destructive to cross-group cohesion across an organization.
+	</p> <p> </ol> Finally, these emails also became very useful to
+	measure where time was spent during a release.  While these are only
+	accurate to wall-clock time resolution, this accuracy is really
+	helpful when figuring out where next to focus our efforts on making
+	things faster.  As the old adage goes, before you can improve
+	something, first you have to be able to measure it.
     <p>
     </p>
     <p>
@@ -299,18 +325,13 @@ can improve something, first you have to be able to measure it.
       Throughout the beta cycle for Firefox, we are doing periodic
       releases from our <a
         href="http://hg.mozilla.org/releases/mozilla-beta/">mozilla-beta</a>
-      repository. Each one of these beta releases goes through the
-      full release automation and is treated almost identically to our
-      regular final releases.
+      repository. Each one of these beta releases goes through our
+			usual full release automation and is treated almost identically
+			to our regular final releases. To minimize surprises during a
+			release, our intent is to have no new "untested" changes to
+			release automation or infrastructure by the time we start the
+			final release builds.
       </p>
-      <p>
-      For each beta release, we're looking to see if bugs or crashes
-      we've fixed internally fix the problems for users.
-      </p>
-      go/no-go decision
-      </p>
-      <!-- XXX Define release driver(s) XXX -->
-      <!-- XXX leave this to John O'Duinn -->
     </div>
     <div class="sect">
       <h2>6.2 Tagging, Building, and Source Tarballs</h2>
@@ -319,17 +340,21 @@ can improve something, first you have to be able to measure it.
         <p>Figure&nbsp;6.2: Automated tagging</p>
       </div>
         <p>
-        After a release enginneer prepares and tests the release configuration, the first automated step in the Firefox release process is tagging all of the related source code repositories to record which revision
-        of the source, language repos, and related tools are used for this version and build number of a release candidate. A single Firefox release uses code from about 85
-        version control repositories that host things such as the
-        product code, localization strings, release automation code, and
-        helper utilities. Tagging all these repositories is, therefore,
-        critical to ensure that future steps of the release automation
-        are all using a consistent set of revisions. It also has a
-        number of other benefits: Linux distributions and other
-        contributors can reproduce builds with exactly the same code
-        that goes into the official builds, it also records the
-        revisions of source and tools used on a per-release basis for
+				After a release enginneer prepares and tests the release
+				configuration, the first automated step in the Firefox release
+				process is tagging all of the related source code repositories
+				to record which revision of the source, language repos, and
+				related tools are used for this version and build number of a
+				release candidate. A single Firefox release uses code from
+				about 85 version control repositories that host things such as
+				the product code, localization strings, release automation
+				code, and helper utilities. Tagging all these repositories is,
+				therefore, critical to ensure that future steps of the release
+				automation are all using a consistent set of revisions. It
+				also has a number of other benefits: Linux distributions and
+				other contributors can reproduce builds with exactly the same
+				code that goes into the official builds, it also records the
+				revisions of source and tools used on a per-release basis for
         future comparison of what changed between releases. For
         Firefox releases we use tag names such as
         FIREFOX_6_0_2_RELEASE.
@@ -337,7 +362,7 @@ can improve something, first you have to be able to measure it.
         <p>TODO: source tarballs</p>
         <p>
         <!--
-        XXX
+        XXX TODO
         relbranches actually aren't that useful since we've
         moved to rapid release. version bumping is usually done by the
         aurora -> beta merge, and chemspills are done on the default
@@ -346,25 +371,33 @@ can improve something, first you have to be able to measure it.
         - catlee
         XXX
         -->
-        For the main Firefox source repository, the first thing we
-        actually do is to create a release branch (relbranch) based
-        on the signed-off revision given by the release driver.
-        This release branch is implemented as an in-repository named
-        branch whose parent changeset is the signed-off revision. The
-        release branch is used to make release-specific modifications
-        to the source code, such as bumping the version numbers, or
-        finalizing the set of locales that will be built. If a 
-        critical security vulnerability is discovered in the future
-        that requires an immediate fix (a "chemspill" situation), the
-        minimal set of changes to address the vulnerability will be
-        landed on this relbranch and a new version of Firefox
-        released. When we have to do another round of builds for a particular release, buildN,  we use these relbranches to grab the same code that was signed off on for 'go to build' which is where any changes to that release code will have been landed, the automation starts again and bumps the tagging to the new changeset on that relbranch.
-        </p>
+				For the main Firefox source repository, the first thing we
+				actually do is to create a release branch (relbranch) based on
+				the signed-off revision given by the release driver.  This
+				release branch is implemented as an in-repository named branch
+				whose parent changeset is the signed-off revision. The release
+				branch is used to make release-specific modifications to the
+				source code, such as bumping the version numbers, or
+				finalizing the set of locales that will be built. If a
+				critical security vulnerability is discovered in the future
+				that requires an immediate fix (a "chemspill" situation), the
+				minimal set of changes to address the vulnerability will be
+				landed on this relbranch and a new version of Firefox
+				released. When we have to do another round of builds for a
+				particular release, buildN,  we use these relbranches to grab
+				the same code that was signed off on for 'go to build' which
+				is where any changes to that release code will have been
+				landed, the automation starts again and bumps the tagging to
+				the new changeset on that relbranch.  
+				</p>
         <p>
-        Our tagging process does a <em>lot</em> of operations with
-        local and remote mercurial (hg) repositories. To factor out
-        some of the most common operations we've written a few tools
-        to assist us: <em><a href=http://hg.mozilla.org/build/mozharness/file/a0fce0162fd5/scripts/hgtool.py">hgtool.py</a></em> and <em><a href="http://hg.mozilla.org/build/tools/file/7adc08bd1386/lib/python/util/retry.py">retry.py</a></em>.
+				Our tagging process does a <em>lot</em> of operations with
+				local and remote mercurial (hg) repositories. To factor out
+				some of the most common operations we've written a few tools
+				to assist us: <em><a
+				href=http://hg.mozilla.org/build/mozharness/file/a0fce0162fd5/scripts/hgtool.py">hgtool.py</a></em>
+				and <em><a
+				href="http://hg.mozilla.org/build/tools/file/7adc08bd1386/lib/python/util/retry.py">retry.py</a></em>.
         </p>
         <p>
         <em><a href="http://hg.mozilla.org/build/tools/file/7adc08bd1386/lib/python/util/retry.py">retry.py</a></em> is a simple wrapper that can take a given command and
@@ -524,29 +557,34 @@ can improve something, first you have to be able to measure it.
       </p>
       
       <p>
-      QA does manual and automated testing of the builds as soon as they are
-      available. They use contractors in other timezones to speed up the
-      validation process. Meanwhile, the release automation generates updates
-      for all languages and all platforms. Once these are ready QA tests that
-      users would be able to update from the previous release to the current
-      one. 
+			QA does manual and automated testing of the builds as soon as
+			they become available. QA relies on people in different
+			timezones, both community and contractors, to speed up this
+			validation process. Meanwhile, the release automation generates
+			updates for all languages and all platforms. Once these are
+			ready, QA tests that users would be able to migrate from the
+			previous release to the current one using these updates. 
       </p>
-      <p>We also push the binaries to our internal mirrors (mozilla hosted storage, later we make this available to our community mirrors for wider availability) to help us
-      handle the load of users requesting their updates rather than
-      reaching ftp directly. In the case of betas this is around
-      of one million users. Notice that users don't get the updates until
-      QA has signed them off and we get the request to push them live.
+			<p>We also push the binaries to our internal mirrors (mozilla
+			hosted storage, later we make this available to our community
+			mirrors for wider availability) to help us handle the load of
+			users requesting their updates rather than reaching ftp
+			directly. In the case of betas this is around of one million
+			users. Notice that users don't get the updates until QA has
+			signed off and the Release Coordinator has sent the email asking
+			to push them live.
       </p>
       <p>
       The validation process after builds and updates are generated is:
       <ol>
-         <li>Contractors on other timezones do manual testing.</li>
-         <li>QA triggers the automation systems to do functional
-testing.</li>
-         <li>QA verifies that fixed problems for that release are
-indeed fixed.</li>
-         <li>The release automation meanwhile is generating the
-updates.</li>
+         <li>QA, along with community and contractors in other
+				 timezones, do manual testing.</li>
+				 <li>QA triggers the automation systems to do functional
+				 testing.</li> 
+				 <li>QA verifies that fixed problems for that
+				 release are indeed fixed.</li>
+				 <li>The release automation meanwhile is generating the
+				 updates.</li>
          <li>QA signs off the builds.</li>
          <li>QA signs off the updates.</li>
       </ol>
@@ -588,7 +626,7 @@ updates.</li>
       the latest version.
       </p>
       <p>
-      Bouncer
+      TODO: Bouncer
       </p>
     </div>
     <div class="sect">
@@ -600,7 +638,7 @@ updates.</li>
       hiccups, disk space issues or typos made by real live humans are
       caught and handled as early as possible.
       
-      release_sanity - what it is, why we wrote it (intern project!
+      TODO: release_sanity - what it is, why we wrote it (intern project!
       yay!)
       </p>
     </div>
@@ -621,9 +659,11 @@ updates.</li>
     <div class="sect">
       <h2>6.10 Working in the open</h2>
       <p>
-      At Mozilla we strive to do everything in the open. All of
-      Release Engineering's code and notes are public, available to
-      see. Here are some links for further reading:
+			At Mozilla we strive to do everything in the open. The Firefox
+			developers make all their code changes in the open. Similarly,
+			all of Release Engineering's code and blow-by-blow build notes
+			are public, available for everyone to see.  Here are some links
+			for further reading:
       </p>
       <ul>
         <li><a href="http://hg.mozilla.org/build">build group's
@@ -631,10 +671,11 @@ updates.</li>
         buildbot-configs, and tools repositories are used heavily for
         releases.</li>
         <li><a
-          href="https://wiki.mozilla.org/Releases/Firefox_7.0b4/BuildNotes">Firefox
-          7.0 Beta 4 Build Notes</a>. In addition to code, we document
-        every aspect of a release. Here's an example from our 7.0b4
-        release.</li>
+					href="https://wiki.mozilla.org/Releases/Firefox_7.0b4/BuildNotes">Firefox
+					7.0 Beta 4 Build Notes</a>. In addition to code, we document
+					every aspect of a release. Here's an example from our 7.0b4
+					release, but you can find all our release notes if you edit
+					the URL appropriately.</li>
       </ul>
     </div>
     <div class="footer">
