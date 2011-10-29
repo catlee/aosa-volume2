@@ -6,7 +6,7 @@ Messaging systems work basically as instant messaging for applications. An appli
 
 Unlike instant messaging though, messaging systems have no GUI and assume no human beings at the endpoints capable of intelligent intervention when something goes wrong. Messaging systems thus have to be both fault tolerant and much faster than common instant messaging.
 
-ØMQ project was originally conceived as an ultra-fast messaging system for stock trading and so the focus was on extreme optimisation. The first year of the project was spent devising benchmarking methodology and drafting the most efficient architecture possible.
+ØMQ project was originally conceived as an ultra-fast messaging system for stock trading and so the focus was on extreme optimisation. The first year of the project was spent devising benchmarking methodology and trying to define an architecture as efficient as possible.
 
 Later on, approximately in the second year of development, the focus shifted to providing a generic system for building distributed applications, supporting arbitrary messaging patterns, various transport mechanisms, arbitrary language bindings etc.
 
@@ -20,21 +20,21 @@ These topics are not covered in this book. However, you can check online resourc
 
 + Application vs. Library
 
-ØMQ is a library. It seems to be a trivial fact, however, it took us several years working on AMQP protocol, writing a reference implementation for it and participating in several large-scale projects heavily based on messaging technology to realise that there's something wrong with the classic client/server model of smart messaging server (broker) and dumb messaging clients.
+ØMQ is a library, not a messaging server. It took us several years working on AMQP protocol, writing a reference implementation for it and participating in several large-scale projects heavily based on messaging technology to realise that there's something wrong with the classic client/server model of smart messaging server (broker) and dumb messaging clients.
 
 Our primary concern at the time was with the performance: If there's a server in the middle, each message has to pass the network twice (from the sender to the broker and from the broker to the receiver) inducing a penalty in terms of both latency and throughput. Moreover, if all the messages are passed through the broker, at some point it's bound to become the bottleneck.
 
-Secondary concern was related to large-scale deployments. When there are several servers involved, say one server per branch office, or even servers in different firms, the whole idea of central authority managing the message flows becomes blurred and leads to all kinds of problems.
+Secondary concern was related to large-scale deployments. When the deployment crosses organisational boundaries the concept of central authority managing the whole message flow doesn't apply any more. No company is willing to cede control to a server in different company. There are trade secrets and there's legal liability. The result in practice is that there's one messaging server per company with hand-written bridges to connect it to messaging systems in other companies. The whole ecosystem is thus heavily fragmented and maintaining large number of bridges by every company involved doesn't make the situation better. To solve this problem, we need a fully distributed architecture, an architecture where every component can be possibly governed by a different business entity. Given that the unit of management in server-based architecture is the server, we can solve the problem by installing a separate server for each component. In such case we can further optimise the design by making the server and the component share the same process. What we end up with is a messaging library.
 
-ØMQ project was started when we've got an idea of how to make messaging work without a central server. It required turning the whole concept of messaging upside down and replacing the model of an autonomous, centralised store of messages in the center of the network with a "smart endpoint, dumb network" architecture based on the end-to-end principle[[footnote]]http://en.wikipedia.org/wiki/End-to-end_principle[[/footnote]].
+ØMQ project was started when we've got an idea of how to make messaging work without a central server. It required turning the whole concept of messaging upside down and replacing the model of autonomous centralised store of messages in the center of the network by a "smart endpoint, dumb network" architecture based on end-to-end principle[[footnote]]http://en.wikipedia.org/wiki/End-to-end_principle[[/footnote]].
 
 The technical consequence of that decision was that ØMQ, from the very beginning, was a library, not an application.
 
-In the meantime we've been able to prove that this architecture is both more efficient (lower latency, higher throughput) and more flexible (it's easy to build arbitrary complex topologies instead of being tied to a classic hub-and-spoke model).
+In the meantime we've been able to prove that this architecture is both more efficient (lower latency, higher throughput) and more flexible (it's easy to build arbitrary complex topologies instead of being tied to classic hub-and-spoke model).
 
 One of the unintended consequences, however, was that opting for the library model improved the usability of the product. Over and over again users express their happiness about the fact that they don't have to install and manage a stand-alone messaging server. It turns out that not having a server is a preferred option as it cuts operational cost (no need to have a messaging server admin) and improves time-to-market (no need to negotiate the need to run the server with the client, the management or the operations team).
 
-The lesson learned is that when starting a new project, you should opt for the library design if at all possible. It's pretty easy to create an application from a library by invoking it from a trivial program, however, it's almost impossible to create a library from the existing executable. A library offers much more flexibility to the users, at the same time sparing them non-trivial administrative effort.
+The lesson learned is that when starting a new project, you should opt for the library design if at all possible. It's pretty easy to create an application from a library by invoking it from a trivial program, however, it's almost impossible to create a library from the existing executable. Library offers much more flexibility to the users at the same time sparing them non-trivial administrative effort.
 
 + Global State
 
@@ -52,7 +52,7 @@ The lesson here is pretty obvious: Don't use global state in libraries. If you f
 
 + Performance
 
-The primary goal of ØMQ when the project was started was the best possible performance.
+The primary goal of ØMQ when the project was started was to optimise the performance.
 
 Performance of messaging systems is expressed using two metrics: throughput, i.e. how many messages can be passed during a given amount of time, and latency, i.e. how long it takes for a message to get from one endpoint to the other.
 
@@ -78,7 +78,7 @@ To make the long story short: Latency and throughput are two different metrics. 
 
 As for the relationship between throughput and latency it turns out there really is a relationship, however, the formula involves integrals and we won't discuss it here. For more information check literature on queueing theory[[footnote]]http://en.wikipedia.org/wiki/Queueing_theory[[/footnote]].
 
-There are many more pitfalls in benchmarking a messaging system that we won't go further into. The stress should rather be placed on the lesson learned: Make sure you understand the problem you are solving. Even a problem as simple as "make it fast" can take lot of work to understand properly. What's more, if you don't understand the problem, you are likely to build implicit assumptions and popular myths into your code, making the solution either flawed or at least much more complex or much less useful than it can possibly be.
+There are many more pitfalls in benchmarking the messaging systems that we won't go further into. The stress should rather be placed on the lesson learned: Make sure you understand the problem you are solving. Even a problem as simple as "make it fast" can take lot of work to understand properly. What's more, if you don't understand the problem, you are likely to build implicit assumptions and popular myths into your code, making the solution either flawed or at least much more complex or much less useful than it can possibly be.
 
 + Critical Path
 
@@ -92,7 +92,7 @@ However, when you think about it, it's not like every memory allocation or every
 
 The performance we are interested in in messaging systems is how many messages we can transfer between two endpoints during a given amount of time. Alternatively, we may be interested in how long it takes for a message to get from one endpoint to another.
 
-However, the time it takes to establish a connection or the time needed to handle an error is basically irrelevant. These events happen very rarely and so their impact on overall performance is negligible.
+However, given that ØMQ is designed for scenarios with long-lived connections the time it takes to establish a connection or the time needed to handle a connection error is basically irrelevant. These events happen very rarely and so their impact on overall performance is negligible.
 
 The part of the codebase that gets used very frequently, over and over again is called the critical path. The optimisation should focus on the critical path.
 
@@ -122,13 +122,13 @@ To send four messages, you have to traverse entire network stack four times (e.g
 
 [[=image aosa4.png]]
 
-The impact on message throughput can be overwhelming, especially if the messages are small and hundreds of them can be packed into a single batch.
+The impact on message throughput can be overwhelming, up to two orders of magnitude, especially if the messages are small and hundreds of them can be packed into a single batch.
 
 On the other hand, batching can have negative impact on latency. Let's take an example of the well-known Nagle's algorithm [[footnote]]http://en.wikipedia.org/wiki/Nagle%27s_algorithm[[/footnote]] , as implemented in TCP. It delays the outbound messages for certain amount of time and merges all the accumulated data into a single packet. Obviously, the end-to-end latency of the first message in the packet is much worse than the latency of the last one. Thus, it's common for applications that need consistently low latency to switch Nagle's algorithm off. It's even common to switch off the batching on all levels of the stack (e.g. NIC's interrupt coalescing feature).
 
 But again: No batching means extensive traversing of the stack and results in low message throughput. We seem to be caught in throughput vs. latency dilemma.
 
-ØMQ tries to deliver consistently low latencies combined with high throughput using the following idea: When message flow is sparse and doesn't exceed network stack's bandwidth, ØMQ turns all the batching off to deliver best possible latency. The trade-off here is somewhat higher CPU usage -- we still have to traverse the stack frequently. However, that isn't considered to be a problem in most cases.
+ØMQ tries to deliver consistently low latencies combined with high throughput using the following idea: When message flow is sparse and doesn't exceed network stack's bandwidth, ØMQ turns all the batching off to improve the latency. The trade-off here is somewhat higher CPU usage -- we still have to traverse the stack frequently. However, that isn't considered to be a problem in most cases.
 
 When the message rate exceeds the bandwidth of the network stack, the messages have to be queued -- stored in memory till the stack is ready to accept them. Queueing means the latency is going to grow. If the message spends one second in the queue, end-to-end latency will be at least one second. What's even worse, as the size of the queue grows, latencies will increase gradually. If the size of the queue is not bound, the latency can exceed any limit.
 
@@ -140,15 +140,37 @@ One additional observation is that the batching should only be done on the topmo
 
 Lesson learned: To get optimal throughput combined with optimal response time in an asynchronous system, turn off all the batching algorithms on the low layers of the stack and batch on the topmost level. Batch only when new data are arriving faster than they can be processed.
 
++ Architecture overview
+
+Up to this point we have focused on generic principles that make ØMQ fast. From now on we'll have a look at the actual architecture of the system.
+
+[[=image aosa9.png]]
+
+User interacts with ØMQ using so called "sockets". They are pretty similar to TCP sockets, the main difference being that each socket can handle communication with multiple peers, a bit like unbound UDP sockets do.
+
+The socket object lives in user's thread (see the discussion of threading model in the next section). Aside of that, ØMQ is running multiple worker threads that handle asynchronous part of the communication: reading data from the network, enqueueing the messages, accepting incoming connections etc.
+
+There are various objects living in the worker threads. Each of these objects is owned (ownership is denoted by simple full line in the diagram) by exactly one parent object. The parent can live in a different thread than the child. Most objects are owned directly by sockets, however, there are couple of cases where an object is owned by an object that is owned by the socket. What we get is a tree of objects. There's one such tree per socket. The tree is used during the shut down. No object can shut itself down until it closes all its children. This way we can ensure that shut down process works as expected, for example, that pending outbound messages are pushed to the network prior to terminating the sending process.
+
+Roughly speaking, there are two kinds of asynchronous objects. There are objects that are not involved in message passing and there are objects that are.
+
+The former have to do mainly with connection management. For example, a TCP listener object listens for incoming TCP connections and creates a engine/session object for each new connection. Similarly, TCP connecter object tries to connect to the TCP peer and when if succeeds it creates an engine/session object to manage the connection. When such connection fails, connecter object tries to re-establish it.
+
+The latter are objects that are handling data transfer itself. These objects are composed of two parts: Session is responsible for interacting with the ØMQ socket, engine object is responsible for communication with the network. There's only one kind of the session object, however, there's a different engine type for each underlying protocol ØMQ supports. Thus, we have TCP engines, IPC engines, PGM engines etc. The set of engines is extensible. In the future we may choose to implement, say, a WebSocket engine or an SCTP engine.
+
+The sessions are exchanging messages with sockets. There are two directions to pass messages in and each direction is handled by a pipe object. Pipe is basically a lock-free queue optimised for fast passing of messages between threads.
+
+Finally, there's a context object (discussed in previous sections but not shown on the diagram) that holds the global state and is accessible by all the sockets and all the asynchronous objects.
+
 + Concurrency Model
 
 One of the requirements for ØMQ was to take advantage of multi-core boxes, in other words, to scale the throughput linearly with number of available CPU cores.
 
-Our previous experience with messaging systems showed that using multiple threads in a classic way (critical sections, semaphores etc.) doesn't yield much performance improvement. In fact, multi-threaded version of a messaging system can be slower than a single-threaded one, even if measured on a multi-core box. Individual threads are simply spending too much time waiting for each other while, at the same time, eliciting a lot of context switching that slows the system down even further.
+Our previous experience with messaging systems showed that using multiple threads in a classic way (critical sections, semaphores etc.) doesn't yield much performance improvement. In fact, multi-threaded version of a messaging system can be slower than a single-threaded one, even if measured on a multi-core box. Individual threads are simply spending too much time waiting for each other while, at the same time, eliciting a lot of context switching that slows the system down.
 
 Given these problems, we've decided to go for a different model. The goal was to avoid locking entirely and let each thread run at the full speed. The communication between threads was to be provided via asynchronous messages (events) passed between the threads. This, as insiders know, is the classic actor model [[footnote]]http://en.wikipedia.org/wiki/Actor_model[[/footnote]].
 
-The idea was to launch one worker thread per CPU core -- having two threads sharing the same core would only mean a lot of context switching for no particular advantage. Each internal ØMQ object, such as say TCP connection, would be tightly bound to a particular worker thread. That, in turn, means that there's no need for critical sections, mutexes, semaphores and alike. Additionally, these ØMQ objects won't be migrated between CPU cores thus avoiding the negative performance impact of the cache pollution:
+The idea was to launch one worker thread per CPU core -- having two threads sharing the same core would only mean a lot of context switching for no particular advantage. Each internal ØMQ object, such as say TCP engine, would be tightly bound to a particular worker thread. That, in turn, means that there's no need for critical sections, mutexes, semaphores and alike. Additionally, these ØMQ objects won't be migrated between CPU cores would thus avoiding the negative performance impact of the cache pollution:
 
 [[=image aosa5.png]]
 
@@ -156,15 +178,15 @@ This design makes a lot of traditional multi-threading problems disappear. Never
 
 In short, whole system has to become fully asynchronous. No object can afford to do a blocking operation, because it would not only block itself but also all other objects sharing the same worker thread. All objects have to become, whether explicitly or implicitly, state machines. With hundreds or thousands of state machines running in parallel you have to take care of all the possible interactions between them and -- most importantly -- of the shutdown process.
 
-It turns out that shutting down a fully asynchronous system in a clean way is a dauntingly complex task. It's prone to all kinds of race conditions, resource leaks and similar. The shutdown subsystem is definitely the most complex part of ØMQ.
+It turns out that shutting down a fully asynchronous system in a clean way is a dauntingly complex task. Trying to shutdown thousand moving parts, some of the working, some idle, some in process of being initiated, some of them already shutting down by themselves, is prone to all kinds of race conditions, resource leaks and similar. The shutdown subsystem is definitely the most complex part of ØMQ. Quick check of the bug tracker indicates that some 30-50% of reported bugs are related to shutdown in one way or another.
 
 Lesson learned: When striving for extreme performance and scalability, consider the actor model. It's almost the only game in town in such case. However, if you are not using specialised system like Erlang, or ØMQ itself, you'll have to write and debug a lot of infrastructure by hand. Additionally, think about shutting down the system from the very beginning. It's going to be the most complex part of the codebase and if you have no clear idea how to implement it, you should probably reconsider using the actor model in the first place.
 
 + Lock-Free Algorithms
 
-Lock-free algorithms have been en vogue lately. They are simple mechanisms for inter-thread communication that don't rely on the kernel-provided synchronisation primitives, such as mutexes or semaphores, rather, they do the synchronisation using atomic CPU operations, such as atomic compare-and-swap. It should be understood that they are not literally lock-free. Instead, locking is done behind the scenes on the hardware level.
+Lock-free algorithms have been en vogue lately. They are simple mechanisms for inter-thread communication that don't rely on the kernel-provided synchronisation primitives, such as mutexes or semaphores, rather, they do the synchronisation using atomic CPU operations, such as atomic compare-and-swap (CAS). It should be understood that they are not literally lock-free. Instead, locking is done behind the scenes on the hardware level.
 
-ØMQ uses a lock-free queue to pass messages between user's threads and ØMQ's worker threads. There are two interesting aspects to how ØMQ uses the lock-free queue:
+ØMQ uses a lock-free queue in pipe objects to pass messages between user's threads and ØMQ's worker threads. There are two interesting aspects to how ØMQ uses the lock-free queue:
 
 First, each queue has exactly one writer thread and exactly one reader thread. If there's a need for 1-to-N communication, multiple queues are created:
 
@@ -172,13 +194,13 @@ First, each queue has exactly one writer thread and exactly one reader thread. I
 
 Given that this way the queue doesn't have to take care of synchronising the writers (there's only one writer) or readers (there's only one reader) it can be implemented in extra efficient way.
 
-Second, we've realised that while lock-free algorithms were more efficient that classic mutex-based algorithms, atomic CPU operations were still rather expensive (especially when there's contention between CPU cores) and doing an atomic operation for each message written and/or each message read was slower than we were willing to accept.
+Second, we've realised that while lock-free algorithms were more efficient that classic mutex-based algorithms, atomic CPU operations are still rather expensive (especially when there's contention between CPU cores) and doing an atomic operation for each message written and/or each message read was slower than we were willing to accept.
 
 The way to speed it up was -- once again -- batching.
 
-Imagine you had 10 messages to be written to the queue. It can happen, for example, when you received a network packet containing 10 small messages. Receiving a packet is an atomic event, you simply cannot get just a half of it. This atomic event results in need to write 10 messages to the lock-free queue. There's no much point in doing an atomic operation for each message. Instead, you can accumulate the messages in a "pre-write" portion of the queue that's accessed solely by the writer thread and then flush it using a single atomic operation.
+Imagine you had 10 messages to be written to the queue. It can happen, for example, when you received a network packet containing 10 small messages. Receiving a packet is an atomic event, you just cannot get a half of it. This atomic event results in need to write 10 messages to the lock-free queue. There's no much point in doing an atomic operation for each message. Instead, you can accumulate the messages in a "pre-write" portion of the queue that's accessed solely by the writer thread and then flush it using a single atomic operation.
 
-Same applies to reading from the queue. Imagine the 10 messages above were already flushed into the queue. Reader thread can extract each message from the queue using an atomic operation. However, it's an overkill. Instead, it can move all the pending messages to a "pre-read" portion of the queue using a single atomic operation. Afterwards, it can pick the messages from the "pre-read" buffer one by one. "Pre-read" is owned and accessed solely by the reader thread and thus no synchronisation whatsoever is needed in that phase.
+Same applies to reading from the queue. Imagine the 10 messages above were already flushed to the queue. Reader thread can extract each message from the queue using an atomic operation. However, it's an overkill. Instead, it can move all the pending messages to a "pre-read" portion of the queue using a single atomic operation. Afterwards, it can pick the messages from the "pre-read" buffer one by one. "Pre-read" is owned and accessed solely by the reader thread and thus no synchronisation whatsoever is needed in that phase.
 
 [[=image aosa7.png]]
 
@@ -196,33 +218,17 @@ User interface defines the perception of the product. With basically no change t
 
 Lesson learned: Understand what you want your project to be and design the user interface accordingly. User interface that doesn't align with the vision of the project is a 100% guaranteed way to failure.
 
-One of the important aspects of the move to BSD socket API was that it wasn't a revolutionary freshly-invented API, but an existing and well-known one. Actually, BSD socket API is one of the oldest APIs -- if not the oldest one -- still in active use today. It dates back to 1983 and 4.2BSD Unix. It's widely used and stable for literally decades.
+One of the important aspects of the move to BSD socket API was that it wasn't a revolutionary freshly-invented API, but an existing and well-known one. Actually, BSD socket API is one of the oldest APIs still in active use today. It dates back to 1983 and 4.2BSD Unix. It's widely used and stable for literally decades.
 
 The above fact brings a lot of advantages.
 
 Firstly, it's an API that everybody knows, so the learning curve is ludicrously flat. Even if you never heard about ØMQ before, you can build your first application in couple of minutes thanks to the fact that you are able to reuse your BSD socket knowledge.
 
-Secondly, using a widely implemented API enables integration of ØMQ with existing technologies. For example, exposing ØMQ objects as "sockets" or "file descriptors" allows for processing TCP, UDP, pipe, file and ØMQ events in the same event loop. Another example: The experimental project to bring ØMQ-like functionality to Linux kernel [[footnote]]https://github.com/250bpm/linux-2.6[[/footnote]] turned out to be pretty simple to implement. By sharing the same conceptual framework it can re-use a lot of infrastructure already in place. Additionally, by reusing the APIs that's already exported from the kernel it requires to change to existing APIs/ABIs.
+Secondly, using a widely implemented API enables integration of ØMQ with existing technologies. For example, exposing ØMQ objects as "sockets" or "file descriptors" allows for processing TCP, UDP, pipe, file and ØMQ events in the same event loop. Another example: The experimental project to bring ØMQ-like functionality to Linux kernel [[footnote]]https://github.com/250bpm/linux-2.6[[/footnote]] turned out to be pretty simple to implement. By sharing the same conceptual framework it can re-use a lot of infrastructure already in place.
 
 Thirdly and probably the most importantly, the fact that BSD socket APIs survived almost three decades despite the numerous attempts to replace it, means that there is something inherently right in the design. BSD socket API designers have -- whether deliberately or by chance -- made the right design decisions. By adopting the API we can automatically share those design decisions without even knowing what they were and what problem they were solving.
 
-The last point may seem to be a bit vague, so let's have a look at couple of BSD socket design decisions that proved useful for ØMQ as well:
-
-First, BSD socket API is a straightforward library API: a set of functions to be called by the user. Some modern APIs adopt inversion of control [[footnote]]http://en.wikipedia.org/wiki/Inversion_of_control[[/footnote]] or so called "don't call us, we'll call you" [[footnote]]http://en.wikipedia.org/wiki/Hollywood_Principle[[/footnote]] model, where user's callback functions are invoked when a particular event, such as a message arriving, happens. You may think of it as library vs. framework issue. Library is something that's under your control. Framework, on the other hand, is something that you are controlled by.
-
-The problem with the latter is that it imposes the way how the program should work on you. If you want to do something different, you are stuck. Imagine merging two applications that were written using two different frameworks into a single application. Each framework imposes it's own model on how the application should work resulting in unresolvable clash. There's no such problem with the libraries though.
-
-Thinking about it in a different way, it's trivial to implement a framework using a library. However, it's pretty hard, if at all possible, to implement a library using a framework. Libraries are low-level technologies. Frameworks can be built on top of libraries.
-
-Additionally, there's some anecdotal evidence that library-style APIs fare better than framework-style APIs: Adoption rate of POSIX AIO API [[footnote]]http://pubs.opengroup.org/onlinepubs/000095399/basedefs/aio.h.html[[/footnote]] is pretty low. AIO for network sockets is not even implemented in Linux. There's some adoption of Windows IOCP API [[footnote]]http://msdn.microsoft.com/en-us/library/aa365198%28VS.85%29.aspx[[/footnote]], however, my feeling is that it can be attributed to the fact that classic BSD socket API is deliberately crippled on Windows and thus not suitable for more complex tasks, making IOCP the only viable option.
-
-Second, BSD socket API deals only with data transfer. It doesn't provide a way to set and manage network policies. This design results in clean separation of mechanism and policy [[footnote]]http://en.wikipedia.org/wiki/Separation_of_mechanism_and_policy[[/footnote]]. That in turn results in unprecedented stability of BSD socket API.
-
-The network have changed significantly since 1983 (less than 1000 RFCs back than, more than 6000 RFCs in 2011), however, application still use the same API to send and receive the data. The stability of the API means that application developers take the API for granted. They don't think for a slightest moment about availability or stability problems. It also means that the implementations of the API have become a commodity and are available for free whatever platform or language you are working with.
-
-From a different point of view, strict decoupling of data transfer from network management liberated network infrastructure from the tight control exercised by the applications. Network infrastructure can evolve without messing with the existing applications. And, as everyone knows, during the past decades it really did evolved creating a billion dollar industry on its way.
-
-Lesson learned: While code reuse have been promoted from the times unmemorable and pattern reuse [[footnote]]http://en.wikipedia.org/wiki/Design_pattern_%28computer_science%29[[/footnote]] have joined the suite later on, it's important to think of reuse in even more generic way. When designing a product have a look at similar products. Check which have failed and which have succeeded. Learn from the successful projects. Don't succumb to the NIH syndrome [[footnote]]http://en.wikipedia.org/wiki/Not_Invented_Here[[/footnote]] . Reuse the ideas, the APIs, the conceptual frameworks, whatever you find appropriate. By doing so you are allowing users to reuse their existing knowledge. At the same time you are avoiding technical pitfalls you may not even be aware of at the moment.
+Lesson learned: While code reuse have been promoted from the times unmemorable and pattern reuse [[footnote]]http://en.wikipedia.org/wiki/Design_pattern_%28computer_science%29[[/footnote]] have joined the suite later on, it's important to think of reuse in even more generic way. When designing a product have a look at similar products. Check which have failed and which have succeeded. Learn from the successful projects. Don't succumb to the NIH syndrome [[footnote]]http://en.wikipedia.org/wiki/Not_Invented_Here[[/footnote]] . Reuse the ideas, the APIs, the conceptual frameworks, whatever you find appropriate. By doing so you are allowing users to reuse their existing knowledge. At the same time you may be avoiding technical pitfalls you are not even aware of at the moment.
 
 + Messaging Patterns
 
@@ -232,43 +238,15 @@ There are two main approaches and I believe this dichotomy is quite generic and 
 
 One approach is to adopt the UNIX philosophy [[footnote]]http://en.wikipedia.org/wiki/Unix_philosophy[[/footnote]] of "do one thing and do it well". What it means is that the problem domain should be artificially restricted to a small and well understood area. The program should then solve this restricted problem in a correct and exhaustive way. An example of such approach in messaging area is MQTT [[footnote]]http://mqtt.org/[[/footnote]]. It's a protocol for distributing messages to a set of consumers. It can't be used for anything else (say for RPC) but it is easy to use and does message distribution well.
 
-The other approach is to focus on generality and to provide a powerful and highly configurable system. AMQP is an example of such a system. Its model of queues and exchanges provides the user with the means to programatically define almost any routing algorithm he can think of. The trade-off, of course, is a lot of levers and options to take care of.
+The other approach is to focus on generality and to provide a powerful and highly configurable system. AMQP is an example of such a system. Its model of queues and exchanges provides the user with the means to programatically define almost any routing algorithm he can think of. The trade-off, of course, is a lot of options to take care of.
 
-ØMQ opts for the former, UNIX, model and it does so for following reasons:
-
-# As one early paper on the design of DNS says: "[Users] want to use, not understand, the systems they are provided." There's much truth in that. The generic approach requires users to understand the internals of the messaging solution and correctly set all the available options. However, we can't expect all the users to be messaging experts. The UNIX approach, on the other hand brings specific solutions in a pre-packaged form. You can do RPC simply by choosing the RPC tool. Or create a pipeline using the pipeline tool. Each tool is tuned to perform its task out of the box and requires no additional tweaking.
-# From the messaging system implementer's point of view the generic approach results in over-generalised design. For example, a wire-level format of the message has to contain all the fields needed for message distribution, RPC, pipeline or whatever use case you can think of. That in turn means that there is a lot of unused fields in a message in any particular use case, or, alternatively, that the same fields are re-used for different purposes in individual use cases -- which is even worse as it makes the semantics of the system blurry and breeds confusion and misunderstanding among the users. Another example of a problem caused by over-generalisation is that often an option is added to address specific problem in a particular use case. The option doesn't even make sense in different use cases, however, thanks to the generic nature of the system, it is present even then. People are going to mess with it and experience strange, unintuitive or even non-deterministic behaviour.
-
-While the above discussion may seen to be purely theoretical, having little impact on the users, let's have a look how this design decision affects the user code. What follows is implementation RPC on top of a generic system (AMQP). The pseudocode for the service looks like this:
+ØMQ opts for the former, UNIX, model because it allows the resulting product to be used by basically anyone, while the generic model requires messaging experts to use it. To demonstrate the point, let's have a look how the model affects the complexity of the API. What follows is implementation of RPC client on top of a generic system (AMQP):
 
 [[code]]
-# Set up the infrastructure
-exchange.create (exchange="requests", type="direct", passive=false,
+connect ("192.168.0.111")
+exchange.declare (exchange="requests", type="direct", passive=false,
     durable=true, no-wait=true, arguments={})
-exchange.create (exchange="replies", type="direct", passive=false,
-    durable=true, no-wait=true, arguments={})
-queue.declare (queue="my-service", passive=false, durable=true,
-    exclusive=false, auto-delete=false, no-wait=true, arguments={})
-queue.bind (queue="my-service", exchange="requests",
-    routing-key=service-name)
-queue.consume (queue="my-service", consumer-tag="", no-local=false,
-    no-ack=false, exclusive=false, no-wait=true, arguments={})
-
-# Process one request
-request = get-message ()
-reply = new-message ("World")
-reply.correlation-id = request.correlation-id
-basic.publish (exchange="replies", routing-key=msg.reply-to,
-    mandatory=false, immediate=false)
-[[/code]]
-
-The pseudocode for the client:
-
-[[code]]
-# Set up the infrastructure
-exchange.create (exchange="requests", type="direct", passive=false,
-    durable=true, no-wait=true, arguments={})
-exchange.create (exchange="replies", type="direct", passive=false,
+exchange.declare (exchange="replies", type="direct", passive=false,
     durable=true, no-wait=true, arguments={})
 reply-queue = queue.declare (queue="", passive=false, durable=false,
     exclusive=true, auto-delete=true, no-wait=false, arguments={})
@@ -276,39 +254,22 @@ queue.bind (queue=reply-queue, exchange="replies",
     routing-key=reply-queue)
 queue.consume (queue=reply-queue, consumer-tag="", no-local=false,
     no-ack=false, exclusive=true, no-wait=true, arguments={})
-
-# Send a request and receive a reply
-request = new-message ("Hello")
+request = new-message ("Hello World!")
 request.reply-to = reply-queue
 request.correlation-id = generate-unique-id ()
 basic.publish (exchange="requests", routing-key="my-service",
     mandatory=true, immediate=false)
-request = get-message ()
+reply = get-message ()
 [[/code]]
 
 ØMQ, on the other hand, opts for the "do one thing and do it well" approach. It splits the messaging landscape into so called "messaging patterns". Examples of the patterns are "publish/subscribe", "request/reply" or "parallelised pipeline". Each messaging pattern is completely orthogonal to other patterns and can be thought of as a separate tool.
 
-What follows is the re-implementation of the above application using the ØMQ's request/reply pattern. As can be seen it is order of magnitude simpler that the generic approach. The pseudocode for the service part looks like this:
+What follows is the re-implementation of the above application using the ØMQ's request/reply pattern. Note how all the option tweaking is reduced to a single step of choosing the right messaging pattern ("REQ"):
 
 [[code]]
-# Set up the infrastructure
-s = socket (REP)
-s.bind ("tcp://*:5555")
-
-# Process one request
-request = s.recv ()
-s.send ("World")
-[[/code]]
-
-And here's the pseudocode for the client:
-
-[[code]]
-# Set up the infrastructure
 s = socket (REQ)
 s.connect ("tcp://192.168.0.111:5555")
-
-# Send a request and receive a reply
-s.send ("Hello")
+s.send ("Hello World!")
 reply = s.recv ()
 [[/code]]
 
@@ -317,13 +278,13 @@ Up to this point we've argued that specific solutions are better than generic so
 The answer consists of two steps:
 
 * Define a layer of the stack to deal with a particular problem area (e.g. transport, routing, presentation etc.)
-* Provide multiple implementations of the layer. Provide a separate non-intersecting implementation for each use case.
+* Provide multiple implementations of the layer. There should be a separate non-intersecting implementation for each use case.
 
 Let's have a look at the example of the transport layer in the Internet stack. It's meant to provide services such as transferring data streams, applying flow control, providing reliability etc. on the top of the network layer (IP). It does so by defining multiple non-intersecting solutions: TCP for connection-oriented reliable stream transfer, UDP for connectionless unreliable packet transfer, SCTP to transfer of multiple streams, DCCP for unreliable connections and so on.
 
-Note that each implementation is completely orthogonal: UDP endpoint cannot speak to TCP endpoint. Neither can SCTP endpoint speak to DCCP endpoint. It means that new implementations can be added to the stack at any moment without affecting the existing portions of the stack. Other way round, failed implementations can be forgotten or discarded without compromising the viability of transport layer as a whole.
+Note that each implementation is completely orthogonal: UDP endpoint cannot speak to TCP endpoint. Neither can SCTP endpoint speak to DCCP endpoint. It means that new implementations can be added to the stack at any moment without affecting the existing portions of the stack. Other way round, failed implementations can be forgotten and discarded without compromising the viability of transport layer as a whole.
 
-Same principle applies to messaging patterns as defined by ØMQ. Messaging patterns form a layer (so called "scalability layer") on top of the transport layer (TCP and friends). Individual patterns are implementations of this layer. They are strictly orthogonal -- publish/subscribe endpoint can't speak to request/reply endpoint etc. Strict separation between the patterns in turn means that new patterns can be added as needed and that failed experiments with new patterns won't hurt the existing patterns.
+Same principle applies to messaging patterns as defined by ØMQ. Messaging patterns form a layer (so called "scalability layer") on top of the transport layer (TCP and friends). Individual messaging patterns are implementations of this layer. They are strictly orthogonal -- publish/subscribe endpoint can't speak to request/reply endpoint etc. Strict separation between the patterns in turn means that new patterns can be added as needed and that failed experiments with new patterns won't hurt the existing patterns.
 
 Lesson learned: When solving a complex and multi-faceted problem it may turn out that a monolithic general-purpose solution may not be the best way to go. Instead, we can think of the problem area as an abstract layer and provide multiple implementations of this layer, each focused on a specific well-defined use case. When doing so, delineate the use case carefully. Be sure about what is in the scope and what is not. By restricting the use case too aggressively the application of your software may be limited. If you define the problem too broadly, however, the product may become too complex, blurry and confusing for the users.
 
