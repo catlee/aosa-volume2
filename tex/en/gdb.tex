@@ -42,7 +42,7 @@ programs that have been optimized by the compiler, and programs that
 exploit every hardware option for performance, so it needs to have
 detailed knowledge down to the lowest levels of a system.
 
-History
+\begin{aosasect1}{History}
 
 GDB is an old program.  It came into existence around 1985-6, written
 by Richard Stallman along with GCC, GNU Emacs, and other early
@@ -50,7 +50,9 @@ components of GNU.  (In those days, there were no public source
 control repositories, and much of the detailed development history
 has simply been lost.)
 
-Block Diagram
+\end{aosasect1}
+
+\begin{aosasect1}{Block Diagram}
 
 (big picture)
 
@@ -104,7 +106,9 @@ each instruction.  A disadvantage is that there is a lot of interaction
 with the target for each single-step, which for some embedded targets
 results in slow single-stepping.
 
-Portability
+\end{aosasect1}
+
+\begin{aosasect1}{Portability}
 
 From the beginning, and as a program needing extensive access to the
 lowest levels, GDB was designed to be portable across a variety of
@@ -148,10 +152,89 @@ apply to the native debugging case.  Native definitions are the last
 holdout of old-style C macros, although most are now figured out using
 autoconf.
 
-Symbol Side
+\end{aosasect1}
 
-The symbol side starts by reading the compiled program and extracting
-any symbolic information it finds.
+\begin{aosasect1}{Data Structures}
+
+Before drilling down into the parts of GDB, let's take a look at the major
+data structures that GDB works with.
+
+\end{aosasect1}
+
+\begin{aosasect1}{Breakpoints}
+
+A breakpoint is the main kind of object that is directly accessible to
+the user.  The user creates a breakpoint with the ``break'' command,
+whose argument specifies a ``location'', which can be a function name,
+a source line number, or a machine address.  GDB assigns a small
+positve integer to the breakpoint object, which the user uses
+subsequently to operate on the breakpoint.  (Negative integers
+identify breakpoints created by GDB itself for various purposes.)
+Internally, the breakpoint is a C struct with a number of fields.  The
+location must be stored in its original form, since the machine-level
+address may change and need recomputation, if the program is
+recompiled and reloaded into the session.
+
+Several kinds of breakpoint-like objects actually share the breakpoint
+struct, including watchpoints, catchpoints, and tracepoints.  This
+helps ensure that creation, manipulation, and deletion facilities are
+consistently available.
+
+The term ``location'' also refers to the memory addresses at which the
+breakpoint is to be installed.  In the cases of inline functions and
+C++ templates, it may be that a single user-specified breakpoint may
+correspond to several addresses; for instance, each inlining of a
+function entails a separate location for a breakpoint set on a source
+line in the function's body.
+
+\end{aosasect1}
+
+\begin{aosasect1}{Symbol Tables}
+
+(...)
+
+\end{aosasect1}
+
+\begin{aosasect1}{Frames}
+
+The procedural languages for which GDB was designed share a common
+runtime architecture, in that function calls cause the program counter
+to be pushed on a stack, along with some combination of function
+arguments and local arguments.  The assemblage is called a ''stack
+frame'', or ''frame'' for short, and at any moment in a program's
+execution, the stack will consist of a sequence of frames, each with a
+link pointing to the previous one.  The details of a stack frame can
+vary radically from one chip architecture to the next, and is also
+dependent on the operating system, compiler, and optimization options.
+
+A port of GDB may need a considerable volume of code to analyze the
+stack, as programs (especially buggy ones, which are the ones debugger
+users are mostly interested in!) can stop anywhere, with frames possibly
+incomplete, or partly overwritten by the program.  Worse, the construction
+of stack frames is undesirable overhead, and a good optimizing compiler
+will take every opportunity to prune down stack frames, or even eliminate
+some altogether.
+
+In any case, the result of GDB's chip-specific stack analysis is recorded
+in a series of frame objects.  Originally these were not represented as
+first-class objects, and the literal value of the frame pointer was used
+to refer to a frame. (...)
+
+\end{aosasect1}
+
+\begin{aosasect1}{Expressions}
+
+\end{aosasect1}
+
+\begin{aosasect1}{Values}
+
+\end{aosasect1}
+
+\begin{aosasect1}{The Symbol Side}
+
+The symbol side of GDB is mainly responsible for reading the compiled
+executable, extracting any symbolic information it finds, and building
+it into a symbol table.
 
 The process starts with BFD, which is the common binary file reading
 library shared with the GNU assembler, linker, and other minor tools
@@ -160,26 +243,33 @@ a.out format, COFF (used on System V Unix and MS Windows), and ELF
 (modern Unix, GNU/Linux, and most embedded systems), among others.
 
 BFD just pulls blocks of data from the program into GDB's memory, then
-for each format, GDB has two levels of reader.  The first is for basic
-symbols, which is just the names that the linker uses to build
+for each format, GDB has two levels of reader.  The first level is for
+basic symbols, which is just the names that the linker uses to build
 executables and library; so these are names with addresses and not
-much else.  The second level is detailed symbolic information, which
-may be in its own format; for instance, DWARF information is
-encapsulated in an ELF file.
+much else; we assume that addresses in text sections are functions,
+and addresses in data sections are, uh, data.
+
+The second level is detailed symbolic information, which is typically
+recorded in its own format; for instance, DWARF information is
+encapsulated in specially-named sections of ELF file.  By contrast,
+the old ''stabs'' format of Berkeley Unix used specially-flagged
+symbols in the general symbol table.
 
 The code for reading symbolic information is somewhat tedious and
-uninteresting; the different format encode the same information in
-their own ways, so it's just a matter of interpretation and construction
-of the appropriate GDB structures.
+uninteresting; the different sumbolic formats encode the same kinds
+information in their own idiosyncratic ways, so it's just a matter of
+interpretation and construction of the appropriate GDB structures.
 
-Partial Symbol Tables
+\end{aosasect1}
+
+\begin{aosasect1}{Partial Symbol Tables}
 
 However, for a program of significant size (such as Emacs or Firefox),
 construction of the symbol table can take quite a while, maybe even
-several minutes.  Measurements show that the time is *not* in file
-reading, but in the in-memory construction of GDB symbols; there are
-literally millions of small interconnected objects, and the time adds
-up.
+several minutes.  Measurements consistently show that the time is
+''not'' in file reading, but in the in-memory construction of GDB
+symbols; there are literally millions of small interconnected objects,
+and the time adds up.
 
 Most of the symbolic information will never be looked at in a session,
 since it is local to functions that are not of debugging interest.  So
@@ -191,7 +281,9 @@ function is filled in only when the user stops inside it.
 Partial symbol tables allow GDB to start up in only a few seconds, even
 for large programs.
 
-Language Support
+\end{aosasect1}
+
+\begin{aosasect1}{Language Support}
 
 Source language support mainly consists of expression parsing and value
 printing.
@@ -213,9 +305,13 @@ Similarly for printing; there are just a handful of types of values that
 need to be displayed, and oftentimes the language-specific printer can
 call out to generic function to finish the job.
 
-Target Side
+\end{aosasect1}
 
-Target Vectors and the Target Stack
+\begin{aosasect1}{Target Side}
+
+\end{aosasect1}
+
+\begin{aosasect1}{Target Vectors and the Target Stack}
 
 Originally the target side of GDB was composed of a handful of
 platform-specific files that handled the details of calling ptrace(),
@@ -257,7 +353,9 @@ target vectors get assigned to a lower level.
 While GDBers grumble about the target stack regularly, nobody has yet
 come up with (and implemented!) a better replacement.
 
-Gdbarch
+\end{aosasect1}
+
+\begin{aosasect1}{Gdbarch}
 
 As disassembly is a generic feature also needed for objdump in the
 binutils, it was separated into its own library early on.
@@ -284,7 +382,9 @@ point are now up to 130 methods and variables available to define a
 target architecture.  On the average, most aren't needed, and a
 simple target might only need a dozen or so methods.
 
-Execution control
+\end{aosasect1}
+
+\begin{aosasect1}{Execution control}
 
 The heart of GDB is its execution control loop.  We touched on it earlier
 when describing single-stepping over a line - the process entailed looping
@@ -319,5 +419,196 @@ structure to replace the pile of local and global variables, and
 converting the tangle of jumps into smaller independent functions.  At
 the same time Elena Zannoni and others introduced event queues that
 included both input from the user and notifications from the inferior.
+
+(bpstatus?)
+
+\end{aosasect1}
+
+\begin{aosasect1}{The Remote Protocol}
+
+Although GDB's target vector architecture allows for a broad variety
+of ways to control a program running on a different computer, we have
+a single preferred protocol.  It does not have a distinguishing name,
+and is typically called just the ``remote protocol'', ``GDB remote
+protocol'', ``remote serial protocol'' (abbreviating to ``RSP''),
+''remote.c protocol'' (after the source file that implements it), or
+sometimes the ``stub protocol'', referring to the target's
+implementation of the protocol.
+
+The protocol is fundamentally very simple, reflecting the desire to
+have it work on small embedded systems of the 1980s, with memory
+measured in kilobytes.  For instance, the protocol packet ''$$g''
+requests all registers, and expects a reply consisting of all the
+bytes of all the registers, all run together - the assumption being
+that their number, size, and order will match what GDB knows about.
+
+The protocol expects a single reply to each packet sent, and assumes
+the connection is reliable, adding only a checksum to packets sent
+(so $$g is really sent as $$g#67 over the wire).
+
+Although the basic protocol is simple, with only a half-dozen required
+packet types (corresponding to the half-dozen required target vector
+methods), scores of additional optional packets have been added over the
+years, to support everything from hardware breakpoints, to tracepoints, to
+shared libraries.
+
+On the target itself, the implementation of the remote protocol can
+take a wide variety of forms.  The protocol is fully documented in the
+GDB manual, which means that it is possible to write an implementation
+that is not encumbered with a GNU license, and indeed many equipment
+manufacturers have incorporated backdoors that speak the GDB remote
+protocol, both in the lab and in the field.  Cisco's IOS is a well-known
+example.
+
+A target's implementation of the protocol is often referred to as a
+''debugging stub'', or just ''stub'', connoting that it not expected
+to do very much work on its own.  The GDB sources include a few
+example stubs, which are typically about 1000 lines of low-level C.
+On a totally bare board with no OS, the stub must install its own
+handlers for hardware exceptions, most importantly to catch trap
+instructions.  It will also need serial driver code if the hardware
+link is a serial line.  The actual protocol handling is simple, since
+all the required packets are single characters that can be decoded
+with a switch statement.
+
+Another approach to remote protocol is to build a ``sprite'' that
+interfaces between GDB and dedicated debugging hardware, including
+JTAG devices, ``wigglers'' and the like.  Oftentimes these devices
+have a library that must run on the computer that is physically
+connected to a target board, and often the library API is not
+architecturally compatible with GDB's internals.  So while versions
+of GDB have had hardware control libraries, it works better to build
+a separate program that speaks remote protocol and translates the
+packets into library calls.
+
+\end{aosasect1}
+
+(GDBserver)
+
+(breakpoint structure)
+
+(tracing)
+
+\begin{aosasect1}{Interfaces to GDB}
+
+GDB is fundamentally a command-line debugger.
+
+The standard library ''readline'' handles the character-by-character interaction
+with the user.  Readline does things like line editing and command completion, the
+latter with the help of callback into GDB proper.
+
+GDB looks up command using a cascaded structure of command tables,
+where each word of the command selects an additional table.  For
+instance ``set print elements 80'' involves three tables; the first is
+the table of all commands, the second is a table of things that can be
+``set'', and the third is a table of value printing options, of which
+``elements'' limits the number of objects printed from an aggregate
+like a string or array.  Beyond that, argument parsing is completely
+up to individual command functions, some of which handle arguments
+similarly to traditional C argc/argv standards, while others assume
+that the remainder of the line is an programming language expression.
+
+The command line makes a good universal fallback, but it's not suitable
+for modern window-based programming environments, and people have developed
+a number of schemes to deal with this.
+
+As GDB's syntax and output format are well-known and generally stable,
+many people have used it as a ''backend'', running GDB under the
+control of a GUI, translating mouse clicks into commands, and
+formatting print results into windows.  It's not the ideal approach,
+because sometimes results are formatted for human readability, omitting
+details and relying on human ability to supply context.
+
+To solve this problem, GDB has an alternate UI, known as the Machine
+Interface or MI for short.  It is still fundamentally a command-line
+interface, but both commands and results have additional syntax that
+makes everything explicit = each argument is bounded by quotes, while
+complex output has delimiters for subgroups, and parameters names for
+component pieces.
+
+(example)
+
+Eclipse is the most notable client of the MI.
+
+Additional frontends include a tcl/tk-baseda version called GDBtk or
+Insight, and a curses-based interface called the TUI, contributed by
+Hewlett-Packard.
+
+\end{aosasect1}
+
+\begin{aosasect1}{Development Process}
+
+\end{aosasect1}
+
+\begin{aosasect1}{Maintainers in the Cathedral}
+
+As an old GNU program, GDB has long followed the ``cathedral'' model of
+development.  Originally written by Stallman, it was then taken up by several
+individuals, each serving as the sole ``maintainer''.  The maintainer would
+accept patches and incorporate desirable ones, make releases as seemed reasonable,
+and provide regular snapshots in between releases.
+
+Individuals at Cygnus Support were maintainers throughout the 1990s.
+The company gradually hired more GDB developers, and they coordinated
+using CVS internally, while continuing to make snapshots and releases.
+While convenient for employees, it meant that everyone else was in the
+dark about the development process.  Worse, the repository was also
+used for confidential development (unannounced processor
+architectures, proprietary operating systems, etc), and so became too
+``contaminated'' to make available to the public.  In April 1999 we
+resolved the problem by establishing a new public CVS repository.
+Although it meant that earlier revision history was not available
+checkin-by-checkin, it was still possible to understand it from the
+manually-written ChangeLog.
+
+With the increase in size, GDB also evolved away from the
+single-maintainer model.  At first we introduced ``area maintainers''
+responsible for specific ports and/or classes of functionality, then
+the notion of ``global maintainers'' with write permission everywhere,
+with one individual designated as a ``head maintainer''.  Andrew
+Cagney was the last head maintainer, and when he stepped back from the
+role in 2005(?), maintenance became a group function.  In practice,
+headless operation has worked out well - the global maintainers have
+all had long experience with the debugger, and know each other well on
+a personal level, so while there are disputes periodically, they
+don't escalate or fester.
+
+\end{aosasect1}
+
+\begin{aosasect1}{Testing Testing}
+
+As a program that a) is highly system-specific, b) has a great many
+ports to systems ranging from the smallest to the largest in computerdom,
+c) has hundreds of commands, options, and usage styles, it is difficult
+for even the experienced GDB developer to anticipate all the effects of
+a change.
+
+This is where the testsuite comes in.  The testsuite consists of a
+number of test programs combined with ''expect'' scripts, using a
+tcl-based testing framework called DejaGNU.  The basic model is that
+each script drives GDB as it debugs a test program, sending commands and
+then pattern-matching the output against regular expressions.  There
+is a variety of infrastructure and script libraries, so that in many
+cases a new feature can be sufficiently exercised by adding a
+half-dozen one-line test cases.  (In other cases, there is no choice
+but to compose a horrendously-complicated regular expression.)
+
+In addition, the testsuite also has the ability to run cross-debugging
+to both live hardware and simulators.  Infrastructure includes the
+ability to have tests that are specific to a configuration.
+
+As of 2011, the testsuite includes some 18,000 test cases.  It is rare
+for even well-supported platforms to get all the way to zero failures;
+10-20 failures is usually reasonable.
+
+Contributors are expected to run the testsuite on patched sources
+and observe no regressions, and for new features, new tests are
+expected to accompany each feature.
+
+\end{aosasect1}
+
+\begin{aosasect1}{Future?}
+
+\end{aosasect1}
 
 \end{aosachapter}
