@@ -943,11 +943,11 @@ so the following is an abbreviated list that will hopefully be useful:
 
 \item Space vs.\ time can be an appropriate trade-off.  For example,
   allocating space for $N$ incoming messages can be a net performance
-  win because, for example, individual {\tt malloc} overhead can be
-  amortized across receiving multiple messages.
+  win because individual {\tt malloc} overhead can be amortized across
+  receiving multiple messages.
 
-\item Accelerators (such as generalized GPUs) are challenging some of
-  our initial designs; we didn't account for their cross-cutting
+\item Accelerators (such as general purpose GPUs) are challenging some
+  of our initial designs; we didn't account for their cross-cutting
   behavior in the initial Open MPI designs.  They are forcing us to
   re-think some of our base assumptions.
 
