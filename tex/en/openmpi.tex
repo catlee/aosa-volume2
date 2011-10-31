@@ -12,15 +12,15 @@ a little background on the MPI standard must be discussed.
 
 \begin{aosasect2}{The Message Passing Interface (MPI)}
 
-The MPI standard is defined by the MPI
+The MPI standard is created and maintained by the MPI
 Forum\footnote{\url{http://www.mpi-forum.org/}}; an open group
 consisting of parallel computing experts from both industry and
 academia.
 %
 MPI defines an API that is used for a specific type of portable,
 high-performance inter-process communication (IPC): {\em message
-  passing}.  Specifically, MPI defines reliable transfer of discrete,
-typed messages between MPI processes.
+  passing}.  Specifically, the MPI document describes the reliable
+transfer of discrete, typed messages between MPI processes.
 %
 Although the definition of an ``MPI process'' is subject to
 interpretation on a given platform, it usually corresponds to the
@@ -30,14 +30,14 @@ MPI is specifically intended to be implemented as middleware, meaning
 that upper-level applications call MPI functions to perform message
 passing.
 
-MPI defines a high-level API, meaning that it provides abstraction
-away from whatever underlying transport is actually used to pass
-messages between processes.  The idea is that sending process $X$ can
-effectively say ``take this array of 1,073 double precision values and
-send them to process $Y$.''  The corresponding receiving process $Y$
-effectively says ``receive an array of 1,073 double precision values
-from process $X$.''  A miracle occurs, and the array of 1,073 double
-precision values arrives in $Y$'s waiting buffer.
+MPI defines a high-level API, meaning that it abstracts away whatever
+underlying transport is actually used to pass messages between
+processes.  The idea is that sending process $X$ can effectively say
+``take this array of 1,073 double precision values and send them to
+process $Y$.''  The corresponding receiving process $Y$ effectively
+says ``receive an array of 1,073 double precision values from process
+$X$.''  A miracle occurs, and the array of 1,073 double precision
+values arrives in $Y$'s waiting buffer.
 
 Notice what is absent in this exchange: there is no concept of a
 connection occurring, no stream of bytes to interpret, and no network
@@ -45,7 +45,8 @@ addresses exchanged.  MPI abstracts all of that away, not only to hide
 such complexity from the upper-level application, but also to make the
 application portable across different environments and underlying
 message-passing transports.  Specifically, a correct MPI application
-is source compatible across a wide variety of platforms and networks.
+is source compatible across a wide variety of platforms and network
+types.
 
 MPI defines not only point-to-point communication (e.g., send and
 receive), it also defines other communication patterns, such as {\em
@@ -57,9 +58,9 @@ in a group have the message.
 
 MPI defines other concepts and communications patterns that are not
 described here.\footnote{As of this writing, the most recent version
-  of the MPI standard is MPI-2.2~\cite{mpi-2.2}.  Multiple draft
-  versions of the upcoming MPI-3 standard have been published; it may
-  be finalized as early as late 2012.}
+  of the MPI standard is MPI-2.2~\cite{mpi-2.2}.  Draft versions of
+  the upcoming MPI-3 standard have been published; it may be finalized
+  as early as late 2012.}
 
 \end{aosasect2}
 
@@ -89,22 +90,24 @@ computational problem.
 
 That is, the applications using MPI are both parallel in nature and
 highly compute-intensive.  It is not unusual for all the processor
-cores in an MPI job to to run at 100\% utilization.  To be clear, MPI
+cores in an MPI job to run at 100\% utilization.  To be clear, MPI
 jobs typically run in dedicated environments where the MPI processes
 are the {\em only} application running on the machine (in addition to
 bare-bones operating system functionality, of course).
 
 As such, MPI implementations are typically focused on providing
-extremely high performance, measured in metrics such as:
+extremely high performance, measured by metrics such as:
 
 \begin{aosaitemize}
 \item Extremely low latency for short message passing.  As an example,
   a 1-byte message can be sent from a user-level Linux process on one
   server, through an InfiniBand switch, and received at the target
   user-level Linux process on a different server in a little over 1
-  microsecond.
+  microsecond (i.e., $0.000001$ second).
 \item Extremely high message network injection rate for short
-  messages.  As an example, MPI can inject JMS NEED TO CITE...
+  messages.  Some vendors have MPI implementations (paired with
+  specified hardware) that can inject up to 28 million messages per
+  second into the network.
 \item Quick ramp-up (as a function of message size) to the maximum
   bandwidth supported by the underlying transport.
 \item Low resource utilization.  All resources used by MPI (e.g.,
@@ -155,20 +158,20 @@ projects.  This decision was mainly predicated upon the following
 premises:
 
 \begin{aosaitemize}
-\item Even though many of the inner algorithms and techniques were
-  similar among the four code bases, they each had radically different
-  implementation architectures, and would be incredible difficult (if
-  not impossible) to merge.
+\item Even though many of the underlying algorithms and techniques
+  were similar among the four code bases, they each had radically
+  different implementation architectures, and would be incredible
+  difficult (if not impossible) to merge.
 \item Each of the four also had their own (significant) strengths and
   (significant) weaknesses.  Specifically, there were features and
   architecture decisions from each of the four that were desirable to
   carry forward.  Likewise, there were poorly optimized and badly
   designed code in each of the four that were desirable to leave
   behind.
-\item The members of the four developer groups had also not worked
-  directly together before.  Starting with an entirely new code base
-  (rather than advancing one of the existing code bases) put all
-  developers on equal ground.
+\item The members of the four developer groups had not worked directly
+  together before.  Starting with an entirely new code base (rather
+  than advancing one of the existing code bases) put all developers on
+  equal ground.
 \end{aosaitemize}
 
 Thus, Open MPI was born.  Its first Subversion commit was on November
@@ -210,20 +213,20 @@ We therefore spent a good deal of time designing an architecture that
 focused on three things:
 
 \begin{aosaenumerate}
-\item Grouping similar functionality together in multiple abstraction
-  layers
+\item Grouping similar functionality together in distinct abstraction
+  layers.
 \item Using run-time loadable plugins and run-time parameters to
   choose between multiple different implementations of the same
-  behavior
-\item Not allowing abstraction to get in the way of performance
+  behavior.
+\item Not allowing abstraction to get in the way of performance.
 \end{aosaenumerate}
 
 %--------------------------------------------------------------------------
 
 \begin{aosasect2}{Abstraction Layer Architecture}
 
-\aosafigure{../images/openmpi/open-mpi-layers.pdf}{High level
-  architectural view of Open MPI showing its three main abstraction
+\aosafigure{../images/openmpi/open-mpi-layers.pdf}{Abstraction layer
+  architectural view of Open MPI showing its three main
   layers: OPAL, ORTE, and OMPI.}{fig.openmpi.layers}
 
 Open MPI has three main abstraction layers, shown in
@@ -242,7 +245,7 @@ Open MPI has three main abstraction layers, shown in
   memory between processes on the same server, processor and memory
   affinity, high-precision timers, etc.
 
-\item {\em Open MPI Run-time Environment (ORTE)}\footnote{Pronounced
+\item {\em Open MPI Run-Time Environment (ORTE)}\footnote{Pronounced
     ``or-tay.''}: An MPI implementation must provide not only the
   required message passing API, but also an accompanying run-time
   system to launch, monitor, and kill parallel jobs.  In Open MPI's
@@ -313,36 +316,54 @@ a common code base.
 
 Run-time loadable {\em components} were a natural choice (a.k.a.,
 dynamic shared objects, or ``DSOs'', or ``plugins'').  Components
-enforce a common API, but place few limitations on the implementation
+enforce a common API but place few limitations on the implementation
 of that API.
 %
 Specifically: the same interface behavior can be implemented multiple
 different ways.
 %
-Indeed, utilizing run-time loadable objects allows third-party plugins
-to be shipped outside of the core Open MPI package.  Allowing
-arbitrary extensibility is quite a liberating policy, both within the
-immediate set of Open MPI developers and in the greater Open MPI
-community.  For example, third parties can develop and independently
-distribute their own Open MPI plugins outside of the core Open MPI
-package.
+Users can then choose at run time which plugin(s) to use.
+%
+This even allows third parties to independently develop and distribute
+their own Open MPI plugins outside of the core Open MPI package.
+%
+Allowing arbitrary extensibility is quite a liberating policy, both
+within the immediate set of Open MPI developers and in the greater
+Open MPI community.
 
 This run-time flexibility is a key component of the Open MPI design
-philosophy, and is integrated deeply throughout the architecture.
+philosophy and is deeply integrated throughout the entire
+architecture.
 %
 Case in point: the Open MPI v1.5 series includes 155 plugins.
 %
-There are plugins for different {\tt memcpy()} implementations,
-plugins for how to launch processes on remote servers, and plugins for
-how to communicate on different types of underlying networks.
+To list just a few examples, there are plugins for different {\tt
+  memcpy()} implementations, plugins for how to launch processes on
+remote servers, and plugins for how to communicate on different types
+of underlying networks.
 
 One of the major benefits of using using plugins is that multiple
 groups of developers have freedom to experiment with alternate
 implementations without affecting the core of Open MPI.
 %
-As such, this component concept is utilized heavily throughout all
-three layers of Open MPI -- in each layer, there are many different
-{\em types} of components.  
+This was a critical feature, particularly in the early days of the
+Open MPI project.  Sometimes the developers didn't always know what
+was the right way to implement something, or sometimes they just
+disagreed.
+%
+In both cases, each party would implement their solution in a
+component, allowing the rest of the developer community to easily
+compare and contrast. 
+%
+Code comparisons can be done without components, of course, but the
+component concept helps guarantee that all implementations are
+implementing exactly the same API.  Losing components can also easily
+be removed because they are in self-contained directories.
+
+As a direct result of the flexibility that it provides provided, the
+component concept is utilized heavily throughout all three layers of
+Open MPI -- in each layer, there are many different types of
+components.
 %
 Each type of component is enclosed in a {\em framework}.
 %
@@ -355,15 +376,16 @@ Open MPI core, its frameworks, and the components that they contain.
 Open MPI's set of layers, frameworks, and components is referred to as
 the Modular Component Architecture (MCA).
 
-\aosafigure{../images/openmpi/open-mpi-mca.pdf}{High level
-  architectural view of Open MPI showing frameworks and their bases
-  and components.  Each framework contains a base an one or more
-  components.  This structure is replicated in each of the layers
-  shown in \aosafigref{fig.openmpi.layers}.}{fig.openmpi.mca}
+\aosafigure{../images/openmpi/open-mpi-mca.pdf}{Framework
+  architectural view of Open MPI.  Each framework contains a base and
+  one or more components.  This structure is replicated in each of the
+  layers shown in \aosafigref{fig.openmpi.layers}.}{fig.openmpi.mca}
 
 Finally, another major advantage of using frameworks and components is
-their inherent composability: using plugin $A$ in framework $B$ has no
-bearing on using plugin $X$ in framework $Y$.
+their inherent composability.  With over 40 frameworks in Open MPI
+v1.5, giving the users the ability to mix-n-match different plugins of
+different types allows them to create a software stack that is
+effectively tailored to their individual system.
 
 \end{aosasect2}
 
@@ -392,21 +414,21 @@ Framework directories contain at least the following three items:
   code that provides the core functionality of the framework.  The
   base is typically comprised of logistical grunt work such as finding
   and opening components at run-time, common utility functionality
-  that may be utilized by plugins, etc.
+  that may be utilized by multiple components, etc.
 
 \item {\em Components}: All other subdirectories in the framework
   directory are assumed to be components.  Just like the framework,
   the names of the components are the same names as their
-  subdirectories (e.g., the {\tt posix} subdirectory contains the {\tt
-    posix} component).
+  subdirectories (e.g., the {\tt posix} subdirectory contains the
+  POSIX component).
 \end{aosaenumerate}
 
-Just like each framework defines the interfaces to which its
-components must adhere, frameworks also define their own rules about
-how they bootstrap themselves, how they pick components to use, and
-how they are shut down.  Two common examples of how frameworks differ
-in their rules / setup are many-of-many vs.\ one-of-many frameworks,
-and static vs.\ dynamic frameworks.
+Similar to how like each framework defines the interfaces to which its
+components must adhere, frameworks also define other operational
+aspects, such as how they bootstrap themselves, how they pick
+components to use, and how they are shut down.  Two common examples of
+how frameworks differ in their setup are many-of-many vs.\ one-of-many
+frameworks, and static vs.\ dynamic frameworks.
 
 %%%%%
 
@@ -416,8 +438,8 @@ Some frameworks have functionality that can be implemented multiple
 different ways in the same process.
 %
 For example, Open MPI's point-to-point network framework will load
-multiple driver plugins to support different network types in a single
-process.
+multiple driver plugins to allow a single process to send and receive
+messages on multiple network types.
 
 Such frameworks will typically open all components that they can find
 and then query each component, effectively asking, ``Do you want to
@@ -430,28 +452,28 @@ For example, a point-to-point network component will look to see if
 the network type it supports is both available and active on the
 system.
 %
-If it is not, it will reply ``No, I do not want to run,'' causing the
-framework to close/unload that component.
+If it is not, the component will reply ``No, I do not want to run,''
+causing the framework to close and unload that component.
 % 
-If that network type {\em is} available, it will reply ``Yes, I want to
-run,'' causing the framework to keep the component open for further
-use.
+If that network type {\em is} available, the component will reply
+``Yes, I want to run,'' causing the framework to keep the component
+open for further use.
 
 %%%%%
 
 \paragraph{One-of-many frameworks.} 
 
-Other frameworks provide functionality that makes sense to have only
-one implementation available at run-time.
+Other frameworks provide functionality that does not make sense to
+have more than one implementation available at run-time.
 %
 For example, creating a consistent checkpoint of a parallel job --
 meaning that the job is effectively ``frozen'' and can be arbitrarily
 resumed later -- must be performed using the same back-end
 checkpointing system for each process in the job.
 %
-The one plugin that interfaces to the desired checkpointing system is
-the {\em only} checkpoint plugin that must be loaded in each process
--- all others are unnecessary.
+The plugin that interfaces to the desired back-end checkpointing
+system is the {\em only} checkpoint plugin that must be loaded in each
+process -- all others are unnecessary.
 
 %%%%%
 
@@ -471,18 +493,20 @@ Some one-of-many frameworks have additional constraints that force
 their one-and-only-one component to be selected at compile time (vs.\
 run time).  Statically linking one-of-many components allows direct
 invocation of its member functions, which may be important in highly
-performance-sensitive functionality (e.g., the {\tt memcpy} framework).
+performance-sensitive functionality.  One example is the {\tt memcpy}
+framework, which provides platform-optimized {\tt memcpy()}
+implementations.
 
 Additionally, some frameworks provide functionality that may need to
 be utilized before Open MPI is fully initialized.  
 %
 For example, the use of some network stacks require complicated memory
 registration models, which, in turn, require replacing the C library's
-default memory management implementation.  
+default memory management routines.
 %
 Since memory management is intrinsic to an entire process, replacing
 the default scheme can only be done pre-{\tt main}.
-
+%
 Therefore, such components must be statically linked into Open MPI
 processes so that they can be available for pre-{\tt main} hooks, long
 before MPI has even been initialized.
@@ -493,8 +517,13 @@ before MPI has even been initialized.
 
 \begin{aosasect2}{Plugin Components}
 
-Open MPI plugins are divided into parts: a {\em component} struct
-and a {\em module} struct.
+Open MPI plugins are divided into two parts: a {\em component}
+struct and a {\em module} struct.
+%
+The component struct and the functions to which it refers are
+typically collectively referred to as ``the component.''  Similarly,
+``the module'' collectively refers to the module struct and its
+functions.
 %
 The division is somewhat analogous to C++ classes and objects.
 %
@@ -524,29 +553,48 @@ no name collisions between components, and allows the MCA core to find
 any arbitrary component struct via {\tt dlsym(2)} (or the appropriate
 equivalent for each different operating system).
 
-The component struct contains some logistical information, such as the
-component's formal name, version, framework version adherence, etc.
+The base component struct contains some logistical information, such
+as the component's formal name, version, framework version adherence,
+etc.  See the ``Base Component Struct'' code box.
 %
 This data is used for debugging purposes, inventory listing, and
 run-time compliance and compatibility checking.
 
-The component also contains some function pointers:
+\begin{aosabox}{Base Component Struct}
+\begin{verbatim}
+struct mca_base_component_2_0_0_t {
+    /* Base component struct version number */
+    int mca_major_version, mca_minor_version, mca_release_version;
+
+    /* The string name of the framework that this component belongs to,
+       and the framework's API version that this component adheres to */
+    char mca_type_name[MCA_BASE_MAX_TYPE_NAME_LEN + 1];
+    int mca_type_major_version, mca_type_minor_version,  
+        mca_type_release_version;
+
+    /* This component's name and version number */
+    char mca_component_name[MCA_BASE_MAX_COMPONENT_NAME_LEN + 1];
+    int mca_component_major_version, mca_component_minor_version,
+        mca_component_release_version;
+
+    /* Function pointers */  
+    mca_base_open_component_1_0_0_fn_t mca_open_component;
+    mca_base_close_component_1_0_0_fn_t mca_close_component;
+    mca_base_query_component_2_0_0_fn_t mca_query_component;
+    mca_base_register_component_params_2_0_0_fn_t 
+        mca_register_component_params;
+};
+\end{verbatim}
+\end{aosabox}
+
+The base component struct contains the following function pointers:
 
 \begin{aosaitemize}
-\item {\em Parameter registration.} This function is typically the
-  first function called on a component.  It allows the component to
-  register any relevant run-time, user-settable parameters.  Run-time
-  parameters are discussed further below.
-
 \item {\em Open.} The {\em open} call is the initial query function
   invoked on a component.  It allows a component to initialize itself,
   look around the system where it is running, and determine whether it
-  wants to be run.  If a component can always be run, it can not
-  provide an open function.
-
-\item {\em Query.} This call is a generalized ``do you want to run?''
-  function.  Not all frameworks utilize this call -- some need more
-  specialized query functions.
+  wants to run.  If a component can always be run, it can provide a
+  {\tt NULL} open function pointer.
 
 \item {\em Close.} When a framework decides that a component is no
   longer needed, it calls the {\em close} function to allow the
@@ -555,24 +603,34 @@ The component also contains some function pointers:
   shutting down.  However, {\em close} can also be invoked on
   components that are rejected at run-time so that they can be closed
   and ignored for the duration of the process.
+
+\item {\em Query.} This call is a generalized ``do you want to run?''
+  function.  Not all frameworks utilize this specific call -- some
+  need more specialized query functions.
+
+\item {\em Parameter registration.} This function is typically the
+  first function called on a component.  It allows the component to
+  register any relevant run-time, user-settable parameters.  Run-time
+  parameters are discussed further below.
 \end{aosaitemize}
 
 The component structure can also be extended on a per-framework and/or
 per-component basis.  Frameworks typically create a new component
-struct with the generalized component struct as the first member.
+struct with the component base struct as the first member.
 %
 This nesting allows frameworks to add their own attributes and
 function pointers.  
 %
 For example, frameworks that need a more specialized query function
-than the generic {\em query} function provided on the basic component
-can add a function pointer in its framework-specific component struct.
+(as compared to the {\em query} function provided on the basic
+component) can add a function pointer in its framework-specific
+component struct.
 
-The MPI {\tt coll} framework, which is used for collective MPI
-operations, uses this technique.  Its framework-specific struct looks
-like this:
+The MPI {\tt coll} framework, which provides collective MPI operation
+functionality, uses this technique.  Its framework-specific struct is
+shown in the ``Coll Framework Component Struct'' code box.
 
-\begin{aosabox}{Base component struct}
+\begin{aosabox}{Coll Framework Component Struct}
 \begin{verbatim}
 struct mca_coll_base_component_2_0_0_t {
     /* Base component struct */
@@ -592,9 +650,9 @@ component struct with its own members.
 %
 The {\tt tuned} component in the {\tt coll} framework does this; it
 caches some algorithm rules and other meta data on its component
-struct.  
+struct.  See the ``{\tt tuned} Coll Component Struct'' code box.
 
-\begin{aosabox}{coll-framework specific struct}
+\begin{aosabox}{``Tuned'' Component (in the Coll Framework) Struct}
 \begin{verbatim}
 struct mca_coll_tuned_component_t {
     /* coll framework-specific component struct */ 
@@ -612,44 +670,44 @@ struct mca_coll_tuned_component_t {
 This struct-nesting technique is effectively a simple emulation of C++
 single inheritance: a pointer to an instance of a {\tt struct
   mca\_\-coll\_\-tuned\_\-component\_\-t} can be cast to any of the
-three types can be used by an abstraction layer than does not
-understand the ``derived'' types.
+three types such that it can be used by an abstraction layer than does
+not understand the ``derived'' types.
 
-In general, casting is frowned upon because it can lead to incredibly
-subtle, difficult-to-find bugs.  Casting is therefore usually {\em
-  only} used for this C++-emulation technique.
+That being said, casting is generally frowned upon in Open MPI because
+it can lead to incredibly subtle, difficult-to-find bugs.  
+%
+An exception was made for this C++-emulation technique because it has
+well-defined behaviors and helps enforce abstraction barriers.
 
 %%%%%
 
 \paragraph{Module struct.}
 
 Module structs are individually defined by each framework; there is
-not necessarily much commonality between them.
+little commonality between them.
 %
 Depending on the framework, components generate one or more module
-struct instances (a.k.a., ``modules'') when they indicate that they
-want to be used.
-%
+struct instances to indicate that they want to be used.
+
 For example, in the BTL framework, one module usually corresponds to a
 single network device.  
 %
 If an MPI process is running on a Linux server with four ``up''
-Ethernet NICs, the TCP BTL component will generate four TCP BTL
-modules; each module will be assigned to a different Linux Ethernet
-devices.
+Ethernet devices, the TCP BTL component will generate four TCP BTL
+modules; one corresponding to each Linux Ethernet device.
 %
-Each module will then be responsible for all sending and receiving
-activity to and from that Ethernet device.
+Each module will then be wholly responsible for all sending and
+receiving to and from its Ethernet device.
 
 Composing BTL modules this way allows the upper layer MPI progression
 engine to both treat all network devices equally, and to perform
 user-level channel bonding.  
 %
-In the above 4-NIC example, a sender will strip large messages across
-all TCP BTL modules that represent Ethernet devices that can be used
-to reach the peer to which the message is being sent (reachability is
-determined by TCP networks and netmasks, and some well-defined
-heuristics).
+In the above four-device example, a sender will stripe large messages
+across all TCP BTL modules representing Ethernet devices that can be
+used to reach the peer to which the message is being sent
+(reachability is determined by TCP networks and netmasks, and some
+well-defined heuristics).
 
 \end{aosasect2}
 
@@ -667,37 +725,41 @@ Developers commonly make decisions when writing code, such as:
 \item ...and so on
 \end{aosaitemize}
 
-Most users assume that the developers will make reasonable decisions
-for most cases.  
+Users tend to assume that the developers will answer such questions in
+a way that is generally suitable for most types of systems.
 %
 However, the HPC community is full of scientist and engineer power
 users who aggressively want to tweak their hardware and software
-stacks to eek out every possible last compute cycle.
+stacks to eek out every possible compute cycle.
 %
-Although these users do not typically want to tinker with the code of
-the innards of their MPI implementation, they {\em do} want to tinker
-by selecting different algorithms, choosing different resource
+Although these users typically do not want to tinker with the actual
+code of their MPI implementation, they {\em do} want to tinker by
+selecting different algorithms, choosing different resource
 consumption patterns, or forcing specific network protocols in
 different circumstances.
 
-Therefore, when designing Open MPI, we included a flexible run-time
-tuning mechanism called the MCA parameter system.
+Therefore, the MCA parameter system was included when designing Open
+MPI -- a flexible mechanism that allows users to change internal Open
+MPI parameter values at run-time.
 %
-Developers can register string or integer MCA parameters from anywhere
-in the Open MPI code base, along with an associated default value and
-help string defining what the parameter is and how it is used.
+Specifically, developers register string and integer MCA parameters
+throughout the Open MPI code base, along with an associated default
+value and descriptive string defining what the parameter is and how it
+is used.
 %
-The general rule of thumb is that instead of using constants in code,
-use an MCA parameter instead, and allow a power user to tweak the
-behavior if they want to.
+The general rule of thumb is that instead of hard-coding constants,
+use an MCA parameter instead, thereby allowing power users to tweak
+the behavior.
 
-There are a number of parameters in each of the the abstraction
-layers, but parameters are much more common in components.
+There are a number of MCA parameters in the three abstraction layers,
+but MCA parameters are much more common in components.
 %
 For example, the TCL BTL plugin has a parameter that specifies whether
-only TCPv4, only TCPv6, or both should be used.
+only TCPv4 interfaces, only TCPv6 interfaces, or both types of
+interfaces should be used.
 %
-Another TCP BTL parameter specifies which Ethernet devices to use.
+Alternatively, another TCP BTL parameter can be utilized to specify
+exactly which Ethernet devices to use.
 
 Users can discover what parameters are available via a user-level
 command line tool ({\tt ompi\_\-info}).
@@ -706,17 +768,20 @@ Parameter values can be set in multiple ways: on the command line, via
 environment variables, via the Windows registry, or in system- or
 user-level INI-style files.
 
-This run-time parameter system has proved to be invaluable; although
-Open MPI developers try to choose reasonable defaults for a wide
-variety of situations, every HPC environment is different.  There will
-inevitably environments where Open MPI's defaults will be unsuitable
--- and possibly even detrimental to performance.  
+The MAC parameter system complements the idea of run-time flexibility
+through plugin selection, and proved to be quite valuable to users.
 %
-Having the MCA parameter system allows users to be proactive and tweak
-Open MPI's behavior for their environment.  Not only does this
-alleviate many upstream requests for changes and/or bug reports, it
-allows users to experiment with the parameter space to find the best
-configuration for their specific system.
+Although Open MPI developers try hard to choose reasonable defaults
+for a wide variety of situations, every HPC environment is different.
+There are inevitably environments where Open MPI's default parameter
+values will be unsuitable -- and possibly even detrimental to
+performance.
+%
+The MCA parameter system allows users to be proactive and tweak Open
+MPI's behavior for their environment.  Not only does this alleviate
+many upstream requests for changes and/or bug reports, it allows users
+to experiment with the parameter space to find the best configuration
+for their specific system.
 
 \end{aosasect2}
 
@@ -728,7 +793,7 @@ configuration for their specific system.
 
 With such a varied group of developers, it is inevitable that we would
 each learn {\em something}, and that as a group, we would learn many
-things.
+things.  The following list describes just a few of these lessons.
 
 %--------------------------------------------------------------------------
 
@@ -750,9 +815,10 @@ shallow, performant call stacks (vs.\ deep, feature-rich API call
 stacks).
 
 That being said, we also had to accept that in some cases, abstraction
-must be thrown out the window.  Case in point: Open MPI has hand-coded
-assembly for some of its most performance-critical operations, such as
-shared memory locking and atomic operations.
+-- not architecture -- must be thrown out the window.  Case in point:
+Open MPI has hand-coded assembly for some of its most
+performance-critical operations, such as shared memory locking and
+atomic operations.
 
 It is worth noting that Figures~\ref{fig.openmpi.layers}
 and~\ref{fig.openmpi.mca} show two different {\em architectural} views
@@ -765,7 +831,7 @@ layering for of the high performance code sections.
 
 \paragraph{Lesson learned:} 
 
-It is acceptable -- albeit undesirable --and unfortunately sometimes
+It is acceptable (albeit undesirable) and unfortunately sometimes
 necessary to have gross, complex code in the name of performance
 (e.g., the aforementioned assembly code).
 %
@@ -885,6 +951,25 @@ so the following is an abbreviated list that will hopefully be useful:
   behavior in the initial Open MPI designs.  They are forcing us to
   re-think some of our base assumptions.
 
+\end{aosaitemize}
+
+\end{aosasect2}
+
+%--------------------------------------------------------------------------
+
+\begin{aosasect2}{Conclusion}
+
+If we had to list the three most important things that we've learned
+from the Open MPI project, I think they would be as follows:
+
+\begin{aosaitemize}
+\item One size does not fit all (users).  The run-time plugin and
+  companion MCA parameter system allow users flexibility that is
+  necessary in the world of portable software.  Complex software
+  systems cannot (always) magically adapt to a given system; providing
+  user-level controls allows a human to figure out -- and override --
+  when the software behaves sub-optimally.
+
 \item Differences are good.  Developer disagreements are good.
   Embrace challenges to the status quo; do not get complacent.  A
   plucky grad student saying ``hey, check this out...'' can lead to
@@ -893,7 +978,6 @@ so the following is an abbreviated list that will hopefully be useful:
 
 \item Although outside the scope of this book, people and community
   matter.  A lot.
-
 \end{aosaitemize}
 
 \end{aosasect2}
@@ -904,4 +988,4 @@ so the following is an abbreviated list that will hopefully be useful:
 
 % LocalWords:  rsh SLURM LSF NIC Plugin DSOs memcpy composability plugin pre de
 % LocalWords:  typedefs structs struct mca btl tcp dlsym NICs TCL TCPv ompi INI
-% LocalWords:  discretize malloc freelist
+% LocalWords:  discretize malloc freelist tay posix
