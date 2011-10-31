@@ -437,14 +437,14 @@ implementation of the protocol.
 
 The protocol is fundamentally very simple, reflecting the desire to
 have it work on small embedded systems of the 1980s, with memory
-measured in kilobytes.  For instance, the protocol packet ''$$g''
+measured in kilobytes.  For instance, the protocol packet ''\$\$g''
 requests all registers, and expects a reply consisting of all the
 bytes of all the registers, all run together - the assumption being
 that their number, size, and order will match what GDB knows about.
 
 The protocol expects a single reply to each packet sent, and assumes
 the connection is reliable, adding only a checksum to packets sent
-(so $$g is really sent as $$g#67 over the wire).
+(so \$\$g is really sent as \$\$g\#67 over the wire).
 
 Although the basic protocol is simple, with only a half-dozen required
 packet types (corresponding to the half-dozen required target vector
