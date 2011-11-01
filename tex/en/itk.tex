@@ -1,20 +1,20 @@
-\begin{aosachapter}{ITK}{s:itk}{Luis Ibanez and Brad King}
+\begin{aosachapter}{ITK}{s:itk}{Luis Ib\'{a}\~{n}ez and Brad King}
 
 % Your chapter goes here---please look at /volume1/tex/en/wesnoth.tex for
 % formatting ideas.
 
-\aosafigure{../images/itk/SoftwareAndCommunitySynergy.pdf}{Synergy between Software and Community}{fig.itk.synergy}
-
 \begin{aosasect1}{What Is ITK?}
-The Insight Toolkit ITK is a library for image analysis that was developed by
-the initiative, and mainly with the funding, of the US National Library of
-Medicine. ITK can be tought of as a usable encyclopedia of image analysis
-algorithms, in particular for image filtering, image segmentation and image
-registration. The library was developed by a consortium involving universities,
-commercial companies, and many individual contributors from around the world.
-Development of ITK started in 1999, and recently after its 10th anniversary
-the library underwent a refactoring process intended to remove crusty code and
-to reshape it for the next decade.
+The Insight Toolkit ITK\footnote{\url{http://www.itk.org}} is a library for
+image analysis that was developed by the initiative, and mainly with the
+funding, of the US National Library of
+Medicine\footnote{\url{http://www.nlm.nih.gov}}. ITK can be tought of as a
+usable encyclopedia of image analysis algorithms, in particular for image
+filtering, image segmentation and image registration. The library was developed
+by a consortium involving universities, commercial companies, and many
+individual contributors from around the world.  Development of ITK started in
+1999, and recently after its 10th anniversary the library underwent a
+refactoring process intended to remove crusty code and to reshape it for the
+next decade.
 \end{aosasect1}
 
 \begin{aosasect1}{Architectural Features}
@@ -37,6 +37,8 @@ Taken one step further, \emph{Conway's Law} can be extended to say that the
 design of the system also reflects the structure of the community that uses the
 software and the nature of the work they do with it. At least in the case of
 ITK this holds true. In short: \emph{Form follows Function}.
+
+\aosafigure{../images/itk/SoftwareAndCommunitySynergy.pdf}{Synergy between Software and Community}{fig.itk.synergy}
 
 This situation is really the consequence that software and community are not
 independent. Instead, they shape one another in a continuous synergistic
@@ -61,7 +63,7 @@ and how they tend to go about them.
 ``If you don't understand the nature of the beast,\\
 it would be of little use to know the mechanics of their anatomy''.\\
 }
-\hfill Dee Hook - \emph{One From Many}
+\hfill Dee Hock - \emph{One From Many}
 \end{quotation}
 \end{center}
 
@@ -73,20 +75,30 @@ processing is naturally well suited for a data pipeline architecture, as
 shown in Figure~\ref{fig.itk.pipeline}.
 
 To illustrate this point, Figure \ref{fig.itk.brim} below, shows an image of a
-brain from a magnetic resonance image (MRI), and the result of processing with
-a median filter to reduce its level of noise, as well as the outcome of an edge
-detection filter in order to identify the borders of anatomical structures.
+brain from a magnetic resonance image (MRI), and the result of processing it
+with a median filter to reduce its level of noise, as well as the outcome of an
+edge detection filter used to identify the borders of anatomical structures.
 
 \aosafigure{../images/itk/ExampleImageProcessingPipeline.pdf}{Image Processing Pipeline}{fig.itk.pipeline}
 
+
 %
-% NOTE TO EDITOR: We meant for these images to be rather small, and to be
+% NOTE to the EDITOR: We meant for these images to be rather small, and to be
 % arranged in a single row, from left to right, but didn't quite found how
 % to resize them with the parameters of the aosafigure command.
 %
-\aosafigure{../images/itk/BrainProtonDensitySlice.png}{MRI Brain Image}{fig.itk.brim}
-\aosafigure{../images/itk/BrainProtonDensitySliceMedian.png}{Median Filter}{fig.itk.brimmedian}
-\aosafigure{../images/itk/BrainProtonDensitySliceCanny.png}{Edge Detection Filter}{fig.itk.brimcanny}
+% \aosafigure{../images/itk/BrainProtonDensitySlice.png}{MRI Brain Image}{fig.itk.brim}
+% \aosafigure{../images/itk/BrainProtonDensitySliceMedian.png}{Median Filter}{fig.itk.brimmedian}
+% \aosafigure{../images/itk/BrainProtonDensitySliceCanny.png}{Edge Detection Filter}{fig.itk.brimcanny}
+%
+\begin{figure}[h!]
+\centering
+\includegraphics[width=0.3\textwidth]{../images/itk/BrainProtonDensitySlice.png}
+\includegraphics[width=0.3\textwidth]{../images/itk/BrainProtonDensitySliceMedian.png}
+\includegraphics[width=0.3\textwidth]{../images/itk/BrainProtonDensitySliceCanny.png}
+\caption{From left to right: MRI Brain Image, Median Filter, Edge Detection Filter}
+\label{fig.itk.brim}
+\end{figure}
 
 For each one of these tasks, the image analysis community has developed a
 variety of algorighms, and continue developing new ones. Why do they continue
@@ -101,21 +113,23 @@ facing a given image processing challenge.
 
 This state of affairs, of course comes at a price. The cost is that the image
 analyzer is confronted with the difficulty of choosing among tens of different
-tools that could be used in different combinations to achieve a similar result.
+tools that could be used in different combinations to achieve similar results.
 To make things more interesting, each one of those algorithmic choices comes
 with numeric and boolean parameters that can be tuned to regulate the behavior
-of the filters. For example, that median filter has two numeric parameters, and
-that edge detection filter has five parameters. The existance of those tunable
-parameters makes even more difficult to ever claim that method ``A'' is better
-than method ``B''; since we could only say that for a given application and a
-given set of input images, the method ``A'' with a particular set of
-parameters, seems to produce better results than method ``B'' with a particular
-set of parameters. And of course, here ``better'' is judged by a mixture of
-subjective and objective measures of quality.
+of the filters. For example, that median filter illustrated in the center of
+Figure~\ref{fig.itk.brim} has two numeric parameters, and that edge detection
+filter illustrated in the right of the same figure has five numeric parameters.
+The existance of those tunable parameters makes even more difficult to ever
+claim that method ``A'' is better than method ``B''; since we could only say
+that for a given application and a given set of input images, the method ``A''
+with a particular set of parameters, seems to produce better results than
+method ``B'' with a particular set of parameters.  And of course, here
+``better'' is judged by a mixture of subjective and objective measures of
+quality.
 
 The image analysis community is also closely integrated with the research
 community, and it is common to have specific research groups to become attached
-to the algorithmic families that they came up with. This practice of ``branding'',
+to the algorithmic families they have developed. This practice of ``branding'',
 and up to some level ``marketing'' leads to a situation where the best that the
 software can do for the community is to offer them a very complete set of
 algorithmic implementations that they can try, and then mix and match to create
@@ -139,12 +153,12 @@ into the main features of the architecture:
 
 \begin{aosasect2}{Modularity}
 Modularity is of the main characteristics of ITK. This is a requirement that
-emerges from the way the image analysis community work when solving their
-problems. Most image analysis problems require to put one or more input images
-through a combination of processing filters that enhance or extract particular
-pieces of information from the images. There is therefore, no single large
-processing object, but a myriad of small ones. This structural nature of the
-image processing problem maps to implement the software as well as a large
+emerges from the way people in the image analysis community work when solving
+their problems. Most image analysis problems require to put one or more input
+images through a combination of processing filters that enhance or extract
+particular pieces of information from the images. There is therefore, no single
+large processing object, but a myriad of small ones. This structural nature of
+the image processing problem maps to implement the software as a large
 collection of image processing filters that can be combined in many different
 ways.
 
@@ -153,6 +167,46 @@ families, inside which some of their implementation features can be factorized.
 This leads to natural grouping of the image filters into modules and groups of
 modules.
 
+Modularity, therefore occurs at two natural levels in ITK:
+
+\begin{itemize}
+\item Filter Level
+\item Filter Family Level
+\end{itemize}
+
+At the image filter level, ITK has a collection of about 500 filters. Given
+that ITK is implemented in C++, this is a natural level at which every one of
+those filters is implemented by a C++ class.  At the filter family level, ITK
+groups filters together, according to the nature of the processing that they
+perform. For example, all filters that are related to Fourier Transforms will
+be put together into a Module. At the C++ level, Modules maps to directories in
+the source tree, and to libraries once the software is compiled. ITK currently
+has 98 modules, that are in turn aggregated into 16 major groups. The modules
+have a variety of different sizes. The size distribution is presented in
+Figure~\ref{fig.itk.modulesize}.
+
+\aosafigure{../images/itk/moduleSizePlot.pdf}{Distribution of Module Size in Bytes}{fig.itk.modulesize}
+
+The modularization in ITK applies as well to a set of third party libraries
+that are not directly part of the tookit, but that the toolkit depend upon, and
+that are distributed along with the rest of the code for the convinience of
+users. Particular examples of these third party libraries are the image file
+format libraries: HDF5, PNG, TIFF, JPEG and openjpeg among others. When these
+libraries are excluded from the analysis of module size, the distribution
+become the one shown in Figure~\ref{fig.itk.modulesizenothirdparty}
+
+\aosafigure{../images/itk/moduleSizePlotNoThirdParty.pdf}{Distribution of Module Size in Bytes without Third Party Libraries}{fig.itk.modulesizenothirdparty}
+
+The modular architecture of ITK enables and facilitates:
+
+\begin{itemize}
+\item Reduction of cross-dependencies
+\item Adoption of code contributed by the community
+\item Evaluation of quality metric per module
+\item Building selected subsets of the toolkit
+\item Packaging selected subsets for redistribution
+\item Continued growth by progressive addition of more modules
+\end{itemize}
 \end{aosasect2}
 
 \begin{aosasect2}{Data Pipeline}
@@ -162,6 +216,9 @@ modules.
 \end{aosasect2}
 
 \begin{aosasect2}{IO Factories}
+
+\aosafigure{../images/itk/BlockFunctionalDiagram.pdf}{IO Factories Dependencies}{fig.itk.io.factories}
+
 \end{aosasect2}
 
 \begin{aosasect2}{Streaming}

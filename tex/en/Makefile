@@ -2,23 +2,41 @@ LATEX = pdflatex
 BIBTEX = bibtex
 
 CHAPTERS = \
+  frontmatter \
 	intro \
-	aderby \
+	diaspora \
+	distsys \
+	erlang \
+	ffreleng \
+	freertos \
 	gdb \
 	ghc \
+	git \
 	gpsd \
 	inkscape \
 	ironlang \
 	itk \
 	jquery \
-	k9mail \
+	lnxdist \
 	mailman \
+	matplotlib \
+	mediawiki \
+	moodle \
+	nginx \
 	openmpi \
+	oscar \
+	osm \
 	parrot \
 	pjs \
+	postgresql \
+	puppet \
 	pypy \
+	scummvm \
 	sqlalchemy \
+	twisted \
 	yesod \
+	yocto \
+	zeromq \
 	colophon
 
 SRC=$(foreach name,${CHAPTERS},${name}.tex)
