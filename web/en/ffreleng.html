@@ -635,8 +635,18 @@ when handling some important edge cases, so here is a quick summary:
       apply correctly.
       </p>
       <p>
-      <!-- XXX TODO: add a section for future improvements, doing update generation as part of build & repack, not having to deal with snippets anymore - what's balrog?  (aka AUS 3) it eats snippet for breakfast.   
-      -->
+      Generation of partial update mars as well as all the update
+      snippets is currently done after signing is complete. We do this
+      because generation of the partial updates must be done between
+      two signed versions of the files, and therefore generation of
+      the snippets must also wait until the partial mars are
+      available. Once we're able to integrate signing into the build
+      process, we can generate partial updates immediately after
+      completing a build or repack. Together with improvements to our
+      AUS software, this effectively means that once we're finished
+      builds and repacks we can push immediately to mirrors. This
+      effectively parallelizes the creation of all the updates,
+      removing several hours from our total time.
       </p>
     </div>
     
