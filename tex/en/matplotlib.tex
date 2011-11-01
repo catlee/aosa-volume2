@@ -130,7 +130,7 @@ specification is comparatively simple.
 
 One of the design decisions that has worked quite well for matplotlib
 is the support for a core pixel based renderer using the C++ template
-library Anti-Grain Geometry (XXX CITE) or ``agg''.  This is a
+library Anti-Grain Geometry or ``agg'' \cite{bib:agg}.  This is a
 high-performance library for rendering anti-aliased 2D graphics which
 produces attractive images.  matplotlib provides support for inserting
 pixel buffers rendered by the agg backend into each user interface
@@ -151,13 +151,18 @@ Artist is the object that knows how to take the Renderer (the
 paintbrush) and put ink on the canvas.  Everything you see in a
 matplotlib Figure is an Artist instance: the title, the lines, the
 tick labels, the images, and so on all correspond to individual Artist
-instances.  The base class is \code{matplotlib.artist.Artist} and
-contains attributes every Artist shares: the transformation which
-translates the artist coordinate system to the canvas coordinate
-system (discussed in more detail below), the visibility, the clip box
-which defines the region the artist can paint into, the label, and the
-interface to handle user interaction such as ``picking'', i.e. detecting
-when a mouse click happens over the artist.
+instances (see Figure \cite{fig.matplotlib.artists_tree}).  The base
+class is \code{matplotlib.artist.Artist} and contains attributes every
+Artist shares: the transformation which translates the artist
+coordinate system to the canvas coordinate system (discussed in more
+detail below), the visibility, the clip box which defines the region
+the artist can paint into, the label, and the interface to handle user
+interaction such as ``picking'', i.e. detecting when a mouse click
+happens over the artist.
+
+\aosafigure{../images/matplotlib/artists_figure.pdf}{}{fig.matplotlib.artists_figure}
+
+\aosafigure{../images/matplotlib/artists_tree.pdf}{The heirarchy of Artist instances used to draw the Figure \cite{fig.matplotlib.artists_figure}}{fig.matplotlib.artists_tree}
 
 The coupling between the Artist hierarchy and the backend happens in
 the draw method.  For example, in the mockup class below where we
@@ -221,7 +226,7 @@ methods that create plot objects and store them in the Axes instance.
 \end{aosasect2}
 
 Here is a simple python script illustrating the architecture above
-which defines the backend, connects a Figure to is, uses the array
+which defines the backend, connects a Figure to it, uses the array
 library numpy to create 10,000 normally distributed random numbers,
 and plots a histogram of these.
 
@@ -501,16 +506,16 @@ axis.  This is of course only possible if the given transformations
 are ``separable'', meaning the $x$ and $y$ coordinates are
 independent.  This is used, for example, to plot logarithmic plots
 where either or both of the $x$ and $y$ axes may have a logarithmic
-scale.  Having a blended transformation node allows the scales to be
-combined in arbitrary ways.  Another thing the transform graph allows
-is the sharing of axes.  It is possible to ``link'' the limits of one
-plot to another and ensure that when one is panned or zoomed, the
-other is updated to match.  In this case, the same transform node is
-simply shared between two axes, which may even be on two different
-figures.  Figure \ref{fig.matplotlib.transformtree} shows an example
-transformation graph with some of these advanced features at work.
-axes1 has a logarithmic $x$ axis.  axes1 and axes2 share the same $y$
-axis.
+scale.  Having a blended transformation node allows of the available
+scales to be combined in arbitrary ways.  Another thing the transform
+graph allows is the sharing of axes.  It is possible to ``link'' the
+limits of one plot to another and ensure that when one is panned or
+zoomed, the other is updated to match.  In this case, the same
+transform node is simply shared between two axes, which may even be on
+two different figures.  Figure \ref{fig.matplotlib.transformtree}
+shows an example transformation graph with some of these advanced
+features at work.  axes1 has a logarithmic $x$ axis.  axes1 and axes2
+share the same $y$ axis.
 
 \aosafigure{../images/matplotlib/transform_tree.pdf}{An example transformation graph.}{fig.matplotlib.transformtree}
 
@@ -523,8 +528,8 @@ performed to get from the raw data to the line drawn on screen.  In an
 earlier version of matplotlib, all of these steps were tangled
 together.  These have since been refactored so they are discrete steps
 in a ``path conversion'' pipeline.  This allows each backend to choose
-which parts of the pipeline to perform, since some are only useful
-in certain contexts.
+which parts of the pipeline to perform, since some are only useful in
+certain contexts.
 
 \begin{aosaenumerate}
 
@@ -547,7 +552,7 @@ in certain contexts.
   importantly, very large or very small coordinate values can cause
   overflow errors in the rendering of the output file, resulting in
   completely garbled output.  This step of the pipeline clips the
-  polyline as it exits and enters the edges of the figure to prevent
+  polyline as it exits and enter the edges of the figure to prevent
   both of these problems.
 
 \item \textbf{Snapping:} Perfectly vertical and horizontal lines can
@@ -588,29 +593,33 @@ in certain contexts.
 
 \begin{aosasect1}{Math text}
 
-Since the users of matplotlib are often scientists, it is often useful
-to put richly-formatted math expressions directly on the plot.
-Perhaps the most widely-used syntax for math expressions is from
-Donald Knuth's \TeX\ typesetting system.  It's a way to turn input in
-a plain-text language like this
-\verb+\sqrt{\frac{\delta x}{\delta y}}+ into a properly formatted math
-expression like this $\sqrt{\frac{\delta x}{\delta y}}$.
+Since the users of matplotlib are often scientists, it is useful to
+put richly-formatted math expressions directly on the plot.  Perhaps
+the most widely-used syntax for math expressions is from Donald
+Knuth's \TeX\ typesetting system.  It's a way to turn input in a
+plain-text language like this \verb+\sqrt{\frac{\delta x}{\delta y}}+
+into a properly formatted math expression like this
+$\sqrt{\frac{\delta x}{\delta y}}$.
 
 matplotlib provides two ways to render math expressions.  The first,
 usetex, uses a full copy of \TeX\ on the user's machine to render the
-math expression and then inserts it into the plot.  However, the user
-may not always have a full working installation of \TeX, so
-matplotlib also includes its own internal math rendering engine,
-called mathtext.
+math expression.  \TeX\ outputs the location of the characters and
+lines in the expression in its native DVI (device independent) format.
+matplotlib then parses the DVI file and converts it to a set of
+drawing commands that one of its output backends then renders directly
+into the plot.  This approach handles a great deal of obscure math
+syntax, however, it requires that the user have a full and working
+installation of \TeX.  Therefore, matplotlib also includes its own
+internal math rendering engine, called mathtext.
 
 mathtext is a direct port of the most important subset of the
 \TeX\ math-rendering engine, glued onto a much simpler parser written
-using the pyparsing (CITE) parsing framework.  This port was written
-based on the published copy of the \TeX\ source code (CITE).  The
-simple parser builds up a tree of boxes and glue (in
-\TeX\ nomenclature), that are then layed out by the layout engine.
-This makes for a nice, lightweight way to render most math
-expressions.
+using the pyparsing \cite{bib:pyparsing} parsing framework.  This port
+was written based on the published copy of the \TeX\ source code
+\cite{bib:texprogram}.  The simple parser builds up a tree of boxes
+and glue (in \TeX\ nomenclature), that are then layed out by the
+layout engine.  This makes for a nice, lightweight way to render most
+math expressions.
 
 \end{aosasect1}
 
@@ -636,8 +645,8 @@ easier to detect when a new change caused inadvertent breakage, but
 the correctness of the images still needed to be verified by hand.
 Since this required a lot of manual effort, it wasn't done very often.
 
-As a second pass, this general approach was automated.  The matplotlib
-testing framework generates a number of plots, but instead of
+As a second pass, this general approach was automated.  The current
+matplotlib testing script generates a number of plots, but instead of
 requiring manual intervention, those plots are automatically compared
 to baseline images.  All of the tests are run inside of the nose
 testing framework, which makes it very easy to generate a report of
@@ -652,7 +661,7 @@ testing framework computes the histogram of both images, and
 calculates the root-mean-square of their difference.  If that
 difference is greater than a given threshold, the images are
 considered too different and the comparison test fails.  When tests
-fail, we can generate difference images which show where on the plot a
+fail, difference images are generated which show where on the plot a
 change has occurred (see Figure \ref{fig.matplotlib.regression}).  The
 developer can then decide whether the failure is due to an intentional
 change, and update the baseline image to match the new image, or
@@ -675,16 +684,16 @@ backends, the testing framework first renders the file to a raster
 using an external tool (ghostscript for PDF and Inkscape for SVG) and
 then uses those rasters for comparison.
 
-Using the approach, we were able to bootstrap a reasonably effective
+Using this approach, we were able to bootstrap a reasonably effective
 testing framework from scratch more easily than if we had gone on to
-write many low-level unit tests.  It is still not perfect.  The code
-coverage of the tests not very complete.  They take a long time to
-run.\footnote{Around 15 minutes on a 2.33 GHz Intel Core 2 E6550.}
-(We did have a buildbot instance running for a while developers did
-not always have to run the tests on their own machines.)  Therefore,
-some regressions do still fall through the cracks, but overall the
-quality of the releases is up considerably thanks in no small part to
-the testing framework.
+write many low-level unit tests.  Still, it is not perfect.  The code
+coverage of the tests is not very complete.  It takes a long time to
+run all of the tests.\footnote{Around 15 minutes on a 2.33 GHz Intel
+  Core 2 E6550.}  (We did have a buildbot instance running for a while
+so developers did not always have to run the tests on their own
+machines.)  Therefore, some regressions do still fall through the
+cracks, but overall the quality of the releases has improved
+considerably since the testing framework was implemented.
 
 \end{aosasect1}
 
