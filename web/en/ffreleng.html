@@ -556,11 +556,18 @@ when handling some important edge cases, so here is a quick summary:
       </p>
       <p>
       Our next round of improvements to the signing process will be
-      creating a sign-on-demand tool. Signing each deliverable as it's
-      ready will even further decrease the end to end time and will
-      also allow the signing of other deliverables outside of a
-      release, for example nightly builds.
-      <!-- TODO XXX I don't know what else to say here, Catlee do you want to talk about how it will work? -->
+      creating a tool that allows us to sign bits at the time of
+      build/repack. This work involves creating a signing server
+      application that will receive requests for signing files from
+      the release build machines. Also required is a signing client
+      tool, which contacts the signing server, authenticates itself as
+      a machine trusted to request signing, uploads the files to be
+      signed, downloads the signed bits, and then includes them as
+      part of the packaged build. Doing signing as part of the build
+      process really streamlines our process, as it allows us to skip
+      over the expensive all-at-once signing process described above,
+      as well as the expensive generate-all-updates process described
+      below.
       </p>
     </div>
     <div class="sect">
