@@ -1,4 +1,4 @@
-all: nonaffine_transforms.pdf transform_tree.pdf pixel_snapping.pdf path_simplification.pdf regression.pdf histogram_demo.pdf
+all: nonaffine_transforms.pdf transform_tree.pdf pixel_snapping.pdf path_simplification.pdf regression.pdf histogram_demo.pdf artists_figure.pdf artists_tree.pdf
 
 nonaffine_transforms.pdf: nonaffine_transforms.py
 	python nonaffine_transforms.py
@@ -17,3 +17,10 @@ regression.pdf: regression.py expected-legend_auto2.png legend_auto2.png failed-
 
 histogram_demo.pdf: histogram_demo.py
 	python histogram_demo.py
+
+artists_figure.pdf: artists_figure.py
+	python artists_figure.py
+
+artists_tree.pdf: artists_tree.dot
+	dot -Tpdf artists_tree.dot -o artists_tree.pdf
+
