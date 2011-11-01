@@ -4,7 +4,6 @@ BIBTEX = bibtex
 CHAPTERS = \
   frontmatter \
 	intro \
-	dbevol \
 	diaspora \
 	distsys \
 	erlang \
