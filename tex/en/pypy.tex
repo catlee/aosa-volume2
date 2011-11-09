@@ -1,5 +1,152 @@
 \begin{aosachapter}{PyPy}{s:pypy}{Benjamin Peterson}
 
-Your text goes here---pleaes look at wesnoth.tex for formatting ideas.
+PyPy is a Python implementation written in Python.
+
+\begin{aosasect1}{A Little History}
+
+Python was invented by Guido van Rossum in the late 1980s. The original
+implementation is a traditional bytecode interpreter. Since it is written in C,
+it is now called CPython. There are now many other Python implementations. Among
+the most notable are Jython, which is written in Java and allows for interfacing
+with Java code, IronPython, which is written in C# and interfaces with
+Microsoft's .NET framework, and PyPy. CPython is still the most widely used
+implementation and the only one to support Python 3, the next generation of the
+Python language. This chapter will explain the design decisions in PyPy that
+make it different from other Python implementations and indeed from any other
+dynamic language implementation.
+
+\end{aosasect1}
+
+\begin{aosasect1}{Overview of PyPy}
+PyPy, except for a negligible amount of C stubs, is written completely in
+Python. The PyPy source tree contains two major components. Firstly, there is
+the Python interpreter, which is the user-facing Python runtime that people
+using PyPy as a Python implementation invoke. The Python interpreter is actually
+written in a subset of Python called Restricted Python (abbreviated
+RPython). The purpose of writing the Python interpreter in RPython is that it
+can be fed to the second major part of PyPy, the RPython translation
+toolchain. The RPython translator takes RPython code and converts it to a
+choosen lower level language, most commonly C. This allows PyPy to be a
+self-hosting implemention.
+
+\end{aosasect1}
+
+\begin{aosasect1}{The Python Interpreter}
+
+For the most part, the details of the PyPy Python interpreter are quite similiar
+to that of CPython; they use the nearly identical bytecode and data structures
+during interpretation. The primary difference between the two is the
+introduction of a clever abstraction called \emph{object spaces} (or objspaces
+for short). An objspace encapsulates all the knowledge needed to represent and
+manipulate Python data types. For example, using a binary operator with objects
+or fetching an attribute is handled completely by the objspace. This allows the
+interpreter to not know anything about the implementation details of Python
+objects. The interpreter treats Python objects as black boxes and calls objspace
+methods whenever it needs to use them. For example, here is a rough
+implementation of the \verb+BINARY\_ADD+ opcode, which is called when two
+objects are combined with +
+
+\begin{verbatim}
+def BINARY_ADD(space):
+    object1, object2 = # pop 2 values off the stack
+    result = space.add(object1, object2)
+    # push result onto the stack
+\end{verbatim}
+
+The objspace abstraction has numerous advantages. It allows new data type
+implementations to be swapped in and out without modifying the
+interpreter. Also, since the sole way to manipulate objects is through objspace,
+the objspace can intercept, proxy, or record operations on objects. Using this
+property, PyPy has experimented with thunking, where results can be lazily but
+completely transparently computed on demand, and tainting, where any operation
+on a object will raise an exception (useful for passing sensitive data that
+should not be modified). The most important application of objspaces, however,
+will be discussed under the next section about translation.
+
+\end{aosasec1}
+
+\begin{aosasect1}{The RPython Translator}
+
+The RPython translator is really a toolchain of several lowering phases that
+reduce RPython to a target language, most commonly C. It is itself written in
+Python and intimately linked to the PyPy Python interpreter for reasons that
+will be illuminated shortly.
+
+The first thing the translator does is load the RPython program into its
+process. (This is done with the normal Python module loading support.) RPython
+imposes a set of restrictions on normal, dynamic Python. For example, functions
+cannot be created at runtime, and a single variable cannot have the possibility
+of holding disparate types, such as an integer and a object instance. When the
+program is loaded by the translator, though, it is running on a normal Python
+interpreter and can use all of Python's dynamic features. PyPy's Python
+interpreter, a huge RPython program, makes heavy use of this feature. For
+example, it generates code for multimethod dispatch. The only requirement is
+that the program is valid RPython by the time the translator starts the next
+phase of translation.
+
+The translator builds flow graphs of the RPython program through a process
+called \emph{abstract interpretation}. Abstract interpretation reuses the PyPy
+Python interpreter to interpret RPython programs in a special objspace called
+the \emph{flow objspace}. Remember, the Python interpreter treats objects in a
+program like black boxes, calling out to the objspace to perform any
+operation. The flow objspace, instead of the standard set of Python objects, has
+with two objects: variables and constants. Variables represent values not known
+during translation, and constants, obviously, immutable values that are
+known. What is immutable and must be constant in RPython is broader than in
+standard Python. For example, modules, which are emphatically mutable in Python,
+are constants in the flow objspace because they don't exist in RPython and must
+be constant-folded out. As the Python interpreter interprets RPython functions,
+the flow objspace records the operations it is asked to perform. It also takes
+care to record all branches of conditional control flow constructs. The end
+result of abstract interpretation for a function is a flow graph consisting of
+linked blocks.
+
+An example of the flow graph generating process is in order. Consider a simple
+factorial function
+
+\begin{verbatim}
+def factorial(n):
+    if n == 1:
+        return 1
+    return n * factorial(n - 1)
+\end{verbatim}
+
+The flow-graph for the function looks like \aosafigref{fig.pypy.flowgraph}
+
+\aosafigure{../images/pypy/flowgraph.png}{Program Architecture}{fig.pypy.flowgraph}
+
+As you can see, the factorial function has been divided into blocks containing
+the operations the flowspace recorded. Each block has input arguments and a list
+of operations on variables and constants. At the end of the block is a exit
+switch, which determines which block control flow will pass to based on the
+value of some variable.
+
+Thw flow-graph generated in the flow objspace is in static single assignment
+form, or SSA, a intermediate representations commonly used in compilers. The key
+feature of SSA is that every variable is only assigned once.
+
+After a function graph is generated, the annotation phase beings. The annotator
+assigns a type to the result of each SSA operation.
+
+RTyping is the first phase that final target backend matters. The backend
+chooses which type system the program is specialized to. The RTyper currently
+has two type systems: A low level typesystem for backends like C and one for
+higher level typesystems with classes.
+
+\end{aosasect1}
+
+\begin{aosasect1}{The PyPy JIT}
+
+The PyPy JIT is actually a JIT generator. The Python interpreter contains only a
+few hints, from which the JIT generator builds a custom JIT.
+
+\end{aosasect1}
+
+\begin{aosasect1}{Design Drawbacks}
+
+Especially when a bug cannot be reproduced on the untranslated interpreter,
+debugging is difficult.
+
+\end{aosasec1}
 
 \end{aosachapter}
