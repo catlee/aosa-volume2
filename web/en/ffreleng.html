@@ -511,19 +511,36 @@ arises.</li>
         <p>Figure&nbsp;6.4: Signing of Firefox installers, partially automated</p>
       </div>
       <p>
-      Until recently doing so involved a release engineer on a signing
-      master for almost an hour doing the steps of downloading builds,
-      signing them, and uploading them back to FTP before the
-      automation could continue. Once signing on the master is
-      completed and all files have been uploaded a win32_signing.log
-      file is uploaded to the release candidates directory.  This
-      signifies the end of human signing and dependent builders
-      watching for that file continue automation from that point on.
-      Recently though we've added an additional wrapper of automation
-      around the signing steps. The release engineer merely starts an
-      automated signing process on the signing master then goes off to
-      do other work while a simple set makefile targets does the heavy
-      lifting.
+      In order for users to be sure that the copy of Firefox they have
+      downloaded is indeed the one we just built, we apply a few
+      different types of digital signatures to the builds.
+      </p>
+      <p>
+      The first type of signing done is for our windows builds. We use
+      a Microsoft Authenticode (signcode) signing key to sign all our
+      .exe and .dll files. Windows can use these signatures to verify
+      that the application comes from a trusted source. We also sign
+      the Firefox installer executable with the Authenticode key.
+      </p>
+      <p>
+      We then generate a set of MD5 and SHA1 checksums for all the
+      builds, and generate detached GPG signatures for the checksum
+      files as well as all the builds. These signatures are used by
+      mirrors and other community members to validate their downloads.
+      </p>
+      Until recently this signing process involved a release engineer
+      on a dedicated server (the "signing master") for almost an hour
+      doing the steps of downloading builds, signing them, and
+      uploading them back to FTP before the automation could continue.
+      Once signing on the master is completed and all files have been
+      uploaded a log file of all the signing activities is uploaded to
+      the release candidates directory on FTP.  This signifies the end
+      of human signing and dependent builders watching for that file
+      continue automation from that point on.  Recently we've added an
+      additional wrapper of automation around the signing steps. The
+      release engineer merely starts an automated signing process on
+      the signing master then goes off to do other work while a simple
+      set makefile targets does the heavy lifting.
       </p>
       <p>
       The engineer will open a Cygwin shell on the signing master and
@@ -532,27 +549,27 @@ arises.</li>
       find the right directories on FTP and know when all the
       deliverables for a release have been downloaded so that the
       signing can start. After checking out the most recent version of
-      our signing tools they simply do a 'make autosign'. The engineer
-      will need to manually enter 2 passphrases, gpg and signcode
+      our signing tools they simply run 'make autosign'. The engineer
+      will need to manually enter 2 passphrases, for gpg and signcode,
       which are verified by the make scripts then it starts a download
-      loop that watches for uploaded builds &amp; repacks from the release
-      automation.  Once the last item has showed up (all items
-      progressively downloaded as available) signing starts right away
-      which is a great improvement as this can happen during non-work
-      hours and provide our QA team with signed installers to test
-      promptly without waiting for an engineer to come on shift. The
-      win32 installers are signed with Authenticode and then we
-      generate gpg signatures for the other platforms, all
-      deliverables will have an MD5SUM and SHA1SUM generated for them
-      and those hash values are written to files of the same name.
-      These files will be uploaded back to the release-candidates
-      directory as well as synced into the final home of a release
-      once it is live so that anyone who downloads a Firefox installer
-      from our mirrors can ensure they got the correct object. When
-      all signed bits are available and verified (we do a quick and
-      more in-depth verification process) they are uploaded back to
-      FTP along with the signing log file that the automation is
-      waiting for to proceed.
+      loop that watches for uploaded builds &amp; repacks from the
+      release automation and downloads them as they become available.
+      Once all items have been downloaded, signing can right away
+      without human intervention, which is a great improvement as this
+      can happen during non-work hours and allows us to provide our QA
+      team with signed installers to test promptly without waiting for
+      an engineer to come on shift. The win32 installers are signed
+      with Authenticode and then we generate gpg signatures for the
+      other platforms, all deliverables will have an MD5SUM and
+      SHA1SUM generated for them and those hash values are written to
+      files of the same name.  These files will be uploaded back to
+      the release-candidates directory as well as synced into the
+      final home of a release once it is live so that anyone who
+      downloads a Firefox installer from our mirrors can ensure they
+      got the correct object. When all signed bits are available and
+      verified (we do a quick and more in-depth verification process)
+      they are uploaded back to FTP along with the signing log file
+      that the automation is waiting for to proceed.
       </p>
       <p>
       Our next round of improvements to the signing process will be
