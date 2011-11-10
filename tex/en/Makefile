@@ -16,7 +16,6 @@ CHAPTERS = \
 	inkscape \
 	ironlang \
 	itk \
-	jquery \
 	lnxdist \
 	mailman \
 	matplotlib \
