@@ -130,18 +130,20 @@ more definite ways than the RCS family. Namely:
 As you can see most DAGs represented in Git are the special case of rooted
 trees.
 
-TODO: Flesh out this section. Overview:
-* This section will describe the two primary classification dimensions to
-Version Control Systems (VCS) today:
+This diagram shows two dimensions of VCS variety. Namely distribution mode
+and storage mode.
 
-\begin{aosaitemize}
-  \item Distribution mode: local, client/server, distributed
-  \item Storage mode: changeset based vs directed acyclic graph (DAG) based
-\end{aosaitemize}
+DIAGRAM HERE!!!
 
-Provide examples of different VCSes and how they fit in to these
-classifications, e.g. Subversion (client/server + changeset), Mercurial
-(distributed + changeset), BitKeeper (client/server + DAG), etc.
+There are three primary distribution modes for VCSes: local, client/server
+and distributed (or peer-to-peer). Some VCSes can support all of these, some
+just one.
+
+On the other axis we can see two primary categories for storage modes:
+delta based and directed acyclic graph based.
+
+As we can see Git is a VCS that can support local, client/server and
+peer-to-peer distribution modes and uses DAG based content storage.
 
 \end{aosasect1}
 
