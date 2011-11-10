@@ -380,8 +380,11 @@ most useful to enable Git's distributed model (the second goal of Git).
 The latter property enables some safegaurds against corruption (the third
 goal of Git above).
 
-In many ways Git can be thought of as a content tracking filesystem living on
-top of your existing filesystem.
+It should be noted that despite the desirable properties of using DAG based
+storage for content tracking it is likely for many repositories that delta
+storage will be more space efficient. Git tackles this by "packing" objects
+in a compressed format using an pack index file to point to offsets to
+specific objects in the corresponding pack file.
 
 TODO: More to discuss here. Use plumbing commands like 'git show' and 'git
 cat-file' to demonstrate how the primitives work together and build on top of
@@ -395,14 +398,22 @@ TODO: Step through a merge in diagrams and then contrast this to a rebase.
 
 \end{aosasect1}
 
-\begin{aosasect1}{}
+\begin{aosasect1}{Explaining Resets}
+
+TODO: Explain resets in terms of the repository, index and working areas.
 
 \end{aosasect1}
 
-\begin{aosasect1}{Distribute Workflows}
+\begin{aosasect1}{Distributed Workflows}
 
 TODO: Describe some distributed workflows enabled by Git.
 
 \end{aosasect1}
+
+\begin{aosasect1}{Future Work}
+
+TODO/NOTES:
+Discuss the work being done now on using different object database backends
+for storage, from Redis, Memcached, SQLite and others.
 
 \end{aosachapter}
