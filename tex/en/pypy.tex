@@ -8,7 +8,7 @@ Python was invented by Guido van Rossum in the late 1980s. The original
 implementation is a traditional bytecode interpreter. Since it is written in C,
 it is now called CPython. There are now many other Python implementations. Among
 the most notable are Jython, which is written in Java and allows for interfacing
-with Java code, IronPython, which is written in C# and interfaces with
+with Java code, IronPython, which is written in C\# and interfaces with
 Microsoft's .NET framework, and PyPy. CPython is still the most widely used
 implementation and the only one to support Python 3, the next generation of the
 Python language. This chapter will explain the design decisions in PyPy that
@@ -63,7 +63,7 @@ on a object will raise an exception (useful for passing sensitive data that
 should not be modified). The most important application of objspaces, however,
 will be discussed under the next section about translation.
 
-\end{aosasec1}
+\end{aosasect1}
 
 \begin{aosasect1}{The RPython Translator}
 
@@ -147,6 +147,6 @@ few hints, from which the JIT generator builds a custom JIT.
 Especially when a bug cannot be reproduced on the untranslated interpreter,
 debugging is difficult.
 
-\end{aosasec1}
+\end{aosasect1}
 
 \end{aosachapter}
