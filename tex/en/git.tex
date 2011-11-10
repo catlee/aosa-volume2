@@ -123,9 +123,12 @@ more definite ways than the RCS family. Namely:
   nodes are guaranteed to contain the same content. Allowing Git to
   short-circuit content diffing efficiently.
   \item When merging two branches we are merging the content of two nodes
-  in a DAG. The DAG allows Git to relatively efficiently (as compared to the
-  RCS family of VCSes) determine common ancestors.
+  in a DAG. The DAG allows Git to "efficiently" (as compared to the
+  RCS family of VCS approach) determine common ancestors.
 \end{aosaitemize}
+
+As you can see most DAGs represented in Git are the special case of rooted
+trees.
 
 TODO: Flesh out this section. Overview:
 * This section will describe the two primary classification dimensions to
@@ -180,7 +183,7 @@ From the plumbing portion of the toolkit, procelain layer and now the
 linkable library, libgit2 and its offshoots.
 \end{aosasect1}
 
-\begin{aosasect1}{The Repository}
+\begin{aosasect1}{The Repository, Index and Working Areas}
 
 Let us get our hands dirty and dive into using Git locally, if only to
 understand a few fundamental concepts.
@@ -229,7 +232,7 @@ Let us have a peak inside of it:
 }
 \end{aosaitemize}
 
-The .git directory above is by default located inside the root working
+The .git directory above is by default a subdirectory of the root working
 directory, testgit. It contains a few different types of files and
 directories:
 
@@ -253,14 +256,16 @@ This is the actual repository. The directory that contains the working set
 of files is the \emph{working directory}, which is typically the parent of
 the .git directory (or \emph{repository}). If you were creating a Git
 remote repository that wouldn't have a working directory you could
-initialize it using the \code{git init --bare} command.
+initialize it using the \code{git init --bare} command. This would create
+just the pared down repository files at the root, instead of creating it
+as a subdirectory under the working tree.
 
 Another file of great importance is the \emph{Git index}. It provides the
 staging area between the local working directory and the local repository.
 The index is used to stage specific changes within a file (or more) to
 be committed all together. Even if you make changes related to various types
-of changes, the commits can be made with like changes together to more
-logically describe them in the commit message. To selectively staging
+of features, the commits can be made with like changes together to more
+logically describe them in the commit message. To selectively stage
 specific changes in a file or set of files you can using \code{git add -p}.
 
 The \emph{Git index}, by default, is stored as a single file inside the
@@ -269,10 +274,73 @@ using the following environment variables:
 \begin{aosaitemize}
   \item \code{GIT\_DIR}: sets the repository directory or the \emph{.git}
   directory.
-  \item \code{GIT\_INDEX}: sets the path to the \emph{index}.
+  \item \code{GIT\_INDEX}: sets the path to the \emph{index}. This is often
+  referred to as the staging area as well.
   \item \code{GIT\_WORK\_DIR}: sets the path to the \emph{working directory}
-  for the local Git repository.
+  for the local Git repository. The work directory represents the "live"
+  state of the current head (or HEAD) of the Git repository. This is usually
+  a reference to the current branch.
 \end{aosaitemize}
+
+It is helpful to understand the interactions that take place between these
+three areas (the repository, index and working areas) during the execution
+of a few core Git commands:
+
+\begin{aosaitemize}
+  \item \code{git checkout [branch]} \newline
+  \small{This will move the HEAD reference of the local repository to branch
+  reference path (e.g. \code{refs/heads/master}), populate the index with
+  this head data and refresh the working directory to represent the tree
+  at that head.}
+  \item \code{git add [files]} \newline
+  \small{This will cross reference the checksums of the \emph{files}
+  specified with the corresponding entries in the Git index to see if the
+  index for staged files needs updating with the working directory's
+  version. Nothing changes in the Git directory (or repository).}
+\end{aosaitemize}
+
+Let us explore what this means more concretely by inspecting the contents of
+files under the .git directory (or repository).
+
+\begin{aosaitemize}
+  \item \code{GIT\_DIR=\${PWD}/.git}
+  \item \code{cat \${GIT\_DIR}/HEAD}
+\begin{verbatim}
+ref: refs/heads/master
+\end{verbatim}
+  \item \code{MY\CURRENT\_BRANCH=\$(cat .git/HEAD | sed 's/ref: //g')}
+  \item \code{cat \${GIT\_DIR}/\${MY\_CURRENT\_BRANCH}}
+\begin{verbatim}
+cat: .git/refs/heads/master: No such file or directory
+\end{verbatim}
+\end{aosaitemize}
+
+We get an error because, before making any commits to a Git repository at
+all, no branches exist, except the default branch in Git is \code{master},
+whether it exists yet or not.
+
+We can verify that no branches exist yet by attempting to list the branches
+in our repository with \code{git branch}.
+
+Now if we make a new commit then the master branch is created by default for
+this commit. Let us do this (continuing in the same shell, retaining
+history and context):
+
+\begin{aosaitemize}
+  \item \code{git commit -m "Initial empty commit" --allow-empty}
+  \item \code{git branch}
+\begin{verbatim}
+* master
+\end{verbatim}
+  \item \code{cat \${GIT\_DIR}/\${MY\_CURRENT\_BRANCH}}
+\begin{verbatim}
+3bce5b130b17b7ce2f98d17b2998e32b1bc29d68
+\end{verbatim}
+  \item \code{git cat-file -p \$(cat \${GIT\_DIR}/\${MY\_CURRENT\_BRANCH})}
+\end{aosaitemize}
+
+What we are starting to see here is the content representation inside Git's
+object database.
 
 \end{aosasect1}
 
