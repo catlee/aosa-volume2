@@ -387,97 +387,19 @@ each other.
 
 \end{aosasect1}
 
-\begin{aosasect1}{Gitting Started}
+\begin{aosasect1}{Merging and Rebasing}
 
-TODO: This may still be included to show off more plumbing commands as well
-as the major porcelain commands and also help explain repository-to-
-repository commands and collaboration.
-
-Here I will describe the most rudimentary workflow of installing, configuring
-and cloning a remote Git repository. Then explain on a low-level what
-happened.
-
-Describe the three main elements of a Git working environment:
-\begin{aosaitemize}
-  \item Repository (object database): default at \#\{projectdir\}/.git
-  subdirectory
-  \item Working area: default at \#\{projectdir\} excluding .git subdirectory
-  \item Index: default at \#\{projectdir\}/.git/index file
-\end{aosaitemize}
-
-Basic steps:
-\begin{aosaitemize}
-  \item sudo yum install git-core
-  \item git config --global user.name ``Your Name''
-  \item git config --global user.email ``user@emaildomain.com''
-  \item cat \#\{HOME\}/.gitconfig
-  \item git clone remote-repo-url
-\end{aosaitemize}
-
-Mention the different protocols that can be used with Git, e.g. ssh, http,
-https, git, file and even rsync. Broadly discuss pros and cons of each.
-
-Protocols notes:
-\begin{aosaitemize}
-  \item file:// local repository easiest to setup, usuallly only useful for
-    one author environment
-  \item ssh:// most common for active development and easy to setup team
-  repository
-  \item http:// good for open source pull based (consumers) users, can setup
-  with WebDAV support for allowing pushes, but more work. Good for working in
-  restricted public networks where SSH ports may be blocked.
-  \item https:// same as http except encrypts pulls and pushes over the wire.
-  \item git:// lightweight protocol useful in an enclosed and trusted local
-  network
-  \item rsync:// hardly used.
-\end{aosaitemize}
+TODO: Step through a merge in diagrams and then contrast this to a rebase.
 
 \end{aosasect1}
 
-\begin{aosasect1}{Gitting Down \& Dirty}
-
-Start with simplest of workflows: purely LOCAL. One author/editor local repo,
-multiple contributors receive bundle of their branch from author/editor.
-Contributors submit patches to author/editor (via email or ticketing system):
-1. Contributor: git format-patch origin/master --stdout > my-feature.patch
-2. Author: git am < my-feature.patch
-
-Notice how GIT\_AUTHOR\_NAME and GIT\_AUTHOR\_EMAIL use the contributors
-values and the editor's information is in GIT\_COMMITTER\_NAME, etc.
-
-Make sure to cover: git config|init|add|commit|status|branch|tag|log|
-format-patch|am|merge|rebase|bundle|diff
-
-% This is how to include a figure using the AOSA styles already configured
-%\aosafigure{../images/git/distworkflow.eps}{Distributed VCS}{fig.git.dvcs}
-
-Discussion on distributed workflows\ldots
-
-Introduce Git Flow workflow as a common one used in the Git community. Provide
-a realistic example. Plus I need to create good diagrams to explain things
-better.
-
-Then introduce the ``fork'' workflow which is commonly seen on GitHub and
-used by OSS projects.
-
-Then introduce the tiered/curated workflow where a release engineer/manager
-is gatekeeper. production-like environments do not have development branches
-visible to them at all. More locked-down.
-
-Then introduce the GitHub model with ``forks''.
+\begin{aosasect1}{}
 
 \end{aosasect1}
 
-\begin{aosasect1}{Deploying with Git}
+\begin{aosasect1}{Distribute Workflows}
 
-Here talk a little more about 'git bundle' and git shallow clones, e.g.
-git clone --depth N \#\{GIT\_URL\}, where N is the number of parents.
-
-Demonstrate with a repository that shows significant benefit to using
-bundle in conjunction with shallow clones as a way to provide portable
-shall git repositories that allow deployment agents to transfer/receive
-minimal bytes over the wires AND have ability to do rollbacks in severe
-cases where a release does not go as planned.
+TODO: Describe some distributed workflows enabled by Git.
 
 \end{aosasect1}
 
