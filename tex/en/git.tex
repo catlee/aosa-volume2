@@ -308,7 +308,7 @@ files under the .git directory (or repository).
 \begin{verbatim}
 ref: refs/heads/master
 \end{verbatim}
-  \item \code{MY\CURRENT\_BRANCH=\$(cat .git/HEAD | sed 's/ref: //g')}
+  \item \code{MY\_CURRENT\_BRANCH=\$(cat .git/HEAD | sed 's/ref: //g')}
   \item \code{cat \${GIT\_DIR}/\${MY\_CURRENT\_BRANCH}}
 \begin{verbatim}
 cat: .git/refs/heads/master: No such file or directory
