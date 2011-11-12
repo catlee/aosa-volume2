@@ -103,13 +103,13 @@ edge detection filter used to identify the borders of anatomical structures.
 For each one of these tasks, the image analysis community has developed a
 variety of algorighms, and continue developing new ones. Why do they continue
 doing this? you may ask, and the answer is that image processing is a
-combination of science, engineering, art, and cooking skills. Claiming that
+combination of science, engineering, art, and ``cooking'' skills. Claiming that
 there is an algorithmic combination that is the ``right'' answer to an image
 processing task, is as mislead as claiming that there is such a thing as the
 ``right'' type of chocolate dessert for a dinner. Instead of pursuing
 perfection, the community strives for producing a rich enough set of tools that
-ensures that there will be no shortage of options to try when it comes to
-facing a given image processing challenge.
+ensures that there will be no shortage of options to try, when it comes the
+time to face a given image processing challenge.
 
 This state of affairs, of course comes at a price. The cost is that the image
 analyzer is confronted with the difficulty of choosing among tens of different
@@ -128,12 +128,18 @@ method ``B'' with a particular set of parameters.  And of course, here
 quality.
 
 The image analysis community is also closely integrated with the research
-community, and it is common to have specific research groups to become attached
-to the algorithmic families they have developed. This practice of ``branding'',
+community. It is common to find specific research groups that become attached
+to the algorithmic families they have developed. This custom of ``branding'',
 and up to some level ``marketing'' leads to a situation where the best that the
 software can do for the community is to offer them a very complete set of
 algorithmic implementations that they can try, and then mix and match to create
-a recipe that satisfy their needs.
+a recipe that satisfy their needs. These are some of the reasons why ITK was
+designed and implemented as a large collection of somewhat independent tools,
+many of which can be used to solve similar problems. The toolkit was also
+conceived as a resource that will grow and renew itself continously, as new
+algorithms and better implementations become available superseeding exiting
+ones, as well as new tools are developed in response to the emerging needs of
+new medical imaging technologies.
 
 Armed with this quick overview of the nature of activities that make the daily
 routine of the image analyzers who compose the ITK community, we can now dive
@@ -152,15 +158,15 @@ into the main features of the architecture:
 \end{aosasect2}
 
 \begin{aosasect2}{Modularity}
-Modularity is of the main characteristics of ITK. This is a requirement that
-emerges from the way people in the image analysis community work when solving
-their problems. Most image analysis problems require to put one or more input
-images through a combination of processing filters that enhance or extract
-particular pieces of information from the images. There is therefore, no single
-large processing object, but a myriad of small ones. This structural nature of
-the image processing problem maps to implement the software as a large
-collection of image processing filters that can be combined in many different
-ways.
+Modularity is one of the main characteristics of ITK. This is a requirement
+that emerges from the way people in the image analysis community work when
+solving their problems. Most image analysis problems require to put one or more
+input images through a combination of processing filters that enhance or
+extract particular pieces of information from the images. There is therefore,
+no single large processing object, but a myriad of small ones. This structural
+nature of the image processing problem maps to implement the software as a
+large collection of image processing filters that can be combined in many
+different ways.
 
 It is also the case that certain types of processing filters are clustered into
 families, inside which some of their implementation features can be factorized.
@@ -176,14 +182,24 @@ Modularity, therefore occurs at two natural levels in ITK:
 
 At the image filter level, ITK has a collection of about 500 filters. Given
 that ITK is implemented in C++, this is a natural level at which every one of
-those filters is implemented by a C++ class.  At the filter family level, ITK
-groups filters together, according to the nature of the processing that they
-perform. For example, all filters that are related to Fourier Transforms will
-be put together into a Module. At the C++ level, Modules maps to directories in
-the source tree, and to libraries once the software is compiled. ITK currently
-has 98 modules, that are in turn aggregated into 16 major groups. The modules
-have a variety of different sizes. The size distribution is presented in
-Figure~\ref{fig.itk.modulesize}.
+those filters is implemented by a \textbf{C++ Class} following and Object
+Oriented design.  At the filter family level, ITK groups filters together
+according to the nature of the processing that they perform. For example, all
+filters that are related to Fourier Transforms will be put together into a
+\textbf{Module}.  At the C++ level, Modules maps to directories in the source
+tree, and to libraries once the software is compiled to its binary form. Each
+module contains: (a) the source code of the image filters that belong to that
+family, (b) a set of configuration files that describe how to build the module
+and list dependencies between this module and other modules, and (c) the set of
+unit tests corresponding to each one of the filters.  This hierarchichal
+structure is illustrated in~\ref{fig.itk.modulehierarchy}.
+
+\aosafigure{../images/itk/IllustrationOfModularStructure.pdf}{Hierarchical Structure of Groups, Modules and Classes}{fig.itk.modulehierarchy}
+
+
+ITK currently has 98 modules, that are in turn aggregated into 16 major groups.
+The modules have a variety of different sizes. This size distribution, in
+bytes, is presented in Figure~\ref{fig.itk.modulesize}.
 
 \aosafigure{../images/itk/moduleSizePlot.pdf}{Distribution of Module Size in Bytes}{fig.itk.modulesize}
 
@@ -202,12 +218,17 @@ The modular architecture of ITK enables and facilitates:
 \begin{itemize}
 \item Reduction of cross-dependencies
 \item Adoption of code contributed by the community
-\item Evaluation of quality metric per module
+\item Evaluation of quality metrics per module (for example: code coverage)
 \item Building selected subsets of the toolkit
-\item Packaging selected subsets for redistribution
-\item Continued growth by progressive addition of more modules
+\item Packaging selected subsets of the toolkit for redistribution
+\item Continued growth by progressive addition of new modules
 \end{itemize}
 \end{aosasect2}
+
+Again, we can recognize in these items the fact that the structure of the
+toolkit reflects the organization of the community and in some cases the
+processes that have been adopted for the continous growth and quality control
+of the toolkit.
 
 \begin{aosasect2}{Data Pipeline}
 \end{aosasect2}
