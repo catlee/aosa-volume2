@@ -74,7 +74,7 @@ features in the image, such as corners and strong edges. This type of
 processing is naturally well suited for a data pipeline architecture, as
 shown in Figure~\ref{fig.itk.pipeline}.
 
-To illustrate this point, Figure \ref{fig.itk.brim} below, shows an image of a
+To illustrate this point, Figure~\ref{fig.itk.brim} below, shows an image of a
 brain from a magnetic resonance image (MRI), and the result of processing it
 with a median filter to reduce its level of noise, as well as the outcome of an
 edge detection filter used to identify the borders of anatomical structures.
@@ -145,7 +145,7 @@ Armed with this quick overview of the nature of activities that make the daily
 routine of the image analyzers who compose the ITK community, we can now dive
 into the main features of the architecture:
 
-\begin{itemize}
+\begin{aosaitemize}
 \item Modularity
 \item Data Pipeline
 \item Factories
@@ -153,7 +153,7 @@ into the main features of the architecture:
 \item Streaming
 \item Maintainability
 \item Reusability
-\end{itemize}
+\end{aosaitemize}
 
 \end{aosasect2}
 
@@ -175,10 +175,10 @@ modules.
 
 Modularity, therefore occurs at two natural levels in ITK:
 
-\begin{itemize}
+\begin{aosaitemize}
 \item Filter Level
 \item Filter Family Level
-\end{itemize}
+\end{aosaitemize}
 
 At the image filter level, ITK has a collection of about 500 filters. Given
 that ITK is implemented in C++, this is a natural level at which every one of
@@ -188,11 +188,21 @@ according to the nature of the processing that they perform. For example, all
 filters that are related to Fourier Transforms will be put together into a
 \textbf{Module}.  At the C++ level, Modules maps to directories in the source
 tree, and to libraries once the software is compiled to its binary form. Each
-module contains: (a) the source code of the image filters that belong to that
-family, (b) a set of configuration files that describe how to build the module
-and list dependencies between this module and other modules, and (c) the set of
-unit tests corresponding to each one of the filters.  This hierarchichal
-structure is illustrated in~\ref{fig.itk.modulehierarchy}.
+module contains:
+
+\begin{aosaenumerate}
+
+\item The source code of the image filters that belong to that family.
+
+\item A set of configuration files that describe how to build the module and
+list dependencies between this module and other modules.
+
+\item The set of unit tests corresponding to each one of the filters.
+
+\end{aosaenumerate}
+
+This hierarchichal structure is illustrated in
+Figure~\ref{fig.itk.modulehierarchy}.
 
 \aosafigure{../images/itk/IllustrationOfModularStructure.pdf}{Hierarchical Structure of Groups, Modules and Classes}{fig.itk.modulehierarchy}
 
@@ -202,6 +212,7 @@ The modules have a variety of different sizes. This size distribution, in
 bytes, is presented in Figure~\ref{fig.itk.modulesize}.
 
 \aosafigure{../images/itk/moduleSizePlot.pdf}{Distribution of Module Size in Bytes}{fig.itk.modulesize}
+\aosafigure{../images/itk/moduleSizePlotNoThirdParty.pdf}{Distribution of Module Size in Bytes without Third Party Libraries}{fig.itk.modulesizenothirdparty}
 
 The modularization in ITK applies as well to a set of third party libraries
 that are not directly part of the tookit, but that the toolkit depend upon, and
@@ -211,72 +222,97 @@ format libraries: HDF5, PNG, TIFF, JPEG and openjpeg among others. When these
 libraries are excluded from the analysis of module size, the distribution
 become the one shown in Figure~\ref{fig.itk.modulesizenothirdparty}
 
-\aosafigure{../images/itk/moduleSizePlotNoThirdParty.pdf}{Distribution of Module Size in Bytes without Third Party Libraries}{fig.itk.modulesizenothirdparty}
-
 The modular architecture of ITK enables and facilitates:
 
-\begin{itemize}
+\begin{aosaitemize}
 \item Reduction of cross-dependencies
 \item Adoption of code contributed by the community
 \item Evaluation of quality metrics per module (for example: code coverage)
 \item Building selected subsets of the toolkit
 \item Packaging selected subsets of the toolkit for redistribution
 \item Continued growth by progressive addition of new modules
-\end{itemize}
+\end{aosaitemize}
 \end{aosasect2}
 
 Again, we can recognize in these items the fact that the structure of the
 toolkit reflects the organization of the community and in some cases the
 processes that have been adopted for the continous growth and quality control
-of the toolkit.
+of the software.
 
 \begin{aosasect2}{Data Pipeline}
 The staged nature of most image analysis tasks led naturally to the selection
-of a Data Pipeline architecture. There are two main features that are enabled
-by the Data Pipeline: (a) A set of image filters can be concatenated one after
-another, composing a processing chain in which it is easy to explore the
-effects that changing the paremeters of any of the filters will have on the
-final output image. (b) It makes possible to perform memory streaming by
-processing only sub-blocks of the image extent, and in this way make possible
-to process large images that otherwise would not have fitted in memory.
+of a Data Pipeline architecture as the backbone infrastructure for data
+processing. The Data Pipeline enables:
 
-The simplified representation of an image data pipeline has been illustrated in
-figures~\ref{fig.itk.pipeline} and~\ref{fig.itk.brim}. Two main types of
-objects were designed to hold the basic structure of the pipeline. They are the
-\code{DataObject} and the \code{ProcessObject}. The \code{DataObject} is the
-abstraction of classes that carry data. For example, images and geometrical
-meshes. The \code{ProcessObject} provide an abstraction for the image filters
-and mesh filters. These classes take \code{DataObjects} and perform some type
-of algorithmic transformation on them, such as the ones illustrated
-in~\ref{fig.itk.brim}.
+\begin{aosaitemize}
+
+\item \textbf{Filter Concatenation:} A set of image filters can be concatenated
+one after another, composing a processing chain in which a sequence of
+operations are applied to the input images.
+
+\item \textbf{Parameter Exploration:} Once a processing chain is put together,
+it is easy to change the parameters of any filter in the chain, and to explore
+the effects that such change will have on the final output image.
+
+\item \textbf{Memory Streaming:} Large images can be managed by processing only
+sub-blocks of the image extent at a time. In this way, it becomes possible to
+process large images that otherwise would have not fitted in main memory.
+
+\end{aosaitemize}
+
+\aosafigure{../images/itk/DataPipelineIllustrationInRegionGrowingApplication.png}{GUI Illustration of a Data Pipeline for performing region growing segmentation}{fig.itk.regiongrowinggui}
+
+Figures~\ref{fig.itk.pipeline} and~\ref{fig.itk.brim} have already presented a
+simplified representation of a data pipeline from the image processing point of
+view. A more detailed case can be seen in
+Figure~\ref{fig.itk.regiongrowinggui}, for a simple application that exposes
+the Data Pipeline connections in its GUI, along with the set of numeric
+parameters that can be adjusted for each one of the intermediate filters. Every
+time that one of the numeric parameters is modified, the data pipeline marks
+its output as ``dirty'' and knows that this particular filter, and all the
+downstream ones that use its output, should be executed again. This feature of
+the pipeline facilitates the exploration of the parameter space while
+maintainting to a minimum the amount of processing power that have to be
+invested at every instance of an experiment.
+
+Two main types of objects were designed to hold the basic structure of the
+pipeline.  They are the \code{DataObject} and the \code{ProcessObject}. The
+\code{DataObject} is the abstraction of classes that carry data. For example,
+images and geometrical meshes. The \code{ProcessObject} provides an abstraction
+for the image filters and mesh filters that process such data.
+\code{ProcessObjects} take \code{DataObjects} and perform some type of
+algorithmic transformation on them, such as the ones illustrated
+in Figure~\ref{fig.itk.brim}.
+
+\aosafigure{../images/itk/ProcessObjectDataObject.pdf}{Relationship between ProcessObjects and DataObjects}{fig.itk.processobjectdataobject}
 
 DataObjects are generated by ProcessObjects. This chain typically starts by
 reading a DataObject from disk, for example by using a FileImageReader which is
 a type of ProcessObject. The ProcessObject that created a given DataObject is
 the only one that should modify such DataObject. This output DataObject is
 typically passed as input to another ProcessObject downstream in the pipeline.
-This sequence is illustrated in~\ref{fig.itk.processobjectdataobject}. The same
-DataObject may be passed as input to multiple ProcessObjects, as shown in
-the Figure for the DataObject constructed by the FileReader at the beginning of
-the pipeline. It is also common for some filters to require two DataObjects as
-input, as it is the case of the ``Subtract Filter'' illustrated in the right
-side of the same Figure.
-
-\aosafigure{../images/itk/ProcessObjectDataObject.pdf}{Relationship between ProcessObjects and DataObjects}{fig.itk.processobjectdataobject}
+This sequence is illustrated in Figure~\ref{fig.itk.processobjectdataobject}.
+The same DataObject may be passed as input to multiple ProcessObjects, as it is
+shown in the Figure for the DataObject constructed by the FileReader at the
+beginning of the pipeline. It is also common for some filters to require two
+DataObjects as input, as it is the case of the ``Subtract Filter'' illustrated
+in the right side of the same Figure.
 
 The initial design and implementation of the Data Pipeline in ITK was derived
-from the Visualization Toolkit (VTK), that was a mature project at the time
-that ITK development was in its first steps.
+from the one in the Visualization Toolkit (VTK)\footnote{See \emph{Architecture
+of Open Source Applications}, Volume 1}, that was a mature project at the time
+that ITK development was in its initial stages.
 
 Figure~\ref{fig.itk.processobjectdataobjecthierarchy} shows the Object Oriented
 hierarchy of the pipeline Objects in ITK. In particular the relationship
-between the basic Object, ProcessObject, DataObject, and some of the classes in
-the filter family and the data family. In this abstraction, any object that is
-expected to be passed as input to a filter, or be produced as output by a
-filter, must derive from the DataObject. All filters that produce and consume
-data are expected to derive from the ProcessObject. The data negotiations
-required to move data through the pipeline are implemented part in the
-ProcessObject and part in the DataObject.
+between the basic \code{Object}, \code{ProcessObject}, \code{DataObject}, and
+some of the classes in the filter family and the data family. In this
+abstraction, any object that is expected to be passed as input to a filter, or
+be produced as output by a filter, must derive from the \code{DataObject}. All
+filters that produce and consume data are expected to derive from the
+\code{ProcessObject}. The data negotiations required to move data through the
+pipeline are implemented part in the \code{ProcessObject} and part in the
+\code{DataObject}.
 
 \aosafigure{../images/itk/ProcessObjectDataObjectHierarchy.pdf}{Hierarchy of ProcessObjects and DataObjects}{fig.itk.processobjectdataobjecthierarchy}
 
@@ -326,12 +362,12 @@ intelligence''} of the community gets imprinted.
 
 \begin{aosasect2}{Maintenability}
 The architecture satisfies the constraints that minimize maintenace cost.
-\begin{itemize}
+\begin{aosaitemize}
 \item Modularity (at the class level)
 \item Many small files
 \item Code reuse
 \item Repeated patterns
-\end{itemize}
+\end{aosaitemize}
 \end{aosasect2}
 As the developers got involved in regular maintenance activities, they
 got exposed to the ``common failures'' of certain details. The things
