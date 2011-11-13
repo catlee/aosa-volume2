@@ -296,7 +296,7 @@ The same DataObject may be passed as input to multiple ProcessObjects, as it is
 shown in the Figure for the DataObject constructed by the FileReader at the
 beginning of the pipeline. It is also common for some filters to require two
 DataObjects as input, as it is the case of the ``Subtract Filter'' illustrated
-in the right side of the same Figure.
+in the right side of the same figure.
 
 The initial design and implementation of the Data Pipeline in ITK was derived
 from the one in the Visualization Toolkit (VTK)\footnote{See \emph{Architecture
@@ -319,6 +319,94 @@ pipeline are implemented part in the \code{ProcessObject} and part in the
 \end{aosasect2}
 
 \begin{aosasect2}{Factories}
+
+One of the fundamental design requirements of ITK was to have support for
+multiple platforms. This requirement emerged from the desire of maximizing the
+impact of the toolkit. By supporting many platforms it became easier to ensure
+that a larger community will benefit from the effort invested in developing the
+toolkit. There are however, fundamental differences among the many hardware and
+software platforms that make very difficult to create a single implementation
+of software that could run in all those platforms, without sacrificing the good
+fitness of a solution to each one of the individual platforms. The design
+pattern of ``Factories'' is one of the most effective ways of addressing this
+challenge.
+
+Three main elements are involved in the Factory pattern:
+
+\begin{aosaitemize}
+\item Factory registry
+\item Family of factories
+\item Alternative implementations of a service class
+\end{aosaitemize}
+
+\aosafigure{../images/itk/FactoriesDesignPattern.pdf}{Factory Design Pattern}{fig.itk.factorydesignpattern}
+
+To illustrate the use of Factories, let's consider the example of numerical
+methods that can be better implemented with libraries that are only available
+in some platforms. To be more specific, let's consider the case of Fast Fourier
+Transforms (FFT). ITK bases its FFT functionalities on the implementation
+provided by the third party library VXL, and alternatively on the FFTW library.
+This second one is a lot faster, but happens to be available only in Linux
+platforms\footnote{To be more precise: FFTW is ``easily'' and ``readily''
+available in Linux. The library, however can be built in other platforms with
+some investment of effort. The point is still valid for the example that we are
+trying to illustrate here.}. With the Factory pattern it is possible to write a
+FFT image filter class that, at construction time, will invoke the creation of
+a VXL-based or a FFTW-based implementation, depending on the platform in which
+we are running the code.
+
+For this Factory pattern to work, there must be a ``Factory registry'' where we
+keep a list of all available Factories. The registry has an API through which
+it is possible to request the list of Factories able to construct an object
+suitable for computing FFT. The registered factories are capable of
+constructing an instance of a Service class, in this case the filter that
+computes the FFT. Each one of the platform-dependent implementations of the
+service class have the same API, and therefore can be used interchangeably.  We
+could then have a VXL-based FFT filter, and a FFTW-based FFT filter as two
+alternative implementations of the service class that computes FFTs. For each
+one of these two implementations of the service class, we will have their
+corresponding Factories. That is, one VXL-related Factory that knows how to
+instantiate the VXL-based FFT filter, and a FFTW-related Factory that knows how
+to instantiate a FFTW-based filter. By selecting which Factories are registered and which ones are not, at any
+given time, we can control what specific variation of the service class will be
+instantiated in a particular platform.
+
+In ITK the Factory registry is implemented in the \code{ObjectFactoryBase}.
+This class maintains an internal list of all the factories that have been
+registered and that are available for instantiating other service classes. This
+pattern is illustrated in Figure~\ref{fig.itk.factorydesignpattern}, where
+multiple Factory classes are registered in the list of the
+\code{ObjectFactoryBase}, and each one knows how to instantiate a service
+class, in this case, one of the filters X, Y or Z.
+
+The request for instantiating a given service class is made by passing a string
+to the ObjectFactoryBase, asking it to find a Factory that claims to be capable
+of instantiating such type of class. If such Factory is found then it gets the
+request for instantiating the service class, and the freshly created object is
+returned to the originator of the request. Since the instantiation of the
+service class respect a common API, the recipient of the class does not have to
+be aware of the fact that it actually got a specialized version of the
+requested object. In C++ Object Oriented terms, the delivered class is a
+specialized class deriving from the base class that the originator of the
+request was asking for.
+
+One of the most appealing aspects of the Factory implementation in ITK is that
+the registration of Factories can be done at run time. It can actually be done
+by a process as simple as placing dynamic libraries in specific directories.
+This provides a natural mechanism for implementing a Plugin Architecture in a
+clean and transparent way. The \code{ObjectFactoryBase} does this in its method
+\code{LoadDynamicFactories}, where it recruits the help of the
+\code{DynamicLoader} class to search for dynamic libraries in the directories
+listed in the environment variable \code{ITK\_AUTOLOAD\_PATH}.
+
+The dynamic library has to provide an implementation of the \code{itkLoad()}
+C-function that, when called, returns a pointer to a Factory object. The
+returned Factory pointer is registered in the list of available Factories, and
+becomes available for the next round in which the creation of a service class
+is requested. This plugin mechanism is quite flexible and facilitates the
+development of extensible image analysis applications, that satisfy the
+requirements of providing an ever-growing set of image analysis capabilites.
+
 \end{aosasect2}
 
 \begin{aosasect2}{IO Factories}
@@ -421,6 +509,9 @@ processing methods are those that would appear to simple to be accepted
 for a scientific paper.
 
 The Insight Journal...
+\end{aosasect1}
+
+\begin{aosasect1}{Lessons Learned}
 \end{aosasect1}
 
 \end{aosachapter}
