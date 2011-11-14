@@ -411,44 +411,118 @@ requirements of providing an ever-growing set of image analysis capabilites.
 
 \begin{aosasect2}{IO Factories}
 
-\aosafigure{../images/itk/BlockFunctionalDiagram.pdf}{IO Factories Dependencies}{fig.itk.io.factories}
+The image analysis community has developed a very large set of file formats to
+store image data. Many of these file formats are designed and implemented with
+specific uses in mind, and therefore are fine-tunned to specific types of
+images. As a consequence, on a regular basis, new image file formats are
+conceived and promoted across the community. Aware of this situation, the ITK
+developement team designed an IO Architecture suitable for unlimited
+extensibility, in which it became easy to add support for more and more file
+formats on a regular basis.
+
+
+%\aosafigure{../images/itk/BlockFunctionalDiagram.pdf}{IO Factories Dependencies}{fig.itk.io.factoriesblock}
+\aosafigure{../images/itk/ImageIOFactoriesDesignPattern.pdf}{IO Factories Dependencies}{fig.itk.io.factoriesregistry}
+
+These IO extensible architecture is built upon the Factories mechanism
+described in the previous section. The main difference is that in the IO case,
+the IO Factories are registered in a specialized registry that is managed by
+the \code{ImageIOFactory} base class, shown on the upper left corner of
+Figure~\ref{fig.itk.io.factoriesregistry}. The actual functionality of reading
+and writing data from image file formats is implemented in a family of classes
+called \code{ImageIO} classes, shown on the right side of
+Figure~\ref{fig.itk.io.factoriesregistry}. These service classes are intended
+to be instantiated on deman when the user request to read or write an image.
+The services classes are not exposed to the application code. Instead,
+application are expected to interact with the facade classes:
+
+\begin{aosaitemize}
+\item \code{ImageFileReader}
+\item \code{ImageFileWriter}
+\end{aosaitemize}
+
+These are the two classes with which the application will invoke code such as:
+
+\begin{aosaitemize}
+\item \code{reader->SetFileName(``image1.png'');}
+\item \code{reader->Update();}
+\end{aosaitemize}
+
+or
+
+\begin{aosaitemize}
+\item \code{writer->SetFileName(``image2.jpg'');}
+\item \code{writer->Update();}
+\end{aosaitemize}
+
+In both cases, the \code{ImageFileWriter} and \code{ImageFileWriter} will
+invoke the \code{CreateImageIO()} function in the \code{ImageIOFactory} and
+will ask it to identify Factories capable of instantiating service classes that
+know how to read and write that particular file format.
+
+As illustrated in Figure~\ref{fig.itk.io.factoriesregistry}, the
+\code{ImageIOFactory} holds a list of pointers to all the registered IO
+Factories. Each one of those Factories is able to respond to the calls:
+
+\begin{aosaitemize}
+\item \code{CanRead( filename )}
+\item \code{CanWrite( filename )}
+\end{aosaitemize}
+
+When the \code{ImageIOFactory} is asked to find a Factory capable of
+instantiating an ImageIO object that can read or write an image with such
+\code{filename}, it searches sequentially in its list of registered factories,
+asking at every step whether the current Factory item \code{CanRead()} or
+\code{CanWrite()} that filename. The first Factory that responds affirmatively
+get the assignment of instantiating the corresponding ImageIO object and pass
+it to the Reader or Writer in order to provide the services of reading or
+writing the image in disk.
+
+The self-contained nature of every IO Factory and ImageIO service classes is
+also reflected in the modularization. Typically, an ImageIO class depends on a
+specialized library that is dedicated to managing a specific file format. That
+is the case for PNG, JPEG, TIFF and DICOM, for example. In those cases, the
+third party library is managed as a self-contained module, and the specialized
+ImageIO code that interfaces ITK to that third party library is also put in a
+Module by itself. In this way, specific applications may disable many
+fileformats that are not relevant for their domain, and can focus on offering
+only those fileformats that are useful for the anticipated scenarios of this
+application.
+
+Just as with standard Factories, the IO Factories can also be loaded at
+run-time from dynamic libraries. This flexibility facilitates the use of
+specialized and in-house developed file formats without requiring all such file
+formats to be incorporated directly into the ITK toolkit. The loadable IO
+factories has been one of the most successful features in the Architectural
+design of ITK. It has made possible to easily manage a challenging situation
+without placing a burden in the code nor obscuring its implementation. More
+recently, the same IO architecture has been adapted to manage the process of
+reading and writing files containing spatial transformations.
 
 \end{aosasect2}
 
 \begin{aosasect2}{Streaming}
-\end{aosasect2}
-
-\begin{aosasect2}{Maintainability}
-\end{aosasect2}
-
-\begin{aosasect2}{Reusability}
+ITK was conceived initially as a set of tools for processing the images
+acquired by the Visible Human
+Project\footnote{\url{http://www.nlm.nih.gov/research/visible/visible_human.html}}.
+At the time, it was clear that such a large dataset would not fit in the RAM of
+computers that were typically available to the medical imaging research
+community. It is still the case that the dataset will not fit in the typical
+desktop computers that we use today. Therefore, one of the requirements for
+developing the Insight Toolkit was to enable the streaming of image data
+through the Data Pipeline. More specifically, to be able to process large
+images by pushing sub-blocks of the image throught the data pipeline, and then
+assembling the resulting blocks on the output side of the pipeline.
 \end{aosasect2}
 
 \end{aosasect1}
 
-\begin{aosasect1}{On Form and Function}
+\begin{aosasect1}{Lessons Learned}
 
-The Architecture of ITK was not solely the outcome of techincal
-considerations. It is the result of a process that lives in the
-context of social interactions, driving applications, and
-institutional missions. To fully understand the architecture, it is
-important to put it in the context of that larger community from where
-the architectural decisions arouse. In the following section we
-describe some of the non-technical driving forces that shaped the
-architecture of the software In the following section we describe some
-of the non-technical driving forces that shaped the architecture of
-the software.
-
-\begin{aosasect2}{Shaped by a Community}
-There is no software without humans around it. A software is only
-useful when surrounded by a community that takes care of it. The
-community is indeed more important that the software itself, to the
-point that the software should be seen simply as the glue that keeps
-that community together and as the platform where the \emph{``collective
-intelligence''} of the community gets imprinted.
+\begin{aosasect2}{Reusability}
 \end{aosasect2}
 
-\begin{aosasect2}{Maintenability}
+\begin{aosasect2}{Maintainability}
 The architecture satisfies the constraints that minimize maintenace cost.
 \begin{aosaitemize}
 \item Modularity (at the class level)
@@ -474,18 +548,17 @@ crossing a street. We have grown to recognize that any trace of
 software.
 \end{aosasect2}
 
-\end{aosasect1}
-
-\begin{aosasect1}{Refactoring}
+\begin{aosasect2}{Refactoring}
 ITK Started in the year 2000 and grew continuously until the year
 2011. The development team had the truly unique opportunity to embark
 in a refactoring effort under the funding of the National Library of
 Medicine. This is not a minor feat. Once you have been working on a
 piece of software for over a decade, and you are offered the
 opportunity to clean it up: What would you change ?.
-\end{aosasect1}
+\end{aosasect2}
 
-\begin{aosasect1}{Reproducible Research}
+\begin{aosasect2}{Reproducibility}
+
 One of the early lessons learned in ITK was that the many papers
 published in the field were not as easy to implement as we were led to
 believe. The computational field tend to over-celebrate algorithms and
@@ -498,20 +571,22 @@ such techniques, they end up spending a lot of time in the process and deliver
 variations of the original work. It is actually quite difficult in practice
 to verify if an implementation matches what was described in a paper.
 
-ITK disrupted, for the good, that environment and restored a culture
-of DYI (Do It Yourself), in a field that has grown accoustomed to
-theoretical reasoning, and that had learned to dismiss experimental
-work. The new culture brought by ITK is a practical and pragmatic one
-in which the virtues of the software are judged by its practical results
-and not by the appearance of complexity that is celebrated in scientific
-publications. Helas, it turns out that in practice, the most effective
-processing methods are those that would appear to simple to be accepted
-for a scientific paper.
+ITK disrupted, for the good, that environment and restored a culture of DYI (Do
+It Yourself), in a field that has grown accoustomed to theoretical reasoning,
+and that had learned to dismiss experimental work. The new culture brought by
+ITK is a practical and pragmatic one in which the virtues of the software are
+judged by its practical results and not by the appearance of complexity that is
+celebrated in scientific publications. Helas, it turns out that in practice,
+the most effective processing methods are those that would appear to be too
+simple to be accepted for a scientific paper.
+
+The culture of Reproducibilty is a continuation of the philosophy of Test
+Driven Developement, and systematically results in better software. Higher
+clarity, readability, robustness and focus.
 
 The Insight Journal...
-\end{aosasect1}
+\end{aosasect2}
 
-\begin{aosasect1}{Lessons Learned}
 \end{aosasect1}
 
 \end{aosachapter}
