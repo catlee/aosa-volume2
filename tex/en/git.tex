@@ -123,22 +123,27 @@ more definite ways than the RCS family. Namely:
   nodes are guaranteed to contain the same content. Allowing Git to
   short-circuit content diffing efficiently.
   \item When merging two branches we are merging the content of two nodes
-  in a DAG. The DAG allows Git to relatively efficiently (as compared to the
-  RCS family of VCSes) determine common ancestors.
+  in a DAG. The DAG allows Git to "efficiently" (as compared to the
+  RCS family of VCS approach) determine common ancestors.
 \end{aosaitemize}
 
-TODO: Flesh out this section. Overview:
-* This section will describe the two primary classification dimensions to
-Version Control Systems (VCS) today:
+As you can see most DAGs represented in Git are the special case of rooted
+trees.
 
-\begin{aosaitemize}
-  \item Distribution mode: local, client/server, distributed
-  \item Storage mode: changeset based vs directed acyclic graph (DAG) based
-\end{aosaitemize}
+This diagram shows two dimensions of VCS variety. Namely distribution mode
+and storage mode.
 
-Provide examples of different VCSes and how they fit in to these
-classifications, e.g. Subversion (client/server + changeset), Mercurial
-(distributed + changeset), BitKeeper (client/server + DAG), etc.
+DIAGRAM HERE!!!
+
+There are three primary distribution modes for VCSes: local, client/server
+and distributed (or peer-to-peer). Some VCSes can support all of these, some
+just one.
+
+On the other axis we can see two primary categories for storage modes:
+delta based and directed acyclic graph based.
+
+As we can see Git is a VCS that can support local, client/server and
+peer-to-peer distribution modes and uses DAG based content storage.
 
 \end{aosasect1}
 
@@ -180,7 +185,7 @@ From the plumbing portion of the toolkit, procelain layer and now the
 linkable library, libgit2 and its offshoots.
 \end{aosasect1}
 
-\begin{aosasect1}{The Repository}
+\begin{aosasect1}{The Repository, Index and Working Areas}
 
 Let us get our hands dirty and dive into using Git locally, if only to
 understand a few fundamental concepts.
@@ -229,7 +234,7 @@ Let us have a peak inside of it:
 }
 \end{aosaitemize}
 
-The .git directory above is by default located inside the root working
+The .git directory above is by default a subdirectory of the root working
 directory, testgit. It contains a few different types of files and
 directories:
 
@@ -253,14 +258,16 @@ This is the actual repository. The directory that contains the working set
 of files is the \emph{working directory}, which is typically the parent of
 the .git directory (or \emph{repository}). If you were creating a Git
 remote repository that wouldn't have a working directory you could
-initialize it using the \code{git init --bare} command.
+initialize it using the \code{git init --bare} command. This would create
+just the pared down repository files at the root, instead of creating it
+as a subdirectory under the working tree.
 
 Another file of great importance is the \emph{Git index}. It provides the
 staging area between the local working directory and the local repository.
 The index is used to stage specific changes within a file (or more) to
 be committed all together. Even if you make changes related to various types
-of changes, the commits can be made with like changes together to more
-logically describe them in the commit message. To selectively staging
+of features, the commits can be made with like changes together to more
+logically describe them in the commit message. To selectively stage
 specific changes in a file or set of files you can using \code{git add -p}.
 
 The \emph{Git index}, by default, is stored as a single file inside the
@@ -269,10 +276,73 @@ using the following environment variables:
 \begin{aosaitemize}
   \item \code{GIT\_DIR}: sets the repository directory or the \emph{.git}
   directory.
-  \item \code{GIT\_INDEX}: sets the path to the \emph{index}.
+  \item \code{GIT\_INDEX}: sets the path to the \emph{index}. This is often
+  referred to as the staging area as well.
   \item \code{GIT\_WORK\_DIR}: sets the path to the \emph{working directory}
-  for the local Git repository.
+  for the local Git repository. The work directory represents the "live"
+  state of the current head (or HEAD) of the Git repository. This is usually
+  a reference to the current branch.
 \end{aosaitemize}
+
+It is helpful to understand the interactions that take place between these
+three areas (the repository, index and working areas) during the execution
+of a few core Git commands:
+
+\begin{aosaitemize}
+  \item \code{git checkout [branch]} \newline
+  \small{This will move the HEAD reference of the local repository to branch
+  reference path (e.g. \code{refs/heads/master}), populate the index with
+  this head data and refresh the working directory to represent the tree
+  at that head.}
+  \item \code{git add [files]} \newline
+  \small{This will cross reference the checksums of the \emph{files}
+  specified with the corresponding entries in the Git index to see if the
+  index for staged files needs updating with the working directory's
+  version. Nothing changes in the Git directory (or repository).}
+\end{aosaitemize}
+
+Let us explore what this means more concretely by inspecting the contents of
+files under the .git directory (or repository).
+
+\begin{aosaitemize}
+  \item \code{GIT\_DIR=\${PWD}/.git}
+  \item \code{cat \${GIT\_DIR}/HEAD}
+\begin{verbatim}
+ref: refs/heads/master
+\end{verbatim}
+  \item \code{MY\_CURRENT\_BRANCH=\$(cat .git/HEAD | sed 's/ref: //g')}
+  \item \code{cat \${GIT\_DIR}/\${MY\_CURRENT\_BRANCH}}
+\begin{verbatim}
+cat: .git/refs/heads/master: No such file or directory
+\end{verbatim}
+\end{aosaitemize}
+
+We get an error because, before making any commits to a Git repository at
+all, no branches exist, except the default branch in Git is \code{master},
+whether it exists yet or not.
+
+We can verify that no branches exist yet by attempting to list the branches
+in our repository with \code{git branch}.
+
+Now if we make a new commit then the master branch is created by default for
+this commit. Let us do this (continuing in the same shell, retaining
+history and context):
+
+\begin{aosaitemize}
+  \item \code{git commit -m "Initial empty commit" --allow-empty}
+  \item \code{git branch}
+\begin{verbatim}
+* master
+\end{verbatim}
+  \item \code{cat \${GIT\_DIR}/\${MY\_CURRENT\_BRANCH}}
+\begin{verbatim}
+3bce5b130b17b7ce2f98d17b2998e32b1bc29d68
+\end{verbatim}
+  \item \code{git cat-file -p \$(cat \${GIT\_DIR}/\${MY\_CURRENT\_BRANCH})}
+\end{aosaitemize}
+
+What we are starting to see here is the content representation inside Git's
+object database.
 
 \end{aosasect1}
 
@@ -310,8 +380,11 @@ most useful to enable Git's distributed model (the second goal of Git).
 The latter property enables some safegaurds against corruption (the third
 goal of Git above).
 
-In many ways Git can be thought of as a content tracking filesystem living on
-top of your existing filesystem.
+It should be noted that despite the desirable properties of using DAG based
+storage for content tracking it is likely for many repositories that delta
+storage will be more space efficient. Git tackles this by "packing" objects
+in a compressed format using an pack index file to point to offsets to
+specific objects in the corresponding pack file.
 
 TODO: More to discuss here. Use plumbing commands like 'git show' and 'git
 cat-file' to demonstrate how the primitives work together and build on top of
@@ -319,97 +392,29 @@ each other.
 
 \end{aosasect1}
 
-\begin{aosasect1}{Gitting Started}
+\begin{aosasect1}{Merging and Rebasing}
 
-TODO: This may still be included to show off more plumbing commands as well
-as the major porcelain commands and also help explain repository-to-
-repository commands and collaboration.
-
-Here I will describe the most rudimentary workflow of installing, configuring
-and cloning a remote Git repository. Then explain on a low-level what
-happened.
-
-Describe the three main elements of a Git working environment:
-\begin{aosaitemize}
-  \item Repository (object database): default at \#\{projectdir\}/.git
-  subdirectory
-  \item Working area: default at \#\{projectdir\} excluding .git subdirectory
-  \item Index: default at \#\{projectdir\}/.git/index file
-\end{aosaitemize}
-
-Basic steps:
-\begin{aosaitemize}
-  \item sudo yum install git-core
-  \item git config --global user.name ``Your Name''
-  \item git config --global user.email ``user@emaildomain.com''
-  \item cat \#\{HOME\}/.gitconfig
-  \item git clone remote-repo-url
-\end{aosaitemize}
-
-Mention the different protocols that can be used with Git, e.g. ssh, http,
-https, git, file and even rsync. Broadly discuss pros and cons of each.
-
-Protocols notes:
-\begin{aosaitemize}
-  \item file:// local repository easiest to setup, usuallly only useful for
-    one author environment
-  \item ssh:// most common for active development and easy to setup team
-  repository
-  \item http:// good for open source pull based (consumers) users, can setup
-  with WebDAV support for allowing pushes, but more work. Good for working in
-  restricted public networks where SSH ports may be blocked.
-  \item https:// same as http except encrypts pulls and pushes over the wire.
-  \item git:// lightweight protocol useful in an enclosed and trusted local
-  network
-  \item rsync:// hardly used.
-\end{aosaitemize}
+TODO: Step through a merge in diagrams and then contrast this to a rebase.
 
 \end{aosasect1}
 
-\begin{aosasect1}{Gitting Down \& Dirty}
+\begin{aosasect1}{Explaining Resets}
 
-Start with simplest of workflows: purely LOCAL. One author/editor local repo,
-multiple contributors receive bundle of their branch from author/editor.
-Contributors submit patches to author/editor (via email or ticketing system):
-1. Contributor: git format-patch origin/master --stdout > my-feature.patch
-2. Author: git am < my-feature.patch
-
-Notice how GIT\_AUTHOR\_NAME and GIT\_AUTHOR\_EMAIL use the contributors
-values and the editor's information is in GIT\_COMMITTER\_NAME, etc.
-
-Make sure to cover: git config|init|add|commit|status|branch|tag|log|
-format-patch|am|merge|rebase|bundle|diff
-
-% This is how to include a figure using the AOSA styles already configured
-%\aosafigure{../images/git/distworkflow.eps}{Distributed VCS}{fig.git.dvcs}
-
-Discussion on distributed workflows\ldots
-
-Introduce Git Flow workflow as a common one used in the Git community. Provide
-a realistic example. Plus I need to create good diagrams to explain things
-better.
-
-Then introduce the ``fork'' workflow which is commonly seen on GitHub and
-used by OSS projects.
-
-Then introduce the tiered/curated workflow where a release engineer/manager
-is gatekeeper. production-like environments do not have development branches
-visible to them at all. More locked-down.
-
-Then introduce the GitHub model with ``forks''.
+TODO: Explain resets in terms of the repository, index and working areas.
 
 \end{aosasect1}
 
-\begin{aosasect1}{Deploying with Git}
+\begin{aosasect1}{Distributed Workflows}
 
-Here talk a little more about 'git bundle' and git shallow clones, e.g.
-git clone --depth N \#\{GIT\_URL\}, where N is the number of parents.
+TODO: Describe some distributed workflows enabled by Git.
 
-Demonstrate with a repository that shows significant benefit to using
-bundle in conjunction with shallow clones as a way to provide portable
-shall git repositories that allow deployment agents to transfer/receive
-minimal bytes over the wires AND have ability to do rollbacks in severe
-cases where a release does not go as planned.
+\end{aosasect1}
+
+\begin{aosasect1}{Future Work}
+
+TODO/NOTES:
+Discuss the work being done now on using different object database backends
+for storage, from Redis, Memcached, SQLite and others.
 
 \end{aosasect1}
 

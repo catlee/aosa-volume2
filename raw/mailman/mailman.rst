@@ -65,12 +65,16 @@ this format (often called *RFC822* for the founding IETF standard), and
 development is ongoing even today to fix and improve the email package in the
 Python standard library so that it is more standards-compliant and robust.
 
-Within Mailman, an email message is represented as a tree of connected message
-objects, with a single message at the root.  The MIME standards define an
-extension to messages, where they can also be a container object with various
-types and numbers of sub-message parts.  Mailman often refers to the *message
-object tree*, and we pass this tree around by reference to the root message
-object.
+Email messages can act as containers for other types of data, as defined in
+the various MIME standards.  A container *message part* can encode an image,
+some audio, or just about any type of binary or text data.  In mail reader
+applications, these are known as *attachments*.
+
+Container parts can also be arbitrarily nested; these are called *multiparts*
+and can in fact get quite deep.  But all email messages regardless of their
+complexity can be modeled as a tree, with a single message object at its root.
+Within Mailman, we often refer to this as the *message object tree*, and we
+pass this tree around by reference to the root message object.
 
 Mailman will almost always modify the original message in some way.
 Sometimes, the transformations can be fairly benign, such as adding or
@@ -130,11 +134,11 @@ provided the methods necessary to support the auto-responder feature.
 This structure was even more useful when it came to the question of
 persistence.  *Persistence* is the storage and retrieval of program state in
 order to preserve it between stops and starts.  Another of John's early design
-decisions was to use Python *pickles* ``MailList`` state persistence.
-*Pickling* is a Python technology for serializing an object's state to a byte
-stream, and *unpickling* is deserializing this byte stream back into a live
-object.  By storing these byte streams in a file, Python programs gain low
-cost persistence.
+decisions was to use Python *pickles* for storing``MailList`` state
+persistence.  *Pickling* is a Python technology for serializing an object's
+state to a byte stream, and *unpickling* is deserializing this byte stream
+back into a live object.  By storing these byte streams in a file, Python
+programs gain low cost persistence.
 
 In Mailman 2, the ``MailList`` object's state is stored in a file called
 ``config.pck``, which is just the pickled representation of the ``MailList``
@@ -296,8 +300,6 @@ ported untouched from Mailman 2 to Mailman 3.
 
 The master runner
 =================
-
-"One process to rule them all."
 
 With all these runner processes, Mailman needed a simple way to start and stop
 them consistently.  Thus the master runner process was born, and it must be
@@ -586,19 +588,13 @@ There were a number of technologies at the time that would allow this, and in
 fact Mailman's integration with Launchpad is based on XMLRPC.  But XMLRPC has
 a number of problems that make it a less than ideal protocol.
 
-A year or so after mailing lists became operational in Launchpad, Canonical
-hired Leonard Richardson to design and implement an API for Launchpad so that
-it too could be managed, controlled, and queried without the use of the web
-ui.  Leonard is an expert on REST (Representational State Transfer) defined by
-Roy Fielding in 2000, but only really becoming widely known years later.
-Leonard had written the definitive O'Reilly book on REST, and was instrumental
-in teaching the Launchpad team the techniques and principles behind it.  He
-was one of the key architects and developers behind Launchpad's adoption of
-REST, and all the Launchpad developers at the time began exposing bits of
-Launchpad in the API.
-
-REST was the perfect fit for Mailman 3, and now much of its functionality is
-exposed through a REST API.
+Mailman 3 has adopted the Representation State Transfer (REST) model for
+external administrative control.  REST is based on HTTP, and Mailman's default
+object representation is JSON.  These protocols are ubiquitous and
+well-supported in a large variety of programming languages and environments,
+making it fairly easy to integrate Mailman with third party systems.  REST was
+the perfect fit for Mailman 3, and now much of its functionality is exposed
+through a REST API.
 
 This is a powerful paradigm that more applications should adopt: deliver a
 core engine that implements its basic functionality well, exposing a REST API

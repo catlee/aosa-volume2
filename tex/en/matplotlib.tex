@@ -689,14 +689,57 @@ testing framework from scratch more easily than if we had gone on to
 write many low-level unit tests.  Still, it is not perfect.  The code
 coverage of the tests is not very complete.  It takes a long time to
 run all of the tests.\footnote{Around 15 minutes on a 2.33 GHz Intel
-  Core 2 E6550.}  (We did have a buildbot instance running for a while
-so developers did not always have to run the tests on their own
-machines.)  Therefore, some regressions do still fall through the
+  Core 2 E6550.}  We have a buildbot instance running for a while
+so developers do not always have to run the tests on their own
+machines.  Therefore, some regressions do still fall through the
 cracks, but overall the quality of the releases has improved
 considerably since the testing framework was implemented.
 
 \end{aosasect1}
 
+\begin{aosasect1}{Lessons learned}
+
+One of the important lessons from the development of matplotlib is, as
+Le Corbusier said, ``Good architects borrow''.  The early authors of
+matplotlib were largely scientists, self-taught programmers trying to
+get their work done, not formally trained computer scientists.  Thus
+we did not get the internal design right on the first try.  The
+decision to implement a user-facing scripting layer largely compatible
+with the Matlab\texttrademark API benefited the project in three
+significant ways: it provided a time-tested interface to create and
+customize graphics, it made for an easy transition to matplotlib from
+the large base of Matlab users, and most importantly for us in the
+context of matplotlib architecture, it freed developers to refactor
+the internal object oriented API several times with a minimal impact
+to most users because the scripting interface was unchanged.  While we
+have had API users (as opposed to scripting users) from the outset,
+and most matplotlib developers are API users, most of these are power
+users able to adapt to API changes, and the scripting users can write
+code once and pretty much assume it is stable for all subsequent
+releases.
+
+For the internal drawing API, while we did borrow from GDK, we did not
+spend enough effort determining whether this was the right drawing
+API, and had to expend considerable effort subsequently after many
+backends were written around this API to extend the functionality
+around a simpler and more flexible drawing API.  We would have been
+well-served by adopting the PDF drawing specification, which itself
+was developed from decades of experience Adobe had with its Postscript
+specification, which would give us mostly out of the box compatibility
+with PDF itself, the Quartz Core Graphics framework, and the Enthought
+Enable Kiva drawing kit.
+
+One of the curses of Python is that it is such an easy and expressive
+language that developers often find it easier to re-invent and
+re-implement functionality that exists in other packages rather than
+work to integrate code from other packages.  Matplotlib could have
+benefited in early development from expending more effort on
+integration with existing efforts and APIs rather than reinventing
+functionality.  Integration with existing functionality is, however, a
+double edge sword, as it can make builds and releases more complex and
+reduce flexibility in internal development.
+
+\end{aosasect1}
 \end{aosachapter}
 
 
