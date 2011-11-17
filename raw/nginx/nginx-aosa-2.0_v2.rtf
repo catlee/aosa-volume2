@@ -1,0 +1,581 @@
+{\rtf1\ansi\ansicpg1252\cocoartf1038\cocoasubrtf360
+{\fonttbl\f0\froman\fcharset0 TimesNewRomanPSMT;\f1\fswiss\fcharset0 ArialMT;\f2\ftech\fcharset77 Symbol;
+}
+{\colortbl;\red255\green255\blue255;\red0\green0\blue246;}
+\paperw11900\paperh16840\margl1440\margr1440\vieww15600\viewh14160\viewkind0
+\deftab720
+\pard\pardeftab720\ql\qnatural
+
+\f0\b\fs48 \cf0 Introduction
+\b0\fs24 \
+\pard\pardeftab720\ql\qnatural
+
+\fs36 \cf0 \
+NGINX is a well-known free open source software (F/OSS) written by Igor Sysoev, a Russian engineer. Since 2004, NGINX has been used by many different companies online in a variety of industries. In almost 10 years of its history\'a0NGINX has developed into a powerful Internet infrastructure platform which includes a webserver for static and dynamic content, Layer 7 load-balancer, reverse proxy for HTTP, SMTP, IMAP and POP3, caching engine and SSL offloading.\'a0Most typical scenario of deploying NGINX is to put it in front of an existing website infrastructure to boost performance and efficiency by isolating heavy web backends from enormous workloads produced by many concurrent clients on the Internet.\'a0
+\f1\fs24 \
+
+\f0\fs36 \
+With that said, we tend to think, it would be beneficial for the reader to be familiar with the brief history of NGINX development.\
+\
+The author of NGINX spent 10 years working for Rambler\'a0\'97\'a0a big Russian media company and a search engine. After the first 3 years of maintaining and developing frontend web infrastructure, Igor realized that he had spent already quite a lot of time and efforts in trying to make traditionally architected webservers work better. He was applying all the known and secret techniques to make webservers more efficient, he tuned the operating systems to the maximum, but one main problem remained, and it was the problem of handling concurrent connections without wasting memory and CPU on the servers. Ensuring high concurrency and low latency responses is vitally important for the popular online services, and by the way Igor wasn't the only system engineer in the world greatly distracted by the inability of then existing webservers to do it efficiently.
+\f1\fs24 \
+
+\f0\fs36 \
+Concurrent connections are essentially produced by the clients who stay connected to a webserver during a period of time. If we take a peak hour concurrency it would mean the number of clients hanging in a connected state at the peak of the service usage. It can be evenings for residential clients, or noons for SMB and enterprise\'a0\'97\'a0but there are always peak hours where many clients connect to the web service simultaneously, stay connected for a while and are superseded by the other clients.\'a0A big number of concurrent connections would mean lots of memory consumed on the frontend servers, because the most ubiquitous web software back then served each connection with a separate process or thread.
+\f1\fs24 \
+
+\f0\fs36 \
+The main problem with creating\'a0a separate process or thread for every new connection is that it also requires additional writable memory datasets, such as stack areas and possibly more heap, which means the webserver is allocating quite a lot of memory just to serve each new connection. In absolute values it's something in the range of at least few MBs to hundreds of MBs\'a0in extreme cases, when inefficient embedded scripting is used along with the webserver. Accordingly, MBs of memory are needed\'a0for serving up every user. Obviously this kind of an architecture doesn't scale very well. In addition, every new process or thread leads to an extra overhead in terms of CPU usage because more context switching is required.
+\f1\fs24 \
+
+\f0\fs36 \
+It is interesting what was the main cause for many concurrent connections at the frontend layer. A curious reader who still recalls how the largest parts of the Internet worked in the 90's and at the beginning of 00's, would probably have already guessed the answer. Lots of concurrent connections are caused by the slow clients, that is by the clients using low-bandwidth and high-delay access to the Internet, such as dial-up, GRPS/EDGE/3G/HSDPA, older/slower variants of Wi-Fi, ADSL and other similar connectivity, or just being located far away from the server they connect to.\'a0Nowadays, concurrency is also caused by a combination of the mobile clients (who are still largely slow) and by the newer application architectures which are typically based on maintaining a persistent connection allowing the client to be quickly updated with the news, tweets, friend feeds and basically everything which is consumed today from the modern online services.\'a0Another\'a0important\'a0factor additionally contributing to increased concurrency is the changed behavior of modern browsers, which would open 4-6 simultaneous connections to a website to increase the speed of page downloads.
+\f1\fs24 \
+
+\f0\fs36 \
+Imagine a simple webserver which produces a relatively short 100KB answer (a modern web page with text or an image). It can be just a fraction of second to generate or retrieve such file, but then it takes 12.5s to transmit these 100KB to a client with a bandwidth of 64 Kbps (8KB/s). Now imagine that you have 1,000 simultaneously connected clients who just have requested the same content. It would mean that the webserver quickly pulls 100KB from disk or an backend application, and then it takes 12.5s to output it to all of the clients and free all of the connections. In turn, if only 1MB of additional writable memory was allocated per connection (i.e. per one client), it means that 1000MB or 1GB or memory was occupied by serving just 1,000 clients with a 100KB content. And 64 Kbps is still widely the effective speed of communications over GPRS/EDGE and even 3G networks. In reality, a typical webserver based on an older software also allocates more than 1MB of additional memory per connection.
+\f1\fs24 \
+
+\f0\fs36 \
+So, the initial task for NGINX was to overcome the barriers of inefficient frontend infrastructure\'a0\'97 essentially it was "solving C10K problem" back then (see\'a0{\field{\*\fldinst{HYPERLINK "http://www.kegel.com/c10k.html"}}{\fldrslt \cf2 \ul \ulc2 http://www.kegel.com/c10k.html}}). The author of NGINX also wanted to create a better style of configuration for either large scale of small web sites. There was another\'a0Because there weren't a better software available for use, Igor eventually decided to write a new one himself. This is how implementation of the first version of NGINX has started.\'a0In his efforts to make the new webserver more efficient, the author of NGINX has paid lots of attention to kqueue and epoll development in FreeBSD and Linux respectively. All of the aspects of architecting a new generation web software\'a0were also thoroughly explored. Finally, a modular, event-driven, asynchronous and non-blocking architecture became the foundation of NGINX code.
+\f1\fs24 \
+
+\f0\fs36 \
+While many concepts of NGINX were inspired by Apache, it is not true that NGINX was forked from Apache code or is even using portions of Apache code. NGINX codebase is original and was written from scratch during already almost 10 years of development. NGINX is written entirely in C programming language and has been ported to numerous architectures and operating systems, including Linux, FreeBSD, Solaris, Mac OS X and even Microsoft Windows.
+\f1\fs24 \
+
+\f0\fs36 \
+The first lines of NGINX were written in 2002. In 2004 it was release to the public under 2-clause BSD license, and many people jumped on the idea and started to use NGINX to scale their quickly growing web infrastructures. They were also actively providing the necessary reports about their experiences with NGINX, noticing bugs, offering suggestions and requesting more functionality. The help from the user community has been enormous.
+\f1\fs24 \
+
+\f0\fs36 \
+It was the dawn of the new era of the ubiquitous social media, mobile applications, permanently connected and demanding users of all ages, and instantaneous communications\'a0\'97\'a0and it just happened that NGINX has become a very important enabling mechanism for big and small companies worldwide to adjust to this new reality of heavy Internet consumption.
+\f1\fs24 \
+\
+\pard\pardeftab720\ql\qnatural
+
+\f0\b\fs48 \cf0 Overview of NGINX architecture
+\f1\b0\fs24 \
+\pard\pardeftab720\ql\qnatural
+
+\f0\fs36 \cf0 \
+NGINX differs from the older webserver software primarily by its architecture. First of all, we may say that NGINX is clever in its behavior and it doesn't try to outthink a well-engineered modern operating system while handling the network and disk load. NGINX elaborately optimizes the usage of the operating system and the hardware resources (memory and CPU) with its event-driven, asynchronous, non-blocking, modular architecture.
+\f1\fs24 \
+
+\f0\fs36 \'a0
+\f1\fs24 \
+
+\f0\fs36 NGINX is using multiplexing and event notifications heavily, and dedicates specific tasks to separate processes. Connections are processed in a highly efficient run-loop in a limited number of single-threaded processes.
+\f1\fs24 \
+\
+\
+
+\f0\fs36 < Diagram depicting NGINX architecture / architecture.018.tiff >
+\f1\fs24 \
+
+\f0\fs36 \'a0
+\f1\fs24 \
+
+\f0\fs36 NGINX runs three types of processes in memory. There is a single master process and several worker processes. There are also a couple of special purpose processes, namely\'a0\'97\'a0cache loader and cache manager. All processes are single-threaded in version 1.x of NGINX. All processes primarily use shared memory mechanisms for IPC. Master process is run as root. Cache loader, cache manager and the\'a0workers run unprivileged.
+\f1\fs24 \
+
+\f0\fs36 \'a0
+\f1\fs24 \
+
+\f0\fs36 The master process is responsible for the following tasks:\
+
+\f1\fs24 \
+
+\f0\fs36 - reading and validating the configuration;
+\f1\fs24 \
+
+\f0\fs36 - creating, opening, binding and closing sockets;
+\f1\fs24 \
+
+\f0\fs36 - starting, terminating and maintaining the configured number of worker processes;
+\f1\fs24 \
+
+\f0\fs36 - reconfiguring without service interruption;
+\f1\fs24 \
+
+\f0\fs36 - controling non-stop binary upgrades (starting the new binary and rolling back if necessary);
+\f1\fs24 \
+
+\f0\fs36 - maintaining log files;
+\f1\fs24 \
+
+\f0\fs36 - compiling embedded Perl scripts.
+\f1\fs24 \
+
+\f0\fs36 \'a0
+\f1\fs24 \
+
+\f0\fs36 The cache loader process is responsible for checking the on-disk cache items and populating NGINX in-memory database with the cache metadata. Essentially, cache loader is preparing NGINX instance to work with the files already stored on disk in a specially allocated directory structure. It traverses the directories, checks cache content metadata, updates the relevant entries in shared memory and then exits when everything is clean and tidy and ready for operations.
+\f1\fs24 \
+
+\f0\fs36 \'a0
+\f1\fs24 \
+
+\f0\fs36 The cache manager is mostly responsible for the cache expiration and invalidation. It stays in memory during normal NGINX operations and it is restarted by the master process in the case of failure.
+\f1\fs24 \
+
+\f0\fs36 \
+Cache in NGINX is implemented in the form of an hierarchical data storage on a filesystem. Cash keys are configurable and different request specific parameters can be used to control what gets into cache.\'a0The cache keys and cache metadata are stored in the shared memory segments\'a0\'97\'a0which cache loader, cache manager and the workers access. Currently there isn't any in-memory caching of files, other than optimizations implied by the VFS cache.
+\f1\fs24 \
+
+\f0\fs36 \
+Each cached response is placed in a different file on the filesystem. The hierarchy (levels and naming details) are controlled through NGINX configuration file directives. When a response is written to the cache directory structure, the path and the name of the file are derived from MD5 hash of the proxied URL.
+\f1\fs24 \
+
+\f0\fs36 \
+What happens when NGINX is going to place the content in the cache is the following. When NGINX reads the response from the backend, the content is first being written to a temporary file outside of cache directory structure. When NGINX finishes request processing it renames the temporary file into the cache directory file. If the temporary files directory for proxying is on another file system, the file will be copied. Thus it's recommended to keep both temp directory and cache directories on the same file system. It is also quite safe to delete files from the cache directory structure when they need to be explicitly purged. There are 3rd party extensions for NGINX available which make it possible to control cached content remotely, and more work is planned to integrate such functionality in the main branch of code.
+\f1\fs24 \
+
+\f0\fs36 \'a0
+\f1\fs24 \
+
+\f0\fs36 Last but not least, the worker processes accept, handle and process connections from the clients, provide reverse proxying and filtering functionality and do everything else that NGINX is capable of.\'a0Within each worker NGINX can handle many thousands of concurrent connections and requests per second. In regards to monitoring the behavior of NGINX instance, a system administrator should keep an eye on\'a0workers as they are the processes reflecting the actual day-to-day operations of a webserver. A number of parameters can be effectively checked for an NGINX instance and the work is ongoing to make NGINX monitoring even more functional.
+\f1\fs24 \
+
+\f0\fs36 \
+Now it's time to talk a bit more about how NGINX is trying to achieve maximum efficiency in handling the workloads we see on the Internet today.
+\f1\fs24 \
+
+\f0\fs36 \'a0
+\f1\fs24 \
+
+\f0\fs36 Traditional process-based or thread-based model of handling concurrent connections involves processing each connection with a separate process or thread, blocking on network and input/output operations until completion. Depending on the application it can be very inefficient in terms of memory and CPU consumption.
+\f1\fs24 \
+
+\f0\fs36 \
+Spawning a separate process or thread requires preparation of new runtime environment, including creating stack memory areas, and preparing new execution context. Additional CPU time is also spent on creation. It can eventually led to a poor performance due to thread thrashing on excessive context switching.
+\f1\fs24 \
+
+\f0\fs36 \
+NGINX doesn't spawn a process or thread for every connection. Instead worker processes accept new requests from a shared listen socket and execute a highly efficient run-loop inside each worker to process thousands of connections per worker. There's no arbitration or distributing connections from the master processes to the workers. The only thing the master process does with sockets is creating the initial set of listening sockets. All workers then can do an accept() and the task of synchronization is done by the workers, not the master. A optional mechanism exists\'a0\'97\'a0allowing workers to avoid spinning unnecessarily on accept(), and it's a typical mutex in a shared memory area, which is raised by the worker to check if there's a new network event notification for accept().
+\f1\fs24 \
+
+\f0\fs36 \
+The run-loop is the most complicated part of NGINX worker code where most of the work of processing the requests is done. It includes comprehensive inner calls and is relying heavily on the idea of asynchronous handling of tasks. Asynchronous operations are implemented through modularity, event notifications, extensive use of callback functions and fine-tuned timers. Overall, the key principle here is to be as much non-blocking as possible. The only situation where NGINX can still block is when there's no enough storage performance for a worker.
+\f1\fs24 \
+
+\f0\fs36 \
+Because NGINX is free from forking a process or thread per connection, the memory usage is very conservative and extremely efficient in the vast majority of cases. Examples of praises NGINX has been enjoying include something like "It's a tiny thing with flat usage of resources .. A great improvement over the previous software in doing massively input/output bound operations .. Allows to get the most performance out of the least amount of hardware .. Able to continuously take more connections without consuming additional resources".
+\f1\fs24 \
+
+\f0\fs36 \
+NGINX conserves CPU cycles as well because there's no ongoing create/destroy pattern for processes or threads. What NGINX is doing is checking the state of network and storage, allocating new connection, adding it to the run-loop, processing asynchronously until completion and de-allocating connection from the run-loop. Combined with the economical use of syscalls and accurate implementation of supporting interfaces like pool and slab memory allocators, it typically leads to a relatively low CPU usage even under extreme workloads.
+\f1\fs24 \
+
+\f0\fs36 \
+To fully enable performance and scalability while handling\'a0a variety of consequent actions associated with accepting, processing and managing network connections and content retrieval, NGINX uses event notification mechanisms and a number of disk I/O performance enablements in Linux, Solaris and BSD-based operating systems. To put it simple, it is all about providing hints to the operating system and getting a timely feedback in regards to when expect an inbound or outbound traffic, when check disk operation, when refresh content and so on. Currently,\'a0NGINX is able to utilize pretty much every modern notification mechanism invented for an operating system, like for instance kqueue, epoll or event ports.
+\f1\fs24 \
+
+\f0\fs36 \'a0\'a0
+\f1\fs24 \
+
+\f0\fs36 With the model of running several workers to process connections, NGINX scales quite well across multiple cores.\'a0Overall, a separate worker per core allows full utilization of multicore architectures, prevents thread thrashing and lock-ups. There's no resource starvation and the resource controlling mechanisms are isolated within single-threaded worker processes. This model also allows more scalability across physical storage devices, facilitates more disk utilization and generally allows to avoid blocking on disk I/O. As a result, the hardware server resources are also utilized more efficiently with the workload shared across several workers.
+\f1\fs24 \
+
+\f0\fs36 \
+Depending on the load patterns, disk and CPU utilization on the server, the number of NGINX workers should be adjusted. The rules are somewhat basic here, and the system administrator shall try a couple of configurations against a real-life workloads. General recommendations might be the following. If the load pattern is mostly CPU-intensive\'a0\'97\'a0like for instance, handling a lot of TCP/IP, doing SSL or compression\'a0\'97\'a0the number of NGINX workers should match the number of CPU cores. If the load is more disk I/O bound (serving different sets of content from storage, heavy proxying etc.), the number of workers might be a product of the number of cores and a multiplier of 1.5\'962, and some engineers are aligning with the number of individual storage units instead\'a0\'97 it really depends on the type and configuration of disk storage, though.
+\f1\fs24 \
+
+\f0\fs36 \
+There are certain drawbacks of the existing implementation as well. One major problem, the developers of NGINX will be solving in the next versions of the product, is how to avoid most of the situations with blocking on disk I/O. At this time, if there's no enough storage performance to serve disk operations generated by a particular worker, such worker may block on reading/writing from disk which may potentially affect thousands of connections served by this worker.
+\f1\fs24 \
+
+\f0\fs36 \
+A number of mechanisms and control knobs exist to mitigate such disk I/O blocking scenarios. Most notably, combinations of options like "sendfile" and AIO typically produce a lot of headroom for disk performance. However, the mileage may vary, depending of the data set, the amount of memory available for NGINX, the underlying storage architecture and other specifics of a particular NGINX installation.
+\f1\fs24 \
+
+\f0\fs36 \
+Another problem of the existing worker model is related to a severely limited support for embedded scripting. For one, with the standard NGINX distribution, only Perl embedded scripting support is implemented. There's a good reason for that, and the explanation is quite simple\'a0\'97\'a0the key problem here is a possibility of an embedded script to block on any operation or exit unexpectedly. Both types of behavior would immediately lead to a situation where the worker is hung, affecting many thousands of connections at once. More work is planned in regards to make embedded scripting with NGINX simpler, more reliable and suitable for a broader range of applications like hosting.
+\f1\fs24 \
+
+\f0\fs36 \
+NGINX architecture is modular and the functionality of NGINX can generally be extended without modifying the NGINX core architecture. NGINX modules come in slightly different incarnations, namely core modules, event modules, phase handlers, protocols, handlers of variables, filters, upstreams and load balancers. More detailed information about the roles of different modules can be find in "NGINX internals" section of this document.
+\f1\fs24 \
+
+\f0\fs36 \
+Modules constitute most of the presentation and application layers functionality of NGINX. Modules read and write from the network and storage, transform content, do outbound filtering, apply server-side include actions and pass the requests to the backend servers if proxying is activated. The core of NGINX is responsible for maintaining a tight run-loop and executing appropriate sections of modules' code on each stage of request processing.
+\f1\fs24 \
+
+\f0\fs36 \
+At this time NGINX doesn't support dynamically loadable modules, that is\'a0\'97\'a0modules are compiled along with the core at the build stage. However, support for loadable modules and ABI is planned for the future major releases.
+\f1\fs24 \
+
+\f0\fs36 \
+Regrettably, NGINX module development has been a bit problematic for the 3rd party developers, because previously there weren't any good developer documentation available, and this is primarily because of the lack of time for Igor to do that. Although, there are some very good explanations out there, describing NGINX module development\'a0\'97\'a0those are based on a huge effort in reverse engineering of NGINX code, and the implementation of NGINX modules is still more of a black art for many. Some good documents were produced by Evan Miller ({\field{\*\fldinst{HYPERLINK "http://www.evanmiller.org/"}}{\fldrslt \cf2 \ul \ulc2 http://www.evanmiller.org/}}), and parts of the present document were influenced by his hard work.\'a0Now, as the developers of NGINX have more time, resource and a strong intention to produce and maintain an adequate API documentation, the NGINX developer community will hopefully be growing in a more healthy way in the future.
+\f1\fs24 \
+
+\f0\fs36 \
+Despite certain difficulties associated with 3rd party module development, NGINX user community recently saw a lot more 3rd party modules, solving limitations of the standard NGINX distribution\'a0\'97\'a0especially in regards to embedded scripting and applications support. Most notably, many companies started to use a set of modules for NGINX developed by a group of Chinese authors\'a0({\field{\*\fldinst{HYPERLINK "http://openresty.org"}}{\fldrslt \cf2 \ul \ulc2 http://openresty.org}}), and especially the module which embeds the Lua interpreter or LuaJIT into the NGINX core ({\field{\*\fldinst{HYPERLINK "https://github.com/chaoslawful/lua-nginx-module#readme"}}{\fldrslt \cf2 \ul \ulc2 https://github.com/chaoslawful/lua-nginx-module#readme}}). Lua module is a very powerful instrument to apply to a webserver configuration. It can enable extra flexibility in processing output of various NGINX upstream sources, implementing additional security checks, manipulating headers, adjusting upstream selection and much more. Besides, with LuaJIT in place the Lua module offers performance characteristics comparable to a C-based NGINX extension while being less complicated to implement and maintain, so a lot of engineers switched to do their custom modifications with Lua module for NGINX.
+\f1\fs24 \
+
+\f0\fs36 \
+It should be mentioned that NGINX has its own libraries and doesn't use much beyond standard C library, except for zlib, PCRE and OpenSSL which could be optionally excluded from the build if not needed or because of potential license conflicts.
+\f1\fs24 \
+
+\f0\fs36 \
+A few words about the Windows version of NGINX. While NGINX works under Windows environment, Windows version of NGINX is more like a proof-of-concept rather than a fully functional Windows port. There are certain limitations of both NGINX and Windows kernel architectures that don't mix quite well at this time. Known issues of NGINX version for Windows include the following: no parallel processing of requests by the workers (only one worker is doing the job at any given moment of time), up to 1024 connections per worker, no caching and bandwidth policing functionality (because there's no shared memory in Windows Vista and above), less performance because only 
+\i select
+\i0 \'a0notification mechanism is used. Future enhancements of NGINX version for Windows might include running NGINX as a service, a better performance, utilizing multiple threads in a single worker for better scalability.
+\f1\fs24 \
+\
+\pard\pardeftab720\ql\qnatural
+
+\f0\b\fs48 \cf0 NGINX configuration
+\f1\b0\fs24 \
+\pard\pardeftab720\ql\qnatural
+
+\f0\fs36 \cf0 \
+Ideas that served as the foundation for NGINX configuration design were inspired significantly by the Apache experience of the author of NGINX. What has been primarily learned from the work duties is that a much more scalable configuration is essential for a webserver. The main problem was seen in maintaining large complicated configs with lots of virtual servers, directories, locations and datasets. In a relatively big web setup it can turn into a nightmare if not done properly both at the application level and by the system engineer himself.
+\f1\fs24 \
+
+\f0\fs36 \
+So, from the very beginning NGINX configuration was designed to simplify day-to-day operations and to provide easy means for further expansion of the webserver configuration.
+\f1\fs24 \
+
+\f0\fs36 \
+NGINX configuration is kept in a number of plain text files which would typically reside in /usr/local/etc/nginx directory. Main configuration is usually called nginx.conf. To keep the main configuration file uncluttered,\'a0parts of configuration can be put in separate files which can be "included" in the main one. However, it should be noted here that NGINX doesn't currently support Apache-style distributed configurations (.htaccess files). All of the configuration relevant to NGINX webserver behavior should be included in the centralized set of configuration files.
+\f1\fs24 \
+
+\f0\fs36 \
+The configuration files are initially read and verified by the master process. Compiled read-only form of NGINX configuration is available for use by the worker processes as the latter are forked from the master process. Configuration structures are automatically shared by the usual operating system and virtual memory mechanisms.
+\f1\fs24 \
+
+\f0\fs36 \
+NGINX configuration has several different contexts for Main, Http, Mail, Server, Upstream and Location blocks of directives.\'a0Contexts never overlap. For instance, there's no such thing as putting the location block in the main block of directives. Also,\'a0to avoid unnecessary ambiguity\'a0there isn't anything like the "global webserver" configuration. NGINX configuration is meant to be clean and logical, allowing to maintain complicated config files that comprise thousands of directives.\'a0To quote the author, "Locations, Directories, and other blocks in the global server\'a0configuration are the features I never liked in Apache, so\'a0this is the reason why they were not implemented in NGINX".
+\f1\fs24 \
+
+\f0\fs36 \
+Configuration syntax, formatting and definitions follow a so-called C-style convention. Back then this particular approach for making configuration files had been already a proven recipe for a variety of open source and commercial software.\'a0By its design, C-style configuration is well suitable for nested descriptions, being logical and easy to create, read and maintain\'a0\'97 and\'a0many engineers liked it. Besides, C-style configuration of NGINX can be easily automated as well.
+\f1\fs24 \
+
+\f0\fs36 \
+While some of the NGINX directives remind certain parts of Apache configuration, setting up an NGINX instance is quite a different experience. For instance, rewrite rules are supported by NGINX, though it would require an administrator to manually adapt a legacy Apache rewrite configuration to match NGINX style. The implementation of rewrite engine differs too.
+\f1\fs24 \
+
+\f0\fs36 \
+In general, NGINX settings also provide support for quite a few original mechanisms that can be very useful as part of a lean webserver configuration. It makes sense to briefly mention variables and "try_files" directive here which are something unique to NGINX, and were developed to provide additional means of controlling webserver in the run-time.
+\f1\fs24 \
+\
+\pard\pardeftab720\ql\qnatural
+
+\f0\b\fs48 \cf0 NGINX internals
+\f1\b0\fs24 \
+\pard\pardeftab720\ql\qnatural
+
+\f0\fs36 \cf0 \
+In this section we will make an attempt to describe some of the internals of NGINX. It can be important for a system administrator to understand a general picture of how NGINX works inside, and what is the relationship between different parts of NGINX code.
+\f1\fs24 \
+
+\f0\fs36 \
+As it was mentioned before, NGINX code consists of a core code and a number of modules. The core of NGINX is responsible for providing the foundation of the webserver, web- and mail reverse proxy functionality\'a0\'97\'a0it enables the use of underlying network protocols, builds the necessary run-time environment, and ensures seamless interaction between different modules. However, most of the protocol and application specific features are done by NGINX modules\'a0\'97\'a0not the core.
+\f1\fs24 \
+
+\f0\fs36 \
+Internally NGINX is processing connections through a pipeline\'a0\'97\'a0or chain of modules. In other words for every operation there's a module which is doing the relevant work like compression, modifying the content,\'a0executing server-side include,\'a0communicating to the backend application servers through FastCGI or WSGI protocols, or talking to a memcache backend.
+\f1\fs24 \
+
+\f0\fs36 \
+There are a couple of NGINX modules which sit somewhere between the core and the real "functional modules". These modules are "http" and "mail". These two modules provide an additional level of abstraction between the core and lower level components. What is implemented inside these in-between modules, is primarily the handling of the sequence of events associated with a respective application layer protocol like HTTP, SMTP or IMAP. In combination with NGINX core, these upper level modules\'a0are responsible for maintaining the right order of calls to the respective "functional" modules.
+\f1\fs24 \
+
+\f0\fs36 \
+The functional modules can be divided into event modules, phase handlers, outbound filters, handlers of variables, protocols, upstreams and load balancers. Most of these modules are used to implement HTTP-based functionality of NGINX. Event modules and protocols are also used for "mail". Event modules provide a particular event-notification mechanism like kqueue or epoll. Depending on the operating system capabilities and the build configuration, NGINX uses either this or that event module. Protocol modules bring to work HTTPS, TLS/SSL, SMTP, POP3, IMAP. On the other hand, HTTP protocol is currently implemented as part of "http" module and not as a separate protocol module. In the future this can be further separated into a module too, due to a necessity to support other protocols like SPDY ({\field{\*\fldinst{HYPERLINK "http://www.chromium.org/spdy"}}{\fldrslt \cf2 \ul \ulc2 http://www.chromium.org/spdy}}).
+\f1\fs24 \
+
+\f0\fs36 \
+A typical HTTP request processing cycle looks like the following:\
+
+\f1\fs24 \
+
+\f0\fs36 1. Client sends HTTP request
+\f1\fs24 \
+
+\f0\fs36 2. NGINX chooses the appropriate phase handler based on the location configuration
+\f1\fs24 \
+
+\f0\fs36 3. (If applicable) load balancer picks a backend server
+\f1\fs24 \
+
+\f0\fs36 4. Handler does its job and passes each output buffer to the first filter
+\f1\fs24 \
+
+\f0\fs36 5. First filter passes the output to the second filter
+\f1\fs24 \
+
+\f0\fs36 6. Second filter passes the output to third\'a0and so on
+\f1\fs24 \
+\pard\pardeftab720\ql\qnatural
+
+\f2\fs32 \cf0 7. 
+\f0\fs36 Final response sent to the client
+\f1\fs24 \
+\pard\pardeftab720\ql\qnatural
+
+\f0\fs36 \cf0 \
+NGINX module invocation is extremely\'a0customizable.\'a0Invocation is performed through a series of callbacks using pointers to the executable functions.\'a0Caveat emptor, it may place a big burden on the programmers who'd like to write their own modules, because it has to be defined exactly how and when the module should run. However, there are certain ongoing activities to make both NGINX API and developers' documentation better and generally more available too.
+\f1\fs24 \
+
+\f0\fs36 \
+Examples of where a module can attach include:\
+
+\f1\fs24 \
+
+\f0\fs36 - Before the configuration file is read and processed\
+- For every configuration directive for the location and the server where it appears
+\f1\fs24 \
+
+\f0\fs36 - When the main configuration is initialized
+\f1\fs24 \
+
+\f0\fs36 - When the server (i.e., host/port) is initialized
+\f1\fs24 \
+
+\f0\fs36 - When the server configuration is merged with the main configuration
+\f1\fs24 \
+
+\f0\fs36 - When the location configuration is\'a0initialized or\'a0merged with its parent server configuration
+\f1\fs24 \
+
+\f0\fs36 - When the master process starts or exits
+\f1\fs24 \
+
+\f0\fs36 - When a new worker process starts or exits
+\f1\fs24 \
+
+\f0\fs36 - When handling a request\
+- When filtering the response headers and the body
+\f1\fs24 \
+
+\f0\fs36 - When picking,\'a0initiating and re-initiating a request to a backend server
+\f1\fs24 \
+
+\f0\fs36 - When processing the response from a backend server
+\f1\fs24 \
+
+\f0\fs36 - When finishing an interaction with a backend server\
+\
+Inside the worker, a simplified overview of a sequence of actions leading to the run-loop where the response is generated, looks like the following:
+\f1\fs24 \
+
+\f0\fs36 \
+1. Begin ngx_worker_process_cycle()
+\f1\fs24 \
+
+\f0\fs36 2. Process events with an OS specific mechanisms (such as epoll or kqueue)
+\f1\fs24 \
+
+\f0\fs36 3. Accept events and dispatch the relevant actions
+\f1\fs24 \
+
+\f0\fs36 4. Process/proxy request headers, body
+\f1\fs24 \
+
+\f0\fs36 5. Generate response content (headers, body), stream it to the client
+\f1\fs24 \
+
+\f0\fs36 6. Finalize request
+\f1\fs24 \
+
+\f0\fs36 7. Re-initialize timers and events
+\f1\fs24 \
+
+\f0\fs36 \
+The run-loop itself (steps 5 & 6) ensures incremental generation of a response and streaming it to the client.\
+\
+A more detailed view of an HTTP request processing might look like this:\
+
+\f1\fs24 \
+
+\f0\fs36 a) Init request processing
+\f1\fs24 \
+
+\f0\fs36 b) Process headers
+\f1\fs24 \
+
+\f0\fs36 c) Process body
+\f1\fs24 \
+
+\f0\fs36 d) Call the associated handler
+\f1\fs24 \
+
+\f0\fs36 e) Run through the processing phases
+\f1\fs24 \
+
+\f0\fs36 \
+Which brings us to the phases. When NGINX is handling an HTTP request, it passes it through a number of processing phases. At each phase there's a handler to call. In general, phase\'a0handlers process a request and produce the relevant output. Phase\'a0handlers are attached to the locations defined in the configuration file.\'a0There's always one handler attached to a location.
+\f1\fs24 \
+
+\f0\fs36 \
+Phase handlers typically do four things: get the location configuration, generate an appropriate response, send the header, and send the body.\'a0A handler has one argument, a specific structure describing the request. A request structure has a lot of useful information about the client request, such as the request method, URI, and the headers.
+\f1\fs24 \
+
+\f0\fs36 \
+When the HTTP request headers are read, NGINX does a lookup of the associated virtual server configuration. If the virtual server is found, the request goes through:
+\f1\fs24 \
+
+\f0\fs36 1. Server rewrite phase
+\f1\fs24 \
+
+\f0\fs36 2. Location phase
+\f1\fs24 \
+
+\f0\fs36 3. Location rewrite phase (which can bring the request back to step 2)
+\f1\fs24 \
+
+\f0\fs36 4. Access control phase
+\f1\fs24 \
+
+\f0\fs36 5. Try-files phase
+\f1\fs24 \
+
+\f0\fs36 \
+What NGINX does next is passing the request for processing by a suitable content phase handler. In other words, NGINX makes an attempt to generate the necessary content as a response to the request.\'a0The first handlers to try are\'a0\'97\'a0perl, proxypass, flv and mp4. If the request doesn't match the above content handlers, it goes further to be picked by one of the following handlers\'a0\'97 in this exact order of appearance\'a0\'97\'a0random index,\'a0index,\'a0autoindex,\'a0gzip static, static.
+\f1\fs24 \
+
+\f0\fs36 \
+The details about indexing modules can be found in the reference documentation ({\field{\*\fldinst{HYPERLINK "http://nginx.org/en/docs/"}}{\fldrslt \cf2 \ul \ulc2 http://nginx.org/en/docs/}}), but these are the modules which handle the requests with the trailing slash. If there's no a configuration for a location to pass the request to any specialized module like mp4 or autoindex, the content is considered to be just a file on disk (that is\'a0\'97\'a0static) and is served by "static" content phase handler. It automatically rewrites the URI so that the trailing slash is always there. After the rewrite NGINX does an internal redirect to serve the associated content from storage. Another use of internal redirect is when NGINX processes the request through\'a0X-Accel-Redirect feature.
+\f1\fs24 \
+
+\f0\fs36 \
+After the phase handlers NGINX passes the content to filters. NGINX\'a0filters were designed from scratch, it is not something that was influenced by then existing webservers.\'a0Filters are also attached to to the locations, and there can be several filters configured for a location. Filters do the task of\'a0manipulating the output produced by a handler.\'a0The order of filter execution is determined at the compile time. For the out-of-the-box filters it's predefined, and for a 3rd party development it can be configured at build stage. Currently there's no mechanism in place to write and attach filters to do content transformation on input. In the existing NGINX implementation filters can only do outbound changes. Input filtering is something to appear in the future versions of NGINX.
+\f1\fs24 \
+
+\f0\fs36 \
+Filters follow the design pattern which looks like the following\'a0\'97\'a0a filter gets called, starts working, calls the next filter until the final filter in the chain. After that NGINX finalizes the response.\'a0Filters don't have to wait for the previous filter to finish. Next filter in chain can start its own work as soon as the input from the previous one is available (functionally much like in the Unix pipeline). Filters work with buffers which are usually 4KB long, though it is configurable. In turn, the output response being generated can be passed to the client before the entire response from the backend is received.
+\f1\fs24 \
+
+\f0\fs36 \
+There are header filters and the body filters. NGINX feeds the header and the body of the response to the associated filters separately.
+\f1\fs24 \
+
+\f0\fs36 \
+A header filter consists of three basic steps:\
+
+\f1\fs24 \
+
+\f0\fs36 1. Decide whether to operate on this response
+\f1\fs24 \
+
+\f0\fs36 2. Operate on the response
+\f1\fs24 \
+
+\f0\fs36 3. Call the next filter
+\f1\fs24 \
+
+\f0\fs36 \
+Body filters transform the generated content. Examples of the body filters include:\
+
+\f1\fs24 \
+
+\f0\fs36 - Server-side includes
+\f1\fs24 \
+
+\f0\fs36 - XSLT filtering
+\f1\fs24 \
+
+\f0\fs36 - Image filtering (for instance, resizing images on-the-fly)
+\f1\fs24 \
+
+\f0\fs36 - Charset modification
+\f1\fs24 \
+
+\f0\fs36 - Gzip
+\f1\fs24 \
+
+\f0\fs36 - Chunked encoding
+\f1\fs24 \
+
+\f0\fs36 \
+After the filter chain the response is passed to the writer. Along with the writer there're a couple of additional special purpose filters, namely\'a0\'97\'a0the "copy" filter, and the "postpone" filter. The copy filter is responsible to fill in the memory buffers with the relevant response content which might be stored in a proxy temp directory. Postpone filter is used with subrequests.
+\f1\fs24 \
+
+\f0\fs36 \
+Subrequests are a very important mechanism of request/response processing.\'a0Subrequests are also one of the most powerful aspects of NGINX. With subrequests NGINX can return the results from a different URL, than the client has originally requested.\'a0Some web frameworks call this an "internal redirect." But NGINX goes further\'a0\'97\'a0not only can filters perform\'a0multiple subrequests\'a0and combine the outputs into a single response, but subrequests can be also nested and hierarchical. A subrequest can perform their own sub-subrequest, and sub-subrequest can initiate sub-sub-subrequests. Subrequests can map to files on the hard disk, other handlers, or upstream servers.
+\f1\fs24 \
+
+\f0\fs36 \
+Subrequests are most useful for inserting additional content\'a0based on data from the original response. For example, the SSI (server-side include) module uses a filter to scan the contents of the returned document, and then replaces "include" directives with the contents of the specified URLs. Or it can be an example of making\'a0a filter that treats the entire contents of a document as a URL to be retrieved, and then appends the new document to the URL itself.
+\f1\fs24 \
+
+\f0\fs36 \
+Upstream and load balancers are also worth to describe briefly here. Upstreams are used to implement what can be identified as a content handler which-is-a-reverse-proxy ("proxypass" handler).\'a0Upstream modules mostly do preparation of the request to be sent to a backend (or "upstream") server and gather the response from backend. There're no calls to output filters here, for instance. What an upstream module exactly does is setting callbacks to be\'a0invoked when the backend server is ready to be written to and read from. The following callbacks exist for that:\
+
+\f1\fs24 \
+
+\f0\fs36 1. Crafting a request buffer (or a chain of them) to be sent to the backend
+\f1\fs24 \
+
+\f0\fs36 2. Re-initializing/Resetting the connection\'a0to the backend (which happens right before creating the request again)
+\f1\fs24 \
+
+\f0\fs36 3. Processing the first bits of a backend response, saving pointers to the payload received from the backend
+\f1\fs24 \
+
+\f0\fs36 4. Aborting the requests (which happens when the client terminates prematurely)
+\f1\fs24 \
+
+\f0\fs36 5. Finalizing the request when NGINX finishes to read from the backend
+\f1\fs24 \
+
+\f0\fs36 6. Trimming the response body (e.g. removing a trailer)
+\f1\fs24 \
+
+\f0\fs36 \
+NGINX fully supports persistent connections both on the client side and towards the upstreams. With the persistent connections to the upstream a system administrator should carefully plan and analyze the implications of NGINX frontends keeping permanent HTTP connections to application servers. Persistent connections to upstream backends should be aligned with the backend application functionality and capabilities to avoid blocking any new connections to the backends.
+\f1\fs24 \
+
+\f0\fs36 \
+Load balancer modules attach to the proxypass handler to provide an ability to\'a0choose a backend server, when more than one backend server is eligible. What a load balancer modules does is the following. It registers an enabling configuration file directive, provides additional upstream initialization functions (to resolve upstream names in DNS etc.), initializes the connection structures, decides where to route the requests, updates stats information.\'a0Currently NGINX supports just two standard disciplines for load balancing to\'a0backends\'a0\'97\'a0round-robin and ip-hash.
+\f1\fs24 \
+
+\f0\fs36 \
+Upstream and load balancing handling mechanisms include algorithms to detect failed upstream backends and to re-route the new requests to the remaining ones, albeit a lot of additional work is planned to enhance this functionality. In general,\'a0more work on load balancers is planned, and in the next versions of NGINX the mechanisms of distributing the load across different backends as well as the health checks will be greatly improved.
+\f1\fs24 \
+
+\f0\fs36 \
+There are also a couple of other interesting modules which provide additional set of variables for use in the configuration file. While the variables in NGINX are created and updated across different modules, there are two modules that are entirely dedicated to variables\'a0\'97\'a0namely, "geo" and "map". The "geo" module is used to facilitate tracking of clients based on their ip addresses. This module can create arbitrary variables that depend on the client ip's. The other module which is "map" allows to create variables from variables, essentially providing an ability to do a flexible mapping of hostnames and other run-time variables. This kind of modules we may call the handlers of variables.
+\f1\fs24 \
+
+\f0\fs36 \
+Memory allocation mechanisms implemented in NGINX were also inspired by Apache. A high-level description of NGINX memory management would be the following. For each connection the necessary memory buffers are dynamically allocated, linked, used for storing and manipulating headers and body of the request and the response, and then freed upon connection release. It is very important to note that NGINX tries to avoid copying data in memory as much as possible and most of the data is passed along by pointer values, not by memcpy'ing.
+\f1\fs24 \
+
+\f0\fs36 \
+Going a bit deeper, when the response is generated by a module, the retrieved content is put to a memory buffer which is then added to a buffer chain link. Subsequent processing works with this buffer chain link as well. Buffer chains are quite complicated in NGINX because there are several processing scenarios depending on the module type. For instance, it can be quite tricky to manage the buffers precisely while implementing a body filter module.\'a0Such module can only operate on one buffer (chain link) at a time and it must decide whether to\'a0overwrite\'a0the input buffer,\'a0replace the buffer with a newly allocated buffer, or\'a0insert\'a0a new buffer before or after the buffer in question. To complicate things, sometimes a module will receive several buffers so that it has an\'a0incomplete buffer chain\'a0that it must operate on. However,\'a0at this time NGINX provides only a low-level API for manipulating the buffer chains, so before doing an actual implementation a 3rd party module developer should become really fluent with this obscure part of NGINX.
+\f1\fs24 \
+
+\f0\fs36 \
+One drawback of the above approach is that for the entire life of a connection there are memory buffers allocated. So for long-lived connections some memory is wasted.\'a0At the same time for a keepalive connection NGINX currently maintains only 550 bytes of allocated memory.\'a0An optimization that would be possible in the next releases of NGINX is to re-use memory buffers for the long-lived connections.
+\f1\fs24 \
+
+\f0\fs36 \
+The task of managing memory allocations is done by NGINX pool allocator.\'a0Shared memory areas are used for accept mutex, cache metadata, SSL session cache and the information associated with bandwidth policing and management (limits). There is a slab allocator implemented in NGINX to manage shared memory allocations.\'a0To allow simultaneous safe use of shared memory a number of locking mechanisms are available (mutexes and semaphores).\'a0\'a0In order to organize complex data structures NGINX also provides a reb-black tree implementation. RB-trees are used for instance to keep cache metadata in shared memory, to track non-regex location definitions and in couple of other places.
+\f1\fs24 \
+\
+\pard\pardeftab720\ql\qnatural
+
+\f0\b\fs48 \cf0 Lessons learned
+\f1\b0\fs24 \
+\pard\pardeftab720\ql\qnatural
+
+\f0\fs36 \cf0 \
+The main outcome from almost 10 years of NGINX development is probably that it is possible to architect and implement a better software when you need it, but also just out of curiosity and having more fun. In turn, it might become an attempt which is successful and really appreciated by many thousands of people of similar professions worldwide. So, the author of NGINX encourages the developers of all ages to keep learning and to continue writing good software for the benefits of Internet users.
+\f1\fs24 \
+
+\f0\fs36 \
+Another lesson learned is that architecture-wise it is possible to change the traditional paradigm and to achieve great results. When Igor started to write NGINX\'a0most of the software enabling the Internet already existed, and the architecture of such software followed lots of historical limitations of the operating systems, stemming from BSD and System V. Partially it was the reason of why additional performance optimizations were needed\'a0\'97\'a0for the web software as well. When\'a0many new programming interfaces appeared by the end of the 90's applications were allowed to provide more hints and clues to the operating systems in regards to performance, and it was just the right timing for Igor to jump on and start coding a newly architected webserver.
+\f1\fs24 \
+
+\f0\fs36 \
+What is also notable is how Igor came to a model of multiple single-threaded workers in NGINX to enable good scalability across multiple cores. Ironically, the entire model was developed after unsuccessful attempts of running a multi-threaded prototype of NGINX on then existing FreeBSD and Linux kernels.
+\f1\fs24 \
+
+\f0\fs36 \
+Last but not least, the development should be focused. The Windows version of NGINX is probably a good example on how it's worth it to avoid diluting the development efforts on something that is not either a developer's core competence or the target application. To this date Windows version of NGINX remains mostly like a proof-of-concept and not something fully functional and capable to deliver performance and scalability similar to the Unix versions of NGINX.
+\f1\fs24 \
+}
