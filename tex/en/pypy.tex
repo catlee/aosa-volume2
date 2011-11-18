@@ -4,16 +4,17 @@ PyPy is a Python implementation written in Python.
 
 \begin{aosasect1}{A Little History}
 
-Python was invented by Guido van Rossum in the late 1980s. The original
-implementation is a traditional bytecode interpreter. Since it is written in C,
-it is now called CPython. There are now many other Python implementations. Among
-the most notable are Jython, which is written in Java and allows for interfacing
-with Java code, IronPython, which is written in C\# and interfaces with
-Microsoft's .NET framework, and PyPy. CPython is still the most widely used
-implementation and the only one to support Python 3, the next generation of the
-Python language. This chapter will explain the design decisions in PyPy that
-make it different from other Python implementations and indeed from any other
-dynamic language implementation.
+Python is high-level, dynamic programming langauge. It was invented by Guido van
+Rossum in the late 1980s. The original implementation is a traditional bytecode
+interpreter. Since it is written in C, it is called CPython. There are now many
+other Python implementations. Among the most notable are Jython, which is
+written in Java and allows for interfacing with Java code, IronPython, which is
+written in C\# and interfaces with Microsoft's .NET framework, and PyPy, the
+subject of this chapter. CPython is still the most widely used implementation
+and the only one to support Python 3, the next generation of the Python
+language. This chapter will explain the design decisions in PyPy that make it
+different from other Python implementations and indeed from any other dynamic
+language implementation.
 
 \end{aosasect1}
 
@@ -27,7 +28,8 @@ RPython). The purpose of writing the Python interpreter in RPython is that it
 can be fed to the second major part of PyPy, the RPython translation
 toolchain. The RPython translator takes RPython code and converts it to a
 choosen lower level language, most commonly C. This allows PyPy to be a
-self-hosting implemention.
+self-hosting implemention. As we shall see throughout this chapter, it also
+makes a general dynamic language implementation framework.
 
 \end{aosasect1}
 
@@ -56,41 +58,61 @@ def BINARY_ADD(space):
 The objspace abstraction has numerous advantages. It allows new data type
 implementations to be swapped in and out without modifying the
 interpreter. Also, since the sole way to manipulate objects is through objspace,
-the objspace can intercept, proxy, or record operations on objects. Using this
-property, PyPy has experimented with thunking, where results can be lazily but
-completely transparently computed on demand, and tainting, where any operation
-on a object will raise an exception (useful for passing sensitive data that
-should not be modified). The most important application of objspaces, however,
-will be discussed under the next section about translation.
+the objspace can intercept, proxy, or record operations on objects. Using the
+powerful abstraction of objspaces, PyPy has experimented with are thunking,
+where results can be lazily but completely transparently computed on demand, and
+tainting, where any operation on a object will raise an exception (useful for
+passing sensitive data through untrusted code). The most important application
+of objspaces, however, will be discussed under the next section about
+translation.
+
+The objspace used in a vanilla PyPy interpreter is called the \emph{standard
+  objspace} or std objspace for short. In addition to the abstraction provided
+by the objspace system, the std objspace provides another level of indirection;
+A single data type may have multiple implementations. Operations on data types
+are then dispatched using multimethods. This allows picking the most efficient
+representation for a given piece of data. For example, the Python long type
+(ostensibly a bigint data type) can be represented as a standard machine word
+sized integer when it is small enough, so the memory and computationally less
+efficient arbitrary-precision implementation need only be used when
+necessary. (There's even an implementation of Python integers available using
+tagged pointers.) Container types can also be specialized to certain data
+types. For example, PyPy has an dictionary (Python's hash table data type)
+implementation specialized for strings keys. The fact that the same data type
+can be represented by different implementations is, of course, completely
+transparent to application level code; a dictionary specialized to strings is
+identical to a generic dictionary and will degenerate gracefully if non-string
+keys are put into it.
 
 \end{aosasect1}
 
 \begin{aosasect1}{The RPython Translator}
+\label{sec:translator}
 
 The RPython translator is really a toolchain of several lowering phases that
-reduce RPython to a target language, most commonly C. It is itself written in
-Python and intimately linked to the PyPy Python interpreter for reasons that
-will be illuminated shortly.
+reduce RPython to a target language, typically C. It is itself written in
+(unrestricted) Python and intimately linked to the PyPy Python interpreter for
+reasons that will be illuminated shortly.
 
 The first thing the translator does is load the RPython program into its
 process. (This is done with the normal Python module loading support.) RPython
 imposes a set of restrictions on normal, dynamic Python. For example, functions
 cannot be created at runtime, and a single variable cannot have the possibility
-of holding disparate types, such as an integer and a object instance. When the
-program is loaded by the translator, though, it is running on a normal Python
-interpreter and can use all of Python's dynamic features. PyPy's Python
+of holding incompatible types, such as an integer and a object instance. When
+the program is loaded by the translator, though, it is running on a normal
+Python interpreter and can use all of Python's dynamic features. PyPy's Python
 interpreter, a huge RPython program, makes heavy use of this feature. For
-example, it generates code for multimethod dispatch. The only requirement is
-that the program is valid RPython by the time the translator starts the next
-phase of translation.
+example, it generates code for standard objspace multimethod dispatch. The only
+requirement is that the program is valid RPython by the time the translator
+starts the next phase of translation.
 
 The translator builds flow graphs of the RPython program through a process
 called \emph{abstract interpretation}. Abstract interpretation reuses the PyPy
 Python interpreter to interpret RPython programs in a special objspace called
-the \emph{flow objspace}. Remember, the Python interpreter treats objects in a
+the \emph{flow objspace}. Recall, the Python interpreter treats objects in a
 program like black boxes, calling out to the objspace to perform any
 operation. The flow objspace, instead of the standard set of Python objects, has
-with two objects: variables and constants. Variables represent values not known
+only two objects: variables and constants. Variables represent values not known
 during translation, and constants, obviously, immutable values that are
 known. What is immutable and must be constant in RPython is broader than in
 standard Python. For example, modules, which are emphatically mutable in Python,
@@ -113,7 +135,7 @@ def factorial(n):
 
 The flow-graph for the function looks like \aosafigref{fig.pypy.flowgraph}
 
-\aosafigure{../images/pypy/flowgraph.png}{Program Architecture}{fig.pypy.flowgraph}
+\aosafigure{../images/pypy/flowgraph.png}{Flowgraph of factorail}{fig.pypy.flowgraph}
 
 As you can see, the factorial function has been divided into blocks containing
 the operations the flowspace recorded. Each block has input arguments and a list
@@ -126,26 +148,127 @@ form, or SSA, a intermediate representations commonly used in compilers. The key
 feature of SSA is that every variable is only assigned once.
 
 After a function graph is generated, the annotation phase beings. The annotator
-assigns a type to the result of each SSA operation.
+assigns a type to the result of each SSA operation. Here is the flowgraph of the
+factorial function above after being annotated:
 
-RTyping is the first phase that final target backend matters. The backend
-chooses which type system the program is specialized to. The RTyper currently
-has two type systems: A low level typesystem for backends like C and one for
-higher level typesystems with classes.
+\aosafigure{../images/pypy/flowgraph-annotated.png}{Annotated Flowgraph}{fig.pypy.flowgraph-ann}
+
+The next phase is called RTyping. It is the first part of translation that final
+target backend matters. The backend chooses which type system the program is
+specialized to. The RTyper currently has two type systems: A low level
+typesystem for backends like C and one for higher level typesystems with
+classes. RTyping uses type information from the annotator to expand each
+high-level flow graph operation into low-level ones. For example, for an +add+
+operation with operands annotated as integers will generate an +int\_add+. More
+complication operations like hash table lookups generate function calls.
+
+After Rtyping, some optimizations on the low-level flowgraph are performed. They
+are mostly of the traditional compiler variety like constant folding, store
+sinking, and dead code removal.
+
+The program, now in optimized, low-level flowgraphs, is passed now to the
+backend to generate sources. Before it can generate C code, the C backend has to
+do some additional transformations. RPython is a garabage collected language,
+but C is not, so a garbage collector has to be added. To do this, a garbage
+collector transformer converts the flowgraphs of the program into a garbage
+collected program. PyPy's GC transformers provide an excellent demonstration of
+how translation abstracts away mundane details. In CPython, which uses reference
+counting, the C code of the interpreter has a carefully keep track of references
+to Python objects it is manipulating. This not only hardcodes the garbage
+collection scheme in the entire codebase but is prone to subtle human
+errors. PyPy's GC transformers solve both problems. It allows different garbage
+collection schemes to be swaped in and out seamlessly. Modulo transformer bugs,
+it also never makes reference mistakes or forgets to inform the GC when an
+object is no longer in use. As a result, it is trivial to evaluate the a garbage
+collector implementation (of which PyPy has many), simply by tweaking an option
+at translation.
 
 \end{aosasect1}
 
 \begin{aosasect1}{The PyPy JIT}
 
-The PyPy JIT is actually a JIT generator. The Python interpreter contains only a
-few hints, from which the JIT generator builds a custom JIT.
+Python, like most dynamic languages, has traditionally traded efficiency for
+flexibility. The architecture of PyPy, being especially rich in flexibility and
+abstraction, makes very fast interpretation difficult. The power of the objspace
+and multimethod abstractions are not without a cost. Consequently, the vanilla
+PyPy interpreter peforms up to 4 times than slower CPython. To remedy not only
+this but Python's reputation as a slow language, PyPy has a Just-in-time
+compiler (commonly just JIT). The JIT compiles frequently used codepaths to
+assembly during the runtime of the program.
+
+The PyPy JIT takes advantage PyPy's unique translation architecture described
+above. PyPy actually has no \emph{Python-specific} JIT; it has JIT
+generator. JIT generation is simply another optional pass during
+translation. The Python interpreter contains only a few hints, from which the
+JIT generator builds a custom JIT.
+
+The JIT generator requires only two ``hints'' in the interpreter to produce a
+JIT for it.
+
+The JIT generator is invoked after the RTyping phase of translation. Recall that
+at this point, the program's flowgraphs consist of low-level operations nearly
+ready for target code generation.
+
+How successful have these techniques proven? At the time of this writing, PyPy
+is an (geometric) average of 5 times faster than CPython on a comprehensive
+suite of benchmarks.
+
+The fact that the JIT is not specific to Python means it could be applied to any
+language interpreter written within the Python framework. It is already used
+for Python's regular expression engine.
 
 \end{aosasect1}
 
 \begin{aosasect1}{Design Drawbacks}
+\label{sec:drawbacks}
+
+The levels of abstraction are not always are clear cut as in theory. While
+technically the JIT generator should be able to produce an excellent JIT for a
+language with only the two hints mentioned above, the reality is that it behaves
+better on some code than others. The Python interpreter has seen a lot of work
+towards making it more ``jit-friendly'' including many more hints and even new
+datastructures.
 
 Especially when a bug cannot be reproduced on the untranslated interpreter,
 debugging is difficult.
+
+Translating even a restricted subset of Python to a much lower level language
+like C is not an easy task. The RPython translator is thus a tangled web.
+
+\end{aosasect1}
+
+\begin{aosasect1}{A Note on Process}
+
+In part to combat the complexity of PyPy (see section~\ref{sec:drawbacks}), PyPy
+has adopted several so-called ``agile'' development methodologies. By far the
+most important of these is test-driven development. All new features and bug
+fixes are required to have a test to verify their correctness. PyPy's test
+driver, py.test, was spun off and is now used in many other projects. PyPy also
+has a continuous integration system that runs the test suite and translates the
+interpreter on a variety of platforms. Binaries for all platforms are produced
+daily and the benchmark suite is run.
+
+There is a strong culture of experimentation in the PyPy project. Developers are
+encouraged to make branches in the Mercurial repository. There, ideas in
+development can be refined without destabilizing the main branch. Branches are
+not always successful and our abandoned but if anything, PyPy developers are
+tenacious. Most famously, the current PyPy JIT is the \emph{fith} attempt to add
+a JIT to PyPy!
+
+The PyPy project also prides itself on its visualization tools. The flowgraph
+charts in section~\ref{sec:translator} are one example. PyPy also has tools to,
+for example, show invocation of the garbage collector over time and regular
+expression parse trees. Of special interest is jitviewer, a program allows that
+one to visually peel pack the layers on a JITed function, from Python bytecode
+to JIT IR to assembly.
+
+\end{aosasect1}
+
+\begin{aosasect1}{Conclusions}
+
+The flexibility of (R)Python as an implementation language makes experimenting
+with new language features (or even new languages) easy. At the same time, PyPy
+is the fastest Python implementation today because of its JIT generator.
 
 \end{aosasect1}
 
