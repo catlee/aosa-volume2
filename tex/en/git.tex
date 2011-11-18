@@ -130,6 +130,10 @@ more definite ways than the RCS family. Namely:
 As you can see most DAGs represented in Git are the special case of rooted
 trees.
 
+TODO: Flesh out this section. Overview:
+* This section will describe the two primary classification dimensions to
+Version Control Systems (VCS) today:
+
 This diagram shows two dimensions of VCS variety. Namely distribution mode
 and storage mode.
 
@@ -379,14 +383,15 @@ history and context):
 \end{verbatim}
   \item \code{cat \${GIT\_DIR}/\${MY\_CURRENT\_BRANCH}}
 \begin{verbatim}
-\end{verbatim}
 3bce5b130b17b7ce2f98d17b2998e32b1bc29d68
-\end{aosaitemize}
+\end{verbatim}
   \item \code{git cat-file -p \$(cat \${GIT\_DIR}/\${MY\_CURRENT\_BRANCH})}
-\end{aosasect1}
+\end{aosaitemize}
 
 What we are starting to see here is the content representation inside Git's
 object database.
+
+\end{aosasect1}
 
 \begin{aosasect1}{The Object Database}
 
