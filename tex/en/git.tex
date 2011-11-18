@@ -2,22 +2,22 @@
 
 Work in progress\ldots
 
-Git is an open source distributed Version Control System (dVCS) that was
-born out of the needs and frustrations of the Linux Kernel development
-community in 2005.
-
 Git enables the management of a digital body of work (often,
 but not limited to, code) across a peer-to-peer network of
 collaborating repositories. It supports distributed workflows to
 manage a body of work that is either eventually converging or
 diverging in nature. A feat not easily accomplished
-using a centralized Version Control System (VCS) such as CVS or
-Subversion, the two most popular open source centralized VCS
-projects as well as similar commercial products.
+using a centralized Version Control System (VCS).
 
 \begin{aosasect1}{Git's Origin}
-To understand Git better it is helpful to understand the circumstances
-from which the Git project was started in the Linux Kernel community.
+To understand Git's design philosophy better it is helpful to understand the
+circumstances from which the Git project was started in the Linux Kernel
+community.
+
+Git is an open source distributed Version Control System (dVCS) that was
+born out of the needs and frustrations of the Linux Kernel development
+community in 2005. At that time the Linux kernel codebase had been managed
+across two VCS systems (BitKeeper and CVS) for a few years already.
 
 The Linux Kernel was first released in October 1991. It rapidly grew a
 community of core developers and contributors by the mid-to-late 1990s. Along
@@ -35,10 +35,8 @@ that time.
 
 Between late 1999 and early 2005 many of the core developers of the Linux
 Kernel opted to use BitKeeper, a proprietary distributed VCS made by
-BitMover Inc. This was a contraversial move by arguably the best known open
-source project at that time, a decision questioned by Richard Stallman, the
-GNU project founder. Several key Linux Kernel developers (including Alan Cox)
-refused to use BitKeeper, due to concerns over the proprietary Bitmover
+BitMover Inc. However, several key Linux Kernel developers (including Alan
+Cox) refused to use BitKeeper, due to concerns over the proprietary Bitmover
 license. By 2002 BitMover provided a way for the Linux BitKeeper servers to
 interoperate with the Linux CVS server in a few ways. It offered a
 public release and free use of its servers to a shortlist of free and
@@ -47,14 +45,14 @@ Linux Kernel would be maintained across two VCS systems in this way.
 
 This ended during the first half of 2005, when BitMover retracted its
 "Free Use" version for a number of key Linux Kernel developers and Git
-was born to fill the void.
+was born to fill this void.
 
 In April 2005, days after the BitMover announcement, Linus Torvalds began
 development in haste of what was to become Git as we know it today. He began
-by writing a collection of scripts to help him manage email patches
-to apply one after the other. The aim of this initial collection of scripts
-was to fail merges quickly so the maintainer could modify the codebase mid-
-patch stream and continue merging contributed patches once cleanly able to.
+by writing a collection of scripts to help him manage email patches to apply
+one after the other. The aim of this initial collection of scripts was to
+fail merges quickly so the maintainer could modify the codebase mid-patch
+stream and continue merging contributed patches once cleanly able to.
 
 Torvald's had one philosphical goal for Git - to embody the anti-CVS - plus
 three usability goals from the outset:
@@ -69,8 +67,10 @@ in fundamentally different ways and allows even more distributed and even
 local-only workflows, which weren't possible with BitKeeper.
 
 Around this time (c2005) three other open source distributed VCS projects
-were initiated, including Mercurial, which was a project covered in volume 1
-of this title series.
+were initiated, including Mercurial, which is a project covered in volume 1
+of this title series. All of these dCVS tools offer slightly different ways
+to enable distributed workflows, which centralized VCS systems before them
+were incapable for handling.
 
 \end{aosasect1}
 
@@ -80,6 +80,19 @@ Now is a good time to take a step back and look at the alternative VCS
 solutions to Git. Understanding these differences will allow us to explore
 the architectural choices made while developing Git and appreciating its
 design philosphy.
+
+DIAGRAM HERE!!!
+
+There are three primary distribution modes for VCSes: local, client/server
+and distributed (or peer-to-peer). Some VCSes can support all of these, some
+just one.
+
+On the other axis we can see two primary categories for storage modes:
+delta based and directed acyclic graph based.
+
+We can see, from the diagram, that Git is a VCS that can support local,
+client/server and peer-to-peer distribution modes and uses DAG based content
+storage.
 
 As mentioned previously in this chapter, Git is a distributed VCS. What does
 this mean?
@@ -103,7 +116,7 @@ tenable than its predecessor. Subversion was CVS's successor, which added
 better support for renaming files/folders and also dropped first class
 support of trunking and tags, opting instead for an unenforced repository
 directory structure convention. Subversion continued CVS's centralized
-client/server approach.
+client/server approach, however.
 
 This VCS product family only support linear histories. Where later
 versions supercede earlier versions. Git is not part of this family; there is
@@ -111,7 +124,7 @@ no easy conceptual evolution from Subversion to Git in terms of tracking
 histories or content.
 
 Instead Git enables full branching capability using directed acyclic
-graphs (DAG). The history of a file is linked all the way
+graphs (DAG) to store content. The history of a file is linked all the way
 up its directory structure (via nodes representing directories) to the root
 directory, which is then linked to a commit node. This commit node in turn
 can have one or more parents (more on this later). This affords us two
@@ -127,27 +140,8 @@ more definite ways than the RCS family. Namely:
   RCS family of VCS approach) determine common ancestors.
 \end{aosaitemize}
 
-As you can see most DAGs represented in Git are the special case of rooted
-trees.
-
-TODO: Flesh out this section. Overview:
-* This section will describe the two primary classification dimensions to
-Version Control Systems (VCS) today:
-
-This diagram shows two dimensions of VCS variety. Namely distribution mode
-and storage mode.
-
-DIAGRAM HERE!!!
-
-There are three primary distribution modes for VCSes: local, client/server
-and distributed (or peer-to-peer). Some VCSes can support all of these, some
-just one.
-
-On the other axis we can see two primary categories for storage modes:
-delta based and directed acyclic graph based.
-
-As we can see Git is a VCS that can support local, client/server and
-peer-to-peer distribution modes and uses DAG based content storage.
+DIAGRAM NEEDED HERE!!! (This should show an example of a DAG as described
+above).
 
 \end{aosasect1}
 
