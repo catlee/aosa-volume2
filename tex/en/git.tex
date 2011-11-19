@@ -1,6 +1,7 @@
 \begin{aosachapter}{Git}{s:git}{Susan Potter}
 
-Work in progress\ldots
+
+\begin{aosasect1}{Git in a Nutshell}
 
 Git enables the management of a digital body of work (often,
 but not limited to, code) across a peer-to-peer network of
@@ -8,6 +9,11 @@ collaborating repositories. It supports distributed workflows to
 manage a body of work that is either eventually converging or
 diverging in nature. A feat not easily accomplished
 using a centralized Version Control System (VCS).
+
+This chapter will show how various aspects of Git work under the covers
+to enable this and how this differs from centralized VCSes.
+
+\end{aosasect1}
 
 \begin{aosasect1}{Git's Origin}
 To understand Git's design philosophy better it is helpful to understand the
@@ -62,15 +68,23 @@ three usability goals from the outset:
   \item offer high performance
 \end{aosaitemize}
 
+These original goals have been accomplished and maintained as I will attempt
+to show when dissecting Git's use of DAGs for content storage, its object
+model representatation, its remote protocol and how it tracks the merging
+of trees.
+
 Despite BitKeeper influencing the original design of Git, it is implemented
 in fundamentally different ways and allows even more distributed and even
-local-only workflows, which weren't possible with BitKeeper.
+local-only workflows, which weren't possible with BitKeeper, which requires
+at least one server.
 
 Around this time (c2005) three other open source distributed VCS projects
 were initiated, including Mercurial, which is a project covered in volume 1
 of this title series. All of these dCVS tools offer slightly different ways
 to enable distributed workflows, which centralized VCS systems before them
-were incapable for handling.
+were not capable for handling directly. \emph{Note: Subversion has an
+extension maintained by different developers to support server-to-server
+synchronization named SVK.}
 
 \end{aosasect1}
 
@@ -78,10 +92,9 @@ were incapable for handling.
 
 Now is a good time to take a step back and look at the alternative VCS
 solutions to Git. Understanding these differences will allow us to explore
-the architectural choices made while developing Git and appreciating its
-design philosphy.
+the architectural choices made while developing Git.
 
-DIAGRAM HERE!!!
+DIAGRAM
 
 There are three primary distribution modes for VCSes: local, client/server
 and distributed (or peer-to-peer). Some VCSes can support all of these, some
@@ -123,6 +136,9 @@ versions supercede earlier versions. Git is not part of this family; there is
 no easy conceptual evolution from Subversion to Git in terms of tracking
 histories or content.
 
+\aosafigure{../images/git/dag-example.png}{Example of a DAG representation
+  in Git}{fig.git.dag}
+
 Instead Git enables full branching capability using directed acyclic
 graphs (DAG) to store content. The history of a file is linked all the way
 up its directory structure (via nodes representing directories) to the root
@@ -140,11 +156,7 @@ more definite ways than the RCS family. Namely:
   RCS family of VCS approach) determine common ancestors.
 \end{aosaitemize}
 
-DIAGRAM NEEDED HERE!!! (This should show an example of a DAG as described
-above).
-
 \end{aosasect1}
-
 
 \begin{aosasect1}{The Toolkit}
 
@@ -351,7 +363,7 @@ files under the .git directory (or repository).
 \begin{verbatim}
 ref: refs/heads/master
 \end{verbatim}
-  \item \code{MY\CURRENT\_BRANCH=\$(cat .git/HEAD | sed 's/ref: //g')}
+  \item \code{MY\_CURRENT\_BRANCH=\$(cat .git/HEAD | sed 's/ref: //g')}
   \item \code{cat \${GIT\_DIR}/\${MY\_CURRENT\_BRANCH}}
 \begin{verbatim}
 cat: .git/refs/heads/master: No such file or directory
