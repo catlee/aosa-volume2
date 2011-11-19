@@ -120,10 +120,10 @@ are constants in the flow objspace because they don't exist in RPython and must
 be constant-folded out. As the Python interpreter interprets RPython functions,
 the flow objspace records the operations it is asked to perform. It also takes
 care to record all branches of conditional control flow constructs. The end
-result of abstract interpretation for a function is a flow graph consisting of
+result of abstract interpretation for a function is a flow-graph consisting of
 linked blocks.
 
-An example of the flow graph generating process is in order. Consider a simple
+An example of the flow-graph generating process is in order. Consider a simple
 factorial function
 
 \begin{verbatim}
@@ -135,7 +135,7 @@ def factorial(n):
 
 The flow-graph for the function looks like \aosafigref{fig.pypy.flowgraph}
 
-\aosafigure{../images/pypy/flowgraph.png}{Flowgraph of factorail}{fig.pypy.flowgraph}
+\aosafigure{../images/pypy/flowgraph.png}{Flow-graph of factorail}{fig.pypy.flowgraph}
 
 As you can see, the factorial function has been divided into blocks containing
 the operations the flowspace recorded. Each block has input arguments and a list
@@ -148,7 +148,7 @@ form, or SSA, a intermediate representations commonly used in compilers. The key
 feature of SSA is that every variable is only assigned once.
 
 After a function graph is generated, the annotation phase beings. The annotator
-assigns a type to the result of each SSA operation. Here is the flowgraph of the
+assigns a type to the result of each SSA operation. Here is the flow-graph of the
 factorial function above after being annotated:
 
 \aosafigure{../images/pypy/flowgraph-annotated.png}{Annotated Flowgraph}{fig.pypy.flowgraph-ann}
@@ -158,19 +158,19 @@ target backend matters. The backend chooses which type system the program is
 specialized to. The RTyper currently has two type systems: A low level
 typesystem for backends like C and one for higher level typesystems with
 classes. RTyping uses type information from the annotator to expand each
-high-level flow graph operation into low-level ones. For example, for an +add+
+high-level flow-graph operation into low-level ones. For example, for an +add+
 operation with operands annotated as integers will generate an +int\_add+. More
 complication operations like hash table lookups generate function calls.
 
-After Rtyping, some optimizations on the low-level flowgraph are performed. They
+After Rtyping, some optimizations on the low-level flow-graph are performed. They
 are mostly of the traditional compiler variety like constant folding, store
 sinking, and dead code removal.
 
-The program, now in optimized, low-level flowgraphs, is passed now to the
+The program, now in optimized, low-level flow-graphs, is passed now to the
 backend to generate sources. Before it can generate C code, the C backend has to
 do some additional transformations. RPython is a garabage collected language,
 but C is not, so a garbage collector has to be added. To do this, a garbage
-collector transformer converts the flowgraphs of the program into a garbage
+collector transformer converts the flow-graphs of the program into a garbage
 collected program. PyPy's GC transformers provide an excellent demonstration of
 how translation abstracts away mundane details. In CPython, which uses reference
 counting, the C code of the interpreter has a carefully keep track of references
@@ -198,24 +198,87 @@ assembly during the runtime of the program.
 
 The PyPy JIT takes advantage PyPy's unique translation architecture described
 above. PyPy actually has no \emph{Python-specific} JIT; it has JIT
-generator. JIT generation is simply another optional pass during
-translation. The Python interpreter contains only a few hints, from which the
-JIT generator builds a custom JIT.
+generator. JIT generation is implemented as simply another optional pass during
+translation. A interpreter desiring JIT generation need only make two special
+function calls called ``hints''.
 
-The JIT generator requires only two ``hints'' in the interpreter to produce a
-JIT for it.
+PyPy's JIT is a \emph{tracing JIT}. This means it detects ``hot'' (meaning
+frequently run) loops to optimize by compiling to assembly. When the JIT has
+decided it is going to compile a loop, it records operations in one iteration of
+the loop, a process \emph{tracing}. These operations are subsequently compiled
+to machine code.
+
+As mentioned above, the JIT generator requires only two hints in the interpreter
+to generate a JIT: \verb+merge_point+ and
+\verb+can_enter_jit+. \verb+can_enter_jit+ unsurprisingly tells the JIT where in
+the interpreter a loop starts. In the Python interpreter, this is the end of the
+\verb+JUMP_ABSOLUTE+ bytecode, which occurs at the end of Python \verb+while+
+and \verb+for+ loops. \verb+merge_point+ tells the JIT where it is safe to
+return to the interpreter. This is the beginning of bytecode dispatch in the
+Python interpreter.
 
 The JIT generator is invoked after the RTyping phase of translation. Recall that
-at this point, the program's flowgraphs consist of low-level operations nearly
-ready for target code generation.
+at this point, the program's flow-graphs consist of low-level operations nearly
+ready for target code generation. The JIT generator locates the hints mentioned
+above in the interpreter and replaces them with calls to invoke the JIT during
+runtime. The JIT generator then writes a serialized representation of the
+flow-graph called a jitcode for every function that the interpreter wants
+jitted. The entire interpreter is now described in terms of low-level RPython
+operations. The jitcodes are saved in the final binary for use at runtime.
 
-How successful have these techniques proven? At the time of this writing, PyPy
-is an (geometric) average of 5 times faster than CPython on a comprehensive
-suite of benchmarks.
+At runtime the JIT maintains a counter for every loop that is executed in the
+program. When the loop counter exceeds a configurable threshold, the JIT is
+invoked and tracing begins. The key concept in tracing is the
+\emph{meta-interpreter}. The meta-interpreter executes the jitcodes created in
+translation. It is thus interpreting the main interpreter, hence the name. As it
+traces the loop, it creates a list of the operations it is executing and records
+them in JIT intermediate representation (IR), another instruction format. The
+meta-interpreter is forced to specialize the trace to properties of the current
+iteration. For example, when the meta-interpreter encounters a conditional in
+the jitcode, it naturally has to choose one path. When it makes a choice based
+on runtime information, the meta-interpreter records an IR operation called a
+\emph{guard}. In the case of a conditional, this will be a \verb+guard_true+ or
+\verb+guard_false+ operation on the condition variable. Another place where
+guards are found is arithmetic operations, which will generate overflow guards
+for their results. Essentially, guards codify assumptions the meta-interpreter
+is making as it traces. When assembly is generated, the guards will protect
+assembly being run whose assumptions are not met. Tracing ends when the
+meta-interpreter reaches the same \verb+can_enter_jit+ operation that it started
+tracing with. The loop IR can now be passed to the optimizer.
 
-The fact that the JIT is not specific to Python means it could be applied to any
-language interpreter written within the Python framework. It is already used
-for Python's regular expression engine.
+The JIT optimizer features a few classical compiler optimizations and many
+optimizations specialized for dynamic languages. Among the most important of the
+latter are \emph{virtuals} and \emph{virtualizables}. Virtuals are objects which
+are known not to escape the trace.
+
+Since the instructional format is already quite low-level, actual assembly
+generation is not too difficult. The register allocator is simple; At the
+moment, we think the increased time that would be spent in the backend with a
+more sophisticated register allocation algorithm in exchange for generating
+slightly better code has not been justified. The trickiest portion is garbage
+collector support. The GC has to be made aware of stack roots in the generated
+JIT code. This is accomplished by special support in the GC for dynamic root
+maps.
+
+When a guard fails, the compiled assembly is now longer valid, and control has
+to return to the bytecode interpreter. This bailing out is one of the most
+difficult parts of JIT implementation, since the interpreter state has to be
+reconstructed from the register and stack state at the point the guard
+failed. The failing guard may be in the middle of the execution of a complicated
+opcode, so the interpreter can't just start with the next opcode. PyPy uses
+\emph{blackhole interpreter}. The blackhole interpreter executes jitcodes
+starting from the point of guard failure until the next merge point is reached
+at which point the real interpreter can resume. Its name comes from the fact
+that unlike the meta-interpreter it doesn't record any of the operations it
+executes.
+
+How successful have the techniques used in the PyPy JIT proven? At the time of
+this writing, PyPy is an (geometric) average of 5 times faster than CPython on a
+comprehensive suite of benchmarks.
+
+Most importantly, the fact that the JIT is not specific to Python means it could
+be applied to any language interpreter written within the Python framework. It
+is already used for Python's regular expression engine.
 
 \end{aosasect1}
 
@@ -255,7 +318,7 @@ not always successful and our abandoned but if anything, PyPy developers are
 tenacious. Most famously, the current PyPy JIT is the \emph{fith} attempt to add
 a JIT to PyPy!
 
-The PyPy project also prides itself on its visualization tools. The flowgraph
+The PyPy project also prides itself on its visualization tools. The flow-graph
 charts in section~\ref{sec:translator} are one example. PyPy also has tools to,
 for example, show invocation of the garbage collector over time and regular
 expression parse trees. Of special interest is jitviewer, a program allows that
