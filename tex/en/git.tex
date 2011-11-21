@@ -500,15 +500,34 @@ usability design goal of offering safegaurds against data corruption.
 
 \end{aosasect1}
 
-\begin{aosasect1}{Explaining Resets}
+\begin{aosasect1}{Merge Histories}
 
-TODO: Explain resets in terms of the repository, index and working areas.
+As mentioned previously Git differs fundamentally in merge history approach
+than the RCS family of VCSes. Subversion, for example, represents
+file or tree history has a linear progression. Whatever has a higher revision
+number will supercede anything before it. Branching isn't supported directly,
+only through an unenforced directory structure within the repository.
+
+Let us use an example to show how this can be problematic when maintaining
+multiple branches of a work. When working on a "branch" in Subversion at the
+typical root \code{branches/branch-name}, we are working on directory
+subtree adjacent to the \code{trunk} (typically where the live or
+\emph{master} equivalent code resides within). Let us say this branch is
+to represent parallel development of the \code{trunk} tree.
+
+As an example,
+we might be rewriting a codebase to use a different database. Part of the
+way through our rewrite we wish to merge in upstream changes from the
+\code{trunk} subtree. We merge in these changes, manually if necessary, and
+proceed with our rewrite. The problem with the way linear history VCSes like
+Subversion handle this is that there is no way to know which changesets have
+been merged into this branch from other branches via the changeset history
+built in to the tool.
 
 \end{aosasect1}
 
-\begin{aosasect1}{Distributed Workflows}
+\begin{aosasect1}{Remote Communication}
 
-TODO: Describe some distributed workflows enabled by Git.
 
 \end{aosasect1}
 
