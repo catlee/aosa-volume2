@@ -438,21 +438,65 @@ most useful to enable Git's distributed model (the second goal of Git).
 The latter property enables some safegaurds against corruption (the third
 goal of Git above).
 
-It should be noted that despite the desirable properties of using DAG based
-storage for content tracking it is likely for many repositories that delta
-storage will be more space efficient. Git tackles this by "packing" objects
-in a compressed format using an pack index file to point to offsets to
-specific objects in the corresponding pack file.
-
-TODO: More to discuss here. Use plumbing commands like 'git show' and 'git
-cat-file' to demonstrate how the primitives work together and build on top of
-each other.
+Despite the desirable properties of using DAG based storage for content
+storage and merge histories, for many repositories delta storage will be
+more space efficient than using \emph{loose} DAG objects.
 
 \end{aosasect1}
 
-\begin{aosasect1}{Merging and Rebasing}
+\begin{aosasect1}{Storage and Compression Techniques}
 
-TODO: Step through a merge in diagrams and then contrast this to a rebase.
+Git tackles the storage space problem by "packing" objects in a compressed
+format using an index file to point to offsets to specific objects in the
+corresponding \emph{packed} file.
+
+\aosafigure{../images/git/packed-format.png}{Diagram of a pack file with
+  corresponding index file}{fig.git.pack}
+
+We can count the number of \emph{loose} (or unpacked) objects in the local
+Git repository using \code{git count-objects}. Now we can have Git pack
+\emph{loose} objects in the object database using \code{git repack}. Now we
+can ask Git to remove loose objects already packed using
+\code{git prune-packed}. We can also find redundant pack files in our local
+repository using \code{git pack-redundant}.
+
+On a small sized repository with commits in the order of 100 and number of
+files (or blobs) also in the order of 100 you might see output that looks
+like the following:
+
+\begin{aosaitemize}
+  \item \code{git repack} \newline
+\begin{verbatim}Counting objects: 800, done.
+Delta compression using up to 8 threads.
+Compressing objects: 100% (792/792), done.
+Writing objects: 100% (800/800), done.
+Total 800 (delta 358), reused 0 (delta 0)\end{verbatim}
+  \item \code{git count-objects} \newline
+\begin{verbatim}817 objects, 9004 kilobytes\end{verbatim}
+  \item \code{git prune-packed}
+  \item \code{git count-objects} \newline
+\begin{verbatim}17 objects, 88 kilobytes\end{verbatim}
+  \item \code{git pack-redundant} \newline
+\begin{verbatim}fatal: Zero packs found!\end{verbatim}
+\end{aosaitemize}
+
+There are two versions of pack files as of this writing: version 1 and
+version 2. Version 1 being used in versions of Git before version 1.6 of Git
+and version 2 of the pack file format being used by default in version 1.6
+and above of Git.
+
+In version 1 of the pack file format in Git, only CRC checksums for
+the pack file and index file are stored in the index file. This means there
+is the possibility of undetectable corruption in the compressed data during
+the repacking phase without any further checks. Version 2 of the pack file
+format overcomes this problem by including the CRC checksums of each
+compressed object in the pack index file. Version 2 also allows packfiles
+larger than 4 Gb, which version 1 does not support. As a way to quickly
+detect pack file corruption the end of the pack file contains a 20-byte SHA1
+sum of the ordered list of all the SHAs in that file.
+
+The emphasis of the newer pack file format is to help fulfill Git second
+usability design goal of offering safegaurds against data corruption.
 
 \end{aosasect1}
 
