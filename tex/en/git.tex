@@ -20,19 +20,20 @@ To understand Git's design philosophy better it is helpful to understand the
 circumstances from which the Git project was started in the Linux Kernel
 community.
 
-Git is an open source distributed Version Control System (dVCS) that was
-born out of the needs and frustrations of the Linux Kernel development
-community in 2005. At that time the Linux kernel codebase had been managed
-across two VCS systems (BitKeeper and CVS) for a few years already.
+Git is an open source project that was born out of the needs and
+frustrations of the Linux Kernel development community in 2005. At that time
+the Linux kernel codebase had been managed across two VCS systems (BitKeeper
+and CVS) for a few years already.
 
-The Linux Kernel was first released in October 1991. It rapidly grew a
+The Linux Kernel was first released in late 1991. It rapidly grew a
 community of core developers and contributors by the mid-to-late 1990s. Along
-side individuals adopting Linux there were organisations or teams of
+side individuals adopting Linux there were organisations and teams of
 developers creating Linux distributions based on top of the Linux Kernel
 project by the close of the decade. These distributions would sometimes
 temporarily fork the official version of the kernel if patches relevant to
-their user base were not yet included in the Kernel project when releasing
-new versions of their distribution.
+their user base were not yet included in the Kernel codebase when releasing
+new versions of their distribution thus essentially forking the project and
+then merging upstream changes later on.
 
 By the late 1990s Torvalds and other core developers voiced concerns
 about managing patches from a large number of contributors for the
@@ -61,17 +62,17 @@ fail merges quickly so the maintainer could modify the codebase mid-patch
 stream and continue merging contributed patches once cleanly able to.
 
 Torvald's had one philosphical goal for Git - to embody the anti-CVS - plus
-three usability goals from the outset:
+three usability design goals from the outset:
 \begin{aosaitemize}
   \item support distributed workflows like those enabled by BitKeeper
   \item offer safeguards against content corruption
   \item offer high performance
 \end{aosaitemize}
 
-These original goals have been accomplished and maintained as I will attempt
-to show when dissecting Git's use of DAGs for content storage, its object
-model representatation, its remote protocol and how it tracks the merging
-of trees.
+These design goals have been accomplished and maintained as I will attempt
+to show when dissecting Git's use of DAGs for content storage, reference
+pointers for heads, object model representatation, remote protocol and how
+it tracks the merging of trees.
 
 Despite BitKeeper influencing the original design of Git, it is implemented
 in fundamentally different ways and allows even more distributed and even
@@ -258,10 +259,14 @@ directories:
   working directory.
   \item \emph{Object Database}: the .git/objects directory is the default
   Git object database, which contains all content or pointers to local
-  content.
+  content. All objects are immutable once created.
   \item \emph{References}: the .git/refs directory is the default location
   for storing reference pointers for both local and remote branches, tags and
-  heads.
+  heads. A reference is a pointer to an object, usually of type \emph{tag} or
+  \emph{commit}. References are managed outside of the Object Database to
+  allow the references to change where they point to as the repository
+  evolves. Special cases of references may point to other references, e.g.
+  \code{HEAD}.
 \end{aosaitemize}
 
 This is the actual repository. The directory that contains the working set
