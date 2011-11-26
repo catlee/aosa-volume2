@@ -28,8 +28,9 @@ RPython). The purpose of writing the Python interpreter in RPython is that it
 can be fed to the second major part of PyPy, the RPython translation
 toolchain. The RPython translator takes RPython code and converts it to a
 choosen lower level language, most commonly C. This allows PyPy to be a
-self-hosting implemention. As we shall see throughout this chapter, it also
-makes it a general dynamic language implementation framework.
+self-hosting implementation. As we shall see throughout this chapter, the
+RPython translator also makes PyPy a general dynamic language implementation
+framework.
 
 PyPy's powerful abstractions make it the most flexible Python implementation. It
 has nearly 200 configuration options, which vary from selecting different
@@ -75,7 +76,7 @@ interpreter. Also, since the sole way to manipulate objects is through objspace,
 the objspace can intercept, proxy, or record operations on objects. Using the
 powerful abstraction of objspaces, PyPy has experimented with thunking, where
 results can be lazily but completely transparently computed on demand, and
-tainting, where any operation on a object will raise an exception (useful for
+tainting, where any operation on an object will raise an exception (useful for
 passing sensitive data through untrusted code). The most important application
 of objspaces, however, will be discussed in section~\ref{sec:translator}.
 
@@ -106,7 +107,7 @@ compared C or Java, PyPy developers have found it easiest to use pure app-level
 code for some parts of the interpreter. Consequently, PyPy has support for
 embedding app-level code in the interpreter. For example, the functionality of
 the Python \verb+print+ statement is implemented in app-level Python. Builtin-in
-modules can also be written partially in intep-level code and partially in
+modules can also be written partially in interp-level code and partially in
 app-level code.
 
 \end{aosasect1}
@@ -164,11 +165,11 @@ The flow-graph for the function looks like \aosafigref{fig.pypy.flowgraph}
 
 As you can see, the factorial function has been divided into blocks containing
 the operations the flowspace recorded. Each block has input arguments and a list
-of operations on variables and constants. At the end of the block is a exit
+of operations on variables and constants. At the end of the block is an exit
 switch, which determines which block control flow will pass to based on the
 value of some variable.
 
-Thw flow-graph generated in the flow objspace is in static single assignment
+The flow-graph generated in the flow objspace is in static single assignment
 form, or SSA, an intermediate representation commonly used in compilers. The key
 feature of SSA is that every variable is only assigned once.
 
@@ -187,7 +188,7 @@ operation with operands annotated as integers will generate an +int\_add+ with
 the low-level type system. More complication operations like hash table lookups
 generate function calls.
 
-After Rtyping, some optimizations on the low-level flow-graph are
+After RTyping, some optimizations on the low-level flow-graph are
 performed. They are mostly of the traditional compiler variety like constant
 folding, store sinking, and dead code removal. Python code in general makes
 frequent dynamic memory allocations. RPython, begin a Python derivative,
@@ -202,10 +203,10 @@ on application level Python in the PyPy JIT in section~\ref{sec:jit}. PyPy also
 does inlining. Inlining improves performance and reduces the size of the final
 binary because it allows constant folding to take place.
 
-The program, now in optimized, low-level flow-graphs, is passed now to the
-backend to generate sources. Before it can generate C code, the C backend has to
-do some additional transformations. One of these is exception transformation,
-where exception handling is rewritten to use return values.
+The program, now in optimized, low-level flow-graphs, is passed to the backend
+to generate sources. Before it can generate C code, the C backend must perform
+some additional transformations. One of these is exception transformation, where
+exception handling is rewritten to use manual stack-unwinding.
 
 Another one of the transformations performed by the C backend is adding garbage
 collection. RPython is a garabage collected language, but C is not, so a garbage
@@ -213,18 +214,18 @@ collector has to be added. To do this, a garbage collection transformer converts
 the flow-graphs of the program into a garbage collected program. PyPy's GC
 transformers provide an excellent demonstration of how translation abstracts
 away mundane details. In CPython, which uses reference counting, the C code of
-the interpreter has a carefully keep track of references to Python objects it is
+the interpreter must carefully keep track of references to Python objects it is
 manipulating. This not only hardcodes the garbage collection scheme in the
 entire codebase but is prone to subtle human errors. PyPy's GC transformer
 solves both problems. It allows different garbage collection schemes to be
-swaped in and out seamlessly. It is trivial to evaluate a garbage collector
+swapped in and out seamlessly. It is trivial to evaluate a garbage collector
 implementation (of which PyPy has many), simply by tweaking an option at
 translation. Modulo transformer bugs, it also never makes reference mistakes or
-forgets to inform the GC when an object is no longer in use. The power the GC
+forgets to inform the GC when an object is no longer in use. The power of the GC
 abstraction allows GC implementations that would be practically impossible to
 hardcode in an interpreter. For example, most of PyPy's GC implementations
 require a \emph{write barrier}. A write barrier is a check which must be
-performed every time an GC managed object is placed in another GC-managed array
+performed every time a GC managed object is placed in another GC-managed array
 or struct. The process of inserting write barriers would be laborious and
 fraught with mistakes if done manually but is trivial when done automatically by
 the GC transformer.
@@ -242,9 +243,9 @@ allocation.
 
 Python, like most dynamic languages, has traditionally traded efficiency for
 flexibility. The architecture of PyPy, being especially rich in flexibility and
-abstraction, makes very fast interpretation difficult. The power of the objspace
-and multimethod abstractions are not without a cost. Consequently, the vanilla
-PyPy interpreter peforms up to 4 times than slower CPython. To remedy not only
+abstraction, makes very fast interpretation difficult. The powerful objspace and
+multimethod abstractions do not come without a cost. Consequently, the vanilla
+PyPy interpreter performs up to 4 times than slower CPython. To remedy not only
 this but Python's reputation as a slow language, PyPy has a Just-in-time
 compiler (commonly just JIT). The JIT compiles frequently used codepaths to
 assembly during the runtime of the program.
@@ -288,27 +289,27 @@ traces the loop, it creates a list of the operations it is executing and records
 them in JIT intermediate representation (IR), another instruction format. The
 meta-interpreter is forced to specialize the trace to properties of the current
 iteration. For example, when the meta-interpreter encounters a conditional in
-the jitcode, it naturally has to choose one path. When it makes a choice based
-on runtime information, the meta-interpreter records an IR operation called a
+the jitcode, it naturally must choose one path. When it makes a choice based on
+runtime information, the meta-interpreter records an IR operation called a
 \emph{guard}. In the case of a conditional, this will be a \verb+guard_true+ or
-\verb+guard_false+ operation on the condition variable. Another place where
-guards are found is arithmetic operations, which will generate overflow guards
-for their results. Essentially, guards codify assumptions the meta-interpreter
-is making as it traces. When assembly is generated, the guards will protect
-assembly being run whose assumptions are not met. Tracing ends when the
-meta-interpreter reaches the same \verb+can_enter_jit+ operation that it started
-tracing with. The loop IR can now be passed to the optimizer.
+\verb+guard_false+ operation on the condition variable. Most arithmetic
+operations also have guards, which ensure the operation did not
+overflow. Essentially, guards codify assumptions the meta-interpreter is making
+as it traces. When assembly is generated, the guards will protect assembly from
+being run in an invalid context. Tracing ends when the meta-interpreter reaches
+the same \verb+can_enter_jit+ operation with which it started tracing. The loop
+IR can now be passed to the optimizer.
 
 The JIT optimizer features a few classical compiler optimizations and many
 optimizations specialized for dynamic languages. Among the most important of the
 latter are \emph{virtuals} and \emph{virtualizables}. Virtuals are objects which
-are known not to escape the trace, meaning they are not passed as as arguments
-to an external function call. Structs and constant length arrays can be
-virtuals. Virtuals don't have to be allocated, and their data can be stored
+are known not to escape the trace, meaning they are not passed as arguments to
+an external function call. Structs and constant length arrays can be
+virtuals. Virtuals do not have to be allocated, and their data can be stored
 directly in registers and on the stack. (This is much like the static malloc
-removal phase describe in the paragraph about translation backend
+removal phase described in the paragraph about translation backend
 optimizations.) The virtuals optimization strips away the indirection and memory
-allocations inefficiencies in the Python interpreter. For example, boxed Python
+allocation inefficiencies in the Python interpreter. For example, boxed Python
 integer objects are unboxed into simple word-sized integers by becoming
 virtual. A virtualizable acts much like a virtual but may escape the trace. In
 the Python interpreter, the frame object, which holds variable values and the
@@ -322,17 +323,17 @@ to check if JITed assembly is running. If it is, the JIT is asked to update the
 fields from data in assembly. Additionally when the external call returns to
 JITed code, execution bails back to the interpreter.
 
-When a guard fails, the compiled assembly is now longer valid, and control has
-to return to the bytecode interpreter. This bailing out is one of the most
+When a guard fails, the compiled assembly is now longer valid, and control must
+return to the bytecode interpreter. This bailing out is one of the most
 difficult parts of JIT implementation, since the interpreter state has to be
 reconstructed from the register and stack state at the point the guard
 failed. The failing guard may be in the middle of the execution of a complicated
-opcode, so the interpreter can't just start with the next opcode. PyPy uses
-\emph{blackhole interpreter}. The blackhole interpreter executes jitcodes
-starting from the point of guard failure until the next merge point is reached
-at which point the real interpreter can resume. Its name comes from the fact
-that unlike the meta-interpreter, it doesn't record any of the operations it
-executes.
+opcode, so the interpreter can not just start with the next opcode. To solve
+this, PyPy uses a \emph{blackhole interpreter}. The blackhole interpreter
+executes jitcodes starting from the point of guard failure until the next merge
+point is reached at which point the real interpreter can resume. Its name comes
+from the fact that unlike the meta-interpreter, it doesn't record any of the
+operations it executes.
 
 Since the JIT IR is already quite low-level, actual assembly generation is not
 too difficult. Most operations correspond with only a few x86 assembly
@@ -352,11 +353,11 @@ this writing, PyPy is an (geometric) average of 5 times faster than CPython on a
 comprehensive suite of benchmarks. With the JIT, app-level Python has the
 possibility of being faster than interp-level code. PyPy developers have
 recently had the excellent problem of having to write interp-level loops in
-app-level Python language for performance.
+app-level Python for performance.
 
 Most importantly, the fact that the JIT is not specific to Python means it could
 be applied to any language interpreter written within the Python framework. It
-is already used for Python's regular expression engine. Numpy is a powerful
+is already used for Python's regular expression engine. NumPy is a powerful
 array module for Python used in numerical computing and scientific
 research. PyPy has an experimental reimplementation of NumPy. It harnesses the
 power of the PyPy JIT to speed up operations on arrays. While the numpy
@@ -369,11 +370,12 @@ promising.
 \label{sec:drawbacks}
 
 While it beats C any day, writing in RPython can be a frustrating
-experience. Its implicit typing takes some time to get used to. Not all Python
-language featuress are supported and others are arbitrarily restricted. RPython
-is not specified formally anywhere and what the translator accepts can vary from
-day to day as RPython is adapted to PyPy's needs. It doesn't help that the
-translation often churns for half an hour only to spit out an obscure error.
+experience. Its implicit typing is difficult to get used to at first. Not all
+Python language featuress are supported and others are arbitrarily
+restricted. RPython is not specified formally anywhere and what the translator
+accepts can vary from day to day as RPython is adapted to PyPy's needs. The
+author often manages to create untranslatable programs that translate for half
+an hour only to spit out an obscure error.
 
 The fact the RPython translator is a whole-program analyzer creates some
 practical problems. The smallest change anywhere in translated code requires
@@ -384,7 +386,7 @@ interpreter. The requirement that the whole program be present at translation
 means modules containing RPython cannot be built and loaded separately from the
 core interpreter.
 
-The levels of abstraction in PyPy are not always are clear cut as in
+The levels of abstraction in PyPy are not always as clear cut as in
 theory. While technically the JIT generator should be able to produce an
 excellent JIT for a language with only the two hints mentioned above, the
 reality is that it behaves better on some code than others. The Python
@@ -426,9 +428,9 @@ architecture.
 There is a strong culture of experimentation in the PyPy project. Developers are
 encouraged to make branches in the Mercurial repository. There, ideas in
 development can be refined without destabilizing the main branch. Branches are
-not always successful and our abandoned but if anything, PyPy developers are
-tenacious. Most famously, the current PyPy JIT is the \emph{fith} attempt to add
-a JIT to PyPy!
+not always successful, and some are abandoned. If anything though, PyPy
+developers are tenacious. Most famously, the current PyPy JIT is the \emph{fith}
+attempt to add a JIT to PyPy!
 
 The PyPy project also prides itself on its visualization tools. The flow-graph
 charts in section~\ref{sec:translator} are one example. PyPy also has tools to,
@@ -441,6 +443,7 @@ many layers interact with each other.
 \end{aosasect1}
 
 \begin{aosasect1}{Conclusions}
+
 The Python interpreter treats Python objects as black boxes and leaves all
 behavior to be defined by the objspace. Individual objspaces can provide special
 extended behavior to Python objects. The objspace approach also enables the
@@ -452,9 +455,9 @@ possibly of running PyPy on many different platforms by using different
 backends.
 
 One of the most important uses of the translation architecture is the JIT
-generator. The genericness of the JIT generator allows JITs for new languages
-and sub-langauges like regular expressions to be added. PyPy is the fastest
-Python implementation today because of its JIT generator.
+generator. The generality of the JIT generator allows JITs for new languages and
+sub-langauges like regular expressions to be added. PyPy is the fastest Python
+implementation today because of its JIT generator.
 
 While most of PyPy's development effort has gone into the Python interpreter,
 PyPy can be used for the implementation of any dynamic language. Over the years,
