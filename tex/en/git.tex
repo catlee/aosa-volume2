@@ -1,17 +1,15 @@
 \begin{aosachapter}{Git}{s:git}{Susan Potter}
 
-
 \begin{aosasect1}{Git in a Nutshell}
 
-Git enables the management of a digital body of work (often,
-but not limited to, code) across a peer-to-peer network of
-collaborating repositories. It supports distributed workflows to
-manage a body of work that is either eventually converging or
-diverging in nature. A feat not easily accomplished
-using a centralized Version Control System (VCS).
+Git enables the evolution of a digital body of work (often,
+but not limited to, code) with many collaborators
+using a peer-to-peer network of collaborating repositories. It
+supports distributed workflows to manage a body of work that is
+either eventually converging or temporarily diverging.
 
 This chapter will show how various aspects of Git work under the covers
-to enable this and how this differs from centralized VCSes.
+to enable this and how this differs from other VCSes.
 
 \end{aosasect1}
 
@@ -75,11 +73,11 @@ pointers for heads, object model representatation, remote protocol and how
 it tracks the merging of trees.
 
 Despite BitKeeper influencing the original design of Git, it is implemented
-in fundamentally different ways and allows even more distributed and even
+in fundamentally different ways and allows even more distributed plus
 local-only workflows, which weren't possible with BitKeeper, which requires
-at least one server.
+a server.
 
-Around this time (c2005) three other open source distributed VCS projects
+Around this time (circa 2005) three other open source distributed VCS projects
 were initiated, including Mercurial, which is a project covered in volume 1
 of this title series. All of these dCVS tools offer slightly different ways
 to enable distributed workflows, which centralized VCS systems before them
@@ -89,33 +87,32 @@ synchronization named SVK.}
 
 \end{aosasect1}
 
-\begin{aosasect1}{Version Control System (VCS) Landscape}
+\begin{aosasect1}{Version Control System (VCS) Overview}
 
 Now is a good time to take a step back and look at the alternative VCS
 solutions to Git. Understanding these differences will allow us to explore
 the architectural choices made while developing Git.
 
-DIAGRAM
+\begin{aosasect2}{Fundamental Design Dimensions}
+
+DIAGRAM: depicting three dimensions of major design decisions for a VCS.
 
 There are three primary distribution modes for VCSes: local, client/server
 and distributed (or peer-to-peer). Some VCSes can support all of these, some
-just one.
+just one. Git can support all three modes of distribution.
 
-On the other axis we can see two primary categories for storage modes:
-delta based and directed acyclic graph based.
+Another dimension to major VCS fundamental design decisions is how content
+is stored. There are two primary camps: delta based and directed acyclic
+graph (DAG) based. Each have their benefits and limitations. Git stores its
+content in DAGs.
 
-We can see, from the diagram, that Git is a VCS that can support local,
-client/server and peer-to-peer distribution modes and uses DAG based content
-storage.
+A third design decision is how merge histories are managed. Here there are
+also two primary camps: using a linear model and using directed acyclic
+graphs. Git uses DAGs again, this time for the merge history.
 
-As mentioned previously in this chapter, Git is a distributed VCS. What does
-this mean?
+\end{aosasect2}
 
-On a fundamental level it means that a \emph{work} does not \emph{need} to
-have a centralized, all-knowing repository that will be the only source of
-truth for the \emph{work}. However, that doesn't prevent us for using it in
-this way if we so wish to do so. Though it still may not behave exactly like
-some of the centralized VCS solutions you might be familiar with already.
+\begin{aosasect2}{Version Control System Lineages}
 
 At the heart of every VCS tool is tracking the history of an evolving
 \emph{work}. The Revision Control System (RCS) was one of the first popular
@@ -132,7 +129,7 @@ support of trunking and tags, opting instead for an unenforced repository
 directory structure convention. Subversion continued CVS's centralized
 client/server approach, however.
 
-This VCS product family only support linear histories. Where later
+This VCS product family only support linear histories where later
 versions supercede earlier versions. Git is not part of this family; there is
 no easy conceptual evolution from Subversion to Git in terms of tracking
 histories or content.
@@ -144,7 +141,7 @@ Instead Git enables full branching capability using directed acyclic
 graphs (DAG) to store content. The history of a file is linked all the way
 up its directory structure (via nodes representing directories) to the root
 directory, which is then linked to a commit node. This commit node in turn
-can have one or more parents (more on this later). This affords us two
+can have one or more parents (more on this later). This affords Git two
 properties that allow us to reason about our history and content in
 more definite ways than the RCS family. Namely:
 \begin{aosaitemize}
@@ -157,12 +154,16 @@ more definite ways than the RCS family. Namely:
   RCS family of VCS approach) determine common ancestors.
 \end{aosaitemize}
 
+\end{aosasect2}
+
 \end{aosasect1}
 
 \begin{aosasect1}{The Toolkit}
 
-Today the Git ecosystem posesses many GUIs on a number of operating systems.
-These are mostly built on top of the Git core toolkit.
+Today the Git ecosystem posesses many command-line and UI tools on a number
+of operating systems (including Windows, which was originally barely
+supported). Most of these tools are mostly built on top of the Git core
+toolkit.
 
 Due to the way Git was originally written by Linus and its inception within
 the Linux community it was written with a toolkit design philosphy very much
@@ -178,22 +179,12 @@ communicating between repositories for collaboration.
 While the toolkit design has provided enough commands to offer fine grained
 access to functionality for many scripters, application developers
 complained about the lack of a linkable library for Git. Since the Git binary
-calls die(), it was not reentrant and GUIs, web interfaces or longer running
-services would have to fork/exec a call to the Git binary, which can be slow.
+calls \code{die()}, it is not reentrant and GUIs, web interfaces or longer
+running services would have to fork/exec a call to the Git binary, which can
+be slow.
 
-Shawn Pearce spearheaded an effort to create a linkable Git library with
-more permissive licensing that didn't inhibit use of the library. This was
-called libgit2. It didn't find much traction until a student named, Vincent
-Marti chose it for his Google Summer of Code project last year. Since then
-Vincent and GitHub have continued contributing to the libgit2 project and
-created Ruby bindings for it in a project called Rugged. More recently
-Python bindings around libgit2 have emerged in an open source project
-called pygit2. These three open source projects are maintained independently
-of the Git core project.
-
-As you can see today there is a wide array of ways to integrate with Git.
-From the plumbing portion of the toolkit, procelain layer and now the
-linkable library, libgit2 and its offshoots.
+Work is being done to improve the situation for application developers, see
+\emph{Current And Future Work} section for more information.
 \end{aosasect1}
 
 \begin{aosasect1}{The Repository, Index and Working Areas}
@@ -498,6 +489,11 @@ sum of the ordered list of all the SHAs in that file.
 The emphasis of the newer pack file format is to help fulfill Git second
 usability design goal of offering safegaurds against data corruption.
 
+For remote communication Git calculates the commits and content that needs
+to be sent over the wire to syncrhonize repositories (or just a branch) and
+generates the pack file format on the fly to send back using the desired
+protocol of the client (assuming the server supports it).
+
 \end{aosasect1}
 
 \begin{aosasect1}{Merge Histories}
@@ -508,34 +504,82 @@ file or tree history has a linear progression. Whatever has a higher revision
 number will supercede anything before it. Branching isn't supported directly,
 only through an unenforced directory structure within the repository.
 
-Let us use an example to show how this can be problematic when maintaining
-multiple branches of a work. When working on a "branch" in Subversion at the
-typical root \code{branches/branch-name}, we are working on directory
-subtree adjacent to the \code{trunk} (typically where the live or
-\emph{master} equivalent code resides within). Let us say this branch is
-to represent parallel development of the \code{trunk} tree.
+Let us first use an example to show how this can be problematic when
+maintaining multiple branches of a work. Then we will look at a scenario to
+show its limitations.
+
+When working on a "branch" in Subversion at the typical root
+\code{branches/branch-name}, we are working on directory subtree adjacent to
+the \code{trunk} (typically where the live or \emph{master} equivalent code
+resides within). Let us say this branch is to represent parallel development
+of the \code{trunk} tree.
 
 As an example,
 we might be rewriting a codebase to use a different database. Part of the
-way through our rewrite we wish to merge in upstream changes from the
-\code{trunk} subtree. We merge in these changes, manually if necessary, and
-proceed with our rewrite. The problem with the way linear history VCSes like
-Subversion handle this is that there is no way to know which changesets have
-been merged into this branch from other branches via the changeset history
-built in to the tool.
+way through our rewrite we wish to merge in upstream changes from another
+branch subtree (not trunk). We merge in these changes, manually if necessary,
+and proceed with our rewrite. Later that day we finish our database vendor
+migration code changes on our \code{branches/branch-name} branch and merge
+our changes into \code{trunk}. The problem with the way linear history VCSes
+like Subversion handle this is that there is no way to know that the
+changesets from the other branch are now contained within the trunk.
+
+DAG based merge history VCSes, like Git, handle this case reasonably well.
+Assuming the other branch does not contain commits that have not been merged
+into our database vendor migration branch (say \code{db-migration} in our
+Git repository), we can determine - from the commit object parent
+relationships - that a commit on the \code{db-migration} branch contained
+the \emph{tip} (or HEAD) of the other upstream branch. Note that a commit
+object can have zero or more (bounded by only the abilities of the merger)
+parents. Therefore the merge commit on the \code{db-migration} branch
+\emph{knows} it merged in the current HEAD of the current branch and the
+HEAD of the other upstream branch through the SHA hashes of the parents.
+The same is true of the merge commit in the \code{master} (the \code{trunk}
+equivalent in Git).
+
+DIAGRAM - shows three branches in Git and example commits and their
+relationships to model the above scenario.
+
+A question that is hard to answer definitively using DAG (and linear) based
+merge histories is which commits are contained within each branch. For
+example, in the above scenario we assumed we merged in to each branch all
+the changes from both branches. This may not be the case.
+
+For simpler cases Git has the ability to \emph{cherry pick} commits from
+other branches in to the current branch, assuming the commit can cleanly
+be applied to the branch.
 
 \end{aosasect1}
 
-\begin{aosasect1}{Remote Communication}
+\begin{aosasect1}{Current and Future Work}
 
+As mentioned previously, Git core as we know it today is based on a toolkit
+design philosophy from the Unix world, which is very handy for scripting,
+but less useful for embedding inside or linking with longer running
+applications or services.
 
-\end{aosasect1}
+To combat this Shawn Pearce spearheaded an effort to create a linkable Git
+library with more permissive licensing that didn't inhibit use of the
+library. This was called libgit2. It didn't find much traction until a
+student named, Vincent Marti chose it for his Google Summer of Code project
+last year. Since then Vincent and GitHub have continued contributing to the
+libgit2 project and created Ruby bindings for it in a project called Rugged.
+More recently Python bindings around libgit2 have emerged in an open source
+project called pygit2. These three open source projects are maintained
+independently of the Git core project.
 
-\begin{aosasect1}{Future Work}
+From this effort another related project that allows Git's object database
+to be persisted in a number of different key-value database backends has
+emerged such as Memcached, Redis, SQLite and MySQL (at time of writing).
 
-TODO/NOTES:
-Discuss the work being done now on using different object database backends
-for storage, from Redis, Memcached, SQLite and others.
+As you can see today there is a wide array of ways to use the Git format.
+The face of Git is no longer just the toolkit command line interface of
+the Git Core project, rather it is the repository format and protocol to
+share between repositories.
+
+As of writing, most of these projects have not reached a stable release
+according to their developers, so work in the area still needs to be done,
+but the future of Git appears bright.
 
 \end{aosasect1}
 
