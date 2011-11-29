@@ -58,6 +58,8 @@ The following sections assume a passing familiarity with using GDB
 from the command line; if you're new to GDB, give it a try, and peruse
 the manual.
 
+\end{aosasect1}
+
 \begin{aosasect1}{Origins of GDB}
 
 GDB is an old program.  It came into existence around 1985, written
@@ -111,7 +113,7 @@ To take a simple case of how it all ties together, consider the print
 command from above.  The command interpreter finds the printing code,
 which parses the expression into a simple tree structure and then
 evaluates it by walking the tree.  At some point the evaluator will
-consult the symbol table to find out that \code{positive_variable} is a
+consult the symbol table to find out that \code{positive\_variable} is a
 global variable that is stored at, say, memory address 0x658932.  It
 then calls a target side function to read the four bytes of memory at
 that address, and hands the bytes to a printing function that displays
@@ -587,7 +589,7 @@ GDBserver is 10 times smaller and doesn't need to manage symbol
 tables, so it is very convenient for embedded GNU/Linux usages and the
 like.
 
-\aosafigure{../images/gdb/gdbserver.pdf}{GDBserver}{fig.gdb.gdbserver}
+% \aosafigure{../images/gdb/gdbserver.pdf}{GDBserver}{fig.gdb.gdbserver} FIXME: figure missing from repository
 
 GDB and GDBserver share some code, but while it is an obvious idea to
 encapsulate OS-specific process control, there are practical difficulties
@@ -713,9 +715,11 @@ expected to accompany each feature.
 
 \end{aosasect2}
 
+\end{aosasect1}
+
 \begin{aosasect1}{Lessons Learned}
 
-\begin{aosasect1}{Open Development Wins}
+\begin{aosasect2}{Open Development Wins}
 
 GDB started out as an exemplar of the ``cathedral'' development
 process, in which the maintainer kept close control of the sources,
@@ -762,7 +766,7 @@ debugger running.
 
 \end{aosasect2}
 
-\begin{aosasect1}{Don't Get Too Attached to the Code}
+\begin{aosasect2}{Don't Get Too Attached to the Code}
 
 When you spend a lot of time with a single body of code, and it's an
 important program that also pays the bills, it's easy to get attached
