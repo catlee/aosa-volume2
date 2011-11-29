@@ -1,32 +1,527 @@
-<html>
-  <head>
-    <meta name="provenance" content="$Id$" />
-    <link rel="stylesheet" href="aosa.css" type="text/css" />
-    <title>The Architecture of Open Source Applications, Volume 2: Yocto</title>
-  </head>
-  <body>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML>
+<HEAD>
+	<META HTTP-EQUIV="CONTENT-TYPE" CONTENT="text/html; charset=utf-8">
+	<TITLE>The Architecture of Open Source Applications, Volume 2: Yocto</TITLE>
+	<META NAME="GENERATOR" CONTENT="OpenOffice.org 3.2  (Linux)">
+	<META NAME="CREATED" CONTENT="0;0">
+	<META NAME="CHANGEDBY" CONTENT="Elizabeth Flanagan">
+	<META NAME="CHANGED" CONTENT="20111129;1054500">
+	<META NAME="provenance" CONTENT="$Id$">
+	<META NAME="CHANGEDBY" CONTENT="Elizabeth Flanagan">
+	<META NAME="CHANGEDBY" CONTENT="Elizabeth Flanagan">
+	<META NAME="CHANGEDBY" CONTENT="Elizabeth Flanagan">
+	<META NAME="CHANGEDBY" CONTENT="Elizabeth Flanagan">
+	<STYLE TYPE="text/css">
+	<!--
+		H2.ctl { font-family: "Lohit Hindi" }
+		PRE.cjk { font-family: "DejaVu Sans", monospace }
+		CODE.cjk { font-family: "DejaVu Sans", monospace }
+	-->
+	</STYLE>
+</HEAD>
+<BODY LANG="en-US" DIR="LTR">
+<TABLE CELLPADDING=2 CELLSPACING=2 STYLE="page-break-before: always">
+	<TR>
+		<TD STYLE="; border: none; padding: 0in">
+			<P><FONT COLOR="#000080"><A HREF="../en/index.html"><FONT COLOR="#000080"><IMG SRC="../images/titlebar.jpg" NAME="graphics1" ALIGN=BOTTOM WIDTH=426 HEIGHT=99 BORDER=1></FONT></A></FONT>
+						</P>
+		</TD>
+		<TD STYLE="border: none; padding: 0in">
+			<P STYLE="border: none; padding: 0in"><STRONG><EM>The Architecture
+			of Open Source Applications, Volume 2</EM></STRONG> <STRONG>Amy
+			Brown and Greg Wilson (eds.)</STRONG> 
+			</P>
+		</TD>
+	</TR>
+</TABLE>
+<H1>Architecture of the Poky Build System</H1>
+<H1><A HREF="../en/intro.html#flanagan-elizabeth">Elizabeth
+Flanagan</A></H1>
+<P><!-- Headers are level 2 with the following format:
+<h2>{Chapter#}.{Section#} {Section Title}</h2>
+--><!-- Then mostly normal markup for paragraphs
+<p>Lorem Ipsum...</p>
+--><!-- Example of how to incorporate a diagram
+<div class="figure" id="fig.ffreleng.arch">
+  <img src="../images/ffreleng/diagram.png" alt="[Image Title]" />
+  <p>Figure&nbsp;{Chapter#}.{Section#}: {Image Title}</p>
+</div>
+--><!-- Introduction does not need a section div -->The
+Yocto Project™ is an open source collaborative project that
+provides a common starting point for developers of embedded Linux
+systems to create customized distributions for embedded products in a
+hardware agnostic setting. Sponsored by the Linux Foundation™,
+Yocto is more than a build system. It provides tools, processes,
+templates and methods for developers to rapidly create and deploy
+products for the embedded market.</P>
+<H2 CLASS="western">1.0 Introduction and History</H2>
+<P STYLE="margin-bottom: 0in">In 2001, Sharp Corporation introduced
+the SL-5000 PDA, named Zaurus. It ran the embedded Linux
+distribution, Embedix Plus (known by most developers as Lineo),
+created by Caldera Systems. Not long after the Zaurus's introduction,
+Chris Larsen founded the OpenZaurus Project, as a replacement Linux
+distribution for the SharpROM, based on a build system called
+buildroot.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">With the founding of the project,
+people began contributing many more software packages, as well as
+targets for other devices, and it wasn't long that the build system
+for OpenZaurus began to show fragility. In January 2003, the
+community began discussing a new build system to incorporate the
+community usage model of a generic build system for embedded Linux
+distributions. This would eventually become OpenEmbedded. Chris
+Larsen, Michael Lauer, and Holger Schurig began work on OpenEmbedded
+by porting hundreds of OpenZaurus packages over to the new build
+system.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">The Yocto Project springs from this
+work. At the project's core is the Poky build system, which began as
+a branch of OpenEmbedded. Richard Purdie, the Yocto Project's lead
+architect and a Linux Foundation Fellow, during his work at
+OpenedHand ltd, required a starting off point for OpenedHand's
+embedded Linux efforts and decided to maintain a stabilized branch of
+OpenEmbedded using a core subset of the thousands of OpenEmbedded
+recipes, across a limited set of architectures. OpenedHand ltd. was
+acquired by Intel along with Poky and various pieces of related
+technology.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Over time, with the addition of more
+and more functionality to and around Poky, it slowly coalesced into
+more than just an embedded build system, but into a complete software
+development platform, with Anjunta and Eclipse plugins, a fakeroot
+replacement, profiling tools, and automated runtime image testing, as
+well as QEMU based images. Around November 2010, the Linux Foundation
+announced that this work would all continue under the heading of the
+Yocto Project as a Linux Foundation sponsored project.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">It was then established that Yocto and
+OpenEmbedded would work together and coordinate on a core set of
+package metadata called OECore combining the best of both Poky and
+OpenEmbedded with an increased use of layering for additional
+components. 
+</P>
+<H2 CLASS="western">1.1 Overview of the Poky Build System</H2>
+<P STYLE="margin-bottom: 0in"><SPAN STYLE="font-weight: normal"><BR>The
+Poky build system is the core of the Yocto Project. In Poky's</SPAN>
+<SPAN STYLE="font-weight: normal">default configuration, it can
+provide a starting image footprint that ranges from a shell
+accessible minimal image all the way up to a Linux </SPAN>Standard
+Base compliant image with a GNOME Mobile and Embedded (GMAE) based
+reference UI called Sato. From these base image types, metadata
+layers can be added to extend functionality; Layers can provide an
+additional software stack for an image type, add a board support
+package (BSP) for additional hardware or even represent a new image
+type.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">In order to understand some of the more
+complex issues the Yocto community has encountered, and how they
+developed solutions to them, it is important to have a very generic
+understanding of the Poky build process. Using the 1.1 release of
+Poky, named “edison” (available at
+<A HREF="http://downloads.yoctoproject.org/releases/yocto/yocto-1.1/poky-edison-6.0.tar.bz2">http://downloads.yoctoproject.org/releases/yocto/yocto-1.1/poky-edison-6.0.tar.bz2</A>
+) we will step through what occurs behind the scenes during the
+creation of a custom Linux image.</P>
+<P STYLE="margin-bottom: 0in"><IMG SRC="../images/yocto/aosa1.jpg" NAME="graphics7" ALIGN=LEFT WIDTH=454 HEIGHT=588 BORDER=0><BR CLEAR=LEFT><I>Figure&nbsp;1.0:
+Poky build process</I></P>
+<P STYLE="margin-bottom: 0in">MOVE IMAGE</P>
+<P STYLE="margin-bottom: 0in"><BR>The first step to the build process
+is setting up the shell environment for the build run. This is done
+by sourcing a file, oe-init-build-env, that exists in the root of the
+poky source tree. This sets up the shell environment, creates an
+initial customizable set of configuration files and wraps the bitbake
+runtime with a shell script that Poky uses to determine if the
+minimal system requirements have been met. For example, one of the
+things it will look for is the existence of Pseudo, a fakeroot
+replacement contributed to the Yocto Project by Wind River Systems.
+At this point, 'bitbake core-image-minimal', for example, should be
+able to create a fully functional cross compilation environment and
+then create a Linux image based on the image definition for
+&quot;core-image-minimal&quot; from source as defined in the yocto
+metadata layer.</P>
+<P STYLE="margin-bottom: 0in"><BR>During the creation of our image,
+bitbake will parse it's configuration, include any additional layers,
+classes, tasks or recipes defined and begin by creating a weighted
+dependency chain and a task execution queue. This process provides an
+ordered and weighted task priority map. Bitbake uses this map to
+determine what packages must be built in which order in order to most
+efficiently fulfill compilation dependencies. Tasks needed by the
+most other tasks are weighted higher and thus, run earlier during the
+build process. Bitbake then stores the parsed metadata summaries and
+if on subsequent runs, it determines that the metadata has changed,
+it can reparse only what has changed. The bitbake scheduler and
+parser are some of the more interesting architectural designs of
+bitbake and some of the decisions surrounding them and their
+implementation by bitbake contributors are ones we will be discussing
+later.<BR><BR>From a high level view, bitbake then runs through it's
+weighted task queue, spawning threads (up to the number defined by
+BB_NUMBER_THREADS in conf/local.conf) that begin executing those
+tasks in the predetermined order. The tasks executed during a
+package's buildout may be modified, prepended or appended to through
+it's recipe. The basic, default package task order of execution
+starts by fetching and unpacking package source and then configuring
+and cross-compiling the unpacked source. The compiled source is then
+split up into packages and various calculations are made on the
+compilation result (such as the creation of debug package
+information). The split up packages are then packaged into a
+supported package format; rpm, ipk or deb package formats being
+supported. Bitbake will then begin to use these packages to build the
+root filesystem.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<H2 CLASS="western">1.2 The Poky Build System</H2>
+<P>One of the most powerful aspects of the Poky build system is that
+every aspect of a build is controlled by metadata. Metadata can be
+loosely grouped into configuration files or package recipes.
+Furthermore we can break configuration files down into two types.
+That which configures bitbake and the overall build run and that
+which configures the various layers we use to create different
+configurations of our target image.</P>
+<H2 CLASS="western">1.2.1 Bitbake Layers</H2>
+<P>One concept that the Poky build system uses is that of layers. A
+layer is any grouping of metadata that provides some sort of
+additional functionality. These can be anything from BSP enablement
+to adding an additional image type or including additional software.
+In fact, the core Yocto metadata, meta-yocto, is itself a layer
+applied on top of the OECore metadata layer, meta. 
+</P>
+<P>When working with Poky builds, it is advisable that we split
+functionality into layers. For example, let's say we wanted to create
+a NAS device for the Intel n660 (Crownbay). We wanted our device to
+use x32, the new 32-bit native ABI for x86-64, in order to lower our
+memory footprint. We also want our device to have some custom
+software added to it, for example, a user interface. Given the task
+at hand, we want to split this functionality out into layers; a BSP
+layer for Crownbay, a layer to enable x32, the Yocto Project's
+example NAS layer, called meta-baryon and a UI layer of our own,
+which we will call meta-myproject.</P>
+<P STYLE="margin-bottom: 0in"><IMG SRC="../images/yocto/aosa2.jpg" NAME="graphics2" ALIGN=LEFT WIDTH=653 HEIGHT=367 BORDER=0><BR CLEAR=LEFT><FONT SIZE=2><I>Figure&nbsp;5.0:
+Example of Bitbake layering</I></FONT></P>
+<P><BR><BR>
+</P>
+<P>During the setup of the bitbake environment, by sourcing
+oe-build-init-env, some initial configuration files were generated.
+These configuration files allow us quite a bit of control over how
+and what Poky generates. The first of these configuration files is
+bblayers.conf. This file is what we will use to add additional layers
+in order to build our example project.</P>
+<P><FONT FACE="Courier 10 Pitch"><FONT SIZE=2># LAYER_CONF_VERSION is
+increased each time build/conf/bblayers.conf <BR># changes
+incompatibly <BR>LCONF_VERSION = &quot;4&quot; <BR>BBFILES ?= &quot;&quot;
+<BR>BBLAYERS = &quot; \ <BR>/home/eflanagan/poky/meta \
+<BR>/home/eflanagan/poky/meta-yocto \
+<BR>/home/eflanagan/poky/meta-intel/crownbay \
+<BR>/home/eflanagan/poky/meta-x32 \<BR>/home/eflanagan/poky/meta-baryon
+\ <BR>/home/eflanagan/poky/meta-myproject \ <BR>&quot; </FONT></FONT>
+</P>
+<P STYLE="margin-bottom: 0in"><I>Figure&nbsp;3.0: example
+bblayers.conf</I></P>
+<P><BR><BR>
+</P>
+<P>In order to fully understand layers, we should also look at how
+our layers are actually constructed. Using meta-baryon (from
+<A HREF="git://git.yoctoproject.org/meta-baryon">git://git.yoctoproject.org/meta-baryon</A>)
+as our example layer, we want to examine the layer configuration
+file. This file, conf/layer.conf, is what bitbake parses after it's
+initial parsing of bblayers.conf. From here it adds additional
+recipes, classes and configuration to the build.</P>
+<PRE CLASS="western"><CODE CLASS="western"><FONT FACE="Courier 10 Pitch"><FONT SIZE=2># Layer configuration for meta-baryon layer</FONT></FONT></CODE>
+<CODE CLASS="western"><FONT FACE="Courier 10 Pitch"><FONT SIZE=2># Copyright 2011 Intel Corporation</FONT></FONT></CODE>
+<CODE CLASS="western"><FONT FACE="Courier 10 Pitch"><FONT SIZE=2># We have a conf directory, prepend to BBPATH to prefer our versions</FONT></FONT></CODE>
+<CODE CLASS="western"><FONT FACE="Courier 10 Pitch"><FONT SIZE=2>BBPATH := &quot;${LAYERDIR}:${BBPATH}&quot;</FONT></FONT></CODE>
 
-    <div class="header">
-      <table>
-	<tr>
-	  <td>
-	    <a href="index.html"><img src="../images/titlebar.jpg" alt="The Architecture of Open Source Applications, Volume 2" /></a>
-	  </td>
-	  <td>
-	    <strong><em>The Architecture of Open Source Applications, Volume 2</em></strong>
-	    <br/>
-	    <strong>Amy Brown and Greg Wilson (eds.)</strong>
-	  </td>
-	</tr>
-      </table>
-      <h1 class="chaptitle">Yocto</h1>
-      <h1 class="chapterauthor"><a href="intro.html#flanagan-elizabeth">Elizabeth Flanagan</a></h1>
-    </div>
+<CODE CLASS="western"><FONT FACE="Courier 10 Pitch"><FONT SIZE=2># We have recipes-* directories, add to BBFILES</FONT></FONT></CODE>
+<CODE CLASS="western"><FONT FACE="Courier 10 Pitch"><FONT SIZE=2>BBFILES := &quot;${BBFILES} ${LAYERDIR}/recipes-*/*/*.bb ${LAYERDIR}/recipes-*/*/*.bbappend&quot;</FONT></FONT></CODE>
 
-    <p>Please see <a href="../../../volume1/web/en/wesnoth.html">Wesnoth</a> for formatting ideas.</p>
-
-    <div class="footer">
-    </div>
-
-  </body>
-</html>
+<CODE CLASS="western"><FONT FACE="Courier 10 Pitch"><FONT SIZE=2>BBFILE_COLLECTIONS += &quot;meta-baryon&quot;</FONT></FONT></CODE>
+<CODE CLASS="western"><FONT FACE="Courier 10 Pitch"><FONT SIZE=2>BBFILE_PATTERN_meta-baryon := &quot;^${LAYERDIR}/&quot;</FONT></FONT></CODE>
+<CODE CLASS="western"><FONT FACE="Courier 10 Pitch"><FONT SIZE=2>BBFILE_PRIORITY_meta-baryon = &quot;7&quot;</FONT></FONT></CODE></PRE><P STYLE="margin-bottom: 0in">
+<BR>
+</P>
+<P STYLE="margin-bottom: 0in"><I>Figure&nbsp;4.0: meta-baryon's
+layer.conf</I></P>
+<P><BR><BR>
+</P>
+<P>Examining this file, line by line, we can see that we've define
+five variables. The first, BBPATH, is a PATH-like variable used by
+bitbake that defines the path of the layer using the layers LAYERDIR
+variable. Notice, however, that we've defined BBPATH using the ':='
+operator. This results in BBPATH's contents being expanded
+immediately, rather than when we use the variable as would occur
+during lazy expansion. The next line, defines BBFILES. This variable
+defines the list of recipe files (*.bb and *.bbappend) within this
+layer and is appended to any prior definitions of BBFILE by the
+addition of ${BBFILES} to the variable. 
+</P>
+<P>Next, we define BBFILE_COLLECTIONS, which is a collection of all
+layer names. It uses the '+=' operator in order to denote that we are
+appending the name of the layer “meta-baryon” to this global
+variable. We also define the BBFILE_PATTERN for this layer. This
+variable is again immediately expanded with a regexp. It is used to
+match files from BBFILES into a particular layer, in this case by
+using the base pathname LAYERDIR. Lastly, we define the priority of
+the layer. This is useful as our layer may contain packages that
+another layer may also contain. The use of BBFILE_PRIORITY helps
+bitbake determine which layer's packages has precedence over the
+other.</P>
+<H2 CLASS="western">1.2.2 Configuration Files</H2>
+<P>During the beginning of a build, bitbake's BBCooker class is
+started. The cooker, which we will discuss later, manages the build
+run by 'baking' the 'recipes'. One of the first things the cooker
+does, is attempt to load and parse configuration data. Remember,
+though, that bitbake is looking for two types of configuration data. 
+</P>
+<P>In order to tell the build system where it should find that
+configuration data and in turn where to find the rest of it's
+metadata, the cooker's parseConfigurationFiles method is called. With
+few exceptions, the first configuration files that the cooker looks
+for is bblayers.conf and then it will add those layers to it's
+BBLAYERS variable. It does this because the next file it attempts to
+parse and load is the bitbake.conf file stored in meta/conf and the
+includes it will try to import are relative to each layer in
+BBLAYERS. Bitbake.conf is the main configuration file for bitbake and
+sets up build time variables, such directory structure naming for
+various rootfs directories;  the initial LDFLAGS to be used during
+compile time. Most end users will never touch this file as most
+anything needed to be changed here would be within a recipe context
+as opposed to build wide.  One thing bitbake.conf does however, is it
+also includes other configuration files, relative to each of the
+layers indicated in BBLAYERS.</P>
+<P><FONT FACE="Courier 10 Pitch"><FONT SIZE=2>include conf/site.conf
+<BR>include conf/auto.conf <BR>include conf/local.conf <BR>include
+conf/build/${BUILD_SYS}.conf <BR>include
+conf/target/${TARGET_SYS}.conf <BR>include
+conf/machine/${MACHINE}.conf <BR></FONT></FONT><FONT FACE="Liberation Serif, serif"><FONT SIZE=2>Figure
+3.0</FONT></FONT> <FONT FACE="Liberation Serif, serif"><FONT SIZE=2>Portion
+of bitbake.conf showing included configuration files</FONT></FONT></P>
+<P>Only one of these above included .conf files from bitbake.conf is
+actually created during environment setup. That file, local.conf, is
+used to set global bitbake variables. While any bitbake variable may
+be set within any one of these configuration files that is included
+from bitbake.conf, the Yocto Project and OpenEmbedded have taken it
+as a best practice to use each of these includes for specific
+purposes. For example, for host system specific settings, like proxy
+settings, site.conf is utilized. Auto.conf is generally used as a
+local.conf in autobuilder specific applications, specifically, the
+yocto-autobuilder.</P>
+<P><FONT FACE="Courier 10 Pitch"><FONT SIZE=2>BB_NUMBER_THREADS =
+&quot;14&quot; <BR>PARALLEL_MAKE = &quot;-j 12&quot; <BR>MACHINE ??=
+&quot;crownbay&quot; <BR>DL_DIR ?= &quot;/home/eflanagan/downloads&quot;
+<BR>SSTATE_DIR ?= &quot;/home/eflanagan/sstate-cache&quot; <BR>TMPDIR
+= &quot;${TOPDIR}/tmp&quot; <BR>DISTRO ?= &quot;poky&quot;
+<BR>PACKAGE_CLASSES ?= &quot;package_rpm&quot; <BR>SDKMACHINE ?=
+&quot;i686&quot; <BR>CONF_VERSION = &quot;1&quot; <BR></FONT></FONT><FONT FACE="Liberation Serif, serif"><FONT SIZE=2>Figure
+4.0:</FONT></FONT> <FONT FACE="Liberation Serif, serif"><FONT SIZE=2>Contents
+of an example local.conf file</FONT></FONT></P>
+<P STYLE="margin-bottom: 0in"><SPAN STYLE="font-weight: normal">Now
+that we understand layers and have a general overview of how one can
+configure bitbake through it's configuration files, we can look at
+how we define software packages. All software built during a build
+execution is defined by it's recipe. A recipe is a collection of</SPAN>
+<SPAN STYLE="font-weight: normal">non-executable metadata used by
+bitbake to set variables or define additional build time tasks. An
+example of this can be seen in the recipe for grep. </SPAN>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in; font-weight: normal"><FONT FACE="Courier 10 Pitch"><FONT SIZE=2>DESCRIPTION
+= &quot;GNU grep utility&quot; </FONT></FONT>
+</P>
+<P STYLE="margin-bottom: 0in; font-weight: normal"><FONT FACE="Courier 10 Pitch"><FONT SIZE=2>HOMEPAGE
+= &quot;http://savannah.gnu.org/projects/grep/&quot; </FONT></FONT>
+</P>
+<P STYLE="margin-bottom: 0in; font-weight: normal"><FONT FACE="Courier 10 Pitch"><FONT SIZE=2>BUGTRACKER
+= &quot;http://savannah.gnu.org/bugs/?group=grep&quot; </FONT></FONT>
+</P>
+<P STYLE="margin-bottom: 0in; font-weight: normal"><FONT FACE="Courier 10 Pitch"><FONT SIZE=2>SECTION
+= &quot;console/utils&quot; </FONT></FONT>
+</P>
+<P STYLE="margin-bottom: 0in; font-weight: normal"><FONT FACE="Courier 10 Pitch"><FONT SIZE=2>LICENSE
+= &quot;GPLv3&quot; </FONT></FONT>
+</P>
+<P STYLE="margin-bottom: 0in; font-weight: normal"><FONT FACE="Courier 10 Pitch"><FONT SIZE=2>LIC_FILES_CHKSUM
+= &quot;file://COPYING;md5=8006d9c814277c1bfc4ca22af94b59ee&quot; </FONT></FONT>
+</P>
+<P STYLE="margin-bottom: 0in; font-weight: normal"><FONT FACE="Courier 10 Pitch"><FONT SIZE=2>PR
+= &quot;r0&quot; </FONT></FONT>
+</P>
+<P STYLE="margin-bottom: 0in; font-weight: normal"><FONT FACE="Courier 10 Pitch"><FONT SIZE=2>SRC_URI
+= &quot;${GNU_MIRROR}/grep/grep-${PV}.tar.gz&quot; </FONT></FONT>
+</P>
+<P STYLE="margin-bottom: 0in; font-weight: normal"><FONT FACE="Courier 10 Pitch"><FONT SIZE=2>SRC_URI[md5sum]
+= &quot;03e3451a38b0d615cb113cbeaf252dc0&quot; </FONT></FONT>
+</P>
+<P STYLE="margin-bottom: 0in; font-weight: normal"><FONT FACE="Courier 10 Pitch"><FONT SIZE=2>SRC_URI[sha256sum]
+= &quot;e9118eac72ecc71191725a7566361ab7643edfd3364869a47b78dc934a357970&quot;
+</FONT></FONT>
+</P>
+<P STYLE="margin-bottom: 0in; font-weight: normal"><FONT FACE="Courier 10 Pitch"><FONT SIZE=2>inherit
+autotools gettext </FONT></FONT>
+</P>
+<P STYLE="margin-bottom: 0in; font-weight: normal"><FONT FACE="Courier 10 Pitch"><FONT SIZE=2>EXTRA_OECONF
+= &quot;--disable-perl-regexp&quot; </FONT></FONT>
+</P>
+<P STYLE="margin-bottom: 0in; font-weight: normal"><FONT FACE="Courier 10 Pitch"><FONT SIZE=2>do_configure_prepend
+() { </FONT></FONT>
+</P>
+<P STYLE="margin-bottom: 0in; font-weight: normal"><FONT FACE="Courier 10 Pitch"><FONT SIZE=2>rm
+-f ${S}/m4/init.m4 </FONT></FONT>
+</P>
+<P STYLE="margin-bottom: 0in; font-weight: normal"><FONT FACE="Courier 10 Pitch"><FONT SIZE=2>}
+</FONT></FONT>
+</P>
+<P STYLE="margin-bottom: 0in; font-weight: normal"><FONT FACE="Courier 10 Pitch"><FONT SIZE=2>do_install
+() { </FONT></FONT>
+</P>
+<P STYLE="margin-bottom: 0in; font-weight: normal"><FONT FACE="Courier 10 Pitch"><FONT SIZE=2>autotools_do_install
+</FONT></FONT>
+</P>
+<P STYLE="margin-bottom: 0in; font-weight: normal"><FONT FACE="Courier 10 Pitch"><FONT SIZE=2>install
+-d ${D}${base_bindir} </FONT></FONT>
+</P>
+<P STYLE="margin-bottom: 0in; font-weight: normal"><FONT FACE="Courier 10 Pitch"><FONT SIZE=2>mv
+${D}${bindir}/grep ${D}${base_bindir}/grep.${PN} </FONT></FONT>
+</P>
+<P STYLE="margin-bottom: 0in; font-weight: normal"><FONT FACE="Courier 10 Pitch"><FONT SIZE=2>mv
+${D}${bindir}/egrep ${D}${base_bindir}/egrep.${PN} </FONT></FONT>
+</P>
+<P STYLE="margin-bottom: 0in; font-weight: normal"><FONT FACE="Courier 10 Pitch"><FONT SIZE=2>mv
+${D}${bindir}/fgrep ${D}${base_bindir}/fgrep.${PN} </FONT></FONT>
+</P>
+<P STYLE="margin-bottom: 0in; font-weight: normal"><FONT FACE="Courier 10 Pitch"><FONT SIZE=2>}
+</FONT></FONT>
+</P>
+<P STYLE="margin-bottom: 0in; font-weight: normal"><FONT FACE="Courier 10 Pitch"><FONT SIZE=2>pkg_postinst_${PN}
+() { </FONT></FONT>
+</P>
+<P STYLE="margin-bottom: 0in; font-weight: normal"><FONT FACE="Courier 10 Pitch"><FONT SIZE=2>update-alternatives
+--install ${base_bindir}/grep grep grep.${PN} 100 </FONT></FONT>
+</P>
+<P STYLE="margin-bottom: 0in; font-weight: normal"><FONT FACE="Courier 10 Pitch"><FONT SIZE=2>update-alternatives
+--install ${base_bindir}/egrep egrep egrep.${PN} 100 </FONT></FONT>
+</P>
+<P STYLE="margin-bottom: 0in; font-weight: normal"><FONT FACE="Courier 10 Pitch"><FONT SIZE=2>update-alternatives
+--install ${base_bindir}/fgrep fgrep fgrep.${PN} 100 </FONT></FONT>
+</P>
+<P STYLE="margin-bottom: 0in; font-weight: normal"><FONT FACE="Courier 10 Pitch"><FONT SIZE=2>}
+</FONT></FONT>
+</P>
+<P STYLE="margin-bottom: 0in; font-weight: normal"><FONT FACE="Courier 10 Pitch"><FONT SIZE=2>pkg_prerm_${PN}
+() { </FONT></FONT>
+</P>
+<P STYLE="margin-bottom: 0in; font-weight: normal"><FONT FACE="Courier 10 Pitch"><FONT SIZE=2>update-alternatives
+--remove grep grep.${PN} </FONT></FONT>
+</P>
+<P STYLE="margin-bottom: 0in; font-weight: normal"><FONT FACE="Courier 10 Pitch"><FONT SIZE=2>update-alternatives
+--remove egrep egrep.${PN} </FONT></FONT>
+</P>
+<P STYLE="margin-bottom: 0in; font-weight: normal"><FONT FACE="Courier 10 Pitch"><FONT SIZE=2>update-alternatives
+--remove fgrep fgrep.${PN} </FONT></FONT>
+</P>
+<P STYLE="margin-bottom: 0in; font-weight: normal"><FONT FACE="Courier 10 Pitch"><FONT SIZE=2>}
+</FONT></FONT>
+</P>
+<P STYLE="margin-bottom: 0in"><FONT FACE="Liberation Serif, serif"><FONT SIZE=2>Figure
+3 Contents of the bitbake recipe for grep</FONT></FONT></P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><SPAN STYLE="font-weight: normal">In
+this recipe, metadata, such as the package description, it's license
+and source</SPAN> <SPAN STYLE="font-weight: normal">checksum are set.
+Furthermore, the recipe indicates that the build process utilizes
+autoconf and automake, so it inherits bitbake's autotools
+functionality as defined within the OECore layer's autotools.bbclass.
+Additional tasks are</SPAN> <SPAN STYLE="font-weight: normal">then
+defined, such as one that executes update-alternatives to set the
+default grep to this packages and remove any existing grep, such as
+busybox's grep. With grep,</SPAN> <SPAN STYLE="font-weight: normal">we've
+added an an additional task to be executed prior to do_configure
+called</SPAN> <SPAN STYLE="font-weight: normal">do_configure_prepend.
+Bitbake supports both _prepend and _append as a method to extend task
+functionality.</SPAN> <SPAN STYLE="font-weight: normal">You can also
+see that this recipe includes a task named do_install. This task
+overrides the base autotools_do_install.</SPAN></P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><SPAN STYLE="font-weight: normal">(NOTE:
+Write about pkg_prerm</SPAN></P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><SPAN STYLE="font-weight: normal">Package.bbclass
+injects into appropriately named package.</SPAN></P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><SPAN STYLE="font-weight: normal">)</SPAN></P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<H2 CLASS="western">1.3 Bitbake Architecture</H2>
+<H2 CLASS="western">1.3.1 Bitbake IPC</H2>
+<P STYLE="margin-bottom: 0in"><IMG SRC="../images/yocto/aosa3.jpg" NAME="graphics3" ALIGN=LEFT WIDTH=480 HEIGHT=480 BORDER=0><BR CLEAR=LEFT>Since
+we now know a good deal about how the Poky build system utilizes
+configurations, recipes and layers to create embedded images, we're
+prepared to begin to look under the hood of bitbake and examine how
+this is all combined. Starting with the core bitbake executable,
+bitbake/bin/bitbake, we can begin to see the process bitbake takes to
+begin setting up the infrastructure needed to begin the build. The
+first item of interest is Bitbake's Interprocess Communications
+(IPC). Initially, bitbake had no actual concept of a client-server.
+This functionality was factored into the bitbake design over a period
+of time.  This “shoehorning” in of functionality outside of
+original design specifications is a common occurrence in most active
+open source projects and the success or failure of a architectural
+design is dependent upon how much code refactoring needs to be done
+in order to incorporate feature creep. 
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">All Poky builds are begun by starting a
+user interface instance. The user interface provides a mechanism for
+logging of build output, build status and build progress and
+receiving events from build tasks. The default user interface used is
+knotty, bitbake's “no tty” command line interface. Multiple
+interfaces are also supported, however. One of these additional user
+interfaces is Hob. Hob is the graphical interface to bitbake. In
+addition to the typical functions you would see in the knotty user
+interface, hob brings the ability to modify poky configuration files,
+add additional layers and packages and fully customize a Poky build.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Bitbake user interfaces have the
+ability to send commands to the next module brought up by the bitbake
+exectuable, the bitbake server. Like the user interface, bitbake also
+supports multiple differ different server types, amongst them XMLRPC.
+The default server that most users use when executing bitbake from
+the knotty ui is bitbake's process server. One of the functions of
+bitbake's server is exposing an interface to the user interface that
+allows the user interface to access cooker methods. 
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">After bringing up the server, the
+bitbake executable brings up the cooker. The cooker is a core portion
+of bitbake and is where most of the particularly interesting things
+that occur during a Poky build originate. The cooker is what manages
+the parsing of metadata, initiates the generation of the dependency
+and task trees, fires off events and manages the build. Once the
+cooker is brought up from the bitbake executable, the cooker
+initializes the bitbake datastore and then begins to parse all of
+Poky's configuration files.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<H2 CLASS="western">1.3.2 Bitbake DataStore with Copy-On-Write</H2>
+<P STYLE="margin-bottom: 0in"> 
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<H2 CLASS="western">1.3.3 Bitbake Scheduler</H2>
+<H2 CLASS="western" STYLE="margin-top: 0in; margin-bottom: 0in"><BR>
+</H2>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+</BODY>
+</HTML>
