@@ -80,7 +80,7 @@ of the original plan.
 
 \begin{aosasect1}{Block Diagram}
 
-% \aosafigure{../images/gdb/gdb-structure.pdf}{Overall Structure of GDB}{fig.gdb.structure}
+\aosafigure{../images/gdb/gdb-structure.pdf}{Overall Structure of GDB}{fig.gdb.structure}
 
 At the largest scale, GDB can be said to have two sides to it:
 
@@ -400,38 +400,42 @@ platform-specific files that handled the details of calling
 
 This is not sufficiently flexible for long-running debugging sessions,
 in which the user might switch from local to remote debugging, switch
-from files to live programs, attach and detach, and so forth.
+from files to core dumps to live programs, attach and detach, and so
+forth.
 
 So in 1990 John Gilmore redesigned the target side of GDB to send all
 platform-specific operations through the {\em target vector}, which is
 basically a class of objects, each of what defines the the specifics
-of a type of target.  In practice, each target vector is a structure
-of several dozen function pointers.  Methods ranging from reading of
-memory and registers, to setting parameters for the handling of shared
-libraries.
+of a type of target system.  In practice, each target vector is a
+structure of several dozen function pointers (often called
+``methods''), ranging from the reading and writing of memory and
+registers, to setting parameters for the handling of shared libraries.
 
 In addition, it is often useful to blend methods from several target
 vectors.  For instance, consider the printing of an initialized global
 variable on Unix; before the program starts running, printing should
-still work, but the bytes should come from the executable's .data
-section, and in fact there is a target vector for executable programs
-for which the method simply reads from the file.  But while the
-program is running, the bytes should instead come from the process's
-address space.  So GDB has a ``target stack'' where the live process
-target vector gets pushed on top of the executable's target vector
-when the process starts running, and is then popped when it exits.
+still work, but the bytes should come from the executable's
+@code{.data} section, and in fact there is a target vector for
+executable programs, for which the memory read method simply reads
+from the file.  But while the program is running, the bytes should
+instead come from the process's address space.  So GDB has a ``target
+stack'' where the target vector for processes effectively gets pushed
+on top of the executable's target vector when the process starts
+running, and is then popped when it exits.
 
+% waffling about figure, the current reality is not exactly a stack,
+% and not clear how to present graphically
 % \aosafigure{../images/gdb/target-stack.pdf}{GDB Target Stack}{fig.gdb.targetstack}
 
-While the target vector is an important abstraction of GDB, the target
-stack has not worked out quite so well.  The reality of the target
-stack is that target vectors are not really orthogonal to each other;
-it never makes sense to have a exec,process,exec,corefile combination
-for example, and even if you decided it should mean something, it
-would be very confusing to the hapless user.  So GDB has a notion of
-{\em stratum} in which ``process-like'' target vectors are all one level,
-while ``file-like'' target vectors get assigned to a lower level, and
-target vectors can get inserted as well as pushed and popped.
+In reality, the target stack turns out not to be quite as stack-like
+as one might think.  Target vectors are not really orthogonal to each
+other; it never makes sense to have an ``exec,process,exec,corefile''
+combination for example, and even if you decided it should mean
+something, it would be very confusing to the hapless user.  So GDB has
+a notion of {\em stratum} in which ``process-like'' target vectors are
+all at one stratum, while ``file-like'' target vectors get assigned to
+a lower stratum, and target vectors can get inserted as well as pushed
+and popped.
 
 (Although GDB maintainers don't like the target stack much, no one has
 proposed -- and prototyped -- a better alternative.)
@@ -589,7 +593,7 @@ GDBserver is 10 times smaller and doesn't need to manage symbol
 tables, so it is very convenient for embedded GNU/Linux usages and the
 like.
 
-% \aosafigure{../images/gdb/gdbserver.pdf}{GDBserver}{fig.gdb.gdbserver} FIXME: figure missing from repository
+\aosafigure{../images/gdb/gdbserver.pdf}{GDBserver}{fig.gdb.gdbserver}
 
 GDB and GDBserver share some code, but while it is an obvious idea to
 encapsulate OS-specific process control, there are practical difficulties
