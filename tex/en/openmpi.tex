@@ -370,17 +370,23 @@ Each type of component is enclosed in a {\em framework}.
 A component belongs to exactly one framework, and a framework supports
 exactly one kind of component.
 %
-\aosafigref{fig.openmpi.mca} shows the architectural layout of the
-Open MPI core, its frameworks, and the components that they contain.
+\aosafigref{fig.openmpi.mca} is a template of Open MPI's architectural
+layout; it shows a few of Open MPI's frameworks and some of the
+components that they contain.  The rest of Open MPI's frameworks and
+components are laid out in the same manner.
 %
 Open MPI's set of layers, frameworks, and components is referred to as
 the Modular Component Architecture (MCA).
 
 \aosafigure{../images/openmpi/open-mpi-mca.pdf}{Framework
-  architectural view of Open MPI.  Each framework contains a {\em
-    base} and one or more components.  This structure is replicated in
-  each of the layers shown in
-  \aosafigref{fig.openmpi.layers}.}{fig.openmpi.mca}
+  architectural view of Open MPI, showing just a few of Open MPI's
+  frameworks and components (i.e., plugins).  Each framework contains
+  a {\em base} and one or more components.  This structure is
+  replicated in each of the layers shown in
+  \aosafigref{fig.openmpi.layers}.  The sample frameworks listed in
+  this figure are spread across all three layers: {\tt btl} and {\tt
+    coll} are in the OMPI layer, {\tt plm} is in the ORTE layer, and
+  {\tt timer} is in the OPAL layer.}{fig.openmpi.mca}
 
 Finally, another major advantage of using frameworks and components is
 their inherent composability.  With over 40 frameworks in Open MPI
@@ -940,9 +946,11 @@ so the following is an abbreviated list that will hopefully be useful:
   implementations of the same functionality -- has saved us many
   times, both technically and politically.  Plugins are good.
 
-\item When adding another plugin was not sufficient (for whatever
-  reason), we added a framework instead.  This usually created enough
-  flexibility to solve whatever problem had arisen.
+\item Similarly, we continually add and remove frameworks as
+  necessary.  When developers start arguing about the ``right'' way to
+  implement a new feature, add a framework that fronts components that
+  implement that feature.  Or when newer ideas come along that obsolte
+  older frameworks, don't hesitate to delete such kruft.
 
 \item Space vs.\ time can be an appropriate trade-off.  For example,
   allocating space for $N$ incoming messages can be a net performance
