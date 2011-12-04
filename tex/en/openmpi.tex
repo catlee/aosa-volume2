@@ -356,14 +356,14 @@ component, allowing the rest of the developer community to easily
 compare and contrast. 
 %
 Code comparisons can be done without components, of course, but the
-component concept helps guarantee that all implementations are
-implementing exactly the same API.  Losing components can also easily
-be removed because they are in self-contained directories.
+component concept helps guarantee that all implementations expose
+exactly the same external API, and therefore provide exactly the same
+required semantics.  Losing components can also easily be removed
+because they are in self-contained directories.
 
-As a direct result of the flexibility that it provides provided, the
-component concept is utilized heavily throughout all three layers of
-Open MPI -- in each layer, there are many different types of
-components.
+As a direct result of the flexibility that it provides, the component
+concept is utilized heavily throughout all three layers of Open MPI --
+in each layer, there are many different types of components.
 %
 Each type of component is enclosed in a {\em framework}.
 %
@@ -377,9 +377,10 @@ Open MPI's set of layers, frameworks, and components is referred to as
 the Modular Component Architecture (MCA).
 
 \aosafigure{../images/openmpi/open-mpi-mca.pdf}{Framework
-  architectural view of Open MPI.  Each framework contains a base and
-  one or more components.  This structure is replicated in each of the
-  layers shown in \aosafigref{fig.openmpi.layers}.}{fig.openmpi.mca}
+  architectural view of Open MPI.  Each framework contains a {\em
+    base} and one or more components.  This structure is replicated in
+  each of the layers shown in
+  \aosafigref{fig.openmpi.layers}.}{fig.openmpi.mca}
 
 Finally, another major advantage of using frameworks and components is
 their inherent composability.  With over 40 frameworks in Open MPI
@@ -403,12 +404,12 @@ Framework directories contain at least the following three items:
 \begin{aosaenumerate}
 \item {\em Component interface definition:} A header file named {\tt
     <framework>.h} will be located in the top-level framework
-  directory (e.g., {\tt memory.h}).  This well-known header file
-  defines the interfaces that each component in the framework must
-  support.  This header includes function pointer typedefs for the
-  interface functions, structs for marshaling these function pointers,
-  and any other necessary types, attribute fields, macros,
-  declarations, etc.
+  directory (e.g., the Memory framework contains {\tt
+    memory/memory.h}).  This well-known header file defines the
+  interfaces that each component in the framework must support.  This
+  header includes function pointer typedefs for the interface
+  functions, structs for marshaling these function pointers, and any
+  other necessary types, attribute fields, macros, declarations, etc.
 
 \item {\em Base code}: The {\tt base} subdirectory contains the glue
   code that provides the core functionality of the framework.  The
@@ -419,8 +420,8 @@ Framework directories contain at least the following three items:
 \item {\em Components}: All other subdirectories in the framework
   directory are assumed to be components.  Just like the framework,
   the names of the components are the same names as their
-  subdirectories (e.g., the {\tt posix} subdirectory contains the
-  POSIX component).
+  subdirectories (e.g., the {\tt memory/posix} subdirectory contains
+  the POSIX component in the Memory framework).
 \end{aosaenumerate}
 
 Similar to how like each framework defines the interfaces to which its
@@ -492,10 +493,10 @@ included in the main line Open MPI distribution, etc.
 Some one-of-many frameworks have additional constraints that force
 their one-and-only-one component to be selected at compile time (vs.\
 run time).  Statically linking one-of-many components allows direct
-invocation of its member functions, which may be important in highly
-performance-sensitive functionality.  One example is the {\tt memcpy}
-framework, which provides platform-optimized {\tt memcpy()}
-implementations.
+invocation of its member functions (vs.\ invocation via function
+pointer), which may be important in highly performance-sensitive
+functionality.  One example is the {\tt memcpy} framework, which
+provides platform-optimized {\tt memcpy()} implementations.
 
 Additionally, some frameworks provide functionality that may need to
 be utilized before Open MPI is fully initialized.  
@@ -551,7 +552,7 @@ named {\tt mca\_\-btl\_\-tcp\_\-component}.
 Having templated component symbols both guarantees that there will be
 no name collisions between components, and allows the MCA core to find
 any arbitrary component struct via {\tt dlsym(2)} (or the appropriate
-equivalent for each different operating system).
+equivalent in each supported operating system).
 
 The base component struct contains some logistical information, such
 as the component's formal name, version, framework version adherence,
@@ -563,7 +564,7 @@ run-time compliance and compatibility checking.
 \begin{aosabox}{Base Component Struct}
 \begin{verbatim}
 struct mca_base_component_2_0_0_t {
-    /* Base component struct version number */
+    /* Component struct version number */
     int mca_major_version, mca_minor_version, mca_release_version;
 
     /* The string name of the framework that this component belongs to,
@@ -657,12 +658,13 @@ struct.  See the ``{\tt tuned} Coll Component Struct'' code box.
 struct mca_coll_tuned_component_t {
     /* coll framework-specific component struct */ 
     mca_coll_base_component_2_0_0_t super;
-    
-    /* Priority of this component (set by the user at run-time) */
+
+    /* Tuned component-specific data members */
+    /* Priority of this component */
     int tuned_priority;
     
-    /* Cached decision table */
-    ompi_coll_alg_rule_t *all_base_rules;
+    /* Cached algorithm decision table */
+    ompi_coll_alg_rule_t *alg_rules;
 };
 \end{verbatim}
 \end{aosabox}
@@ -734,7 +736,7 @@ stacks to eek out every possible compute cycle.
 %
 Although these users typically do not want to tinker with the actual
 code of their MPI implementation, they {\em do} want to tinker by
-selecting different algorithms, choosing different resource
+selecting different internal algorithms, choosing different resource
 consumption patterns, or forcing specific network protocols in
 different circumstances.
 
@@ -748,11 +750,12 @@ value and descriptive string defining what the parameter is and how it
 is used.
 %
 The general rule of thumb is that instead of hard-coding constants,
-use an MCA parameter instead, thereby allowing power users to tweak
-the behavior.
+developers use MCA parameters instead, thereby allowing power users to
+tweak run-time behavior.
 
-There are a number of MCA parameters in the three abstraction layers,
-but MCA parameters are much more common in components.
+There are a number of MCA parameters in the base code of the three
+abstraction layers, but the bulk of Open MPI's MCA parameters are
+located in individual components.
 %
 For example, the TCL BTL plugin has a parameter that specifies whether
 only TCPv4 interfaces, only TCPv6 interfaces, or both types of
@@ -768,8 +771,8 @@ Parameter values can be set in multiple ways: on the command line, via
 environment variables, via the Windows registry, or in system- or
 user-level INI-style files.
 
-The MAC parameter system complements the idea of run-time flexibility
-through plugin selection, and proved to be quite valuable to users.
+The MCA parameter system complements the idea of run-time plugin
+selection flexibility, and has proved to be quite valuable to users.
 %
 Although Open MPI developers try hard to choose reasonable defaults
 for a wide variety of situations, every HPC environment is different.
@@ -803,10 +806,10 @@ Message passing performance and resource utilization are the king
 and queen of HPC.
 %
 Open MPI was specifically designed in such a way that it could operate
-that the very bleeding edge of high performance: incredibly low
+at the very bleeding edge of high performance: incredibly low
 latencies for sending short messages, extremely high short message
 injection rates on supported networks, fast ramp-ups to maximum
-bandwidth for large messages, etc.  
+bandwidth for large messages, etc.
 %
 Abstraction is good (for many reasons), but it must be designed with
 care so that it does not get in the way of performance.  Or, put
@@ -852,7 +855,7 @@ else has already written (when such code is compatible with Open
 MPI's BSD licensing).
 %
 Specifically, we have no compunction against either directly re-using
-someone or interfacing to else's code.
+or interfacing to someone else's code.
 
 There is no place for the ``not invented here'' religion when trying
 to solve highly complex engineering problems; it only makes good
@@ -862,7 +865,7 @@ Such re-use frees developers to focus on the problems unique to Open
 MPI; there is no sense re-solving a problem that someone else has
 solved already.
 
-A good example of this kind of code re-use is the Libtool Libltdl
+A good example of this kind of code re-use is the GNU Libtool Libltdl
 package.  Libltdl is a small library that provides a portable API for
 opening DSOs and finding symbols in them.  Libltdl is supported on a
 wide variety of operating systems and environments, including
@@ -897,7 +900,7 @@ common case.
 For example, emphasis is placed on splitting many operations into two
 phases: setup and repeated action.  The assumption is that setup may
 be expensive (meaning: slow).  So do it {\em once} and get it over
-with
+with.
 %
 Optimize for the much more common case: repeated operation.
 
@@ -929,7 +932,7 @@ so the following is an abbreviated list that will hopefully be useful:
 \begin{aosaitemize}
 \item We were fortunate to draw upon 15+ years of HPC research and
   make designs that have (mostly) successfully carried us for more
-  than sever years.  When embarking on a new software project, {\em
+  than eight years.  When embarking on a new software project, {\em
     look to the past}.  Be sure to understand what has already been
   done, why it was done, and what its strengths and weaknesses were.
 
