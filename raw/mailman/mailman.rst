@@ -1,25 +1,25 @@
 A brief history
 ===============
 
-GNU Mailman is free software for managing mailing lists.  Almost everybody who
-writes or uses free and open source software has probably encountered a
+`GNU Mailman`_ is free software for managing mailing lists.  Almost everybody
+who writes or uses free and open source software has probably encountered a
 mailing list.  Mailing lists can be discussion-based or announcement-based,
 with all kinds of variations in between.  Sometimes mailing lists are
-gatewayed to newsgroups on Usenet or Gmane.  Mailing lists typically have
+gatewayed to newsgroups on Usenet or `Gmane`_.  Mailing lists typically have
 archives which contain the historical record of all the messages that have
 been posted to the mailing list.
 
 GNU Mailman has been around since the early '90s, when John Viega wrote the
 first version to connect fans with a band he was friends with in college: the
 Dave Matthews Band.  By the mid-90's, the center of the Python universe had
-moved from CWI in the Netherlands to CNRI in Reston Virginia USA, and we were
-running its mailing list using Majordomo.  Of course, it just wouldn't do for
-the Python world to be running a Perl-based mailing list, and besides, it was
-too difficult to make the changes we needed to Majordomo.  Ken Manheimer was
-instrumental in resurrecting an early version of Mailman from John's failed
-hard drive.  Many excellent developers have contributed to Mailman since then,
-and today, Mark Sapiro is maintaining the stable 2.1 branch, while Barry
-Warsaw concentrates on the new 3.0 version.
+moved from `CWI`_ in the Netherlands to `CNRI`_ in Reston Virginia USA, and we
+were running its mailing list using Majordomo.  Of course, it just wouldn't do
+for the Python world to be running a Perl-based mailing list, and besides, it
+was too difficult to make the changes we needed to Majordomo.  Ken Manheimer
+was instrumental in resurrecting an early version of Mailman from John's
+failed hard drive.  Many excellent developers have contributed to Mailman
+since then, and today, Mark Sapiro is maintaining the stable 2.1 branch, while
+Barry Warsaw concentrates on the new 3.0 version.
 
 Many of the original architectural decisions John made have lived on in the
 code right up until the Mailman 3 branch, and in fact can still be seen in the
@@ -34,11 +34,12 @@ to Mailman's ongoing success:
  * No message should ever get lost
  * No message should ever be delivered twice
 
-In Mailman 2.0 we re-design the message handling system, to ensure that these
-two principles would always be of prime importance.  This part of the system
-has been stable for at least a decade now, and is one of the key reasons that
-Mailman is as ubiquitous as it is today.  Despite modernizing this subsystem
-in Mailman 3, the design and implementation remains largely unchanged.
+In Mailman 2.0 we re-designed the message handling system, to ensure that
+these two principles would always be of prime importance.  This part of the
+system has been stable for at least a decade now, and is one of the key
+reasons that Mailman is as ubiquitous as it is today.  Despite modernizing
+this subsystem in Mailman 3, the design and implementation remains largely
+unchanged.
 
 
 The anatomy of a message
@@ -61,20 +62,32 @@ ASCII English, or just about any language and character set in existence.  The
 basic structure of an email message has been borrowed over and over again for
 other protocols, such as NNTP and HTTP, yet each is slightly different.  Work
 on Mailman has spawned several libraries just to deal with the vagaries of
-this format (often called *RFC822* for the founding IETF standard), and
-development is ongoing even today to fix and improve the email package in the
-Python standard library so that it is more standards-compliant and robust.
+this format (often called *RFC822* for the founding `1982 IETF standard`_),
+and development is ongoing even today to fix and improve the email package in
+the Python standard library so that it is more standards-compliant and robust.
 
 Email messages can act as containers for other types of data, as defined in
 the various MIME standards.  A container *message part* can encode an image,
 some audio, or just about any type of binary or text data.  In mail reader
-applications, these are known as *attachments*.
+applications, these are known as *attachments*.  Figure 1 shows the structure
+of a complex MIME message.  The blue boxes are the container parts, the yellow
+boxes are base 64 encoded binary data, and the red box is a plain text
+message.
+
+.. figure:: MIME.png
+
+   A MIME `multipart/mixed` message containing text, images and an audio file.
 
 Container parts can also be arbitrarily nested; these are called *multiparts*
 and can in fact get quite deep.  But all email messages regardless of their
 complexity can be modeled as a tree, with a single message object at its root.
 Within Mailman, we often refer to this as the *message object tree*, and we
-pass this tree around by reference to the root message object.
+pass this tree around by reference to the root message object.  Figure 2 shows
+the object tree of the above multipart message.
+
+.. figure:: tree.png
+
+   Message object tree of a complex MIME email message.
 
 Mailman will almost always modify the original message in some way.
 Sometimes, the transformations can be fairly benign, such as adding or
@@ -89,11 +102,13 @@ Mailman generally parses the *on the wire* bytes representation of a message
 just once, when it first comes into the system.  From then on, it deals only
 with the message object tree until it's ready to send it back out to the
 outgoing mail server.  It's at that point that Mailman flattens the tree back
-into a bytes representation.  Along the way, Mailman pickles the message
+into a bytes representation.  Along the way, Mailman `pickles`_ the message
 object tree for quick storage to, and reconstruction from, the file system.
-*Pickles* are a Python technology for serializing any Python object, including
-all its subobjects, and it's perfectly suited to optimizing the handling of
-email message object trees.
+*Pickles* are a Python technology for serializing any Python object to a byte
+stream, including all its subobjects, and it's perfectly suited to optimizing
+the handling of email message object trees. *Unpickling* is deserializing this
+byte stream back into a live object.  By storing these byte streams in a file,
+Python programs gain low cost persistence.
 
 
 The mailing list
@@ -114,7 +129,7 @@ most of the operations in Mailman are mailing list-centric, such as:
  * Users post new messages to a specific mailing list.
 
 and so on.  Almost every operation in Mailman takes a mailing list as an
-argument, it's that fundamental.  Mailing list objects have undergone a
+argument - it's that fundamental.  Mailing list objects have undergone a
 radical redesign in Mailman 3 to make them more efficient and to expand their
 flexibility.
 
@@ -134,11 +149,7 @@ provided the methods necessary to support the auto-responder feature.
 This structure was even more useful when it came to the question of
 persistence.  *Persistence* is the storage and retrieval of program state in
 order to preserve it between stops and starts.  Another of John's early design
-decisions was to use Python *pickles* for storing``MailList`` state
-persistence.  *Pickling* is a Python technology for serializing an object's
-state to a byte stream, and *unpickling* is deserializing this byte stream
-back into a live object.  By storing these byte streams in a file, Python
-programs gain low cost persistence.
+decisions was to use Python pickles for storing``MailList`` state persistence.
 
 In Mailman 2, the ``MailList`` object's state is stored in a file called
 ``config.pck``, which is just the pickled representation of the ``MailList``
@@ -185,7 +196,7 @@ system, since membership information was kept in the ``config.pck`` file too.
 
 Another problem was that each ``config.pck`` file lived in a directory named
 after the mailing list, but Mailman was originally designed without
-consideration of virtual domains.  This lead to a very unfortunate problem
+consideration for virtual domains.  This lead to a very unfortunate problem
 where two mailing lists could not have the same name in different domains.
 For example, if you owned both the ``example.com`` and ``example.org``
 domains, and you wanted them to act independently and allow for a different
@@ -716,3 +727,11 @@ Project wiki            : http://wiki.list.org
 Developer mailing list  : mailman-developers@python.org
 Users mailing list      : mailman-users@python.org
 Freenode IRC channel    : #mailman
+
+
+.. _`GNU Mailman`: http://www.list.org
+.. _`Gmane`: http://gmane.org/
+.. _`CWI`: http://www.cwi.nl/
+.. _`CNRI`: http://www.cnri.reston.va.us/
+.. _`1982 IETF standard`: http://www.faqs.org/rfcs/rfc822.html
+.. _`pickles`: http://docs.python.org/library/pickle.html
