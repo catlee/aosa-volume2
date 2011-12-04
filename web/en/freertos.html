@@ -24,40 +24,29 @@
     </div>
 
 <p>
-EDIT: First, some sections read like a brain dump --- e.g., the opening is a lot of interesting material, in what appears to be a random order :-)  I think it's important for readers new to FreeRTOS to find a narrative thread, or a main point or two that you want to highlight that everything else can be structured around.  In your case, I think it might be that there's one core activity ("schedule next activity") that everything else exists to support, and that the whole design of FreeRTOS can be seen as superstructure for that.  If so, say that up front, and keep coming back to it.
-</p>
-
-<p>
 FreeRTOS is an open source real-time operating system (RTOS) for embedded systems.
 </p>
 
 <p>
-Like all operating systems, FreeRTOS's main job is to run tasks. Most of 
-FreeRTOS's code involves prioritizing, scheduling, and running user-defined 
-tasks.
+Like all operating systems, FreeRTOS's main job is to run tasks. Most of FreeRTOS's 
+code involves prioritizing, scheduling, and running user-defined tasks.  Unlike all 
+operating systems, FreeRTOS is a real-time operating system which runs on embedded 
+systems.
 </p>
 
 <p>
-Unlike all operating systems, FreeRTOS is a real-time operating system which runs 
-on embedded systems.
+"Embedded" and "real-time" can mean different things to different people, so let's 
+define them as FreeRTOS uses them.
 </p>
 
 <p>
-"Real-time" and "embedded" can mean different things to different people, so let's 
-define them.
-</p>
-
-<p>
-Embedded systems are computer systems that are designed to do only a few things, 
-like a TV remote control, in-car GPS system, digital watch, or a pacemaker.
-</p>
-
-<p>
-Embedded systems are typically smaller and slower than general purpose computer 
-systems, and are also usually less expensive. A typical low-end embedded system may 
-have an 8-bit CPU running at 25MHz, a few KB of RAM, and maybe 32KB of flash memory.  
-A higher-end embedded system may have a 32-bit CPU running at 750MHz, a GB of RAM, 
-and multiple GB of flash memory.
+Embedded systems are computer systems that are designed to do only a few things, like 
+a TV remote control, in-car GPS system, digital watch, or a pacemaker.  Embedded 
+systems are typically smaller and slower than general purpose computer systems, and 
+are also usually less expensive. A typical low-end embedded system may have an 8-bit 
+CPU running at 25MHz, a few KB of RAM, and maybe 32KB of flash memory.  A higher-end 
+embedded system may have a 32-bit CPU running at 750MHz, a GB of RAM, and multiple GB 
+of flash memory.
 </p>
 
 <p>
@@ -73,8 +62,8 @@ carefully designed to run their tasks on time, every time.
 </p>
 
 <p>
-Because FreeRTOS is a real-time operating system for embedded systems, it is small, 
-simple, and reliable. A typical binary code image is less than 10KB.
+Because FreeRTOS is a real-time operating system for embedded systems, it is designed 
+to be small, simple, and reliable. A typical binary code image is less than 10KB.
 </p>
 
 <p>
@@ -92,16 +81,8 @@ and commercial TCP/IP, file system, and USB components."
 </p>
 
 <p>
-This chapter discusses FreeRTOS version 7.0.1, released on May 13, 2011.
-</p>
-
-<p>
-FreeRTOS is under active development, and has been since Richard Barry started 
-work on it in 2002.
-</p>
-
-<p>
-As for me, I'm not a developer of or contributor to FreeRTOS (yet, anyway), I'm 
+FreeRTOS is under active development, and has been since Richard Barry started work 
+on it in 2002.  As for me, I'm not a developer of or contributor to FreeRTOS, I'm 
 merely a user and a fan. As a result, this chapter will favor the "what" and "how" of 
 FreeRTOS's architecture, with less of the "why" than other chapters in this book.
 </p>
@@ -127,9 +108,9 @@ interesting.
 <h3>999.2.1. FreeRTOS Organization</h3>
 
 <p>
-FreeRTOS is a relatively small application. The minimum core of FreeRTOS is in three 
-source (.c) files and a handful of header files, totalling just under 9000 lines of 
-code, including comments and blank lines.
+FreeRTOS is a relatively small application. The minimum core of FreeRTOS is only 
+three source (.c) files and a handful of header files, totalling just under 9000 
+lines of code, including comments and blank lines.
 </p>
 
 <p>
@@ -138,16 +119,11 @@ interfacing.
 </p>
 
 <div class="subsubsect">
-<h4>999.2.1.1. Job Number One: Jobs. Err, Tasks.</h4>
+<h4>999.2.1.1. Job Number One: Tasks</h4>
 
 <p>
 Almost half of FreeRTOS's core code deals with the central figure in many operating 
-systems: tasks.
-</p>
-
-<p>
-Tasks, jobs, applications, call them what you like, but FreeRTOS calls them
-tasks.
+systems: tasks. A task is a user-defined C function with a given priority.
 </p>
 
 <p>
@@ -158,7 +134,7 @@ creating, scheduling, and maintaining tasks.
 </div>
 
 <div class="subsubsect">
-<h4>999.2.1.2. Job Number Two: I can't hear you... Communication!</h4>
+<h4>999.2.1.2. Job Number Two: Communication</h4>
 
 <p>
 Tasks are good, but tasks that can communicate with each other are even better!  
@@ -167,8 +143,8 @@ FreeRTOS's core code deals with communication.
 </p>
 
 <p>
-<code>queue.c</code> and <code>queue.h</code> handle most FreeRTOS communication.  
-Tasks and interrupts use queues to send data to each other and to signal the use of 
+<code>queue.c</code> and <code>queue.h</code> handle FreeRTOS communication. Tasks 
+and interrupts use queues to send data to each other and to signal the use of 
 critical resources using semaphores and mutexes.
 </p>
 
@@ -178,16 +154,16 @@ critical resources using semaphores and mutexes.
 <h4>999.2.1.3. Job Number Three: The Hardware Whisperer</h4>
 
 <p>
-The ~9000 lines of code that make up the base of FreeRTOS are processor 
-independent.  They don't talk directly to the hardware, they aren't aware of the 
-underlying hardware or processor architecture at all.  The same code runs no matter 
-what processor FreeRTOS is running on, from the humble 8051 to the newest, shiniest 
-ARM core.
+The ~9000 lines of code that make up the base of FreeRTOS are processor independent.  
+They are competely unaware of the underlying hardware or processor architecture.  The 
+same code runs no matter what processor FreeRTOS is running on, from the humble 8051 
+to the newest, shiniest ARM core.
 </p>
 
 <p>
 About 6% of FreeRTOS's core code acts a shim between the processor-independent 
-FreeRTOS core and the processor-dependent code.
+FreeRTOS core and the processor-dependent code. We'll discuss the processor-dependent 
+code in the next section.
 </p>
 
 <p>
@@ -229,14 +205,6 @@ Table 1 summarizes the FreeRTOS core code.
 <h3>999.2.2. Hardware Considerations</h3>
 
 <p>
-EDIT: Sec. 999.2.2: "since it runs on 27+ chip architectures" --- repetition.  What I 
-_really_ want here is some discussion of how this cross-chip portability affects the 
-architecture: is everything neatly encapsulated inside leaf-node #ifdef's?  If so, 
-wow, that must have taken a lot of work to arrange --- how did the rest of the 
-architecture have to be bent and shaped to make that possible?
-</p>
-
-<p>
 If the processor independent FreeRTOS code doesn't talk to the hardware, then who 
 does?  Why, the processor dependent FreeRTOS code, of course!
 </p>
@@ -244,7 +212,7 @@ does?  Why, the processor dependent FreeRTOS code, of course!
 <p>
 The processor independent FreeRTOS layer sits on top of a processor dependent 
 layer.  This processor dependent layer knows how to talk to whatever chip 
-architecture and compiler toolchain you choose.
+architecture and compiler toolchain you choose. This figure shows FreeRTOS's layers:
 </p>
 
 <div class="figure" id="fig.freertos.layers">
@@ -269,14 +237,87 @@ highly functional multicore beast with TCP/IP, a file system, and USB.
 <p>
 Configuration options are selected in <code>FreeRTOSConfig.h</code> by setting 
 various <code>#defines</code>. Clock speed, heap size, mutexes, and API subsets are 
-all configurable in this file, along with a ton of other options.
+all configurable in this file, along with many other options. Here are a few examples 
+that set the maximum number of task priority levels, the CPU frequency, the system 
+tick frequency, the minimal stack size and the total heap size:
+</p>
+
+<pre>
+#define configMAX_PRIORITIES      ( ( unsigned portBASE_TYPE ) 5 )
+#define configCPU_CLOCK_HZ        ( 12000000UL )
+#define configTICK_RATE_HZ        ( ( portTickType ) 1000 )
+#define configMINIMAL_STACK_SIZE  ( ( unsigned short ) 100 )
+#define configTOTAL_HEAP_SIZE     ( ( size_t ) ( 4 * 1024 ) )
+</pre>
+
+<p>
+Hardware-dependent code lives in separate files for each compiler toolchain and CPU 
+architecture. For instance, if you're working with the IAR compiler on an ARM 
+Cortex-M3 chip, the hardware-depenendent code lives in the 
+<code>FreeRTOS/Source/portable/IAR/ARM_CM3/</code> directory.  
+<code>FreeRTOS/Source/portable/IAR/ARM_CM3/portmacro.h</code> declares all of the 
+hardware-specific functions, while <code>port.c</code> and <code>portasm.s</code> in 
+that same directory contain all of the actual hardware-depenendent code. The 
+hardware-independent header file <code>portable.h</code> <code>#include</code>'s the 
+correct <code>portmacro.h</code> file at compile time.  FreeRTOS calls the 
+hardware-specific functions using <code>#define</code>'d functions declared in 
+<code>portmacro.h</code>.
 </p>
 
 <p>
-Many of FreeRTOS's functions are defined as C preprocessor macros using 
-<code>#defines</code>.  For non-embedded applications this is a cardinal sin, but in 
-many smaller embedded systems the overhead for calling a function is not worth the 
-advantages that "real" functions offer.
+Let's look at an example of how FreeRTOS calls a hardware-dependent function. The 
+hardware-independent file <code>tasks.c</code> frequently needs to enter a critical 
+section of code to prevent preemption. Entering a critical section happens 
+differently on different architectures, and the hardware-independent 
+<code>tasks.c</code> does not want to have to understand the hardware-dependent 
+details for how it works. So <code>tasks.c</code> calls the global macro 
+<code>portENTER_CRITICAL()</code>, glad to be ignorant of how it actually works.  
+Assuming we're using the IAR compiler on an ARM Cortex-M3 chip, FreeRTOS is built 
+with the file <code>FreeRTOS/Source/portable/IAR/ARM_CM3/portmacro.h</code> which 
+defines <code>portENTER_CRITICAL()</code> like this:
+</p>
+
+<pre>
+#define portENTER_CRITICAL()   vPortEnterCritical()
+</pre>
+
+<p>
+<code>vPortEnterCritical()</code> is actually defined in 
+<code>FreeRTOS/Source/portable/IAR/ARM_CM3/port.c</code>. The <code>port.c</code> 
+file is hardware-dependent, and contains code that understands the IAR compiler and 
+the Cortex-M3 chip. <code>vPortEnterCritical()</code> enters the critical section 
+using  this hardware-specific knowledge and returns to the hardware-independent 
+<code>tasks.c</code>.
+</p>
+
+<p>
+The <code>portmacro.h</code> file also defines an architecture's basic data types.  
+Data types for basic integer variables, pointers, and the system timer tick data type 
+are defined like this for the IAR compiler on ARM Cortex-M3 chips:
+</p>
+
+<pre>
+#define portBASE_TYPE  long              // Basic integer variable type
+#define portSTACK_TYPE unsigned long     // Pointers to memory locations
+typedef unsigned portLONG portTickType;  // The system timer tick type
+</pre>
+
+<p>
+This method of using data types and functions through thin layers of 
+<code>#defines</code> may seem a bit complicated, but it allows FreeRTOS to be 
+recompiled for a completely different system architecture by changing only the the 
+hardware-dependent files. And if you want to run FreeRTOS on an architecture it 
+doesn't currently support you only have to implement the hardware-dependent 
+functionality, which is much smaller than the hardware-independent part of FreeRTOS.
+</p>
+
+<p>
+As we've seen, FreeRTOS implements hardware-depenent functionality with C 
+preprocessor <code>#define</code> macros. FreeRTOS also uses <code>#define</code> for 
+plenty of hardware-independent code. For non-embedded applications this frequent use 
+of <code>#define</code> is a cardinal sin, but in many smaller embedded systems the 
+overhead for calling a function is not worth the advantages that "real" functions 
+offer.
 </p>
 
 </div>
@@ -284,94 +325,118 @@ advantages that "real" functions offer.
 </div>
 
 <div class="sect">
-<h2>999.3. FreeRTOS Data Structures</h2>
+<h2>999.3. Scheduling Tasks: A Quick Overview</h2>
+
+<div class="subsect">
+<h3>999.3.1. Task Priorities and the Ready List</h3>
+
+<p>
+Each task has a user-assigned priority between 0 (the lowest priority) and the 
+compile-time value of <code>configMAX_PRIORITIES-1</code> (the highest priority). For 
+instance, if <code>configMAX_PRIORITIES</code> is set to 5, then FreeRTOS will use 5 
+priority levels: 0 (lowest priority), 1, 2, 3, and 4 (highest priority).
+</p>
+
+<p>
+FreeRTOS uses an array of task lists to keep track of all tasks that are currently 
+ready to run:
+</p>
+
+<pre>
+static xList pxReadyTasksLists[ configMAX_PRIORITIES ]; /*< Prioritised ready tasks.  */
+</pre>
+
+<p>
+<code>pxReadyTasksLists[0]</code> is a list of all ready priority 0 tasks, 
+<code>pxReadyTasksLists[1]</code> is a list of all ready priority 1 tasks, and so on, 
+all the way up to <code>pxReadyTasksLists[configMAX_PRIORITIES-1]</code>.
+</p>
+
+</div> <!-- end subsect -->
+
+<div class="subsect">
+<h3>999.3.1. The System Tick</h3>
+
+<p>
+The heartbeat of a FreeRTOS system is called the system tick. FreeRTOS configures the 
+system to generate a periodic tick interrupt. The user can configure the tick 
+interrupt frequency, which is typically in the millisecond range.  Every time the 
+tick interrupt fires the <code>vTaskSwitchContext()</code> function is called.  
+<code>vTaskSwitchContext()</code> selects the highest priority ready task and puts it 
+in the <code>pxCurrentTCB</code> variable like this:
+</p>
+
+<pre>
+/* Find the highest priority queue that contains ready tasks. */
+while( listLIST_IS_EMPTY( &( pxReadyTasksLists[ uxTopReadyPriority ] ) ) )
+{
+    configASSERT( uxTopReadyPriority );
+    --uxTopReadyPriority;
+}
+
+/* listGET_OWNER_OF_NEXT_ENTRY walks through the list, so the tasks of the same priority get an equal share of the processor time. */
+listGET_OWNER_OF_NEXT_ENTRY( pxCurrentTCB, &( pxReadyTasksLists[ uxTopReadyPriority ] ) );
+</pre>
+
+<p>
+Before the while loop starts, <code>uxTopReadyPriority</code> is guaranteed to be 
+greater than or equal to the priority of the highest priority ready task. The while() 
+loop starts at priority level <code>uxTopReadyPriority</code> and walks down through 
+the pxReadyTasksLists[] array to find the highest priority level with ready tasks.
+<code>listGET_OWNER_OF_NEXT_ENTRY()</code> then grabs the first ready task from that 
+priority level's ready list.
+</p>
+
+<p>
+Now <code>pxCurrentTCB</code> points to the highest priority task, and when 
+<code>vTaskSwitchContext()</code> returns the processor dependent code starts running 
+that task.
+</p>
+
+<p>
+Those nine lines of code are the absolute crux of FreeRTOS. The other 8900+ lines of 
+FreeRTOS are there to make sure those nine lines are all that's needed to keep the 
+highest priority task running.
+</p>
+
+</div> <!-- end subsect -->
+
+<p>
+Here's a high level picture of what a ready list looks like. This example has three 
+priority levels, with one priority 0 task and three priority 1 tasks.
+</p>
+
+<p>
+EDIT: Add diagram of ready list and tasks here.
+</p>
+
+</div> <!-- end sect -->
+
+
+
+<div class="sect">
+<h2>999.4. FreeRTOS Data Structures</h2>
 
 <p>
 Now that we have the high level overview out of the way, let's dive in to the 
-details.
-</p>
-
-<p>
-In his book "The Mythical Man-Month," [<a 
-  href="bibliography.html#bib:brooks:freertos">Bro95</a>] Fred Brooks famously says: 
-"Show me your flowcharts and conceal your tables, and I shall continue to be 
-mystified.  Show me your tables, and I won't usually need your flowcharts; they'll be 
-obvious."
-</p>
-
-<p>
-The modern-day equivalent of this quote is "Show me your data structures and I 
-won't need your algorithms, they'll be obvious."
-</p>
-
-<p>
-I don't think FreeRTOS's algorithms are necessarily obvious if you understand only 
-the data structures, but understanding FreeRTOS's data structures is a good place to 
-start.
-</p>
-
-<p>
-We'll look at the three main FreeRTOS data structures: Tasks, Lists, and 
-Queues.
+details.  We'll start by looking at the three main FreeRTOS data structures: Tasks, 
+Lists, and Queues.
 </p>
 
 <div class="subsect">
-<h3>999.3.1. Caveats</h3>
+<h3>999.4.1. Tasks</h3>
 
 <p>
-Many of FreeRTOS's basic data types are processor dependent <code>typedefs</code> 
-or <code>#defines</code>.  I've changed those <code>typedefs</code> and 
-<code>#defines</code> to a common data type to make this chapter more readable.
+The main job of all operating systems is to run and coordinate user tasks. Like many 
+operating systems, the basic unit of work in FreeRTOS is "the task." FreeRTOS uses a 
+Task Control Block (TCB) to represent each task. The TCB is defined in tasks.c like 
+this:
 </p>
-
-<p>
-For instance, the basic task priority level data type is 
-<code>portBASE_TYPE</code>.  This type usually resolves to an <code>unsigned 
-  short</code> or an <code>unsigned long</code> type, but I'm simply going to call it 
-an <code>unsigned int</code>.  This gets the point across without getting bogged down 
-in unfamiliar <code>portBASE_TYPE</code>, <code>portSTACK_TYPE</code>, and 
-<code>portTickType</code> definitions, and also lets us ignore whether a type is a 
-<code>short</code> or <code>long</code>. For our purposes it just doesn't matter.
-</p>
-
-<p>
-Also, I'm going to omit some optional data structure members for clarity's 
-sake.
-</p>
-
-<p>
-EDIT: And are you sure you can't show actual code?  Do the optional parts of data 
-structures not give insight into architecture?
-</p>
-
-<p>
-Don't be surprised if the actual FreeRTOS code looks a bit different than what is 
-shown here. The changes are aesthetic only, no content was harmed in the making of 
-this chapter.
-</p>
-
-</div>
-
-<div class="subsect">
-<h3>999.3.2. Tasks</h3>
-
-<p>
-The main job of all operating systems is to run and coordinate user tasks.
-</p>
-
-<p>
-Like many operating systems, the basic unit of work in FreeRTOS is "the task." 
-</p>
-
 
 <p>
 EDIT: Task control block: would this work better as a block diagram, rather than a code snippet?  Or would both together be useful?
 </p>
 
-<p>
-FreeRTOS uses a Task Control Block (TCB) to represent each task. The TCB is 
-defined in tasks.c like this:
-</p>
 
 <pre>
 /*
@@ -380,20 +445,22 @@ defined in tasks.c like this:
  */
 typedef struct tskTaskControlBlock
 {
-  volatile unsigned int *pxTopOfStack;                   /*< Points to the location of the last item placed on the tasks stack.  THIS MUST BE THE FIRST MEMBER OF THE STRUCT. */
+  volatile portSTACK_TYPE *pxTopOfStack;                 /*< Points to the location 
+of the last item placed on the tasks stack.  THIS MUST BE THE FIRST MEMBER OF THE 
+STRUCT. */
                                                          
   xListItem    xGenericListItem;                         /*< List item used to place the TCB in ready and blocked queues. */
   xListItem    xEventListItem;                           /*< List item used to place the TCB in event lists.  */
-  unsigned int uxPriority;                               /*< The priority of the task where 0 is the lowest priority. */
-  unsigned int   *pxStack;                               /*< Points to the start of the stack. */
+  unsigned portBASE_TYPE uxPriority;                     /*< The priority of the task where 0 is the lowest priority. */
+  portSTACK_TYPE			*pxStack;                          /*< Points to the start of the stack.  */
   signed char    pcTaskName[ configMAX_TASK_NAME_LEN ];  /*< Descriptive name given to the task when created.  Facilitates debugging only. */
 
   #if ( portSTACK_GROWTH > 0 )
-    unsigned int *pxEndOfStack;                          /*< Used for stack overflow checking on architectures where the stack grows up from low memory. */
+    portSTACK_TYPE *pxEndOfStack;                        /*< Used for stack overflow checking on architectures where the stack grows up from low memory. */
   #endif
 
   #if ( configUSE_MUTEXES == 1 )
-    unsigned int uxBasePriority;                         /*< The priority last assigned to the task - used by the priority inheritance mechanism. */
+    unsigned portBASE_TYPE uxBasePriority;               /*< The priority last assigned to the task - used by the priority inheritance mechanism. */
   #endif
 
 } tskTCB;
@@ -419,19 +486,13 @@ below for more on priority inheritance.)
 </p>
 
 <p>
-0 is the lowest priority. The highest priority is user-configurable at compile 
-time.  The scheduler allocates a ready list for each priority level, so use as few 
-priority levels as possible to reduce memory usage.
-</p>
-
-<p>
 EDIT: "The xGenericListItem and xEventListItem live for the lifetime of the task and are inserted into and remove[d] from lists as the task carries out its work."  Definitely not clear at this point, but later, when you explain how queues are handled, it starts to make sense.  Rearrange?
 </p>
 
 <p>
 Each task has two list items for use in FreeRTOS's various scheduling lists. The 
 <code>xGenericListItem</code> and <code>xEventListItem</code> live for the lifetime 
-of the task and are inserted into and remove from lists as the task carries out its 
+of the task and are inserted into and removed from lists as the task carries out its 
 work.
 </p>
 
@@ -444,11 +505,8 @@ state of the task.
 A task can be in one of four states: running, ready to run, suspended, or blocked.  
 You might expect each task to have a variable that tells FreeRTOS what the task is 
 doing. Instead, however, FreeRTOS tracks task state implicitly by putting tasks in 
-the appropriate list: ready list, suspended list, etc.
-</p>
-
-<p>
-EDIT: "...without needing to explicitly maintain a state variable."  Later, you explain that the pointer to the queue the item is in is (implicitly) its state; say that explicitly (and possibly provide a forward ref?).
+the appropriate list: ready list, suspended list, etc. The presence of a task in a 
+particular list is implicitly the task's state.
 </p>
 
 <p>
@@ -459,7 +517,7 @@ list to another, without needing to explicitly maintain a state variable.
 </div>
 
 <div class="subsect">
-<h3>999.3.3. Lists</h3>
+<h3>999.4.3. Lists</h3>
 
 <p>
 FreeRTOS uses a list structure to keep track of tasks for scheduling, and also to 
@@ -474,7 +532,8 @@ interesting additions. Here's a list element:
 <pre>
 struct xLIST_ITEM
 {
-  unsigned int xItemValue;                  /*< The value being listed.  In most cases this is used to sort the list in descending order. */
+  portTickType xItemValue;                  /*< The value being listed.  In most 
+cases this is used to sort the list in descending order. */
   volatile struct xLIST_ITEM * pxNext;      /*< Pointer to the next xListItem in the list.  */
   volatile struct xLIST_ITEM * pxPrevious;  /*< Pointer to the previous xListItem in the list. */
   void * pvOwner;                           /*< Pointer to the object (normally a TCB) that contains the list item.  There is therefore a two way link between the object containing the list item and the list item itself. */
@@ -483,29 +542,25 @@ struct xLIST_ITEM
 </pre>
 
 <p>
-Each list element holds a number, <code>xItemValue</code>, that is the priority of 
-the task being tracked.
+Each list element holds a number, <code>xItemValue</code>, that is the usually the 
+priority of the task being tracked.  Lists are kept in high-to-low priorty order, 
+meaning that the highest priority xItemValue (the largest number) is at the front of 
+the list and the lowest priority xItemValue (the smallest number) is at the end of 
+the list.
 </p>
 
 <p>
-Lists are kept in high-to-low priorty order, meaning that the highest priority 
-xItemValue (the largest number) is at the front of the list and the lowest priority 
-xItemValue (the smallest number) is at the end of the list.
-</p>
-
-<p>
-The <code>pxNext</code> and <code>pxPrevious</code> pointers are standard list 
+The <code>pxNext</code> and <code>pxPrevious</code> pointers are standard linked list 
 pointers.
 </p>
 
 <p>
-EDIT: "pvOwner allows a list walking function..." Hm --- only one such function can be active at a time, i.e., the list-walking code is non-reentrant?  If that's the case, say so explicitly, and talk about why that's possible in a concurrent system.
-</p>
-
-<p>
-<code>pvOwner</code> is a pointer to the owner of the list element. This is 
-usually a task's TCB object. <code>pvOwner</code> allows a list walking function to 
-quickly get to the task who's priority this list element is for.
+<code>pvOwner</code> is a pointer to the owner of the list element. This is usually a 
+pointer to a task's TCB object. <code>pvOwner</code> is used to make task switching 
+fast in <code>vTaskSwitchContext()</code>: once the highest priority task's list 
+element is found in <code>pxReadyTasksLists[]</code>, that list element's 
+<code>pvOwner</code> pointer leads us directly to the TCB needed to schedule the 
+task.
 </p>
 
 <p>
@@ -520,7 +575,7 @@ Each list element can be put in a list, which is defined as:
 <pre>
 typedef struct xLIST
 {
-  volatile unsigned int uxNumberOfItems;
+  volatile unsigned portBASE_TYPE uxNumberOfItems;
   volatile xListItem * pxIndex;          /*< Used to walk through the list.  Points to the last item returned by a call to pvListGetOwnerOfNextEntry (). */
   volatile xMiniListItem xListEnd;       /*< List item that contains the maximum possible item value meaning it is always at the end of the list and is therefore used as a marker. */
 } xList;
@@ -584,7 +639,7 @@ not in the ready state (suspended, etc.).
 </div>
 
 <div class="subsect">
-<h3>999.3.4. Queues</h3>
+<h3>999.4.4. Queues</h3>
 
 <p>
 FreeRTOS allows tasks and ISRs to communicate and synchronize with each other 
@@ -611,12 +666,12 @@ typedef struct QueueDefinition
   xList xTasksWaitingToSend;               /*< List of tasks that are blocked waiting to post onto this queue.  Stored in priority order. */
   xList xTasksWaitingToReceive;            /*< List of tasks that are blocked waiting to read from this queue.  Stored in priority order. */
 
-  volatile unsigned int uxMessagesWaiting; /*< The number of items currently in the queue. */
-  unsigned int uxLength;                   /*< The length of the queue defined as the number of items it will hold, not the number of bytes. */
-  unsigned int uxItemSize;                 /*< The size of each items that the queue will hold. */
+  volatile unsigned portBASE_TYPE uxMessagesWaiting; /*< The number of items currently in the queue. */
+  unsigned portBASE_TYPE uxLength;                   /*< The length of the queue defined as the number of items it will hold, not the number of bytes. */
+  unsigned portBASE_TYPE uxItemSize;                 /*< The size of each items that the queue will hold. */
                                          
-  signed int xRxLock;                      /*< Stores the number of items received from the queue (removed from the queue) while the queue was locked.  Set to queueUNLOCKED when the queue is not locked. */
-  signed int xTxLock;                      /*< Stores the number of items transmitted to the queue (added to the queue) while the queue was locked.  Set to queueUNLOCKED when the queue is not locked. */
+  signed portBASE_TYPE xRxLock;                      /*< Stores the number of items received from the queue (removed from the queue) while the queue was locked.  Set to queueUNLOCKED when the queue is not locked. */
+  signed portBASE_TYPE xTxLock;                      /*< Stores the number of items transmitted to the queue (added to the queue) while the queue was locked.  Set to queueUNLOCKED when the queue is not locked. */
 } xQUEUE;
 </pre>
 
@@ -678,13 +733,15 @@ guessed it - locking a queue.  We'll look at those when we discuss the queueing
 algorithms later.
 </p>
 
+EDIT: Consider getting rid of locked discussion.
+
 </div>
 
 <div class="subsect">
-<h3>999.3.5. Semaphores and Mutexes</h3>
+<h3>999.4.5. Semaphores and Mutexes</h3>
 
 <div class="subsubsect">
-<h4>999.3.5.1. What's The Difference?</h4>
+<h4>999.4.5.1. What's The Difference?</h4>
 
 <p>
 Semaphores and mutexes may sound like the same thing, but they're not. FreeRTOS 
@@ -715,7 +772,7 @@ article.
 </div>
 
 <div class="subsubsect">
-<h4>999.3.5.2. Implementation</h4>
+<h4>999.4.5.2. Implementation</h4>
 
 <p>
 FreeRTOS implements a binary semaphore as a one item queue. It doesn't store any 
@@ -793,20 +850,15 @@ available again.
 </div>
 
 <div class="sect">
-<h2>999.4. Algorithms</h2>
+<h2>999.5. Algorithms</h2>
 
 <p>
-EDIT: "Even though I paraphrased..." Please remove this sentence and find another opening.
-</p>
-
-<p>
-Even though I paraphrased Fred Brooks as saying "Show me your data structures and 
-I won't need your algorithms, they'll be obvious," it's still valuable to consider 
-the algorithms FreeRTOS uses for tasks and queues.
+Now that we've looked at FreeRTOS's data structures, let's dive in to the algorithms 
+that use them.
 </p>
 
 <div class="subsect">
-<h3>999.4.1. Task setup</h3>
+<h3>999.5.1. Task setup</h3>
     
 <p>
 A task is created when the user calls <code>xTaskCreate()</code>.
@@ -884,58 +936,7 @@ Interrupts are reenabled and new task creation is complete.
 </div>
 
 <div class="subsect">
-<h3>999.4.2. Scheduler and the System Tick</h3>
-
-<p>
-The heartbeat of a FreeRTOS system is called the tick. FreeRTOS configures the 
-system to generate a periodic tick interrupt. The user can configure the tick 
-interrupt frequency, which is typically in the millisecond range.
-</p>
-
-<p>
-EDIT: "Eery time the tick interrupt fires..."  Good --- this is the heart of the architecture, so as I said above, it should go near the top, and be the pivot around which other explanations revolve.
-</p>
-
-<p>
-Every time the tick interrupt fires the <code>vTaskSwitchContext()</code> function 
-is called. <code>vTaskSwitchContext()</code> makes sure the highest priority task is 
-running like this:
-</p>
-
-<pre>
-/* Find the highest priority queue that contains ready tasks. */
-while( listLIST_IS_EMPTY( &( pxReadyTasksLists[ uxTopReadyPriority ] ) ) )
-{
-    configASSERT( uxTopReadyPriority );
-    --uxTopReadyPriority;
-}
-
-/* listGET_OWNER_OF_NEXT_ENTRY walks through the list, so the tasks of the same priority get an equal share of the processor time. */
-listGET_OWNER_OF_NEXT_ENTRY( pxCurrentTCB, &( pxReadyTasksLists[ uxTopReadyPriority ] ) );
-</pre>
-
-<p>
-It's as easy as a quick list traversal to find the highest priority level with 
-ready tasks, and then grabbing the first ready task from that priority level's ready 
-list.
-</p>
-
-<p>
-Now <code>pxCurrentTCB</code> points to the highest priority task, and when 
-<code>vTaskSwitchContext()</code> returns the processor dependent code starts running 
-that task.
-</p>
-
-<p>
-Those nine lines of code are the absolute crux of FreeRTOS. The rest of FreeRTOS 
-(the other ~8991 lines) is there to make sure those nine lines are all that's needed 
-to keep the highest priority task running.
-</p>
-
-</div>
-
-<div class="subsect">
-<h3>999.4.3. Queue Accesses</h3>
+<h3>999.5.3. Queue Accesses</h3>
 
 <p>
 Since FreeRTOS uses queues as often as graphic designers use Apple comparisons, let's 
@@ -978,10 +979,6 @@ top".  That "goto" jumps here in the prose.
 </p>
 
 <p>
-EDIT: "...you're hosed."  Again, too colloquial.
-</p>
-
-<p>
 The first thing FreeRTOS does when accessing a queue is disables (most) 
 interrupts, which causes context switches to also be disabled. If it didn't, another 
 task or interrupt service routine could be switched in while Task A was in the middle 
@@ -994,11 +991,13 @@ Next FreeRTOS checks if the queue has space for the new element.
 </p>
 
 <p>
-EDIT: Section 999.4.3.1 and 999.4.3.2 --- please lose the subsubsection headings.  Also, will this be clearer with a decision tree diagram or flowchart accompanying the text?
+EDIT: Section 999.5.3.1 and 999.5.3.2 --- please lose the subsubsection headings.  
+Also, will this be clearer with a decision tree diagram or flowchart accompanying the 
+text?
 </p>
 
 <div class="subsubsect">
-<h4>999.4.3.1. If the queue has room for a new element:</h4>
+<h4>999.5.3.1. If the queue has room for a new element:</h4>
 
 <p>
 Then the new element is deep-copied into the queue and the queue size is updated.
@@ -1027,7 +1026,7 @@ insertion is done.
 </div>
 
 <div class="subsubsect">
-<h4>999.4.3.2. If the queue is full and does not have room for a new element:</h4>
+<h4>999.5.3.2. If the queue is full and does not have room for a new element:</h4>
 
 <p>
 If Task A specified non-blocking queue insertion then we reenable interrupts and 
@@ -1082,7 +1081,7 @@ task switching enabled.
 </div>
 
 <div class="sect">
-<h2>999.5. Conclusion</h2>
+<h2>999.6. Conclusion</h2>
 
 <p>
 We've completed our look at the FreeRTOS's main data structures and algorithms.
@@ -1116,7 +1115,7 @@ it's a book *and* a URL.]
 </div>
 
 <div class="sect">
-<h2>999.6. Acknowledgements</h2>
+<h2>999.7. Acknowledgements</h2>
 
 <p>
 I would like to thank Richard Barry for creating and maintaining FreeRTOS, and for 
