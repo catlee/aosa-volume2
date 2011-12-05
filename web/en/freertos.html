@@ -338,8 +338,8 @@ priority levels: 0 (lowest priority), 1, 2, 3, and 4 (highest priority).
 </p>
 
 <p>
-FreeRTOS uses an array of task lists to keep track of all tasks that are currently 
-ready to run:
+FreeRTOS uses an array of task lists, called a "ready list," to keep track of all 
+tasks that are currently ready to run:
 </p>
 
 <pre>
@@ -355,7 +355,7 @@ all the way up to <code>pxReadyTasksLists[configMAX_PRIORITIES-1]</code>.
 </div> <!-- end subsect -->
 
 <div class="subsect">
-<h3>999.3.1. The System Tick</h3>
+<h3>999.3.2. The System Tick</h3>
 
 <p>
 The heartbeat of a FreeRTOS system is called the system tick. FreeRTOS configures the 
@@ -445,9 +445,7 @@ EDIT: Task control block: would this work better as a block diagram, rather than
  */
 typedef struct tskTaskControlBlock
 {
-  volatile portSTACK_TYPE *pxTopOfStack;                 /*< Points to the location 
-of the last item placed on the tasks stack.  THIS MUST BE THE FIRST MEMBER OF THE 
-STRUCT. */
+  volatile portSTACK_TYPE *pxTopOfStack;                 /*< Points to the location of the last item placed on the tasks stack.  THIS MUST BE THE FIRST MEMBER OF THE STRUCT. */
                                                          
   xListItem    xGenericListItem;                         /*< List item used to place the TCB in ready and blocked queues. */
   xListItem    xEventListItem;                           /*< List item used to place the TCB in event lists.  */
@@ -490,10 +488,11 @@ EDIT: "The xGenericListItem and xEventListItem live for the lifetime of the task
 </p>
 
 <p>
-Each task has two list items for use in FreeRTOS's various scheduling lists. The 
-<code>xGenericListItem</code> and <code>xEventListItem</code> live for the lifetime 
-of the task and are inserted into and removed from lists as the task carries out its 
-work.
+Each task has two list items for use in FreeRTOS's various scheduling lists. When a 
+task is inserted into a list FreeRTOS doesn't insert a pointer directly to the TCB.  
+Instead, it inserts a pointer to either the TCB's <code>xGenericListItem</code> or 
+<code>xEventListItem</code>. These <code>xListItem</code> variables let the FreeRTOS 
+lists be smarter than if they merely held a pointer to the TCB.
 </p>
 
 <p>
@@ -532,8 +531,7 @@ interesting additions. Here's a list element:
 <pre>
 struct xLIST_ITEM
 {
-  portTickType xItemValue;                  /*< The value being listed.  In most 
-cases this is used to sort the list in descending order. */
+  portTickType xItemValue;                  /*< The value being listed.  In most cases this is used to sort the list in descending order. */
   volatile struct xLIST_ITEM * pxNext;      /*< Pointer to the next xListItem in the list.  */
   volatile struct xLIST_ITEM * pxPrevious;  /*< Pointer to the previous xListItem in the list. */
   void * pvOwner;                           /*< Pointer to the object (normally a TCB) that contains the list item.  There is therefore a two way link between the object containing the list item and the list item itself. */
@@ -543,10 +541,10 @@ cases this is used to sort the list in descending order. */
 
 <p>
 Each list element holds a number, <code>xItemValue</code>, that is the usually the 
-priority of the task being tracked.  Lists are kept in high-to-low priorty order, 
-meaning that the highest priority xItemValue (the largest number) is at the front of 
-the list and the lowest priority xItemValue (the smallest number) is at the end of 
-the list.
+priority of the task being tracked or a timer value for event scheduling.  Lists are 
+kept in high-to-low priorty order, meaning that the highest priority xItemValue (the 
+largest number) is at the front of the list and the lowest priority xItemValue (the 
+smallest number) is at the end of the list.
 </p>
 
 <p>
@@ -598,23 +596,47 @@ for (listPtr = listStart; listPtr != NULL; listPtr = listPtr->next) {
 </pre>
 
 <p>
-FreeRTOS frequently needs to access a list across multiple for() and while() 
-loops, and so it uses list functions that manipulate the <code>pxIndex</code> pointer 
-to walk the list. The list function <code>listGET_OWNER_OF_NEXT_ENTRY</code> 
-(actually a macro), does <code>pxIndex = pxIndex->pxNext;</code> and returns 
-<code>pxIndex</code>. (Of course it does the proper wraparound detection too.) This 
-way the list itself is responsible for keeping track of "where you are" while walking 
-it using <code>pxIndex</code>, allowing the rest of FreeRTOS to not worry about 
-it.
+FreeRTOS frequently needs to access a list across multiple for() and while() loops as 
+well as function calls, and so it uses list functions that manipulate the 
+<code>pxIndex</code> pointer to walk the list. The list function 
+<code>listGET_OWNER_OF_NEXT_ENTRY()</code> does <code>pxIndex = 
+  pxIndex->pxNext;</code> and returns <code>pxIndex</code>. (Of course it does the 
+proper end-of-list-wraparound detection too.) This way the list itself is responsible 
+for keeping track of "where you are" while walking it using <code>pxIndex</code>, 
+allowing the rest of FreeRTOS to not worry about it.
 </p>
 
 <p>
-EDIT: "xListEnd contains the maximum priority value."  Can other items have this value as well, or is there a "reserved" maximum value for this purpose?
+The <code>pxReadyTasksLists[]</code> list manipulation done in 
+<code>vTaskSwitchContext()</code> is a good example of how <code>pxIndex</code> is 
+used. Let's assume we have only one priority level, priority 0, and there are three 
+tasks at that priority level. Here's a picture:
 </p>
 
 <p>
-All new lists contain a single element: the <code>xListEnd</code> element.  
-<code>xListEnd</code> contains the maximum priority value.
+EDIT: Insert picture of pxReadyTasksLists[0] with three tasks, pxIndex pointing to 
+Task B, pxCurrentTCB also pointing to Task B.
+</p>
+
+<p>
+As you can see, pxCurrentTCB indicates that we're currently running Task B. The next 
+time <code>vTaskSwitchContext()</code> runs it calls
+<code>listGET_OWNER_OF_NEXT_ENTRY()</code> to get the next task to run. This function 
+uses <code>pxIndex->pxNext</code> to figure out the next task is Task C, and now 
+<code>pxIndex</code> *as well as <code>pxCurrentTCB</code> both point to Task C's 
+list element.
+
+<p>
+EDIT: Insert picture of pxReadyTasksLists[0] with three tasks, pxIndex pointing to 
+Task C, pxCurrentTCB also pointing to Task C.
+</p>
+
+<p>
+New lists are initialized to contain a single element: the <code>xListEnd</code> 
+element.  <code>xListEnd.xItemValue</code> is a sentinal value which is the largest 
+value for the <code>xItemValue</code> variable: 0xffff when <code>portTickType</code> 
+is a 16-bit value and 0xffffffff when <code>portTickType</code> is a 32-bit value.  
+This sentinal value is a reserved value: other list elements must not use this value.
 </p>
  
 <p>
@@ -623,27 +645,15 @@ marker for the start of the list.  And since the list is circular, this
 <code>xListEnd</code> element is also a marker for the end of the list.
 </p>
 
-<p>
-The scheduler has an array of lists, one list for each priority level:
-</p>
-
-<pre>
-static xList pxReadyTasksLists[ configMAX_PRIORITIES ]; /*< Prioritised ready tasks.  */
-</pre>
-
-<p>
-The scheduler also has a variety of other lists that are used for tasks that are 
-not in the ready state (suspended, etc.).
-</p>
-
 </div>
 
 <div class="subsect">
 <h3>999.4.4. Queues</h3>
 
 <p>
-FreeRTOS allows tasks and ISRs to communicate and synchronize with each other 
-using queues.
+FreeRTOS allows tasks to communicate and synchronize with each other using queues.  
+Interrupt service routines (ISRs) also use queues for communication and 
+synchronization.
 </p>
 
 <p>
@@ -681,13 +691,15 @@ to keep track of where we've just read from and written to.
 </p>
 
 <p>
-EDIT: "...does a deep copy of the item into the queue's internal memory."  Why?
-</p>
-
-<p>
 When creating a queue the user specifies the length of the queue and the size of 
 each element in the queue. Adding an item into a queue does a deep copy of the item 
-into the queue's internal memory.
+into the queue's internal memory. A deep copy is used instead of storing a pointer to 
+the item because the lifetime of the item inserted may be much shorter than the 
+lifetime of the queue. For instance, consider a queue of simple integers inserted and 
+removed using local variables across several function calls. If the queue stored 
+pointers to the integers' local variables, the pointers would be invalid as soon as 
+the integers' local variables went out of scope and the local variables' memory was 
+used for some new value.
 </p>
 
 <p>
