@@ -547,8 +547,8 @@ outgoing queue for final delivery to the mailing list's members.
 VERP
 ====
 
-*VERP* stands for *Variable Envelope Return Path*, and it is a well-known
-technique that mailing lists can use to unambiguously determine bouncing
+*VERP* stands for *Variable Envelope Return Path*, and it is a `well-known
+technique`_ that mailing lists can use to unambiguously determine bouncing
 recipient addresses.  When an address on a mailing list is no longer active,
 the recipient's mail server will send a notification back to the sender.  In
 the case of a mailing list, you want this bounce to go back to the mailing
@@ -559,7 +559,7 @@ list gets the bounce, it can do something useful, such as disable the bouncing
 address or remove it from the list's membership.
 
 There are two general problems with this.  First, even though there is a
-standard format for these bounces (called *delivery status notifications*)
+standard format for `these bounces`_ (called *delivery status notifications*)
 many mail servers out there do not conform to it.  Instead, the body of their
 bounce messages can contain just about any amount of
 difficult-to-machine-parse gobbledygook, which makes automated parsing
@@ -577,8 +577,8 @@ sent the message only knows the member as anne@example.com, so the bounce
 flagging me@example.net will not contain a subscribed address, and Mailman
 will ignore it.
 
-Along comes VERP, which exploits a requirement of the fundamental SMTP
-protocol to provide unambiguous bounce detection, by returning such bounce
+Along comes VERP, which exploits a requirement of the fundamental `SMTP
+protocol`_ to provide unambiguous bounce detection, by returning such bounce
 messages to the *envelope sender*.  This is not the ``From:`` field in the
 message body, but in fact the ``MAIL FROM`` value set during the SMTP dialog.
 This is preserved along the delivery route, and the ultimate receiving mail
@@ -641,9 +641,9 @@ There were a number of technologies at the time that would allow this, and in
 fact Mailman's integration with Launchpad is based on XMLRPC.  But XMLRPC has
 a number of problems that make it a less than ideal protocol.
 
-Mailman 3 has adopted the Representation State Transfer (REST) model for
+Mailman 3 has adopted the `Representation State Transfer`_ (REST) model for
 external administrative control.  REST is based on HTTP, and Mailman's default
-object representation is JSON.  These protocols are ubiquitous and
+object representation is `JSON`_.  These protocols are ubiquitous and
 well-supported in a large variety of programming languages and environments,
 making it fairly easy to integrate Mailman with third party systems.  REST was
 the perfect fit for Mailman 3, and now much of its functionality is exposed
@@ -777,3 +777,9 @@ Freenode IRC channel    : #mailman
 .. _`CNRI`: http://www.cnri.reston.va.us/
 .. _`1982 IETF standard`: http://www.faqs.org/rfcs/rfc822.html
 .. _`pickles`: http://docs.python.org/library/pickle.html
+.. _`well-known technique`: http://cr.yp.to/proto/verp.txt
+.. _`these bounces`: http://www.faqs.org/rfcs/rfc5337.html
+.. _`SMTP protocol`: http://www.faqs.org/rfcs/rfc5321.html
+.. _`Representational State Transfer`:
+   http://en.wikipedia.org/wiki/Representational_state_transfer
+.. _`JSON`: http://en.wikipedia.org/wiki/Json
