@@ -226,18 +226,18 @@ More on that later.  When a runner does manage the files in a directory, it is
 called a *queue runner*.
 
 Mailman is religiously single threaded, even though there is significant
-parallelism to exploit.  For example, Mailman can accep messages from the mail
-server at the same time it's sending messages out to recipients, or processing
-bounces, or archiving a message.  Parallelism in Mailman is achieved through
-the use of multiple processes, in the form of these runners.  For example,
-there is an *incoming* queue runner with the sole job of accepting (or
-rejecting) messages from the upstream mail server.  There is an outgoing queue
-runner with the sole job of communicating with the upstream mail server over
-SMTP in order to send messages out to the final recipients.  There's an
-archiver queue runner, a bounce processing queue runner, a queue runner for
-forwarding messages to an NNTP server, a runner for composing digests, and
-several others.  Runners which don't manage a queue include an LMTP runner and
-a REST HTTP runner.
+parallelism to exploit.  For example, Mailman can accept messages from the
+mail server at the same time it's sending messages out to recipients, or
+processing bounces, or archiving a message.  Parallelism in Mailman is
+achieved through the use of multiple processes, in the form of these runners.
+For example, there is an *incoming* queue runner with the sole job of
+accepting (or rejecting) messages from the upstream mail server.  There is an
+outgoing queue runner with the sole job of communicating with the upstream
+mail server over SMTP in order to send messages out to the final recipients.
+There's an archiver queue runner, a bounce processing queue runner, a queue
+runner for forwarding messages to an NNTP server, a runner for composing
+digests, and several others.  Runners which don't manage a queue include an
+LMTP server and a REST HTTP server.
 
 Each queue runner is responsible for a single directory, i.e. its *queue*.
 While the typical Mailman system can perform perfectly well with a single
@@ -325,8 +325,7 @@ message object tree, creates an initial metadata dictionary and enqueues this
 into a processing queue directory.
 
 Mailman also has a runner that listens on another port and processes REST
-requests over HTTP.  More on this later, but this process doesn't actually
-handle queue files at all.
+requests over HTTP.  This process doesn't handle queue files at all.
 
 A typical running Mailman system might have 8 or 10 processes, and they all
 need to be stopped and started appropriately and conveniently.  They can also
