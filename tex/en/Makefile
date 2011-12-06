@@ -16,7 +16,6 @@ CHAPTERS = \
 	inkscape \
 	ironlang \
 	itk \
-	lnxdist \
 	mailman \
 	matplotlib \
 	mediawiki \
@@ -25,7 +24,6 @@ CHAPTERS = \
 	openmpi \
 	oscar \
 	osm \
-	parrot \
 	pjs \
 	postgresql \
 	puppet \
