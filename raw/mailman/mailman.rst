@@ -408,9 +408,9 @@ received, until the time it's sent out to the list's membership.  In Mailman
 handlers were put together into a *pipeline*.  So, when a message came into
 the system, Mailman would first determine which pipeline would be used to
 process it, and then each handler in the pipeline would be called in turn.
-Some handlers would do moderation functions (i.e. "is this person allowed to
+Some handlers would do moderation functions (e.g. "is this person allowed to
 post to the mailing list?"), others would do modification functions
-(i.e. "which headers should I remove and add?"), and others would copy the
+(e.g. "which headers should I remove and add?"), and others would copy the
 message to other queues.  A few examples of the latter are:
 
  * A message accepted for posting would be copied to the *archiver* queue at
@@ -445,35 +445,64 @@ The incoming queue runner processes each message sequentially through a
 *chain* consisting of any number of *links*.  There is a built-in chain that
 most mailing lists use, but even this is configurable.
 
-Each link in the chain contains three pieces of information: a rule name, an
-action, and a parameter for the action.  *Rules* are simple pieces of code
-which gets passed the typical three parameters: the mailing list, the message
-object, and the metadata dictionary.  Rules are not supposed to modify the
-message; they just make a binary decision and return a boolean, answering the
-question "did the rule match or not"?  There are rules for recognizing
-pre-approved postings, for catching mail loops, and for recognizing various
-conditions which allow or disallow a posting.  It's important to note that the
-rule itself does not dispose of a disallowed posting, it just indicates
-whether the condition to disallow it matched or not.  Each rule that matches
-gets added to a list in the metadata dictionary, and each rule that misses
-gets added to a different list.  That way, later on, Mailman will know exactly
-which rules matched and which ones missed.
+Figure 3 illustrates the default set of chains in the Mailman system.  Each
+link in the chain is illustrated by a rounded rectangle.  The built-in chain
+is where the initial rules of moderation are applied to the incoming message,
+and in this chain, each link is associated with a *rule*.  Rules are simply
+pieces of code that get passed the three typical parameters: the mailing list,
+the message object tree, and the metadata dictionary.  Rules are not supposed
+to modify the message; they just make a binary decision and return a boolean
+answering the question "did the rule match or not?".  Rules can also record
+information in the metadata dictionary.
 
-The central chain-processing loop then calls each link's rule in turn, and if
-the rule matches, it executes the link's action.  Most defer action until
-later, which has the effect of grouping the moderation rules together, so that
-every cause for discarding a message can be recorded.  Actions can also *jump*
-to another chain, and there are chains which discard, reject (i.e. bounce back
-to the original author), and accept messages, as well as hold them for manual
-moderation.  Thus accepting a message is implemented in the chain as a jump to
-the standard *accept* chain.
+In the figure, green arrows indicates message flow when the rule matches,
+while red arrows indicate message flow when the rule does not match.  The
+outcome of each rule is recorded in the metadata dictionary so that later on,
+Mailman will know (and be able to report) exactly which rules matched and
+which ones missed.
 
-A special action called *detour* can also be taken.  A detour suspends the
-processing of the current chain, pushing its state on a stack, and jumping to
-a new chain.  When that new chain is exhausted, the old chain is popped off
-the stack and resumed at the next link.  Detours are used for example, to
-process a message through dynamically created chains, such as those that match
-header values based on database or configuration file entries.
+.. figure:: chains.png
+
+   Simplified view of default chains with their links.
+
+It's important to note that the rules themselves do not dispatch based on
+outcome.  In the built-in chain, each link is associated with an *action*
+which is performed when the rule matches.  So for example, when the "loop"
+rule matches (meaning, the mailing list has seen this message before), the
+message is immediate handed off to the "discard" chain, which throws the
+message away after some bookkeeping.  If the "loop" rule does not match, the
+next link in the chain will process the message.
+
+In the figure, the links associated with "administrivia", "max-size", and
+"truth" rules have no binary decision.  In case of the first two, this is
+because their action is *deferred*, so they simply record the match outcome
+and processing continues to the next link.  The "any" rule then matches if any
+previous rule matches.  This way, Mailman can report on all the reasons why a
+message is not allowed to be posted, instead of just the first reason.
+
+The "truth" rule is a bit different.  It's always associated with the last
+link in the chain, and it always matches.  With the combination of the
+penultimate "any" rule sweeping aside all previously matching messages, the
+last link then knows that any message making it through thus far is allowed to
+be posted to the mailing list, so it unconditionally moves the message to the
+"accept" chain.
+
+There are a few other details of chain processing not described here, but the
+architecture is very flexible and extensible so that just about any type of
+message processing can be implemented, and sites can customize and extend
+rules, links, and chains.
+
+What happens to the message when it hits the "accept" chain?  The message,
+which is now deemed appropriate for the mailing list, is sent off to the
+*pipeline* queue for some modifications before it is delivered to the end
+recipients.  This process is described in more detail in the following
+section.
+
+The "hold" chain puts the message into a special bucket for the human
+moderator to review.  The "moderation" chain does a little additional
+processing to decide whether the message should be accepted, held for
+moderator approval, discarded, or rejected.  Not illustrated is the "reject"
+chain, which is used to bounce messages back to the original sender.
 
 
 Handlers and pipelines
