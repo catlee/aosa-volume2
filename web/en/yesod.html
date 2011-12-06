@@ -318,7 +318,7 @@ render (Fib i) = "/fib/" ++ show i</pre>
 
 	<h3>Terminology</h3>
 
-	<p>The most primitive datatype in Persistent is the <code id="file1407-terminology-x-4">PersistValue</code>. This represents any raw data that can appear within the database, such as a number, a date, or a string. Of course, sometimes you'll have some more user-friendly datatypes you want to store, like HTML. For that, we have the <code>PersistField</code> class. Internally, a <code>PersistField</code> expresses itself to the database in terms of a <code>PersistValue</code>.</p>
+	<p>The most primitive datatype in Persistent is the <code>PersistValue</code>. This represents any raw data that can appear within the database, such as a number, a date, or a string. Of course, sometimes you'll have some more user-friendly datatypes you want to store, like HTML. For that, we have the <code>PersistField</code> class. Internally, a <code>PersistField</code> expresses itself to the database in terms of a <code>PersistValue</code>.</p>
 
 	<p>All of this is very nice, but we will want to combine different fields together into a larger picture. For this, we have a <code>PersistEntity</code>, which is basically a collection of <code>PersistField</code>s. And finally, we have a <code>PersistBackend</code> that describes how to create, read, update and delete these entities.</p>
 
@@ -415,7 +415,7 @@ render (Fib i) = "/fib/" ++ show i</pre>
 
 	<p>Assume we want to now store a list of skills with each user. If we were writing a MongoDB-specific app, we could go ahead and just store that list as a new field in the original Person entity. But that approach would not work in SQL. In SQL, we call this kind of relationship a one-to-many relationship.</p>
 
-	<p>The idea is to store a reference to the "one" entity (person) with each "many" entity (skill). Then if we want to find all the skills a person has, we simply find all skills that reference that person. For this reference, every entity has an ID. And as you might expect by now, these IDs are completely type-safe. The datatype for a Person ID is <code id="file1411-Relations-x-6">PersonId</code>. So to add our new skill, we would just add the following to our entity definition:</p>
+	<p>The idea is to store a reference to the "one" entity (person) with each "many" entity (skill). Then if we want to find all the skills a person has, we simply find all skills that reference that person. For this reference, every entity has an ID. And as you might expect by now, these IDs are completely type-safe. The datatype for a Person ID is <code>PersonId</code>. So to add our new skill, we would just add the following to our entity definition:</p>
 
 <pre>Skill
     person PersonId
@@ -582,7 +582,7 @@ toWidget [julius|alert("Some special Javascript to play with my navbar");|]
 
 <pre>/static StaticR Static getStatic</pre>
 
-	<p>The first argument tells where in the site the subsite starts. The static subsite is usually used at /static, but you could use whatever you want. StaticR is the name of the route; this is also entirely up to you, but convention is to use StaticR. Static is the name of the static subsite; this is one you do not have control over. <code id="file1417-subsites-x-9">getStatic</code> is a function that returns the settings for the static site, such as where the static files are located.</p>
+	<p>The first argument tells where in the site the subsite starts. The static subsite is usually used at /static, but you could use whatever you want. StaticR is the name of the route; this is also entirely up to you, but convention is to use StaticR. Static is the name of the static subsite; this is one you do not have control over. <code>getStatic</code> is a function that returns the settings for the static site, such as where the static files are located.</p>
 
 	<p>Like all of your handlers, the subsite handlers also have access to the <code>defaultLayout</code> function. This means that a well designed subsite will automatically use your site skin without any extra intervention on your part.</p>
 
