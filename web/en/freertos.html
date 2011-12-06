@@ -693,14 +693,16 @@ to keep track of where we've just read from and written to.
 <p>
 When creating a queue the user specifies the length of the queue and the size of 
 each element in the queue. Adding an item into a queue does a deep copy of the item 
-into the queue's internal memory. A deep copy is used instead of storing a pointer to 
-the item because the lifetime of the item inserted may be much shorter than the 
-lifetime of the queue. For instance, consider a queue of simple integers inserted and 
-removed using local variables across several function calls. If the queue stored 
-pointers to the integers' local variables, the pointers would be invalid as soon as 
-the integers' local variables went out of scope and the local variables' memory was 
-used for some new value.
+into the queue's internal memory. FreeRTOS makes a deep copy instead of storing a 
+pointer to the item because the lifetime of the item inserted may be much shorter 
+than the lifetime of the queue. For instance, consider a queue of simple integers 
+inserted and removed using local variables across several function calls. If the 
+queue stored pointers to the integers' local variables, the pointers would be invalid 
+as soon as the integers' local variables went out of scope and the local variables' 
+memory was used for some new value.
 </p>
+
+EDIT: Insert basic picture of 4 element queue with 2 elements used.
 
 <p>
 FreeRTOS supports blocking and non-blocking queue insertions and removals.
@@ -733,11 +735,19 @@ insert/remove returns with a "failed" status.
 </p>
 
 <p>
-FreeRTOS uses the <code>xTasksWaitingToSend</code> list to keep track of tasks 
-that are
-blocking on inserting into the queue. Similarly, <code>xTasksWaitingToReceive</code>
-keeps track of tasks that are blocking on removing from the queue.
+FreeRTOS uses the <code>xTasksWaitingToSend</code> list to keep track of tasks that 
+are blocking on inserting into the queue. Similarly, 
+<code>xTasksWaitingToReceive</code> keeps track of tasks that are blocking on 
+removing from the queue.
 </p>
+
+<p>
+We'll discuss how delays and timeouts are implemented when we discuss FreeRTOS's 
+algorithms later.
+</p>
+
+EDIT: Insert picture of 4 element queue that is full, with 1 task pending in 
+xTasksWaitingToSend.
 
 <p>
 The <code>xRxLock</code> and <code>xTxLock</code> elements are used for - you 
@@ -745,7 +755,7 @@ guessed it - locking a queue.  We'll look at those when we discuss the queueing
 algorithms later.
 </p>
 
-EDIT: Consider getting rid of locked discussion.
+EDIT: Consider getting rid of locked discussion?
 
 </div>
 
@@ -776,6 +786,10 @@ shared resource it protects. By contrast, tasks that use semaphores either signa
 ["send" in FreeRTOS terms] or wait ["receive" in FreeRTOS terms] - not both."
 </p>
 
+EDIT: Add picture of 2 tasks using semaphores and mutexes.
+Picture 1: Task A taking mutex M and then releasing it, and Task B does the same.
+Picture 2: Task A signal/send a semaphore S, Task B wait/receives it.
+
 <p>
 If you're at all in doubt about semaphores and mutexes please check out Michael's 
 article.
@@ -787,22 +801,11 @@ article.
 <h4>999.4.5.2. Implementation</h4>
 
 <p>
-FreeRTOS implements a binary semaphore as a one item queue. It doesn't store any 
-actual data in the queue, it just cares if the queue is empty or full: it's doing 
-"pure synchronization" as the FreeRTOS header file <code>semphr.h</code> calls it.  
-Therefore the queue has a data size of zero bytes (<code>uxItemSize == 0</code>).
-</p>
-
-<p>
-The binary semaphore is given and taken using short macros that call the normal 
-queue functions.
-</p>
-
-<p>
-A counting semaphore of length N is also accessed with thin give and take macros 
-wrapped around the normal queue functions, but is implemented as an N-element queue.  
-As with a binary semaphore, a counting semaphore's queue has a data size of zero 
-bytes.
+FreeRTOS implements an N-element semaphore as queue with N items. It doesn't store 
+any actual data in the queue, it just cares how many queue entries are occupied, 
+tracked in the <code>uxMessagesWaiting</code> field..  It's doing "pure 
+synchronization" as the FreeRTOS header file <code>semphr.h</code> calls it.  
+Therefore the queue has a data size of zero bytes (<code>uxItemSize == 0</code>).  
 </p>
 
 <p>
@@ -868,6 +871,11 @@ available again.
 Now that we've looked at FreeRTOS's data structures, let's dive in to the algorithms 
 that use them.
 </p>
+
+EDIT: Consider moving this Task setup discussion to the intitial discussion about the 
+TCB. Then consider getting rid of the queue algorithms; maybe beef up the Queue data 
+structure section? Or leave the queue alg in, tack it on the to the queueing data 
+structure section?
 
 <div class="subsect">
 <h3>999.5.1. Task setup</h3>
