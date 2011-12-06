@@ -52,4 +52,4 @@ questions:
 	@(for i in *.tex; do echo `fgrep aosaquestion $$i | wc -l` $$i; done) | sort -n -r
 
 clean:
-	@rm -f *.aux *.bak *.bbl *.blg *.log *.toc *~
+	@rm -f aosa2.pdf *.aux *.bak *.bbl *.blg *.log *.toc *~
