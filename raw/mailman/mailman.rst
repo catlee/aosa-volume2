@@ -76,7 +76,8 @@ message.
 
 .. figure:: MIME.png
 
-   A MIME `multipart/mixed` message containing text, images and an audio file.
+   Figure 1.  A MIME `multipart/mixed` message containing text, images and an
+   audio file.
 
 Container parts can also be arbitrarily nested; these are called *multiparts*
 and can in fact get quite deep.  But all email messages regardless of their
@@ -87,7 +88,7 @@ the object tree of the above multipart message.
 
 .. figure:: tree.png
 
-   Message object tree of a complex MIME email message.
+   Figure 2.  Message object tree of a complex MIME email message.
 
 Mailman will almost always modify the original message in some way.
 Sometimes, the transformations can be fairly benign, such as adding or
@@ -463,7 +464,7 @@ which ones missed.
 
 .. figure:: chains.png
 
-   Simplified view of default chains with their links.
+   Figure 3.  Simplified view of default chains with their links.
 
 It's important to note that the rules themselves do not dispatch based on
 outcome.  In the built-in chain, each link is associated with an *action*
@@ -478,7 +479,8 @@ In the figure, the links associated with "administrivia", "max-size", and
 because their action is *deferred*, so they simply record the match outcome
 and processing continues to the next link.  The "any" rule then matches if any
 previous rule matches.  This way, Mailman can report on all the reasons why a
-message is not allowed to be posted, instead of just the first reason.
+message is not allowed to be posted, instead of just the first reason.  There
+are several more such rules not illustrated here for simplicity.
 
 The "truth" rule is a bit different.  It's always associated with the last
 link in the chain, and it always matches.  With the combination of the
@@ -520,14 +522,26 @@ cases.  Handlers have a similar interface as rules, accepting a mailing list,
 message object, and metadata dictionary.  However unlike rules, handlers can
 and do modify the message.
 
+Figure 4 illustrates the default pipeline and set of handlers (some handlers
+are omitted for simplicity).
+
+.. figure:: pipeline.png
+
+   Figure 4.  Pipeline queue handlers.
+
 For example, a posted message needs to have a ``Precedence:`` header added
 which tells other automated software that this message came from a mailing
 list.  This header is a defacto standard to prevent vacation programs from
 responding back to the mailing list.  Adding this header (among other header
-modifications) is done by the ``cook-headers`` handler.  Unlike with rules,
-handler order generally doesn't matter, although enqueuing copies of the
-message to the outgoing, archiver, digest, and NNTP queue runners also happens
-via handlers, so these usually appear at the end of the pipeline.
+modifications) is done by the "add headers" handler.  Unlike with rules,
+handler order generally doesn't matter, and messages always flow through all
+handlers in the pipeline.
+
+Some handlers send copies of the message to other queues.  As shown in the
+figure, there is a handler that makes a copy of the message for folks who want
+to receive digests.  Copies are also sent to the archive queue for eventual
+delivery to the mailing list archives.  Finally, the message is copied to the
+outgoing queue for final delivery to the mailing list's members.
 
 
 VERP
