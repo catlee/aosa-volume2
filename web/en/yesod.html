@@ -45,9 +45,9 @@
 
     <p>The goal of Yesod is to extend Haskell's strengths into web development. Yesod strives to make your code as concise as possible. As much as possible, every line of your code is checked for correctness at compile time. Instead of requiring large libraries of unit tests to test basic properties, the compiler does it all for you. Under the surface, Yesod uses as many advanced performance techniques as we can muster to make your high-level code fly.</p>
 
-    <div class="section">
+    <div class="sect">
 
-      <h1>Compared to other frameworks</h1>
+      <h2>Compared to other frameworks</h2>
 
       <p>In general terms, Yesod is more similar than different when compared to the leading frameworks, such as Rails and Django. It generally follows the Model-View-Controller (MVC) paradigm, has a templating system that separates view from logic, provides an Object Relational Mapping (ORM) system, and has a front controller approach to routing.</p>
 
@@ -57,9 +57,9 @@
 
     </div>
 
-    <div class="section">
+    <div class="sect">
 
-      <h1>Web Application Interface</h1>
+      <h2>Web Application Interface</h2>
 
       <p>A web application needs some way to communicate with a server. One possible approach is to bake the server directly into the framework, but doing so necessarily limits your options for deployment and leads to poor interfaces. Many languages have created standard interfaces to address this issue: Python has WSGI and Ruby has Rack. In Haskell, we have WAI.</p>
 
@@ -67,12 +67,12 @@
 
       <figure>
 	<figcaption>Overall structure of a Yesod application</figcaption>
-	<img src="yesod_files/home1writingaosaYesodoverviewdiagram.png"/>
+	<img src="../images/yesod/overview.png"/>
       </figure>
 
-      <div class="subsection">
+      <div class="subsect">
 
-	<h1>Datatypes</h1>
+	<h3>Datatypes</h3>
 
 	<p>One of the biggest advantages of Haskell&mdash;and one of the things we make the most use of in Yesod&mdash;is strong static typing. Before we begin to write the code for how to solve something, we need to think about what the data will look like. WAI is a perfect example of this paradigm. The core concept we want to express is that of an application. An application's most basic expression is a function that takes a request and returns a response. In Haskell lingo:</p>
 
@@ -84,9 +84,9 @@
 
       </div>
 
-      <div class="subsection">
+      <div class="subsect">
 
-	<h1>Streaming</h1>
+	<h3>Streaming</h3>
 
 	<p>A ByteString represents a single memory buffer. If we were to naively use a plain ByteString for holding the entire request or response bodies, our applications could never scale to large requests or responses. Instead, we use a technique called enumerators, very similar in concept to generators in Python. Our application becomes a consumer of a stream of ByteStrings representing the incoming request body, and a producer of a separate stream for the response.</p>
 
@@ -98,9 +98,9 @@
 
       </div>
 
-      <div class="subsection">
+      <div class="subsect">
 
-	<h1>Builder</h1>
+	<h3>Builder</h3>
 
 	<p>The trick in our arsenal is how we produce our response buffers. We have a two competing desires here: minimizing system calls, and minimizing buffer copies. On the one hand, we want to minimize system calls for sending data over the socket. To do this we need to store outgoing data in a buffer. However, if we make this buffer too large, we will exhaust our memory and slow down the application's response time. On the other hand, we want to minimize the number of times data is copied between buffers, preferably copying just once from the source to destination buffer.</p>
 
@@ -112,9 +112,9 @@
 
       </div>
 
-      <div class="subsection">
+      <div class="subsect">
 
-	<h1>Handlers</h1>
+	<h3>Handlers</h3>
 
 	<p>Now that we have an application, we need some way to run it. In WAI parlance, this is a <em class="dfn">handler</em>. WAI has some basic, standard handlers, such as a standalone server (Warp, discussed below), FastCGI, SCGI and CGI. This spectrum allows WAI applications to be run on anything from dedicated servers down to shared hosting. But in addition to these, WAI has some more interesting backends:</p>
 
@@ -140,7 +140,7 @@
 
 	<figure>
 	  <figcaption>Warp PONG Benchmark</figcaption>
-	  <img src="yesod_files/extra-large.png"/>
+	  <img src="../images/yesod/extra-large.png"/>
 	</figure>
 
         <p>Most of the reasons for Warp's speed have already been spelled out in the overall description of WAI: enumerators, builders and packed datatypes. The last piece in the puzzle is from the Glasgow Haskell Compiler's (GHC's) multithreaded runtime. GHC, Haskell's flagship compiler, has light-weight green threads. Unlike system threads, it is possible to spin up thousands of these without serious performance hits. Therefore, in Warp, each connection is handled by its own green thread.</p>
@@ -151,9 +151,9 @@
 
       </div>
 
-      <div class="subsection">
+      <div class="subsect">
 
-	<h1>Middleware</h1>
+	<h3>Middleware</h3>
 
 	<p>In between handlers and applications, we have middlewares. Technically, a middleware is an <em class="dfn">application transformer</em>: it takes one application, and returns a new one. This is defined as <code>type Middleware = Application -&gt;  Application</code>. The best way to understand the purpose of a middleware is to look at some common ones:</p>
 
@@ -185,9 +185,9 @@
 
       </div>
 
-      <div class="subsection">
+      <div class="subsect">
 
-	<h1>wai-test</h1>
+	<h3>wai-test</h3>
 
 	<p>No amount of static typing will obviate the need for testing. We all know that automated testing is a necessity for any serious applications. <code>wai-test</code> is the recommended approach to testing a WAI application. Since requests and responses are simple datatypes, it is easy to mock up a fake request, pass it to an application, and test properties about the response. wai-test simply provides some convenience functions for testing common properties like the presence of a header or a status code.</p>
 
@@ -195,9 +195,9 @@
 
     </div>
 
-    <div class="section">
+    <div class="sect">
 
-      <h1>Templates</h1>
+      <h2>Templates</h2>
 
       <p>In the typical Model-View-Controller (MVC) paradigm, one of the goals is to separate logic from the view. Part of this separation is achieved through the use of a template language. However, there are many different ways to approach this issue. At one end of the spectrum, for example, PHP/ASP/JSP will allow you to embed any arbitrary code within your template. At the other end, you have systems like StringTemplate and QuickSilver, which are passed some arguments and have no other way of interacting with the rest of the program.</p>
 
@@ -209,9 +209,9 @@
 
       <p class="aside">Why the name Shakespeare? The HTML language, Hamlet, was the first language written, and originally based its syntax on Haml. Since it was at the time a "reduced" Haml, Hamlet seemed appropriate. As we added CSS and Javascript options, we decided to keep the naming theme with Cassius and Julius. At this point, Hamlet looks nothing like Haml, but the name stuck anyway.</p>
 
-      <div class="subsection">
+      <div class="subsect">
 
-	<h1>Types</h1>
+	<h3>Types</h3>
 
 	<p>One of the overarching themes in Yesod is proper use of types to make developers' lives easier. In Yesod templates, we have two main examples:</p>
 
@@ -272,9 +272,9 @@ render (Fib i) = "/fib/" ++ show i</pre>
 
       </div>
 
-      <div class="subsection">
+      <div class="subsect">
 
-	<h1>The Other Languages</h1>
+	<h3>The Other Languages</h3>
 
 	<p>In addition to Hamlet, there are three other languages. Julius is used for Javascript. However, it's a simple pass-through language, just allowing for interpolation. In other words, barring accidental use of the interpolation syntax, any piece of Javascript could be dropped into Julius and be valid. For example, to test the performance of Julius, jQuery was run through the language without an issue.</p>
 
@@ -296,9 +296,9 @@ render (Fib i) = "/fib/" ++ show i</pre>
 
     </div>
 
-    <div class="section">
+    <div class="sect">
 
-      <h1>Persistent</h1>
+      <h2>Persistent</h2>
 
       <p>Most web applications will want to store information in a database. Traditionally, this has meant some kind of SQL database. In that regard, Yesod continues a long tradition, with PostgreSQL as our most commonly used backend. But as we have been seeing in recent years, SQL isn't always the answer to the persistence question. Therefore, Yesod was designed to work well with NoSQL databases as well, and ships with a MongoDB backend as a first-class citizen.</p>
 
@@ -314,9 +314,9 @@ render (Fib i) = "/fib/" ++ show i</pre>
 
       </ul>
 
-      <div class="subsection">
+      <div class="subsect">
 
-	<h1>Terminology</h1>
+	<h3>Terminology</h3>
 
 	<p>The most primitive datatype in Persistent is the <code id="file1407-terminology-x-4">PersistValue</code>. This represents any raw data that can appear within the database, such as a number, a date, or a string. Of course, sometimes you'll have some more user-friendly datatypes you want to store, like HTML. For that, we have the <code>PersistField</code> class. Internally, a <code>PersistField</code> expresses itself to the database in terms of a <code>PersistValue</code>.</p>
 
@@ -361,9 +361,9 @@ render (Fib i) = "/fib/" ++ show i</pre>
  
       </div>
 
-      <div class="subsection">
+      <div class="subsect">
 
-	<h1>Type Safety</h1>
+	<h3>Type Safety</h3>
 
 	<p>Persistent handles all of the data marshaling concerns behind the scenes. As a user of Persistent, you get to completely ignore the fact that a <code>Text</code> becomes a <code>VARCHAR</code>. You are able to simply declare your datatypes and use them.</p>
 
@@ -385,9 +385,9 @@ render (Fib i) = "/fib/" ++ show i</pre>
 
       </div>
 
-      <div class="subsection">
+      <div class="subsect">
 
-	<h1>Cross-database Syntax</h1>
+	<h3>Cross-database Syntax</h3>
 
 	<p>Creating an SQL schema that works for multiple SQL engines can be tricky enough. How do you create a schema that will also work with a non-SQL database like MongoDB?</p>
 
@@ -397,9 +397,9 @@ render (Fib i) = "/fib/" ++ show i</pre>
 
       </div>
 
-      <div class="subsection">
+      <div class="subsect">
 
-	<h1>Migrations</h1>
+	<h3>Migrations</h3>
 
 	<p>Persistent not only creates schema files as necessary, but will also automatically apply database migrations if possible. Database modification is one of the less-developed pieces of the SQL standard, and thus each engine has a different take on the process. As such, each Persistent backend defines its own set of migration rules. In PostgreSQL, which has a rich set of <code>ALTER TABLE</code> rules, we use those extensively. Since SQLite lacks much of that functionality, we are reduced to creating temporary tables and copying rows. MongoDB's schema-less approach means no migration support is required.</p>
 
@@ -407,9 +407,9 @@ render (Fib i) = "/fib/" ++ show i</pre>
 
       </div>
 
-      <div class="subsection">
+      <div class="subsect">
 
-	<h1>Relations</h1>
+	<h3>Relations</h3>
 
 	<p>Persistent is non-relational in nature, meaning it has no requirement for backends to support relations. However, in many use cases, we may want to use relations. In those cases, developers will have full access to them.</p>
 
@@ -429,9 +429,9 @@ render (Fib i) = "/fib/" ++ show i</pre>
 
     </div>
 
-    <div class="section">
+    <div class="sect">
 
-      <h1>Yesod</h1>
+      <h2>Yesod</h2>
 
       <p>If we are looking through the typical Model-View-Controller (MVC) paradigm, Persistent is the model and Sheakespeare is the view. This would leave Yesod as the controller.</p>
 
@@ -439,11 +439,11 @@ render (Fib i) = "/fib/" ++ show i</pre>
 
       <p>This layered approach makes it simpler for users to swap different components of the system. Some people are not interested in using Persistent. For them, nothing in the core system even mentions Persistent. Likewise, while commonly used features, not everyone needs authentication or static file serving.</p>
 
-      <p>On the other hand, many users <i id="file1418-yesod-x-7">will</i> want to integrate all of these features. And doing so&mdash;while enabling all the optimizations available in Yesod&mdash;is not always straightforward. To simplify the process, Yesod provides a scaffolding tool as well that sets up a basic site with the most commonly used features.</p>
+      <p>On the other hand, many users <em>will</em> want to integrate all of these features. And doing so&mdash;while enabling all the optimizations available in Yesod&mdash;is not always straightforward. To simplify the process, Yesod provides a scaffolding tool as well that sets up a basic site with the most commonly used features.</p>
 
-      <div class="subsection">
+      <div class="subsect">
 
-	<h1>Routes</h1>
+	<h3>Routes</h3>
 
 	<p>Given that routing is really the main function of Yesod, let's start there. The routing syntax is very simple: a <em class="dfn">resource pattern</em>, a name, and request methods. For example, a simple blog site might look like:</p>
 
@@ -475,9 +475,9 @@ render (Fib i) = "/fib/" ++ show i</pre>
 
 	</ul>
 
-	<div class="subsubsection">
+	<div class="subsubsect">
 
-	  <h1>Type-safe URLs</h1>
+	  <h4>Type-safe URLs</h4>
 
 	  <p>This approach to routing gives birth to one of Yesod's most powerful features: type-safe URLs. Instead of just splicing together pieces of text to refer to a route, every route in your application can be represented by a Haskell value. This immediately eliminates a large number of 404 not found errors: it is simply not possible to produce an invalid URL.</p>
 
@@ -506,9 +506,9 @@ redirect RedirectTemporary (EntryR entryId)
 
       </div>
 
-      <div class="subsection">
+      <div class="subsect">
 
-	<h1>Handlers</h1>
+	<h3>Handlers</h3>
 
 	<p>Once you define your routes, you need to tell Yesod how you want to respond to requests. This is where <em class="dfn">handler functions</em> come into play. The setup is simple; for each resource (e.g., HomepageR) and request method, create a function named methodResourceR. For our previous example, we would need four functions: <code>getHomepageR</code>, <code>getAddEntryR</code>, <code>postAddEntryR</code>, and <code>getEntryR</code>.</p>
 
@@ -525,9 +525,9 @@ redirect RedirectTemporary (EntryR entryId)
 
       </div>
 
-      <div class="subsection">
+      <div class="subsect">
 
-	<h1>Widgets</h1>
+	<h3>Widgets</h3>
 
 	<p>Assume you want to include a navbar on a few different pages of your site. This navbar will load up the five most recent blog posts (stored in your database), generate some HTML, and then need some CSS and Javascript to style and enhance.</p>
 
@@ -574,9 +574,9 @@ toWidget [julius|alert("Some special Javascript to play with my navbar");|]
 
       </div>
 
-      <div class="subsection">
+      <div class="subsect">
 
-	<h1>Subsites</h1>
+	<h3>Subsites</h3>
 
 	<p>Many websites share common pieces of functionality. Perhaps the two most common examples of this are serving static files and authentication. In Yesod, you can easily drop in this code using a <em>subsite</em>. All you need to do is add an extra line to your routes. For example, to add the static subsite, you would write:</p>
 
@@ -590,9 +590,9 @@ toWidget [julius|alert("Some special Javascript to play with my navbar");|]
 
     </div>
 
-    <div class="section">
+    <div class="sect">
 
-      <h1>Lessons Learned</h1>
+      <h2>Lessons Learned</h2>
 
       <p>Yesod has been a very rewarding project to work on. It has given me an opportunity to work on a large system with a diverse group of developers. One of the things that has truly shocked me is how different the end product has become versus what I had originally intended. I started off Yesod by creating a list of goals. Very few of the main features we currently tout in Yesod are in that list, and a good portion of that list is no longer something I plan to implement. The first lesson is:</p>
 
