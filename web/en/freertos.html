@@ -305,7 +305,7 @@ typedef unsigned portLONG portTickType;  // The system timer tick type
 <p>
 This method of using data types and functions through thin layers of 
 <code>#defines</code> may seem a bit complicated, but it allows FreeRTOS to be 
-recompiled for a completely different system architecture by changing only the the 
+recompiled for a completely different system architecture by changing only the 
 hardware-dependent files. And if you want to run FreeRTOS on an architecture it 
 doesn't currently support you only have to implement the hardware-dependent 
 functionality, which is much smaller than the hardware-independent part of FreeRTOS.
@@ -338,8 +338,8 @@ priority levels: 0 (lowest priority), 1, 2, 3, and 4 (highest priority).
 </p>
 
 <p>
-FreeRTOS uses an array of task lists, called a "ready list," to keep track of all 
-tasks that are currently ready to run:
+FreeRTOS uses a "ready list" to keep track of all tasks that are currently ready to 
+run. It implements the ready list as an array of task lists like this:
 </p>
 
 <pre>
@@ -382,9 +382,9 @@ listGET_OWNER_OF_NEXT_ENTRY( pxCurrentTCB, &( pxReadyTasksLists[ uxTopReadyPrior
 Before the while loop starts, <code>uxTopReadyPriority</code> is guaranteed to be 
 greater than or equal to the priority of the highest priority ready task. The while() 
 loop starts at priority level <code>uxTopReadyPriority</code> and walks down through 
-the pxReadyTasksLists[] array to find the highest priority level with ready tasks.
-<code>listGET_OWNER_OF_NEXT_ENTRY()</code> then grabs the first ready task from that 
-priority level's ready list.
+the <code>pxReadyTasksLists[]</code> array to find the highest priority level with 
+ready tasks. <code>listGET_OWNER_OF_NEXT_ENTRY()</code> then grabs the next ready 
+task from that priority level's ready list.
 </p>
 
 <p>
@@ -394,7 +394,7 @@ that task.
 </p>
 
 <p>
-Those nine lines of code are the absolute crux of FreeRTOS. The other 8900+ lines of 
+Those nine lines of code are the absolute heart of FreeRTOS. The other 8900+ lines of 
 FreeRTOS are there to make sure those nine lines are all that's needed to keep the 
 highest priority task running.
 </p>
@@ -403,12 +403,15 @@ highest priority task running.
 
 <p>
 Here's a high level picture of what a ready list looks like. This example has three 
-priority levels, with one priority 0 task and three priority 1 tasks.
+priority levels, with one priority 0 task, no priority 1 tasks, and three priority 2 
+tasks. This picture is accurate but not complete; it's missing a few details which 
+we'll fill in later.
 </p>
 
-<p>
-EDIT: Add diagram of ready list and tasks here.
-</p>
+<div class="figure" id="fig.freertos.basic_ready_list">
+  <img src="../images/freertos/freertos-figures-basic-ready-list.png" alt="[Basic view of FreeRTOS ready list.]" />
+  Figure&nbsp;999.2: High level view of a ready list
+</div>
 
 </div> <!-- end sect -->
 
@@ -585,6 +588,21 @@ list size operations.
 </p>
 
 <p>
+All new lists are initialized to contain a single element: the <code>xListEnd</code> 
+element.  <code>xListEnd.xItemValue</code> is a sentinal value which is the largest 
+value for the <code>xItemValue</code> variable: 0xffff when <code>portTickType</code> 
+is a 16-bit value and 0xffffffff when <code>portTickType</code> is a 32-bit value.  
+This sentinal value is a reserved value: other list elements must not use this value.
+</p>
+ 
+<p>
+Since lists are sorted high-to-low, the <code>xListEnd</code> element is used as a 
+marker for the start of the list.  And since the list is circular, this 
+<code>xListEnd</code> element is also a marker for the end of the list.
+</p>
+
+
+<p>
 Most "traditional" list accesses you've ever used probably do all of their work 
 within a single for() loop or function call like this:
 </p>
@@ -610,13 +628,14 @@ allowing the rest of FreeRTOS to not worry about it.
 The <code>pxReadyTasksLists[]</code> list manipulation done in 
 <code>vTaskSwitchContext()</code> is a good example of how <code>pxIndex</code> is 
 used. Let's assume we have only one priority level, priority 0, and there are three 
-tasks at that priority level. Here's a picture:
+tasks at that priority level. This is similar to the basic ready list picture we 
+looked at earlier, but this time we'll include all of the data structures and fields.
 </p>
 
-<p>
-EDIT: Insert picture of pxReadyTasksLists[0] with three tasks, pxIndex pointing to 
-Task B, pxCurrentTCB also pointing to Task B.
-</p>
+<div class="figure" id="fig.freertos.full_ready_list">
+  <img src="../images/freertos/freertos-figures-full-ready-list.png" alt="[Full view of FreeRTOS ready list.]" />
+  Figure&nbsp;999.3: Full view of a ready list
+</div>
 
 <p>
 As you can see, pxCurrentTCB indicates that we're currently running Task B. The next 
@@ -627,23 +646,13 @@ uses <code>pxIndex->pxNext</code> to figure out the next task is Task C, and now
 list element.
 
 <p>
-EDIT: Insert picture of pxReadyTasksLists[0] with three tasks, pxIndex pointing to 
-Task C, pxCurrentTCB also pointing to Task C.
+EDIT: How does configUSE_PREEMPTION affect which task runs next? Mention it here?
 </p>
 
-<p>
-New lists are initialized to contain a single element: the <code>xListEnd</code> 
-element.  <code>xListEnd.xItemValue</code> is a sentinal value which is the largest 
-value for the <code>xItemValue</code> variable: 0xffff when <code>portTickType</code> 
-is a 16-bit value and 0xffffffff when <code>portTickType</code> is a 32-bit value.  
-This sentinal value is a reserved value: other list elements must not use this value.
-</p>
- 
-<p>
-Since lists are sorted high-to-low, the <code>xListEnd</code> element is used as a 
-marker for the start of the list.  And since the list is circular, this 
-<code>xListEnd</code> element is also a marker for the end of the list.
-</p>
+<div class="figure" id="fig.freertos.full_ready_list_2">
+  <img src="../images/freertos/freertos-figures-full-ready-list-2.png" alt="[Full view of FreeRTOS ready list after a system timer tick]" />
+  Figure&nbsp;999.3: Full view of a ready list after the next system timer tick
+</div>
 
 </div>
 
