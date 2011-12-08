@@ -53,6 +53,24 @@ operating systems, FreeRTOS is a real-time operating system which runs on embedd
 systems.
 </p>
 
+
+<p>
+By the end of this chapter I hope that you'll understand the basic architecture of 
+FreeRTOS. Most of FreeRTOS is dedicated to running tasks, so you'll get a good look 
+at exactly how FreeRTOS does that.
+</p>
+
+<p>
+If this is your first look under the hood of an operating system, I also hope that 
+you'll learn the basics about how any OS works. FreeRTOS is relatively simple, 
+especially when compared to Windows, Linux, or OS X, but all operating systems share 
+the basic concepts and goals, and so looking at any OS can be very instructive and 
+interesting.
+</p>
+
+<div class="sect">
+<h2>999.1 What is "Embedded" and "Real-Time"?</h2>
+
 <p>
 "Embedded" and "real-time" can mean different things to different people, so let's 
 define them as FreeRTOS uses them.
@@ -80,19 +98,7 @@ busy to respond in time. Pacemakers and other real-time embedded systems are
 carefully designed to run their tasks on time, every time.
 </p>
 
-<p>
-By the end of this chapter I hope that you'll understand the basic architecture of 
-FreeRTOS. Most of FreeRTOS is dedicated to running tasks, so you'll get a good look 
-at exactly how FreeRTOS does that.
-</p>
-
-<p>
-If this is your first look under the hood of an operating system, I also hope that 
-you'll learn the basics about how any OS works. FreeRTOS is relatively simple, 
-especially when compared to Windows, Linux, or OS X, but all operating systems share 
-the basic concepts and goals, and so looking at any OS can be very instructive and 
-interesting.
-</p>
+</div> <!-- end sect -->
 
 <div class="sect">
 <h2>999.2. Architecture Overview</h2>
@@ -247,11 +253,11 @@ tick frequency, the minimal stack size and the total heap size:
 <p>
 Hardware-dependent code lives in separate files for each compiler toolchain and CPU 
 architecture. For instance, if you're working with the IAR compiler on an ARM 
-Cortex-M3 chip, the hardware-depenendent code lives in the 
+Cortex-M3 chip, the hardware-dependent code lives in the 
 <code>FreeRTOS/Source/portable/IAR/ARM_CM3/</code> directory.  
 <code>FreeRTOS/Source/portable/IAR/ARM_CM3/portmacro.h</code> declares all of the 
 hardware-specific functions, while <code>port.c</code> and <code>portasm.s</code> in 
-that same directory contain all of the actual hardware-depenendent code. The 
+that same directory contain all of the actual hardware-dependent code. The 
 hardware-independent header file <code>portable.h</code> <code>#include</code>'s the 
 correct <code>portmacro.h</code> file at compile time.  FreeRTOS calls the 
 hardware-specific functions using <code>#define</code>'d functions declared in 
@@ -306,7 +312,7 @@ functionality, which is much smaller than the hardware-independent part of FreeR
 </p>
 
 <p>
-As we've seen, FreeRTOS implements hardware-depenent functionality with C 
+As we've seen, FreeRTOS implements hardware-dependent functionality with C 
 preprocessor <code>#define</code> macros. FreeRTOS also uses <code>#define</code> for 
 plenty of hardware-independent code. For non-embedded applications this frequent use 
 of <code>#define</code> is a cardinal sin, but in many smaller embedded systems the 
@@ -429,11 +435,6 @@ operating systems, the basic unit of work in FreeRTOS is "the task." FreeRTOS us
 Task Control Block (TCB) to represent each task. The TCB is defined in tasks.c like 
 this:
 </p>
-
-<p>
-EDIT: Task control block: would this work better as a block diagram, rather than a code snippet?  Or would both together be useful?
-</p>
-
 
 <pre>
 /*
@@ -593,7 +594,7 @@ list at its specified priority level.
 </p>
 
 <p>
-Interrupts are reenabled and new task creation is complete.
+Interrupts are re-enabled and new task creation is complete.
 </p>
 
 </div>
@@ -627,7 +628,7 @@ struct xLIST_ITEM
 <p>
 Each list element holds a number, <code>xItemValue</code>, that is the usually the 
 priority of the task being tracked or a timer value for event scheduling.  Lists are 
-kept in high-to-low priorty order, meaning that the highest priority xItemValue (the 
+kept in high-to-low priority order, meaning that the highest priority xItemValue (the 
 largest number) is at the front of the list and the lowest priority xItemValue (the 
 smallest number) is at the end of the list.
 </p>
@@ -674,7 +675,7 @@ All new lists are initialized to contain a single element: the <code>xListEnd</c
 element.  <code>xListEnd.xItemValue</code> is a sentinal value which is the largest 
 value for the <code>xItemValue</code> variable: 0xffff when <code>portTickType</code> 
 is a 16-bit value and 0xffffffff when <code>portTickType</code> is a 32-bit value.  
-This sentinal value is a reserved value: other list elements must not use this value.
+This sentinel value is a reserved value: other list elements must not use this value.
 </p>
  
 <p>
@@ -733,13 +734,9 @@ Note that each of <code>struct xListItem</code> objects is actually the
 <code>xGenericListItem</code> object from the associated TCB.
 </p>
 
-<p>
-EDIT: How does configUSE_PREEMPTION affect which task runs next? Mention it here?
-</p>
-
 <div class="figure" id="fig.freertos.full_ready_list_2">
   <img src="../images/freertos/freertos-figures-full-ready-list-2.png" alt="[Full view of FreeRTOS ready list after a system timer tick]" />
-  Figure&nbsp;999.3: Full view of a ready list after the next system timer tick
+  Figure&nbsp;999.4: Full view of a ready list after the next system timer tick
 </div>
 
 </div> <!-- end sect -->
@@ -873,7 +870,7 @@ implements them similarly, but they're intended to be used in different ways.
 
 <p>
 How should they be used differently? Embedded guru Michael Barr says it best in his 
-article, "Mutexes and Semaphores Demystified":<sup class="footnote"><a href="#footnote-3">3</a></sup>
+article, "Mutexes and Semaphores Demystified":<sup class="footnote"><a href="#footnote-2">2</a></sup>
 </p>
 
 <p>
@@ -885,7 +882,7 @@ shared resource it protects. By contrast, tasks that use semaphores either signa
 
 <p>
 A mutex is used to protect a shared resource. A task acquires a mutex, uses the 
-shared resource, then releases the mutex. No task can aquire a mutex while the mutex 
+shared resource, then releases the mutex. No task can acquire a mutex while the mutex 
 is being held by another task. This guarantees that only one task is allowed to use a 
 shared resource at a time.
 </p>
@@ -941,7 +938,7 @@ overloaded <code>pcTail</code> fields to implement priority inheritence for mute
 <p>
 In case you're not familiar with priority inheritance, I'll quote Michael Barr 
 again to define it, this time from his article, "Introduction to Priority 
-Inversion":<sup class="footnote"><a href="#footnote-4">4</a></sup>
+Inversion":<sup class="footnote"><a href="#footnote-3">3</a></sup>
 </p>
 
 <p>
@@ -989,7 +986,7 @@ the source code for more information about the FreeRTOS architecture.
 
 <p>
 This chapter also did not discuss how to setup or use FreeRTOS. Richard Barry has 
-written an excellent book<sup class="footnote"><a href="#footnote-5">5</a></sup>, 
+written an excellent book<sup class="footnote"><a href="#footnote-4">4</a></sup>, 
 "Using the FreeRTOS Real Time Kernel - a Practical Guide," which discusses exactly 
 that.  It's not free, but it's authoritative and very well written; I highly 
 recommend it if you're going to use FreeRTOS.
@@ -1028,10 +1025,9 @@ was a geek when she married me!
 <h2>Footnotes</h2>
 <ol>
 <li id="footnote-1"<code class="url">http://www.freertos.org</code</li>
-<li id="footnote-2"<code class="url">http://www.wittenstein-us.com/Embedded-RTOS.html</code></li>
-<li id="footnote-3"<code class="url">http://www.netrino.com/node/202</code></li>
-<li id="footnote-4"<code class="url">http://www.eetimes.com/discussion/beginner-s-corner/4023947/Introduction-to-Priority-Inversion</code></li>
-<li id="footnote-5"<code class="url">http://www.freertos.org/Documentation/FreeRTOS-documentation-and-book.html</code</li>
+<li id="footnote-2"<code class="url">http://www.netrino.com/node/202</code></li>
+<li id="footnote-3"<code class="url">http://www.eetimes.com/discussion/beginner-s-corner/4023947/Introduction-to-Priority-Inversion</code></li>
+<li id="footnote-4"<code class="url">http://www.freertos.org/Documentation/FreeRTOS-documentation-and-book.html</code</li>
 </ol>
 </div>
 
