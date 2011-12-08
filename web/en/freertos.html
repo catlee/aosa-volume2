@@ -25,7 +25,26 @@
 
 <p>
 FreeRTOS is an open source real-time operating system (RTOS) for embedded systems.
+FreeRTOS's web site<sup class="footnote"><a href="#footnote-1">1</a></sup> sums it up 
+like this:
 </p>
+
+<p>
+"FreeRTOS(tm) includes official ports to 27 architectures [and 17 toolchains] and 
+receives more than 77,500 downloads a year. It is market leading, robust, supported, 
+portable, open source, free to download, and free to deploy.  FreeRTOS can be used in 
+commercial applications without any requirement to expose your proprietary source 
+code. With a growing ecosystem, FreeRTOS is commonly integrated with both open source 
+and commercial TCP/IP, file system, and USB components."
+</p>
+
+<p>
+FreeRTOS is under active development, and has been since Richard Barry started work 
+on it in 2002.  As for me, I'm not a developer of or contributor to FreeRTOS, I'm 
+merely a user and a fan. As a result, this chapter will favor the "what" and "how" of 
+FreeRTOS's architecture, with less of the "why" than other chapters in this book.
+</p>
+
 
 <p>
 Like all operating systems, FreeRTOS's main job is to run tasks. Most of FreeRTOS's 
@@ -62,32 +81,6 @@ carefully designed to run their tasks on time, every time.
 </p>
 
 <p>
-Because FreeRTOS is a real-time operating system for embedded systems, it is designed 
-to be small, simple, and reliable. A typical binary code image is less than 10KB.
-</p>
-
-<p>
-FreeRTOS's web site<sup class="footnote"><a href="#footnote-1">1</a></sup> sums it 
-up like this:
-</p>
-
-<p>
-"FreeRTOS(tm) includes official ports to 27 architectures [and 17 toolchains] and 
-receives more than 77,500 downloads a year. It is market leading, robust, supported, 
-portable, open source, free to download, and free to deploy.  FreeRTOS can be used in 
-commercial applications without any requirement to expose your proprietary source 
-code. With a growing ecosystem, FreeRTOS is commonly integrated with both open source 
-and commercial TCP/IP, file system, and USB components."
-</p>
-
-<p>
-FreeRTOS is under active development, and has been since Richard Barry started work 
-on it in 2002.  As for me, I'm not a developer of or contributor to FreeRTOS, I'm 
-merely a user and a fan. As a result, this chapter will favor the "what" and "how" of 
-FreeRTOS's architecture, with less of the "why" than other chapters in this book.
-</p>
-
-<p>
 By the end of this chapter I hope that you'll understand the basic architecture of 
 FreeRTOS. Most of FreeRTOS is dedicated to running tasks, so you'll get a good look 
 at exactly how FreeRTOS does that.
@@ -110,7 +103,8 @@ interesting.
 <p>
 FreeRTOS is a relatively small application. The minimum core of FreeRTOS is only 
 three source (.c) files and a handful of header files, totalling just under 9000 
-lines of code, including comments and blank lines.
+lines of code, including comments and blank lines. A typical binary code image is 
+less than 10KB.
 </p>
 
 <p>
@@ -413,21 +407,21 @@ we'll fill in later.
   Figure&nbsp;999.2: High level view of a ready list
 </div>
 
+<p>
+Now that we have the high level overview out of the way, let's dive in to the 
+details.  We'll look at the three main FreeRTOS data structures: Tasks, Lists, and 
+Queues.
+</p>
+
 </div> <!-- end sect -->
 
 
 
 <div class="sect">
-<h2>999.4. FreeRTOS Data Structures</h2>
-
-<p>
-Now that we have the high level overview out of the way, let's dive in to the 
-details.  We'll start by looking at the three main FreeRTOS data structures: Tasks, 
-Lists, and Queues.
-</p>
+<h2>999.4. Tasks</h2>
 
 <div class="subsect">
-<h3>999.4.1. Tasks</h3>
+<h3>999.4.1. Task Control Block (TCB)</h3>
 
 <p>
 The main job of all operating systems is to run and coordinate user tasks. Like many 
@@ -516,11 +510,102 @@ list to another, without needing to explicitly maintain a state variable.
 </div>
 
 <div class="subsect">
-<h3>999.4.3. Lists</h3>
+<h3>999.4.2. Task setup</h3>
 
 <p>
-FreeRTOS uses a list structure to keep track of tasks for scheduling, and also to 
-implement its queues.
+We've already touched on how a task is selected and scheduled with the 
+<code>pxReadyTasksLists</code> array. Now Let's look at how a task is initially 
+created.</p>
+    
+<p>
+A task is created when the <code>xTaskCreate()</code> function is called.
+</p>
+
+<p>
+FreeRTOS uses a newly allocated TCB object to store the name, priority, and other 
+details for a task.
+</p>
+
+<p>
+FreeRTOS allocates the amount of stack the user requests (assuming there's enough 
+memory available) and remembers the start of the stack memory in TCB's 
+<code>pxStack</code> member.
+</p>
+
+<p>
+The stack is initialized to look as if the new task is already running and was 
+interrupted by a context switch. This way the scheduler can treat newly created tasks 
+exactly the same way as tasks that have already been running for a while; the 
+scheduler doesn't need any special case code for handling new tasks.
+</p>
+
+<p>
+The exact way that a task's stack is made to look like it was interrupted by a 
+context switch depends on the architecture FreeRTOS is running on, but this ARM 
+Cortex-M3 processor's implementation is a good example:
+</p>
+
+<pre>
+unsigned int *pxPortInitialiseStack( unsigned int *pxTopOfStack, pdTASK_CODE pxCode, void *pvParameters )
+{
+  /* Simulate the stack frame as it would be created by a context switch interrupt. */
+  pxTopOfStack--; /* Offset added to account for the way the MCU uses the stack on entry/exit of interrupts. */
+  *pxTopOfStack = portINITIAL_XPSR;  /* xPSR */
+  pxTopOfStack--;
+  *pxTopOfStack = ( portSTACK_TYPE ) pxCode;  /* PC */
+  pxTopOfStack--;
+  *pxTopOfStack = 0;  /* LR */
+  pxTopOfStack -= 5;  /* R12, R3, R2 and R1. */
+  *pxTopOfStack = ( portSTACK_TYPE ) pvParameters;  /* R0 */
+  pxTopOfStack -= 8;  /* R11, R10, R9, R8, R7, R6, R5 and R4. */
+  
+  return pxTopOfStack;
+}
+</pre>
+
+<p>
+The ARM Cortex-M3 processor pushes registers on the stack when a task is interrupted.  
+<code>pxPortInitialiseStack()</code> modifies the stack to look like the registers 
+were pushed even though the task hasn't actually started running yet.
+</p>
+
+<p>
+After the stack is prepared, the task is almost ready to run.
+</p>
+
+<p>
+First though, FreeRTOS disables interrupts: We're about to start mucking with the 
+ready lists and other scheduler structures and we don't want anyone else changing 
+them underneath us.
+</p>
+
+<p>
+If this is the first task to ever be created, FreeRTOS initializes the scheduler's 
+task lists. FreeRTOS's scheduler has an array of ready lists, 
+<code>pxReadyTasksLists[]</code>, which has one ready list for each possible priority 
+level. FreeRTOS also has a few other lists for tracking tasks that have been 
+suspended, killed, and delayed. These are all initialized now as well.
+</p>
+
+<p>
+After any first-time initialization is done the new task is added to the ready 
+list at its specified priority level.
+</p>
+
+<p>
+Interrupts are reenabled and new task creation is complete.
+</p>
+
+</div>
+</div>
+
+<div class="sect">
+<h2>999.5. Lists</h2>
+
+<p>
+After tasks, the most used FreeRTOS data structure is the list. FreeRTOS uses its 
+list structure to keep track of tasks for scheduling, and also to implement its 
+queues.
 </p>
 
 <p>
@@ -657,10 +742,10 @@ EDIT: How does configUSE_PREEMPTION affect which task runs next? Mention it here
   Figure&nbsp;999.3: Full view of a ready list after the next system timer tick
 </div>
 
-</div>
+</div> <!-- end sect -->
 
-<div class="subsect">
-<h3>999.4.4. Queues</h3>
+<div class="sect">
+<h2>999.6. Queues</h2>
 
 <p>
 FreeRTOS allows tasks to communicate and synchronize with each other using queues.  
@@ -692,8 +777,6 @@ typedef struct QueueDefinition
   unsigned portBASE_TYPE uxLength;                   /*< The length of the queue defined as the number of items it will hold, not the number of bytes. */
   unsigned portBASE_TYPE uxItemSize;                 /*< The size of each items that the queue will hold. */
                                          
-  signed portBASE_TYPE xRxLock;                      /*< Stores the number of items received from the queue (removed from the queue) while the queue was locked.  Set to queueUNLOCKED when the queue is not locked. */
-  signed portBASE_TYPE xTxLock;                      /*< Stores the number of items transmitted to the queue (added to the queue) while the queue was locked.  Set to queueUNLOCKED when the queue is not locked. */
 } xQUEUE;
 </pre>
 
@@ -742,230 +825,12 @@ removing from the queue.
 </p>
 
 <p>
-We'll discuss how delays and timeouts are implemented when we discuss FreeRTOS's 
+We'll discuss how delays and timeouts are implemented when we discuss queue 
 algorithms later.
 </p>
 
-<p>
-The <code>xRxLock</code> and <code>xTxLock</code> elements are used for - you 
-guessed it - locking a queue.  We'll look at those when we discuss the queueing 
-algorithms later.
-</p>
-
-<p>
-EDIT: Consider getting rid of locked discussion?
-</p>
-
-</div>
-
 <div class="subsect">
-<h3>999.4.5. Semaphores and Mutexes</h3>
-
-<div class="subsubsect">
-<h4>999.4.5.1. What's The Difference?</h4>
-
-<p>
-Semaphores and mutexes may sound like the same thing, but they're not. FreeRTOS 
-implements them similarly, but they're intended to be used in different ways.
-</p>
-
-<p>
-How should they be used differently? Embedded guru Michael Barr says it best in his 
-article, "Mutexes and Semaphores Demystified":<sup class="footnote"><a href="#footnote-3">3</a></sup>
-</p>
-
-<p>
-"The correct use of a semaphore is for signaling from one task to another. A mutex 
-is meant to be taken and released, always in that order, by each task that uses the 
-shared resource it protects. By contrast, tasks that use semaphores either signal 
-["send" in FreeRTOS terms] or wait ["receive" in FreeRTOS terms] - not both."
-</p>
-
-<p>
-A mutex is used to protect a shared resource. A task acquires a mutex, uses the 
-shared resource, then releases the mutex. No task can aquire a mutex while the mutex 
-is being held by another task. This guarantees that only one task is allowed to use a 
-shared resource at a time.
-</p>
-
-<p>
-Semaphores are used by one task to signal another task. To quote Barr's article:
-</p>
-
-<p>
-"For example, Task 1 may contain code to post (i.e., signal or increment) a 
-particular semaphore when the "power" button is pressed and Task 2, which wakes the 
-display, pends on that same semaphore. In this scenario, one task is the producer of 
-the event signal; the other the consumer."
-</p>
-
-<p>
-If you're at all in doubt about semaphores and mutexes please check out Michael's 
-article.
-</p>
-
-</div>
-
-<div class="subsubsect">
-<h4>999.4.5.2. Implementation</h4>
-
-<p>
-FreeRTOS implements an N-element semaphore as queue with N items. It doesn't store 
-any actual data in the queue, it just cares how many queue entries are occupied, 
-tracked in the <code>uxMessagesWaiting</code> field.  It's doing "pure 
-synchronization" as the FreeRTOS header file <code>semphr.h</code> calls it.  
-Therefore the queue has a data size of zero bytes (<code>uxItemSize == 0</code>).  
-</p>
-
-<p>
-A mutex is also implemented as a queue, but several of the <code>xQUEUE</code> 
-struct fields are overloaded using <code>#defines</code>:
-</p>
-
-<pre>
-/* Effectively make a union out of the xQUEUE structure. */
-#define pxMutexHolder         pcTail
-#define uxQueueType           pcHead
-#define uxRecursiveCallCount  pcReadFrom
-#define queueQUEUE_IS_MUTEX   NULL
-</pre>
-
-<p>
-EDIT: "For the most part FreeRTOS uses the same queue code to handle semaphores and mutexes."  I was still confused after reading this section, and when I see "for the most part", what I hear is an opportunity to explain architecture: the differences (and why they exist) are probably as interesting as the base mechanism.
-</p>
-
-<p>
-For the most part FreeRTOS uses the same queue code to handle semaphores and 
-mutexes.
-</p>
-
-<p>
-The difference is that mutexes implement priority inheritance, whereas semaphores 
-don't.
-</p>
-
-<p>
-In case you're not familiar with priority inheritance, I'll quote Michael Barr 
-again to define it, this time from his article, "Introduction to Priority 
-Inversion":<sup class="footnote"><a href="#footnote-4">4</a></sup>
-</p>
-
-
-<p>
-"[Priority inheritance] mandates that a lower-priority task inherit the priority 
-of any higher-priority task pending on a resource they share. This priority change 
-should take place as soon as the high-priority task begins to pend; it should end 
-when the resource is released."
-</p>
-
-<p>
-FreeRTOS implements priority inheritance using the <code>pxMutexHolder</code> 
-field (which is really just the overloaded-by-<code>#define</code> 
-<code>pcTail</code> field).  When a higher priority task is found to be waiting on a 
-mutex currently taken by a lower priority task, FreeRTOS "upgrades" the lower 
-priority task to the priority of the higher priority task until the mutex is 
-available again.
-</p>
-
-</div>
-
-</div>
-
-</div>
-
-<div class="sect">
-<h2>999.5. Algorithms</h2>
-
-<p>
-Now that we've looked at FreeRTOS's data structures, let's dive in to the algorithms 
-that use them.
-</p>
-
-EDIT: Consider moving this Task setup discussion to the intitial discussion about the 
-TCB. Then consider getting rid of the queue algorithms; maybe beef up the Queue data 
-structure section? Or leave the queue alg in, tack it on the to the queueing data 
-structure section?
-
-<div class="subsect">
-<h3>999.5.1. Task setup</h3>
-    
-<p>
-A task is created when the user calls <code>xTaskCreate()</code>.
-</p>
-
-<p>
-FreeRTOS uses a newly allocated TCB object to store the name, priority, and other 
-details for a task.
-</p>
-
-<p>
-FreeRTOS allocates the amount of stack the user requests (assuming there's enough 
-memory available) and remembers the start of the stack memory in TCB's 
-<code>pxStack</code> member.
-</p>
-
-<p>
-The stack is initialized to look as if the new task is already running and was 
-interrupted by a context switch. This way the scheduler can treat newly created tasks 
-exactly the same way as tasks that have already been running for a while; the 
-scheduler doesn't need any special case code for handling new tasks.
-</p>
-
-<p>
-The exact way that a task's stack is made to look like it was interrupted by a 
-context switch depends on the architecture FreeRTOS is running on, but this ARM 
-Cortex-M3 processor's implementation is a good example:
-</p>
-
-<pre>
-unsigned int *pxPortInitialiseStack( unsigned int *pxTopOfStack, pdTASK_CODE pxCode, void *pvParameters )
-{
-  /* Simulate the stack frame as it would be created by a context switch interrupt. */
-  pxTopOfStack--; /* Offset added to account for the way the MCU uses the stack on entry/exit of interrupts. */
-  *pxTopOfStack = portINITIAL_XPSR;  /* xPSR */
-  pxTopOfStack--;
-  *pxTopOfStack = ( portSTACK_TYPE ) pxCode;  /* PC */
-  pxTopOfStack--;
-  *pxTopOfStack = 0;  /* LR */
-  pxTopOfStack -= 5;  /* R12, R3, R2 and R1. */
-  *pxTopOfStack = ( portSTACK_TYPE ) pvParameters;  /* R0 */
-  pxTopOfStack -= 8;  /* R11, R10, R9, R8, R7, R6, R5 and R4. */
-  
-  return pxTopOfStack;
-}
-</pre>
-
-<p>
-After the stack is prepared, the task is almost ready to run.
-</p>
-
-<p>
-First though, FreeRTOS disables interrupts: We're about to start mucking with the 
-ready lists and other scheduler structures and we don't want anyone else changing 
-them underneath us.
-</p>
-
-<p>
-If this is the first task to ever be created, FreeRTOS initializes the scheduler's 
-task lists. FreeRTOS's scheduler has an array of ready lists, 
-<code>pxReadyTasksLists[]</code>, which has one ready list for each possible priority 
-level. FreeRTOS also has a few other lists for tracking tasks that have been 
-suspended, killed, and delayed. These are all initialized now as well.
-</p>
-
-<p>
-After any first-time initialization is done the new task is added to the ready 
-list at its specified priority level.
-</p>
-
-<p>
-Interrupts are reenabled and new task creation is complete.
-</p>
-
-</div>
-
-<div class="subsect">
-<h3>999.5.3. Queue Accesses</h3>
+<h3>999.6.1. Queue Accesses</h3>
 
 <p>
 Since FreeRTOS uses queues as often as graphic designers use Apple comparisons, let's 
@@ -1079,6 +944,11 @@ no task switching can happen. The queue is now locked, which sets the
 </p>
 
 <p>
+EDIT: Removed xRxLock and xTxLock from the data structure, need to remove it from the 
+discussion here too.
+</p>
+
+<p>
 If the blocking timeout has expired then we unlock this queue, reenable the 
 scheduler, then we "goto top." (Again, the code doesn't actually use a goto 
 statement, it uses a for loop, but hey, this is prose, not code.)
@@ -1105,12 +975,127 @@ may run during times when <code>xQueueGenericSend()</code> has left interrupts a
 task switching enabled.
 </p>
 
-</div>
+</div> <!-- end subsect -->
 
-</div>
+
+<div class="subsect">
+<h3>999.6.2. Semaphores and Mutexes</h3>
+
+<div class="subsubsect">
+<h4>999.6.2.1. What's The Difference?</h4>
+
+<p>
+Semaphores and mutexes may sound like the same thing, but they're not. FreeRTOS 
+implements them similarly, but they're intended to be used in different ways.
+</p>
+
+<p>
+How should they be used differently? Embedded guru Michael Barr says it best in his 
+article, "Mutexes and Semaphores Demystified":<sup class="footnote"><a href="#footnote-3">3</a></sup>
+</p>
+
+<p>
+"The correct use of a semaphore is for signaling from one task to another. A mutex 
+is meant to be taken and released, always in that order, by each task that uses the 
+shared resource it protects. By contrast, tasks that use semaphores either signal 
+["send" in FreeRTOS terms] or wait ["receive" in FreeRTOS terms] - not both."
+</p>
+
+<p>
+A mutex is used to protect a shared resource. A task acquires a mutex, uses the 
+shared resource, then releases the mutex. No task can aquire a mutex while the mutex 
+is being held by another task. This guarantees that only one task is allowed to use a 
+shared resource at a time.
+</p>
+
+<p>
+Semaphores are used by one task to signal another task. To quote Barr's article:
+</p>
+
+<p>
+"For example, Task 1 may contain code to post (i.e., signal or increment) a 
+particular semaphore when the "power" button is pressed and Task 2, which wakes the 
+display, pends on that same semaphore. In this scenario, one task is the producer of 
+the event signal; the other the consumer."
+</p>
+
+<p>
+If you're at all in doubt about semaphores and mutexes please check out Michael's 
+article.
+</p>
+
+</div> <!-- end subsubsect -->
+
+<div class="subsubsect">
+<h4>999.6.2.2. Implementation</h4>
+
+<p>
+FreeRTOS implements an N-element semaphore as queue with N items. It doesn't store 
+any actual data in the queue, it just cares how many queue entries are occupied, 
+tracked in the <code>uxMessagesWaiting</code> field.  It's doing "pure 
+synchronization" as the FreeRTOS header file <code>semphr.h</code> calls it.  
+Therefore the queue has a data size of zero bytes (<code>uxItemSize == 0</code>).  
+</p>
+
+<p>
+A mutex is also implemented as a queue, but several of the <code>xQUEUE</code> 
+struct fields are overloaded using <code>#defines</code>:
+</p>
+
+<pre>
+/* Effectively make a union out of the xQUEUE structure. */
+#define pxMutexHolder         pcTail
+#define uxQueueType           pcHead
+#define uxRecursiveCallCount  pcReadFrom
+#define queueQUEUE_IS_MUTEX   NULL
+</pre>
+
+<p>
+EDIT: "For the most part FreeRTOS uses the same queue code to handle semaphores and mutexes."  I was still confused after reading this section, and when I see "for the most part", what I hear is an opportunity to explain architecture: the differences (and why they exist) are probably as interesting as the base mechanism.
+</p>
+
+<p>
+For the most part FreeRTOS uses the same queue code to handle semaphores and 
+mutexes.
+</p>
+
+<p>
+The difference is that mutexes implement priority inheritance, whereas semaphores 
+don't.
+</p>
+
+<p>
+In case you're not familiar with priority inheritance, I'll quote Michael Barr 
+again to define it, this time from his article, "Introduction to Priority 
+Inversion":<sup class="footnote"><a href="#footnote-4">4</a></sup>
+</p>
+
+
+<p>
+"[Priority inheritance] mandates that a lower-priority task inherit the priority 
+of any higher-priority task pending on a resource they share. This priority change 
+should take place as soon as the high-priority task begins to pend; it should end 
+when the resource is released."
+</p>
+
+<p>
+FreeRTOS implements priority inheritance using the <code>pxMutexHolder</code> 
+field (which is really just the overloaded-by-<code>#define</code> 
+<code>pcTail</code> field).  When a higher priority task is found to be waiting on a 
+mutex currently taken by a lower priority task, FreeRTOS "upgrades" the lower 
+priority task to the priority of the higher priority task until the mutex is 
+available again.
+</p>
+
+</div> <!-- end subsubsect -->
+
+</div> <!-- end subsect -->
+
+</div> <!-- end sect -->
+
 
 <div class="sect">
-<h2>999.6. Conclusion</h2>
+<h2>999.7. Conclusion</h2>
 
 <p>
 We've completed our look at the FreeRTOS's main data structures and algorithms.
@@ -1144,7 +1129,7 @@ it's a book *and* a URL.]
 </div>
 
 <div class="sect">
-<h2>999.7. Acknowledgements</h2>
+<h2>999.8. Acknowledgements</h2>
 
 <p>
 I would like to thank Richard Barry for creating and maintaining FreeRTOS, and for 
