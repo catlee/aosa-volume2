@@ -786,29 +786,38 @@ to keep track of where we've just read from and written to.
 </p>
 
 <p>
-When creating a queue the user specifies the length of the queue and the size of 
-each element in the queue. Adding an item into a queue does a deep copy of the item 
-into the queue's internal memory. FreeRTOS makes a deep copy instead of storing a 
-pointer to the item because the lifetime of the item inserted may be much shorter 
-than the lifetime of the queue. For instance, consider a queue of simple integers 
-inserted and removed using local variables across several function calls. If the 
-queue stored pointers to the integers' local variables, the pointers would be invalid 
-as soon as the integers' local variables went out of scope and the local variables' 
-memory was used for some new value.
+When creating a queue the user specifies the length of the queue and the size of each 
+element in the queue. <code>pcHead</code> and <code>pcTail</code> are used to keep 
+track of the queue's internal storage. Adding an item into a queue does a deep copy 
+of the item into the queue's internal storage.  FreeRTOS makes a deep copy instead of 
+storing a pointer to the item because the lifetime of the item inserted may be much 
+shorter than the lifetime of the queue.  For instance, consider a queue of simple 
+integers inserted and removed using local variables across several function calls.  
+If the queue stored pointers to the integers' local variables, the pointers would be 
+invalid as soon as the integers' local variables went out of scope and the local 
+variables' memory was used for some new value.
 </p>
 
 <p>
 FreeRTOS supports blocking and non-blocking queue insertions and removals.
-Non-blocking operations return immediately with a "did the queue insert work?" or 
-"did the queue remove work?" status.
-Blocking operations are specified with a timeout. A task can block indefinitely or 
-for a given amount of time.
+Non-blocking operations return immediately with a "did the queue insertion work?" or 
+"did the queue removal work?" status. Blocking operations are specified with a 
+timeout. A task can block indefinitely or for a given amount of time.
+</p>
+
+<p>
+The queue insertion and removal algorithms are basically big infinite loops that 
+continue trying to insert or remove until the queue is ready or a blocking timeout 
+expires. Non-blocking queue insertion and removal algorithms check if the queue is 
+ready for the insert/remove, do the insert/remove if so, and then return "success" or 
+"failure" immediately.
 </p>
 
 <p>
 In the "block indefinitely" case an insert operation blocks until there is space in 
 the queue, and a remove operation blocks until there is at least one item in the 
-queue. The insert/remove operation then returns with a "passed" status.
+queue.  The insert/remove operation then does the actual insert/remove and returns 
+with a "passed" status.
 </p>
 
 <p>
@@ -819,167 +828,40 @@ insert/remove returns with a "failed" status.
 
 <p>
 FreeRTOS uses the <code>xTasksWaitingToSend</code> list to keep track of tasks that 
-are blocking on inserting into the queue. Similarly, 
-<code>xTasksWaitingToReceive</code> keeps track of tasks that are blocking on 
-removing from the queue.
+are blocking on inserting into the queue. Each time an element is removed from a 
+queue the <code>xTasksWaitingToSend</code> list is checked. If a task is waiting in 
+that list the task is unblocked.
 </p>
 
 <p>
-We'll discuss how delays and timeouts are implemented when we discuss queue 
-algorithms later.
-</p>
-
-<div class="subsect">
-<h3>999.6.1. Queue Accesses</h3>
-
-<p>
-Since FreeRTOS uses queues as often as graphic designers use Apple comparisons, let's 
-take a look at the queuing algorithms.
+Similarly, <code>xTasksWaitingToReceive</code> keeps track of tasks that are blocking 
+on removing from the queue.  Each time a new element is inserted into a queue the 
+<code>xTasksWaitingToReceive</code> list is checked. If a task is waiting in that 
+list the task is unblocked.
 </p>
 
 <p>
-The queue insertion and removal algorithms are very similar, and so I'm only going 
-to describe queue insertion as implemented in <code>xQueueGenericSend()</code>.  
-Please check out the removal implementation in queue.c if you'd like to know how it's 
-implemented.
+Managing the <code>xTasksWaitingToSend</code> and <code>xTasksWaitingToReceive</code> 
+lists is straightforward when "block indefinitely" inserts and removals are used. It 
+gets more complicated when blocking for a specified amount of time.
 </p>
 
 <p>
-Let's start by looking at a task, which I'll creatively call "Task A," inserting a 
-new element into a queue. FreeRTOS uses the word "send" for inserting an item into a 
-queue and "receive" for removing an item from a queue, but we'll use the more 
-commonly used "insert" and "remove" here. (Using "send" and "receive" does make sense 
-for FreeRTOS because it emphasizes that FreeRTOS uses queues for communication
-between tasks.)
+When using a blocking timeout the insert/remove code uses the system timer to keep 
+track of how much time has passed since the initial insert/remove request. Each time 
+the blocking task runs it checks if the queue is ready to actually do the 
+insert/remove. If the queue is ready, then the insert/remove happens and the queue 
+access is done.  If the queue is not ready, then the system timer is checked. If the 
+task has been blocking longer than the requested timeout the queue access returns 
+with a "failed" status. If the requested timeout has not been reached yet then the 
+task will attempt the queue access again the next time it runs.
 </p>
-
-<p>
-A word of warning: If the goto statement is considered harmful in code, then it 
-must be considered downright evil in prose, but I'm going to use it anyway.
-</p>
-
-<p>
-EDIT: "The queue insert function is basically..." this para and the two that follow say important things, but are awkwardly phrased.
-</p>
-
-<p>
-The queue insert function is basically a big infinite <code>for()</code> loop that 
-keeps looping until the queue insert succeeds or times out.
-</p>
-
-<p>
-Later in this discussion I'm going to say that the queue code executes a "goto 
-top".  That "goto" jumps here in the prose.
-</p>
-
-<p>
-The first thing FreeRTOS does when accessing a queue is disables (most) 
-interrupts, which causes context switches to also be disabled. If it didn't, another 
-task or interrupt service routine could be switched in while Task A was in the middle 
-of updating the queue's data structure, which could cause inconsistent data to be 
-written.
-</p>
-
-<p>
-Next FreeRTOS checks if the queue has space for the new element. 
-</p>
-
-<p>
-EDIT: Section 999.5.3.1 and 999.5.3.2 --- please lose the subsubsection headings.  
-Also, will this be clearer with a decision tree diagram or flowchart accompanying the 
-text?
-</p>
-
-<div class="subsubsect">
-<h4>999.5.3.1. If the queue has room for a new element:</h4>
-
-<p>
-Then the new element is deep-copied into the queue and the queue size is updated.
-Now FreeRTOS checks for any tasks waiting for data to arrive in the queue using the 
-<code>xTasksWaitingToReceive</code> list.
-</p>
-
-<p>
-If no task is waiting on data then FreeRTOS reenables interrupts and returns.  
-Queue insertion is done.
-</p>
-
-<p>
-If any tasks are waiting on data in the queue then FreeRTOS grabs the highest 
-priority task from <code>xTasksWaitingToReceive</code>. We'll call it "Task B." If 
-the currently running Task A is higher priority than Task B then FreeRTOS reenables 
-interrupts and returns. Queue insertion is done.
-</p>
-
-<p>
-If Task B is a higher priority than currently running Task A then Task A yields so 
-that Task B is scheduled next. FreeRTOS reenables interrupts and returns. Queue 
-insertion is done.
-</p>
-
-</div>
-
-<div class="subsubsect">
-<h4>999.5.3.2. If the queue is full and does not have room for a new element:</h4>
-
-<p>
-If Task A specified non-blocking queue insertion then we reenable interrupts and 
-return. Queue insertion is done: the queue insertion failed.
-</p>
-
-<p>
-If Task A specified blocking queue insertion then things get more interesting.
-</p>
-
-<p>
-Let's review: if we "get here" in the algorithm the queue is full and Task A wants 
-a blocking insertion.
-</p>
-
-<p>
-Let's continue: FreeRTOS reenables interrupts but immediately disables the 
-scheduler.  Now ISRs can fire so high priority real-time events can be handled, but 
-no task switching can happen. The queue is now locked, which sets the 
-<code>xRxLock</code> and <code>xTxLock</code> fields.
-</p>
-
-<p>
-EDIT: Removed xRxLock and xTxLock from the data structure, need to remove it from the 
-discussion here too.
-</p>
-
-<p>
-If the blocking timeout has expired then we unlock this queue, reenable the 
-scheduler, then we "goto top." (Again, the code doesn't actually use a goto 
-statement, it uses a for loop, but hey, this is prose, not code.)
-</p>
-
-<p>
-If the blocking timeout hasn't expired then we check if the queue is still full.  
-If it is still full, then we put Task A on the <code>xTasksWaitingToSend</code> list 
-for this queue, unlock the queue, reenable the scheduler, and "goto top."
-</p>
-
-<p>
-If the queue isn't full then we unlock the queue, reenable the scheduler, and
-"goto top."
-</p>
-
-</div>
-
-
-<p>
-Note that Task A stays in <code>xQueueGenericSend()</code>'s infinite 
-<code>for()</code> loop until the insert succeeds or the timeout expires. Other tasks 
-may run during times when <code>xQueueGenericSend()</code> has left interrupts and 
-task switching enabled.
-</p>
-
-</div> <!-- end subsect -->
-
 
 <div class="subsect">
 <h3>999.6.2. Semaphores and Mutexes</h3>
+
+FreeRTOS intends its queues to be used for communication between and within tasks.  
+FreeRTOS also uses its queues to implement semaphores and mutexes.
 
 <div class="subsubsect">
 <h4>999.6.2.1. What's The Difference?</h4>
@@ -1038,30 +920,22 @@ Therefore the queue has a data size of zero bytes (<code>uxItemSize == 0</code>)
 </p>
 
 <p>
-A mutex is also implemented as a queue, but several of the <code>xQUEUE</code> 
-struct fields are overloaded using <code>#defines</code>:
+Like a semaphore, a mutex is also implemented as a queue, but several of the 
+<code>xQUEUE</code> struct fields are overloaded using <code>#defines</code>:
 </p>
 
 <pre>
 /* Effectively make a union out of the xQUEUE structure. */
-#define pxMutexHolder         pcTail
 #define uxQueueType           pcHead
-#define uxRecursiveCallCount  pcReadFrom
-#define queueQUEUE_IS_MUTEX   NULL
+#define pxMutexHolder         pcTail
 </pre>
 
 <p>
-EDIT: "For the most part FreeRTOS uses the same queue code to handle semaphores and mutexes."  I was still confused after reading this section, and when I see "for the most part", what I hear is an opportunity to explain architecture: the differences (and why they exist) are probably as interesting as the base mechanism.
-</p>
-
-<p>
-For the most part FreeRTOS uses the same queue code to handle semaphores and 
-mutexes.
-</p>
-
-<p>
-The difference is that mutexes implement priority inheritance, whereas semaphores 
-don't.
+Since a mutex doesn't store any data in the queue, it doesn't need any internal 
+storage, and so the <code>pcHead</code> and <code>pcTail</code> fields aren't needed.
+FreeRTOS sets the <code>uxQueueType</code> field (really the <code>pcHead</code> 
+field) to 0 to note that this queue is being used for a mutex.  FreeRTOS uses the 
+overloaded <code>pcTail</code> fields to implement priority inheritence for mutexes.
 </p>
 
 <p>
@@ -1069,7 +943,6 @@ In case you're not familiar with priority inheritance, I'll quote Michael Barr
 again to define it, this time from his article, "Introduction to Priority 
 Inversion":<sup class="footnote"><a href="#footnote-4">4</a></sup>
 </p>
-
 
 <p>
 "[Priority inheritance] mandates that a lower-priority task inherit the priority 
@@ -1081,8 +954,9 @@ when the resource is released."
 <p>
 FreeRTOS implements priority inheritance using the <code>pxMutexHolder</code> 
 field (which is really just the overloaded-by-<code>#define</code> 
-<code>pcTail</code> field).  When a higher priority task is found to be waiting on a 
-mutex currently taken by a lower priority task, FreeRTOS "upgrades" the lower 
+<code>pcTail</code> field). FreeRTOS records the task that holds a mutex in the 
+<code>pxMutexHolder</code> field.  When a higher priority task is found to be waiting 
+on a mutex currently taken by a lower priority task, FreeRTOS "upgrades" the lower 
 priority task to the priority of the higher priority task until the mutex is 
 available again.
 </p>
