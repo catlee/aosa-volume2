@@ -487,15 +487,12 @@ below for more on priority inheritance.)
 </p>
 
 <p>
-EDIT: "The xGenericListItem and xEventListItem live for the lifetime of the task and are inserted into and remove[d] from lists as the task carries out its work."  Definitely not clear at this point, but later, when you explain how queues are handled, it starts to make sense.  Rearrange?
-</p>
-
-<p>
 Each task has two list items for use in FreeRTOS's various scheduling lists. When a 
 task is inserted into a list FreeRTOS doesn't insert a pointer directly to the TCB.  
 Instead, it inserts a pointer to either the TCB's <code>xGenericListItem</code> or 
 <code>xEventListItem</code>. These <code>xListItem</code> variables let the FreeRTOS 
-lists be smarter than if they merely held a pointer to the TCB.
+lists be smarter than if they merely held a pointer to the TCB. We'll see an example 
+of this when we discuss lists later.
 </p>
 
 <p>
@@ -638,12 +635,18 @@ looked at earlier, but this time we'll include all of the data structures and fi
 </div>
 
 <p>
-As you can see, pxCurrentTCB indicates that we're currently running Task B. The next 
-time <code>vTaskSwitchContext()</code> runs it calls
+As you can see, <code>pxCurrentTCB</code> indicates that we're currently running Task 
+B.  The next time <code>vTaskSwitchContext()</code> runs it calls
 <code>listGET_OWNER_OF_NEXT_ENTRY()</code> to get the next task to run. This function 
 uses <code>pxIndex->pxNext</code> to figure out the next task is Task C, and now 
-<code>pxIndex</code> *as well as <code>pxCurrentTCB</code> both point to Task C's 
-list element.
+<code>pxIndex</code> points to Task C's list element and <code>pxCurrentTCB</code> 
+points to Task C's TCB.
+</p>
+
+<p>
+Note that each of <code>struct xListItem</code> objects is actually the 
+<code>xGenericListItem</code> object from the associated TCB.
+</p>
 
 <p>
 EDIT: How does configUSE_PREEMPTION affect which task runs next? Mention it here?
@@ -711,22 +714,10 @@ as soon as the integers' local variables went out of scope and the local variabl
 memory was used for some new value.
 </p>
 
-EDIT: Insert basic picture of 4 element queue with 2 elements used.
-
 <p>
 FreeRTOS supports blocking and non-blocking queue insertions and removals.
-</p>
-
-<p>
-EDIT: "Non-blocking operations return immediately..."  How?  How are delays implemented?  How are timeouts implemented?
-</p>
-
-<p>
 Non-blocking operations return immediately with a "did the queue insert work?" or 
 "did the queue remove work?" status.
-</p>
-
-<p>
 Blocking operations are specified with a timeout. A task can block indefinitely or 
 for a given amount of time.
 </p>
@@ -755,16 +746,15 @@ We'll discuss how delays and timeouts are implemented when we discuss FreeRTOS's
 algorithms later.
 </p>
 
-EDIT: Insert picture of 4 element queue that is full, with 1 task pending in 
-xTasksWaitingToSend.
-
 <p>
 The <code>xRxLock</code> and <code>xTxLock</code> elements are used for - you 
 guessed it - locking a queue.  We'll look at those when we discuss the queueing 
 algorithms later.
 </p>
 
+<p>
 EDIT: Consider getting rid of locked discussion?
+</p>
 
 </div>
 
@@ -780,12 +770,8 @@ implements them similarly, but they're intended to be used in different ways.
 </p>
 
 <p>
-How should they be used differently? Embedded guru Michael Barr says it best here 
-in his article, "Mutexes and Semaphores Demystified":<sup class="footnote"><a href="#footnote-3">3</a></sup>
-</p>
-
-<p>
-EDIT: "By contrast, tasks that use semaphores..." I'm still confused after reading this.
+How should they be used differently? Embedded guru Michael Barr says it best in his 
+article, "Mutexes and Semaphores Demystified":<sup class="footnote"><a href="#footnote-3">3</a></sup>
 </p>
 
 <p>
@@ -795,9 +781,23 @@ shared resource it protects. By contrast, tasks that use semaphores either signa
 ["send" in FreeRTOS terms] or wait ["receive" in FreeRTOS terms] - not both."
 </p>
 
-EDIT: Add picture of 2 tasks using semaphores and mutexes.
-Picture 1: Task A taking mutex M and then releasing it, and Task B does the same.
-Picture 2: Task A signal/send a semaphore S, Task B wait/receives it.
+<p>
+A mutex is used to protect a shared resource. A task acquires a mutex, uses the 
+shared resource, then releases the mutex. No task can aquire a mutex while the mutex 
+is being held by another task. This guarantees that only one task is allowed to use a 
+shared resource at a time.
+</p>
+
+<p>
+Semaphores are used by one task to signal another task. To quote Barr's article:
+</p>
+
+<p>
+"For example, Task 1 may contain code to post (i.e., signal or increment) a 
+particular semaphore when the "power" button is pressed and Task 2, which wakes the 
+display, pends on that same semaphore. In this scenario, one task is the producer of 
+the event signal; the other the consumer."
+</p>
 
 <p>
 If you're at all in doubt about semaphores and mutexes please check out Michael's 
@@ -812,7 +812,7 @@ article.
 <p>
 FreeRTOS implements an N-element semaphore as queue with N items. It doesn't store 
 any actual data in the queue, it just cares how many queue entries are occupied, 
-tracked in the <code>uxMessagesWaiting</code> field..  It's doing "pure 
+tracked in the <code>uxMessagesWaiting</code> field.  It's doing "pure 
 synchronization" as the FreeRTOS header file <code>semphr.h</code> calls it.  
 Therefore the queue has a data size of zero bytes (<code>uxItemSize == 0</code>).  
 </p>
