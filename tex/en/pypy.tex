@@ -206,7 +206,9 @@ binary because it allows constant folding to take place.
 The program, now in optimized, low-level flow-graphs, is passed to the backend
 to generate sources. Before it can generate C code, the C backend must perform
 some additional transformations. One of these is exception transformation, where
-exception handling is rewritten to use manual stack-unwinding.
+exception handling is rewritten to use manual stack-unwinding. Another is the
+insertion of stack depth checks. These raise an exception at runtime if the
+recursion is too deep.
 
 Another one of the transformations performed by the C backend is adding garbage
 collection. RPython is a garabage collected language, but C is not, so a garbage
