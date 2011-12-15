@@ -19,6 +19,36 @@ HOW DOES IT WORK?
 
     {{ two block comparison: "A Processing sketch and its Processing.js conversion"}}
     @@@
+      void setup() {
+        size(200,200);
+        noCursor();
+        noStroke();
+        smooth(); }
+
+      void draw() {
+        fill(255,10);
+        rect(-1,-1,width+1,height+1);
+        float f = frameCount*PI/frameRate;
+        float d = 10+abs(60*sin(f));
+        fill(0,100,0,50);
+        ellipse(mouseX, mouseY, d,d); }
+    @@@
+      function($p) {
+          function setup() {
+              $p.size(200, 200);
+              $p.noCursor();
+              $p.noStroke();
+              $p.smooth(); }
+          $p.setup = setup;
+
+          function draw() {
+              $p.fill(255, 10);
+              $p.rect(-1, -1, $p.width + 1, $p.height + 1);
+              var f = $p.frameCount * $p.PI / $p.__frameRate;
+              var d = 10 + $p.abs(60 * $p.sin(f));
+              $p.fill(0, 100, 0, 50);
+              $p.ellipse($p.mouseX, $p.mouseY, d, d); }
+          $p.draw = draw; }
     @@@
     {{ two block comparison: "A Processing sketch and its Processing.js conversion"}}
 
@@ -42,10 +72,20 @@ HOW DOES IT WORK?
       For some things, we decided to force synchronous waiting. Loading a file with strings, for instance, uses a synchronous XMLHTTPRequest, and will halt execution of the page until the data is available. For other things, we had to get creative. Loading images, for instance, uses the browser's buily-in mechanism for loading images - we build a new Image() in JavaScript, set its "src" attribute to the image URL, and the browser does the rest, notifying us that the image is ready through the onload event . This doesn't even rely on an XMLHTTPRequest, but simply exploits the browser's capabilities.
 
       To make matters easier when you already know which images you are loading, we added preload directives so that the sketch does not start execution until preloading is complete. A user can indicate any number of images to preload via a comment block at the start of the sketch, and Processing.js then track outstanding image loading. The onload event for an image tells us that it  is done transferring and is considered ready to be rendered (rather than simply having been downloaded but not decoded as pixel array in memory yet), after which we can populate the corresponding Processing "PImage" object with the correct values - width, height, pixel data, etc. and clear the image from the list. Once the list is empty, the sketch gets executed, and images used during its lifetime will not require waiting for.
-      
+
       {{preload directives example}}
       @@@
+        /* @pjs preload="./worldmap.jpg"; */
 
+        PImage img;
+
+        void setup() {
+          size(640,480);
+          noLoop();
+          img = loadImage("worldmap.jpg"); }
+
+        void draw() {
+          image(img,0,0); }
       @@@
       {{preload directives example}}
 
@@ -60,7 +100,7 @@ HOW DOES IT WORK?
     JAVA IS CLASS-BASED OBJECT ORIENTED, WITH SEPARATE VARIABLE AND METHOD SPACES. JAVASCRIPT IS NOT.
 
       JavaScript uses prototype objects, and the inheritance model that comes with it. This means all objects are essentially key/value pairs where each key is a string, and values are either primitives, arrays, objects, or functions. On the inheritance side, prototypes can extend other prototypes, but there is no real concept of "superclass" and "subclass". In order to make "proper" Java-style Object Oriented code work, we had to implement classical inheritance for JavaScript in Processing.js, without making it super slow (we think we succeeded in that respect). We also had to come up with a way to prevent variable names and function names from stepping on each other. Because of the key/value nature of JavaScript objects, defining a variable called "line", followed by a function like "line(x1,y1, x2,y2)" will leave you with an object that uses "whatever was declared last for a key". JavaScript first sets object.line = "some value" for you, and then sets object.line = function(x1,y1,x2,y2) { ...}, overriding what you thought was your variable "line".
-            
+
       It would have slowed down the library a lot to create separate administration for variables and methods/functions, so again the documentation explains that it's a bad idea to use variables and functions with the same name. If everyone wrote "proper" code, this wouldn't be much of a problem, as you want to name variables and functions based on what they're for, or what they do, but the real world does things differently. Sometimes your code won't work, and it's because we decided that your code breaking due to a naming conflict is preferable to your code always working, but always being slow. A second reason for not implementing variable and function separation was that this could break JavaScript code used inside Processing sketches. Closures and the scope chain for JavaScript rely on the key/value nature of objects, so driving a wedge in that by writing our own administration would have also severely impacted performance in terms of JIT compilation and minification.
 
     JAVA ALLOWS METHOD OVERLOADING. JAVASCRIPT DOES NOT.
@@ -105,7 +145,7 @@ HOW DOES IT WORK?
         angle += PI/frameRate;
         while(angle>2*PI) { angle-=2*PI; }
         jQuery('#log').text(angle); // JavaScript (error in native Processing)
-        cs.rotate(angle);           // legal JavaScript and Processing!
+        cs.rotate(angle);           // legal JavaScript as well as Processing
         stroke(random(255));
         point(cs.x, cs.y); }
     @@@
@@ -153,9 +193,9 @@ THE CODE COMPONENTS
     For PShapeSVG, we implemented our own SVG-to-canvas-instructions code. Since Processing does not implement full SVG support, the code we saved by not relying on an external SVG library means that we can account for every line of code relating to SVG imports. It only parses what it has to, and doesn't waste space with dead code.
 
     - XMLElement, an XML document object.
-    
+
     For XMLElement, too, we implemented our own code, relying on the browser to first load the XML element into a Node-based structure, then traveling the node structure to build a leaner object. Again, this means we don't have any dead code sitting in Processing.js, taking up space and potentially causing bugs because a patch accidentally makes use of a function that shouldn't be there.
-    
+
     - PMatrix2D and PMatrix3D, used for matrix operations in 2D and 3D mode
     - PImage, represents an image resource
 
@@ -202,14 +242,28 @@ BUILDING PROCESSING.JS
 
     Before any code is accepted and merged into our stable development branch, the modified Processing.js library is validated against an ever-growing battery of unit tests. Especially big fixes and performance tests are prone to pass their own unit test, but may end up breaking parts that worked fine before the rewrite. Having tests for every function in the API, as well as internal functions, means that as Processing.js grows, we don't accidentally break compatibility with previous versions. Barring destructive API changes, if none of the tests failed before a code contribution or modification, none of the tests are allowed to fail with the new code in.
 
-    {{ unit test code?}}
+    {{ example of a unit test: verifying inline object creation }}
     @@@
+      interface I {
+        int getX();
+        void test(); }
+
+      I i = new I() {
+        int x = 5;
+        public int getX() {
+          return x; }
+        public void test() {
+          x++; }};
+
+      i.test();
+
+      _checkEqual(i.getX(), 6);
+      _checkEqual(i instanceof I, true);
+      _checkEqual(i instanceof Object, true);
     @@@
-    {{ unit test code?:}}
+    {{ example of a unit test: verifying inline object creation }}
 
     In addition to regular code unit tests, we also have visual reference tests. As Processing.js is a port of a visual programming language, some tests cannot be performed using just unit tests. Testing to see whether an ellipse gets drawn on the correct pixels, or whether a single-pixel-wide vertical line is drawn crisp or smoothed cannot be determined without a visual reference. Because all big browsers implement the canvas element and Canvas2D API with subtle differences, these things can only be tested by running code in a browser and verifying that the resulting sketch looks the same as what native Processing generates. To make life easier for developers, we use an automated test suite for this, where new test cases are run through Processing, generating "what it should look like" data to be used for pixel comparison. This data is then stored as a comment inside the sketch that generated it, forming a test, and these tests are then run by Processing.js on a visual reference test page which executes each test and performs pixel comparisons between "what it should look like" and "what it looks like". If the pixels are off, the test fails, and the user is presented with three images; one showing what it should look like, one showing how Processing.js rendered it, and one showing the difference between the two, marking problem areas as red pixels, and correct areas as white. Much like unit tests, these tests must pass before any code contribution can be accepted.
-
-  {{ref test illustration - ref test page screenshot}}
 
   MAKE IT FAST
 
