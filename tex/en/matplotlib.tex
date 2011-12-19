@@ -1,4 +1,4 @@
-begin{aosachapter}{matplotlib}{s:matplotlib}{John Hunter and Michael Droettboom}
+\begin{aosachapter}{matplotlib}{s:matplotlib}{John Hunter and Michael Droettboom}
 
 matplotlib is a Python-based plotting library widely used in
 the scientific Python computing community with full support for 2D and
@@ -48,6 +48,7 @@ scripting interface for quick and easy generation of graphics similar
 to MATLAB's.
 
 \aosafigure{../images/matplotlib/ecog.png}{The original matplotlib application: an ECoG viewer.}{fig.matplotlib.ecog}[scale=0.2]
+
 \end{aosasect1}
 
 \begin{aosasect1}{Overview of matplotlib architecture}
@@ -208,7 +209,7 @@ of the matplotlib API plotting methods are defined.  Not only does the
 background of the plot---the ticks, the axis lines, the grid, the
 patch of color which is the plot background---it contains numerous
 helper methods that create primitive artists and add them to the \code{Axes}
-instance.  For example, Table \ref{tbl.matplotlib.axmethods} shows
+instance.  For example, \aosatblref{tbl.matplotlib.axmethods} shows
 a small sampling of \code{Axes} methods that create plot objects and store
 them in the \code{Axes} instance.
 
@@ -317,8 +318,8 @@ internal state is managed.
   create a \code{Figure} and \code{Axes}, set these as current, and
   direct the plotting to \code{Axes.hist}.
 
-\item \verb+plt.title(r'Normal distribution with $\mu=0,\
-  \sigma=1$')+: As above, pyplot will look to see if there is a
+\item \verb+plt.title(r'Normal distribution with $\mu=0, \sigma=1$')+:
+  As above, pyplot will look to see if there is a
   current \code{Figure} and \code{Axes}.  Finding that there is, it
   will not create new instances but will direct the call to the
   existing \code{Axes} instance method \code{Axes.set\_title}
@@ -415,9 +416,9 @@ methods in the backend API was reduced considerably, to only:
 
 It is possible to implement all of the drawing necessary for a new
 backend using only these methods.\footnote{We could also go one step
-  further and draw text using \code{draw\_path}, removing the need for
-  the \code{draw\_text} method, but we haven't gotten around to making
-  that simplification.}  This is useful for getting a new backend
+further and draw text using \code{draw\_path}, removing the need for
+the \code{draw\_text} method, but we haven't gotten around to making
+that simplification.}  This is useful for getting a new backend
 up-and-running more easily.  However, in some cases, a backend may
 want to override the behavior of the core in order to create more
 efficient output.  For example, when drawing markers (small symbols
@@ -484,9 +485,10 @@ Two-dimensional affine transformations are represented using a $3
 \times 3$ affine transformation matrix.  The transformed point
 $(x\prime, y\prime)$ is obtained by matrix-multiplying the original
 point $(x, y)$ by this matrix:
-\begin{math}
-\begin{bmatrix} x' \\ y' \\ 1 \end{bmatrix} = \begin{bmatrix} s_x & \theta_x & t_x \\ \theta_y & s_y & t_y \\ 0 & 0 & 1 \end{bmatrix} \begin{bmatrix} x \\ y \\ 1 \end{bmatrix}
-\end{math}
+% FIXME: put this back in once we can find the bmatrix environment
+% \begin{math}
+% \begin{bmatrix} x' \\ y' \\ 1 \end{bmatrix} = \begin{bmatrix} s_x & \theta_x & t_x \\ \theta_y & s_y & t_y \\ 0 & 0 & 1 \end{bmatrix} \begin{bmatrix} x \\ y \\ 1 \end{bmatrix}
+% \end{math}
 2-dimensional coordinates can then easily be transformed by simply
 multiplying them by the transformation matrix.  Affine transformations
 also have the useful property that they can be composed together using
@@ -502,8 +504,7 @@ panning and zooming in a GUI window more efficient.
 The non-affine transformations in matplotlib are defined using Python
 functions, so they are truly arbitrary.  Within the matplotlib core,
 non-affine transformations are used for logarithmic scaling, polar
-plots and geographical projections (Figure
-\ref{fig.matplotlib.nonaffine}).  These non-affine transformations can
+plots and geographical projections (\aosafigref{fig.matplotlib.nonaffine}).  These non-affine transformations can
 be freely mixed with affine ones in the transformation graph.
 matplotlib will automatically simplify the affine portion and only
 fall back to the arbitrary functions for the non-affine portion.
@@ -523,7 +524,7 @@ graph allows is the sharing of axes.  It is possible to ``link'' the
 limits of one plot to another and ensure that when one is panned or
 zoomed, the other is updated to match.  In this case, the same
 transform node is simply shared between two axes, which may even be on
-two different figures.  Figure \ref{fig.matplotlib.transformtree}
+two different figures.  \aosafigref{fig.matplotlib.transformtree}
 shows an example transformation graph with some of these advanced
 features at work.  axes1 has a logarithmic $x$ axis.  axes1 and axes2
 share the same $y$ axis.
@@ -570,8 +571,7 @@ certain contexts.
 
 \item \textbf{Snapping:} Perfectly vertical and horizontal lines can
   look fuzzy due to antialiasing when their centers are not aligned to
-  the center of a pixel (see Figure
-  \ref{fig.matplotlib.pixelsnapping}).  The snapping step of the
+  the center of a pixel (see \aosafigref{fig.matplotlib.pixelsnapping}).  The snapping step of the
   pipeline first determines whether the entire polyline is made up of
   horizontal and vertical segments (such as an axis-aligned
   rectangle), and if so, rounds each resulting vertex to the nearest
@@ -585,22 +585,13 @@ certain contexts.
   these points in the plot increases file size, and may even hit
   limits on the number of points allowed in the file format.
   Therefore, any points that lie exactly on the line between their two
-  neighboring points are removed (see Figure
-  \ref{fig.matplotlib.pathsimplification}).
+  neighboring points are removed (see \aosafigref{fig.matplotlib.pathsimplification}).
 
 \end{aosaenumerate}
 
-\aosafigure{../images/matplotlib/pixel_snapping.pdf}{A close-up view
-  of the effect of pixel snapping.  On the left, without pixel
-  snapping; on the right, with pixel
-  snapping.}{fig.matplotlib.pixelsnapping}
+\aosafigure{../images/matplotlib/pixel_snapping.pdf}{A close-up view of the effect of pixel snapping.  On the left, without pixel snapping; on the right, with pixel snapping.}{fig.matplotlib.pixelsnapping}
 
-\aosafigure{../images/matplotlib/path_simplification.pdf}{The figure
-  on the right is a close-up of the figure on the left.  The circled
-  vertex is automatically removed by the path simplification
-  algorithm, since it lies exactly on the line between its neighboring
-  vertices, and therefore is
-  redundant.}{fig.matplotlib.pathsimplification}
+\aosafigure{../images/matplotlib/path_simplification.pdf}{The figure on the right is a close-up of the figure on the left.  The circled vertex is automatically removed by the path simplification algorithm, since it lies exactly on the line between its neighboring vertices, and therefore is redundant.}{fig.matplotlib.pathsimplification}
 
 \end{aosasect1}
 
@@ -675,16 +666,13 @@ calculates the root-mean-square of their difference.  If that
 difference is greater than a given threshold, the images are
 considered too different and the comparison test fails.  When tests
 fail, difference images are generated which show where on the plot a
-change has occurred (see Figure \ref{fig.matplotlib.regression}).  The
+change has occurred (see \aosafigref{fig.matplotlib.regression}).  The
 developer can then decide whether the failure is due to an intentional
 change, and update the baseline image to match the new image, or
 decide the image is in fact incorrect and track down and fix the bug
 that caused the change.
 
-\aosafigure{../images/matplotlib/regression.pdf}{A regression test
-  image comparison.  From left to right: a) The expected image, b) the
-  result of broken legend placement, c) the difference between the two
-  images.}{fig.matplotlib.regression}
+\aosafigure{../images/matplotlib/regression.pdf}{A regression test image comparison.  From left to right: a) The expected image, b) the result of broken legend placement, c) the difference between the two images.}{fig.matplotlib.regression}
 
 Since different backends can contribute different bugs, the testing
 framework tests multiple backends for each plot: PNG, PDF and SVG.
@@ -752,5 +740,3 @@ reduce flexibility in internal development.
 
 \end{aosasect1}
 \end{aosachapter}
-
-
