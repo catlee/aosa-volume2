@@ -444,7 +444,7 @@ many layers interact with each other.
 
 \end{aosasect1}
 
-\begin{aosasect1}{Conclusions}
+\begin{aosasect1}{Summary}
 
 The Python interpreter treats Python objects as black boxes and leaves all
 behavior to be defined by the objspace. Individual objspaces can provide special
@@ -465,6 +465,28 @@ While most of PyPy's development effort has gone into the Python interpreter,
 PyPy can be used for the implementation of any dynamic language. Over the years,
 partial interpreters for JavaScript, Prolog, Scheme, and IO have been written
 with PyPy.
+
+\end{aosasect1}
+
+\begin{aosasect1}{Lessons Learned}
+
+Finally, some of lessons to take away from the PyPy project:
+
+Repeated refactoring is often a necessary process. For example, it was
+originally envisioned that the C backend for the translator would be able to
+work off of the highlevel flow graphs! It took several iterations for the
+current multi-phase translation process to be born.
+
+The most important lesson of PyPy is the power of abstraction. In PyPy,
+abstractions separate implementation concerns. For example, RPython's automatic
+garbage collection allow a developer working the interpreter to not worry about
+memory management. At the same time, abstractions have a mental cost. Working on
+the translation chain involves juggling the various phases of translation at
+once in one's head. What layer a bug resides in can also be clouded by
+abstractions; abstraction leakage, where swapping components low-level
+components that should be interchangable breaks higher-level code, is perennial
+problem. More concretely, abstractions can slow a program down by creating too
+much indirection.
 
 The flexibility of (R)Python as an implementation language makes experimenting
 with new Python language features (or even new languages) easy. Because of its
