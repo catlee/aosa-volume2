@@ -154,7 +154,7 @@ Other important aspects to the system are:
 
 Here is a simplified diagram of the functionality:
 
-\aosafigure{../images/distsys/ScalableWebArchitecturev7_html_m6233a808.jpg}{FIXME}{fig.distsys.1}
+\Aosafigure{../images/distsys/imageHosting1.jpg}{Simplified Architecture Diagram for Image Hosting Application}{fig.distsys.1}
 
 In this image hosting example, the system must be perceivably fast,
 its data stored reliably and all of these attributes highly
@@ -229,7 +229,7 @@ clarify what is going on at each point. Finally, this separates future
 concerns, which would make it easier to troubleshoot and scale a
 problem like slow reads.
 
-\aosafigure{../images/distsys/ScalableWebArchitecturev7_html_m4bc485f6.png}{FIXME}{fig.distsys.2}
+\aosafigure{../images/distsys/imageHosting2.png}{Splitting out reads and writes.}{fig.distsys.2}
 
 The advantage of this approach is that we are able to solve each
 problem independently of one another - we don’t have to worry about
@@ -314,7 +314,7 @@ images would be redundant copies, all potentially servicing requests
 (load balancers are a great way to make this possible, but there is
 more on that below).
 
-\aosafigure{../images/distsys/ScalableWebArchitecturev7_html_569d130f.png}{FIXME}{fig.distsys.3}
+\aosafigure{../images/distsys/imageHosting3.png}{Image hosting application with redundancy}{fig.distsys.3}
 
 \end{aosasect2}
 
@@ -364,7 +364,7 @@ makes a request for an image, the image retrieval service only needs
 to maintain the range of IDs that are mapped to each of the servers
 (like an index).
 
-\aosafigure{../images/distsys/ScalableWebArchitecturev7_html_418fa4a8.png}{FIXME}{fig.distsys.4}
+\aosafigure{../images/distsys/imageHosting4.png}{FIXME}{fig.distsys.4}
 
 Of course there are challenges distributing data or functionality
 across multiple servers. One of the key issues is \emph{data
@@ -410,7 +410,7 @@ access to the data.
 Most simple web applications (for example, LAMP stack applications)
 often look something like the following:
 
-\aosafigure{../images/distsys/ScalableWebArchitecturev7_html_675b1727.png}{FIXME}{fig.distsys.5}
+\aosafigure{../images/simpleWeb.png}{Simple web applications}{fig.distsys.5}
 
 As they grow, there are two main challenges---scaling access to the
 app server and to the database. In a highly scalable application
@@ -427,7 +427,7 @@ scalable by providing fast access to your data.
 
 Most systems can be oversimplified to this:
 
-\aosafigure{../images/distsys/ScalableWebArchitecturev7_html_m3145fb0e.png}{FIXME}{fig.distsys.6}
+\aosafigure{../images/distsys/overSimpleWeb.png}{Oversimplified web applications.}{fig.distsys.6}
 
 This is a great place to start. If you have a lot of data, you want
 fast and easy access, like a secret stash of candy in the top drawer
@@ -439,7 +439,7 @@ data (TB) and you want to allow users to access small portions (KBs)
 of that data at random. This is similar to locating an image file
 somewhere on the larger file server in the image application example.
 
-\aosafigure{../images/distsys/ScalableWebArchitecturev7_html_m8c6c5b6.png}{FIXME}{fig.distsys.7}
+\aosafigure{../images/distsys/accessingData.png}{Accessing specific data}{fig.distsys.7}
 
 This is particularly challenging because it can be very costly to load
 TBs of data into memory---this directly translates to disk IO. Reading
@@ -482,7 +482,7 @@ In this case, there are a couple of places you can insert a cache:
 
 One option is to insert a cache on your request layer node:
 
-\aosafigure{../images/distsys/ScalableWebArchitecturev7_html_654b045a.png}{FIXME}{fig.distsys.8}
+\aosafigure{../images/distsys/cache.png}{Inserting a cache on your request layer node}{fig.distsys.8}
 
 Placing a cache directly on a request layer node enables the local
 storage of response data. Each time a request was made to the service,
@@ -494,7 +494,7 @@ to network storage).
 
 What happens when you expand this to many nodes?
 
-\aosafigure{../images/distsys/ScalableWebArchitecturev7_html_m652ee717.png}{FIXME}{fig.distsys.9}
+\aosafigure{../images/distsys/multipleCaches.png}{Multiple caches}{fig.distsys.9}
 
 If the request layer were expanded to multiple nodes, it’s still quite
 possible to have it each host its own cache. However, if your load
@@ -518,9 +518,9 @@ architectures (particularly ones with specialized hardware that make
 this global cache very fast, or have a fixed dataset that needs to be
 cached).
 
-\aosafigure{../images/distsys/ScalableWebArchitecturev7_html_276e57c9.png}{FIXME}{fig.distsys.10}
+\aosafigure{../images/distsys/globalCache1.png}{Global cache where cache is responsible for retrieval}{fig.distsys.10}
 
-\aosafigure{../images/distsys/ScalableWebArchitecturev7_html_566f6a2c.png}{FIXME}{fig.distsys.11}
+\aosafigure{../images/distsys/globalCache2.png}{Global cache where request nodes are responsible for retrieval}{fig.distsys.11}
 
 There are two common forms of global caches depicted in the
 diagrams. In the first diagram, when a cached response is not found in
@@ -570,7 +570,7 @@ remove nodes from the request layer. Although, even if a node
 disappears and part of the cache is lost, the requests will just pull
 from the origin---so it isn’t necessarily catastrophic!
 
-\aosafigure{../images/distsys/ScalableWebArchitecturev7_html_378ec9cc.png}{FIXME}{fig.distsys.12}
+\aosafigure{../images/distsys/distributedCaching.png}{FIXME}{fig.distsys.12}
 
 The great thing about caches is that they usually make things much
 faster (implemented correctly of course!) The methodology you choose
@@ -620,7 +620,7 @@ to the backend origin servers. Typically, proxies are used to filter
 requests, log requests, or sometimes transform requests (by
 adding/removing headers, encrypting/decrypting, or compression).
 
-\aosafigure{../images/distsys/ScalableWebArchitecturev7_html_m5fd1166e.png}{FIXME}{fig.distsys.13}
+\aosafigure{../images/distsys/proxies.png}{Proxy server}{fig.distsys.13}
 
 Proxies are also immensely helpful when coordinating requests from
 multiple servers, providing opportunities to optimize request traffic
@@ -646,7 +646,7 @@ calls from the clients for the same content. It is easy to get
 confused here though, since many proxies are also caches (as it is a
 very logical place to put a cache), but not all caches act as proxies.
 
-\aosafigure{../images/distsys/ScalableWebArchitecturev7_html_3d92c36f.png}{FIXME}{fig.distsys.14}
+\aosafigure{../images/distsys/collapseRequests.png}{Using a proxy server to collapse requests}{fig.distsys.14}
 
 Another great way to use the proxy is to not just collapse requests
 for the same data, but also to collapse requests for data that is
@@ -662,7 +662,7 @@ accessing across TBs of data! Proxies are especially helpful under
 high load situations, or when you have limited caching since they
 essentially can batch several requests into one.
 
-\aosafigure{../images/distsys/ScalableWebArchitecturev7_html_m63ba25e3.png}{FIXME}{fig.distsys.15}
+\aosafigure{../images/distsys/collapseRequestsSpatial.png}{FIXME}{fig.distsys.15}
 
 It is worth noting that you can use proxies and caches together, but
 generally it is best to put the cache in front of the proxy,
@@ -718,7 +718,7 @@ you have an index that is sorted by data type---say data A, B, C---it
 would tell you the location of data B at the origin. Then, you just
 have to seek to that location and read the part of B you want.
 
-\aosafigure{../images/distsys/ScalableWebArchitecturev7_html_m24329bdc.jpg}{FIXME}{fig.distsys.16}
+\aosafigure{../images/indexes.jpg}{Indexes}{fig.distsys.16}
 
 These indexes are often stored in memory, or somewhere very local to
 the incoming client request. Berkeley DBs (BDBs) and other tree like
@@ -729,7 +729,7 @@ Often times, there are many layers of indexes that serve as a
 map---moving you from one location to the next, and so forth---until
 you get the specific piece of data you want.
 
-\aosafigure{../images/distsys/ScalableWebArchitecturev7_html_m472f0a9c.jpg}{FIXME}{fig.distsys.17}
+\aosafigure{../images/distsys/multipleIndexes.jpg}{Many layers of indexes}{fig.distsys.17}
 
 Indexes can also be used to create several different views of the same
 data. For large data sets, this is a great way to define different
@@ -809,7 +809,7 @@ a lot of simultaneous connections and route those connections to one
 of the request nodes---allowing the system to scale to service more
 requests by just adding nodes.
 
-\aosafigure{../images/distsys/ScalableWebArchitecturev7_html_m68505d7d.png}{FIXME}{fig.distsys.18}
+\aosafigure{../images/distsys/loadBalancer.png}{Load balancer}{fig.distsys.18}
 
 There are many different algorithms that can be used to service
 requests, including picking a random node, round robin
@@ -824,7 +824,7 @@ front of the system such that all incoming requests are routed
 accordingly. In a complex distributed system, it is not uncommon for a
 request to be routed to multiple load balancers as shown below.
 
-\aosafigure{../images/distsys/ScalableWebArchitecturev7_html_m5abeaccb.png}{FIXME}{fig.distsys.19}
+\aosafigure{../images/distsys/multipleLoadBalancers.png}{Multiple load balancers}{fig.distsys.19}
 
 Similar to proxies, some load balancers can also route a request
 differently depending on the type of request (technically these are
@@ -906,7 +906,7 @@ handle, then each client is forced to wait for the other clients’
 requests to complete before a response can be generated. This is an
 example of a synchronous request and depicted below.
 
-\aosafigure{../images/distsys/ScalableWebArchitecturev7_html_m598a3c2d.png}{FIXME}{fig.distsys.20}
+\aosafigure{../images/distsys/synchronousRequest.png}{Synchronous request}{fig.distsys.20}
 
 This kind of synchronous behavior can severely degrade client
 performance; the client is forced to wait, effectively performing zero
@@ -950,7 +950,7 @@ quality-of-service guarantees than exposing clients directly to
 intermittent service outages requiring complicated and
 often-inconsistent client-side error handling.
 
-\aosafigure{../images/distsys/ScalableWebArchitecturev7_html_45cbaf62.png}{FIXME}{fig.distsys.21}
+\aosafigure{../images/distsys/queues.png}{Using queues to manage requests}{fig.distsys.21}
 
 Queues are fundamental in managing distributed communication between
 different parts of any large-scale distributed system, and there are
