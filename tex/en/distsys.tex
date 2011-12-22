@@ -154,7 +154,7 @@ Other important aspects to the system are:
 
 Here is a simplified diagram of the functionality:
 
-\Aosafigure{../images/distsys/imageHosting1.jpg}{Simplified Architecture Diagram for Image Hosting Application}{fig.distsys.1}
+\aosafigure{../images/distsys/imageHosting1.jpg}{Simplified Architecture Diagram for Image Hosting Application}{fig.distsys.1}
 
 In this image hosting example, the system must be perceivably fast,
 its data stored reliably and all of these attributes highly
@@ -410,7 +410,7 @@ access to the data.
 Most simple web applications (for example, LAMP stack applications)
 often look something like the following:
 
-\aosafigure{../images/simpleWeb.png}{Simple web applications}{fig.distsys.5}
+\aosafigure{../images/distsys/simpleWeb.png}{Simple web applications}{fig.distsys.5}
 
 As they grow, there are two main challenges---scaling access to the
 app server and to the database. In a highly scalable application
@@ -718,7 +718,7 @@ you have an index that is sorted by data type---say data A, B, C---it
 would tell you the location of data B at the origin. Then, you just
 have to seek to that location and read the part of B you want.
 
-\aosafigure{../images/indexes.jpg}{Indexes}{fig.distsys.16}
+\aosafigure{../images/distsys/indexes.jpg}{Indexes}{fig.distsys.16}
 
 These indexes are often stored in memory, or somewhere very local to
 the incoming client request. Berkeley DBs (BDBs) and other tree like
