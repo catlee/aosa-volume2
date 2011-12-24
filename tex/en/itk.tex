@@ -7,7 +7,7 @@
 The Insight Toolkit ITK\footnote{\url{http://www.itk.org}} is a library for
 image analysis that was developed by the initiative, and mainly with the
 funding, of the US National Library of
-Medicine\footnote{\url{http://www.nlm.nih.gov}}. ITK can be tought of as a
+Medicine\footnote{\url{http://www.nlm.nih.gov}}. ITK can be thought of as a
 usable encyclopedia of image analysis algorithms, in particular for image
 filtering, image segmentation and image registration. The library was developed
 by a consortium involving universities, commercial companies, and many
@@ -91,16 +91,18 @@ The image analysis community is also closely integrated with the research
 community. It is common to find specific research groups that become attached
 to the algorithmic families they have developed. This custom of ``branding'',
 and up to some level ``marketing'', leads to a situation where the best that the
-software toolkit can do is to offer the community a very complete set of
+software toolkit can do for the community is to offer a very complete set of
 algorithmic implementations that they can try, and then mix and match to create
-a recipe that satisfies their needs. These are some of the reasons why ITK was
-designed and implemented as a large collection of somewhat independent tools,
-many of which can be used to solve similar problems. In this context, a certain
-level of ``redundancy'' is not seen as a problem but as a valuable feature. The
-toolkit was also conceived as a resource that will grow and renew itself
-continously, as new algorithms and better implementations become available
-superseeding exiting ones, as well as new tools are developed in response to
-the emerging needs of new medical imaging technologies.
+a recipe that satisfies their needs.
+
+These are some of the reasons why ITK was designed and implemented as a large
+collection of somewhat independent tools, many of which can be used to solve
+similar problems. In this context, a certain level of ``redundancy'' is not
+seen as a problem but as a valuable feature. The toolkit was also conceived as
+a resource that will grow and renew itself continuously, as new algorithms and
+better implementations become available superseding exiting ones, as well as
+new tools are developed in response to the emerging needs of new medical
+imaging technologies.
 
 Armed with this quick overview of the nature of activities that make the daily
 routine of the image analyzers who compose the ITK community, we can now dive
@@ -162,7 +164,7 @@ list dependencies between this module and other modules.
 
 \end{aosaenumerate}
 
-This hierarchichal structure is illustrated in
+This hierarchical structure is illustrated in
 Figure~\ref{fig.itk.modulehierarchy}.
 
 \aosafigure{../images/itk/IllustrationOfModularStructure.pdf}{Hierarchical Structure of Groups, Modules and Classes}{fig.itk.modulehierarchy}
@@ -176,8 +178,8 @@ bytes, is presented in Figure~\ref{fig.itk.modulesize}.
 \aosafigure{../images/itk/moduleSizePlotNoThirdParty.pdf}{Distribution of Module Size in Bytes without Third Party Libraries}{fig.itk.modulesizenothirdparty}
 
 The modularization in ITK applies as well to a set of third party libraries
-that are not directly part of the tookit, but that the toolkit depend upon, and
-that are distributed along with the rest of the code for the convinience of
+that are not directly part of the toolkit, but that the toolkit depend upon, and
+that are distributed along with the rest of the code for the convenience of
 users. Particular examples of these third party libraries are the image file
 format libraries: HDF5, PNG, TIFF, JPEG and openjpeg among others. When these
 libraries are excluded from the analysis of module size, the distribution
@@ -197,7 +199,7 @@ The modular architecture of ITK enables and facilitates:
 
 Again, we can recognize in these items the fact that the structure of the
 toolkit reflects the organization of the community and in some cases the
-processes that have been adopted for the continous growth and quality control
+processes that have been adopted for the continuous growth and quality control
 of the software.
 
 \begin{aosasect2}{Data Pipeline}
@@ -233,7 +235,7 @@ time that one of the numeric parameters is modified, the data pipeline marks
 its output as ``dirty'' and knows that this particular filter, and all the
 downstream ones that use its output, should be executed again. This feature of
 the pipeline facilitates the exploration of the parameter space while
-maintainting to a minimum the amount of processing power that have to be
+maintaining to a minimum the amount of processing power that have to be
 invested at every instance of an experiment.
 
 Two main types of objects were designed to hold the basic structure of the
@@ -241,9 +243,9 @@ pipeline.  They are the \code{DataObject} and the \code{ProcessObject}. The
 \code{DataObject} is the abstraction of classes that carry data. For example,
 images and geometrical meshes. The \code{ProcessObject} provides an abstraction
 for the image filters and mesh filters that process such data.
-\code{ProcessObjects} take \code{DataObjects} and perform some type of
-algorithmic transformation on them, such as the ones illustrated
-in Figure~\ref{fig.itk.brim}.
+\code{ProcessObjects} take \code{DataObjects} as input and perform some type of
+algorithmic transformation on them, such as the ones illustrated in
+Figure~\ref{fig.itk.brim}.
 
 \aosafigure{../images/itk/ProcessObjectDataObject.pdf}{Relationship between ProcessObjects and DataObjects}{fig.itk.processobjectdataobject}
 
@@ -269,10 +271,10 @@ hierarchy of the pipeline Objects in ITK. In particular the relationship
 between the basic \code{Object}, \code{ProcessObject}, \code{DataObject}, and
 some of the classes in the filter family and the data family. In this
 abstraction, any object that is expected to be passed as input to a filter, or
-be produced as output by a filter, must derive from the \code{DataObject}. All
+to be produced as output by a filter, must derive from the \code{DataObject}. All
 filters that produce and consume data are expected to derive from the
 \code{ProcessObject}. The data negotiations required to move data through the
-pipeline are implemented part in the \code{ProcessObject} and part in the
+pipeline are implemented, part in the \code{ProcessObject} and part in the
 \code{DataObject}.
 
 \aosafigure{../images/itk/ProcessObjectDataObjectHierarchy.pdf}{Hierarchy of ProcessObjects and DataObjects}{fig.itk.processobjectdataobjecthierarchy}
@@ -284,7 +286,7 @@ pipeline are implemented part in the \code{ProcessObject} and part in the
 One of the fundamental design requirements of ITK is to provide support for
 multiple platforms. This requirement emerges from the desire to maximize the
 impact of the toolkit by making it usable to a broad community regardless of
-their platform of choice. ITK adopted the design pattern of ``Factories'' to
+their platform of choice. ITK adopted the \emph{Factory} design pattern to
 address the challenge of supporting fundamental differences among the many
 hardware and software platforms, without sacrificing the good fitness of a
 solution to each one of the individual platforms.
@@ -296,7 +298,7 @@ applications search at start up time. This last feature provides a natural
 mechanism for implementing a Plugin Architecture in a clean and transparent
 way. The outcome is to facilitate the development of extensible image analysis
 applications, satisfying the requirements of providing an ever-growing set of
-image analysis capabilites.
+image analysis capabilities.
 
 \end{aosasect2}
 
@@ -304,10 +306,10 @@ image analysis capabilites.
 
 The image analysis community has developed a very large set of file formats to
 store image data. Many of these file formats are designed and implemented with
-specific uses in mind, and therefore are fine-tunned to specific types of
+specific uses in mind, and therefore are fine-tuned to specific types of
 images. As a consequence, on a regular basis, new image file formats are
 conceived and promoted across the community. Aware of this situation, the ITK
-developement team designed an IO Architecture suitable for unlimited
+development team designed an IO Architecture suitable for unlimited
 extensibility, in which it is easy to add support for more and more file
 formats on a regular basis.
 
@@ -321,7 +323,7 @@ Figure~\ref{fig.itk.io.factoriesregistry}. The actual functionality of reading
 and writing data from image file formats is implemented in a family of
 \code{ImageIO} classes, shown on the right side of
 Figure~\ref{fig.itk.io.factoriesregistry}. These service classes are intended
-to be instantiated on deman when the user request to read or write an image.
+to be instantiated on demand when the user request to read or write an image.
 The services classes are not exposed to the application code. Instead,
 application are expected to interact with the facade classes:
 
@@ -351,8 +353,8 @@ is the case for PNG, JPEG, TIFF and DICOM, for example. In those cases, the
 third party library is managed as a self-contained module, and the specialized
 ImageIO code that interfaces ITK to that third party library is also put in a
 Module by itself. In this way, specific applications may disable many
-fileformats that are not relevant for their domain, and can focus on offering
-only those fileformats that are useful for the anticipated scenarios of this
+file formats that are not relevant for their domain, and can focus on offering
+only those file formats that are useful for the anticipated scenarios of this
 application.
 
 Just as with standard Factories, the IO Factories can also be loaded at
@@ -378,7 +380,7 @@ community. It is still the case that the dataset will not fit in the typical
 desktop computers that we use today. Therefore, one of the requirements for
 developing the Insight Toolkit was to enable the streaming of image data
 through the Data Pipeline. More specifically, to be able to process large
-images by pushing sub-blocks of the image throught the data pipeline, and then
+images by pushing sub-blocks of the image throughout the data pipeline, and then
 assembling the resulting blocks on the output side of the pipeline.
 
 Streaming, unfortunately, can not be apply to all types of algorithms. Specific
@@ -389,7 +391,7 @@ cases that are not suitable for streaming are:
 require to use as input the pixel values of its neighbors. This is the case of
 most PDE-solving-based algorithms, such as anisotropic diffusion, demons
 deformable registration, and dense level sets, for example.
-\item Algorightms that requires the full set of input pixel values in order to
+\item Algorithms that requires the full set of input pixel values in order to
 compute the value of one of the output pixels. Fourier transform and Infinite
 Impulse Response (IIR) filters, such as the Recursive Gaussian filter, are
 examples of this class.
@@ -427,7 +429,7 @@ algorithms, we should qualify this statement by not claiming that ``it is
 impossible to stream such algorithms'', but rather say that ``our typical
 approach to streaming is not suitable for these algorithms'' at this point, and
 that hopefully new techniques will be devised by the community in the future to
-addresss these cases.
+address these cases.
 \end{aosasect2}
 
 \end{aosasect1}
@@ -436,19 +438,22 @@ addresss these cases.
 
 \begin{aosasect2}{Reusability}
 The principle of reusability can also be read as ``avoidance of redundancy''.
-In the case of ITK this has been achieved by a three-prone approach. First, the
-adoption of Object Oriented programming, and in particular the proper creation
-of class hierarchies where common functionalities are factorized in base
-classes. Second, the adoption of generic programming, implemented via the heavy
-use of C++ templates, that allow to factorize behaviors that are identified as
-patterns. Third, a generous use of C++ macros has also permitted to reuse
-standard snippets of code that are needed in a myriad of places across
-the toolkit.
+In the case of ITK, this has been achieved by a three-prone approach.
 
-As a concrete example, the widespread use of explicity naming types via the C++
+\begin{itemize}
+\item First, the adoption of Object Oriented Programming, and in particular the
+proper creation of class hierarchies where common functionalities are
+factorized in base classes.
+\item Second, the adoption of Generic Programming, implemented via the heavy
+use of C++ templates, factorizing behaviors that are identified as patterns.
+\item Third, a generous use of C++ macros has also permitted to reuse standard
+snippets of code that are needed in a myriad of places across the toolkit.
+\end{itemize}
+
+As a concrete example, the widespread use of explicitly naming types via the C++
 ``typedefs'', has proved to be particularly important. This practice plays two
-roles. In one hand it provides a human-readable informative name descring the
-nature of the type and its purpse. On the other hand, it ensures that the type
+roles. In one hand it provides a human-readable informative name describing the
+nature of the type and its purpose. On the other hand, it ensures that the type
 is used consistently across the toolkit. As an example, during the refactoring
 of the toolkit for its 4.0 version, a massive effort was invested in collecting
 the cases where C++ integer types such as \code{int}, \code{unsigned int},
@@ -463,7 +468,7 @@ occurrence.
 \end{aosasect2}
 
 \begin{aosasect2}{Maintainability}
-The architecture satisfies the constraints that minimize maintenace cost.
+The architecture satisfies the constraints that minimize maintenance cost.
 \begin{aosaitemize}
 \item Modularity (at the class level)
 \item Many small files
@@ -481,7 +486,7 @@ their input or output images, but that are not enforced via types nor concept
 checking, and that may as well be missing to be specified in the documentation.
 \item Missing to write for readability. This is one of the most common
 challenges for any software whose new algorithm implementations originate in
-the research community. It is common in that environmen to write code that
+the research community. It is common in that environment to write code that
 ``just works'', and to forget that the purpose of code is not just to be
 executed at run time, but that it must be easily readable by the next
 developer. Typical good rules of ``clean code'' writing tend to be ignored when
@@ -492,10 +497,10 @@ variables and functions.
 \item Lack of attention to failure cases and error management. It is common to
 focus on the ``nice cases'' of data processing and to fail to provide code for
 managing all the cases that can go wrong. Helas, adopters of the toolkit
-quickly run into such cases once they start developing and deplying
+quickly run into such cases once they start developing and deploying
 applications in the real world.
-\item Insuficient testing. It requires a lot of discipline to follow the
-practic of test driven development. Specially the notion of writing the tests
+\item Insufficient testing. It requires a lot of discipline to follow the
+practice of test driven development. Specially the notion of writing the tests
 first, and only implement functionalities as you test them. It is almost always
 the case that bugs in the code are hiding behind the cases that were skipped
 while implementing the testing code.
@@ -504,16 +509,16 @@ while implementing the testing code.
 Thanks to the communication practices of Open Source communities, many of these
 items end up being exposed through questions that are commonly asked in the
 mailing lists, or that are directly reported as bugs by users  in the issue
-tracker. After dealing with such issues, developers learned to write code that
-is ``good for maintenance''. Some of these traits apply to both coding style
-and the actual organization of the code. It is our view that a developer only
-reaches mastery after passing some time doing maintenace and getting exposed to
-``all the things that can go wrong''.
+tracker. After dealing with many of such issues, developers learn to write code
+that is ``good for maintenance''. Some of these traits apply to both coding
+style and the actual organization of the code. It is our view that a developer
+only reaches mastery after passing some time (at least a year) doing maintenance
+and getting exposed to ``all the things that can go wrong''.
 
 \begin{aosasect2}{The Invisible Hand}
-The software should look like writted by a single person. The best developers
+The software should look like written by a single person. The best developers
 are the ones that write code that can be taken over by anybody else, should
-they be taken down by the ``Provervial Bus'' when crossing a street. We have
+they be taken down by the ``Proverbial Bus'' when crossing a street. We have
 grown to recognize that any trace of ``personal touch'' is an indication of a
 defect introduced in the software.
 
@@ -521,39 +526,44 @@ In order to enforce and promote code style uniformity, the following tools have
 proved to be very effective:
 
 \begin{itemize}
-\item KWStyle: for automatic style checking. This is a simplified C++ parser
-that checks coding style and flags any violations.
-\item Gerrit: for regular code reviews. This tools serves the two purposes. In
-one hand, it prevents inmature code from entering the code base, by distilling
-its errors, deficiencies and imperfections during iterative review cycles where
-other developers contribute to improve the code. On the other hand, the tool
-also provide a virtual training camp in which new developers get to learn from
-more experienced developers (read ``experienced'' as: those who have made all
-the mistakes) on how to improve the code and avoid known problems that have
-been observed during maintenance cycles.
+\item KWStyle\footnote{\url{http://public.kitware.com/KWStyle}}: for automatic
+style checking. This is a simplified C++ parser that checks coding style and
+flags any violations.
+\item Gerrit\footnote{\url{http://code.google.com/p/gerrit}}: for regular code
+reviews. This tools serves two purposes: In one hand, it prevents immature
+code from entering the code base, by distilling its errors, deficiencies and
+imperfections during iterative review cycles where other developers contribute
+to improve the code. On the other hand, the tool also provide a virtual
+training camp in which new developers get to learn from more experienced
+developers (read ``experienced'' as: \emph{those who have made all the
+mistakes, and know where the bodies are buried\ldots}) on how to improve the
+code and avoid known problems that have been observed during maintenance
+cycles.
 \item Git hooks: that enforce the use of the KWStyle and Gerrit and that also
 perform some checks of their own. For example, ITK uses Git hooks that prevent
 commits of code with tabs, and with trailing blank spaces.
 \end{itemize}
 
-The team has also explored the use of ``decrustify'' as a tool for enforcing a
-consistent style. It is worth emphasizing that uniformity of style is not a
-simple matter of aesthetic appeal. It is really a matter of economics, since it
-is well known that the subsequent cost of maintenance of the code is about 13
-times the cost of the initial development, and that about 80\% of that
-maintenace cost is the time that developers dedicate to reading someoneelse's
+The team has also explored the use of
+``Uncrustify''\footnote{\url{http://uncrustify.sourceforge.net}} as a tool for
+enforcing a consistent style. It is worth emphasizing that uniformity of style
+is not a simple matter of aesthetic appeal. It is really a matter of economics,
+since it is well known that the subsequent cost of maintenance of the code is
+about 13 times the cost of the initial development, and that about 80\% of that
+maintenance cost is the time that developers dedicate to reading someone else's
 code, trying to figure out what it was supposed to do. Uniform style does
-wonders for reducing the time that it takes for developers to inmerse themselves
-into a newly open file and get to understand the code before they introduce any
-modifications in it. By the same token, it also reduces the chances that
-subsequent developers will misinterpret the code and that their modifications
-end up introducing new bugs when they were honestly trying to fix old bugs.
+wonders for reducing the time that it takes for developers to immerse
+themselves into a newly open file and get to understand the code before they
+introduce any modifications in it. By the same token, it also reduces the
+chances that subsequent developers will misinterpret the code and that their
+modifications end up introducing new bugs when they were honestly trying to fix
+old bugs.
 
 The key for making these tools effective is to make sure that they are:
 \begin{itemize}
 \item Available to all developers, hence our preference for Open Source tools.
 \item Run on a regular basis. In the case of ITK, these tools have been
-integrated in the Nightly and Continuos Dashboard builds managed by
+integrated in the Nightly and Continuous Dashboard builds managed by
 CDash\footnote{\url{http://www.cdash.org/CDash/index.php?project=Insight}}.
 \item Run as close as possible to the point where the code is being written,
 since in this way, deviations can be fixed immediately, and developers train
@@ -569,46 +579,56 @@ effort under the funding of the National Library of Medicine. This is not a
 minor feat. Once you have been working on a piece of software for over a
 decade, and you are offered the opportunity to clean it up: What would you
 change ?.
+
+This opportunity for widespread refactoring is very rare. For the previous ten
+years of the Toolkit, we relied on the daily effort of performing small local
+refactorings by cleaning up specific corners of the toolkit as we run into
+them.  This continuous process of clean up and improvement takes advantage of
+the massive collaboration of open source communities, and it is safely enabled
+by the testing infrastructure driven by CDash, that exercises on a regular
+basis about 84\% of the code in the toolkit. Note that in contrast, the average
+code coverage of the software industry is estimated to be only 50\%.
 \end{aosasect2}
 
 \begin{aosasect2}{Reproducibility}
 
-One of the early lessons learned in ITK was that the many papers
-published in the field were not as easy to implement as we were led to
-believe. The computational field tend to over-celebrate algorithms and
-to dismiss the practical work of writing software as ``just an
-implementation detail''. That dismissive attitude is quite damaging to
-the field, since diminshes the importance of the first-hand experience
-with the code and its proper use. The outcome is that most published papers
-are not reproducible, and that when researchers and students attempt to use
-such techniques, they end up spending a lot of time in the process and deliver
-variations of the original work. It is actually quite difficult in practice
-to verify if an implementation matches what was described in a paper.
+One of the early lessons learned in ITK was that the many papers published in
+the field were not as easy to implement as we were led to believe.  The
+computational field tend to over-celebrate algorithms and to dismiss the
+practical work of writing software as \emph{``just an implementation detail''}.
 
-ITK disrupted, for the good, that environment and restored a culture of DYI (Do
-It Yourself), in a field that has grown accustomed to theoretical reasoning,
-and that had learned to dismiss experimental work. The new culture brought by
-ITK is a practical and pragmatic one in which the virtues of the software are
-judged by its practical results and not by the appearance of complexity that is
-celebrated in scientific publications. Helas, it turns out that in practice,
-the most effective processing methods are those that would appear to be too
-simple to be accepted for a scientific paper.
+That dismissive attitude is quite damaging to the field, since it diminishes the
+importance of the first-hand experience with the code and its proper use. The
+outcome is that most published papers are simply not reproducible, and that
+when researchers and students attempt to use such techniques, they end up
+spending a lot of time in the process and deliver \emph{variations} of the
+original work. It is actually quite difficult in practice to verify if an
+implementation matches what was described in a paper.
 
-The culture of Reproducibilty is a continuation of the philosophy of Test
-Driven Developement, and systematically results in better software. Higher
+ITK disrupted, for the good, that environment and restored a culture of DYI
+(\emph{Do It Yourself}), in a field that has grown accustomed to theoretical
+reasoning, and that had learned to dismiss experimental work. The new culture
+brought by ITK is a practical and pragmatic one in which the virtues of the
+software are judged by its practical results and not by the appearance of
+complexity that is celebrated in some scientific publications. Helas, it turns
+out that in practice, the most effective processing methods are those that
+would appear to be too simple to be accepted for a scientific paper.
+
+The culture of Reproducibility is a continuation of the philosophy of Test
+Driven Development, and systematically results in better software. Higher
 clarity, readability, robustness and focus.
 
-In order to fill the gap of lack reproducible pubications, the ITK community
+In order to fill the gap of lack reproducible publications, the ITK community
 created the Insight Journal\footnote{\url{http://www.insight-journal.org}}.
 This is an Open Access, fully online publication, in which contributions are
 required to include code, data, parameters, and tests in order to enable the
 verification of reproducibility. Articles are published online in less than 24
 hours after submission. Then, they are made available for peer-review by any
 member of the community. Readers get full access to all the materials
-acompanying the article, namely: source code, data, parameters, and testing
+accompanying the article, namely: source code, data, parameters, and testing
 scripts. The Journal have provided a prolific space for sharing new code
 contributions, and from there, make their way into the code base. The Journal
-recently recevied its 500th Article and continues to be a used as the official
+recently received its 500th Article and continues to be a used as the official
 entry gate for new code to be added to the ITK toolkit.
 \end{aosasect2}
 
