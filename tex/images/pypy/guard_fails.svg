@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.0//EN" "http://www.w3.org/TR/2001/PR-SVG-20010719/DTD/svg10.dtd">
+<svg width="49cm" height="14cm" viewBox="23 269 965 264" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+  <g>
+    <rect style="fill: #ffffff" x="210.425" y="450" width="202.15" height="82"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x="210.425" y="450" width="202.15" height="82"/>
+    <text style="fill: #000000;text-anchor:middle;font-size:12.7998;font-family:sanserif;font-style:normal;font-weight:normal" x="311.5" y="494.9">
+      <tspan x="311.5" y="494.9">Data on registers and stack</tspan>
+    </text>
+  </g>
+  <g>
+    <rect style="fill: #ffffff" x="227" y="366" width="155" height="68"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x="227" y="366" width="155" height="68"/>
+    <text style="fill: #000000;text-anchor:middle;font-size:12.7998;font-family:sanserif;font-style:normal;font-weight:normal" x="304.5" y="403.9">
+      <tspan x="304.5" y="403.9">Resume data</tspan>
+    </text>
+  </g>
+  <g>
+    <rect style="fill: #ffffff" x="408" y="274" width="196" height="68"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x="408" y="274" width="196" height="68"/>
+    <text style="fill: #000000;text-anchor:middle;font-size:12.7998;font-family:sanserif;font-style:normal;font-weight:normal" x="506" y="311.9">
+      <tspan x="506" y="311.9">Interpreter state rebuilt</tspan>
+    </text>
+  </g>
+  <g>
+    <path style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" d="M 412.575,491 A 203.308,203.308 0 0 0 504.469,352.881"/>
+    <polygon style="fill: #000000" points="509.73,353.493 505.887,342.994 499.794,352.367 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="509.73,353.493 505.887,342.994 499.794,352.367 "/>
+  </g>
+  <g>
+    <path style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" d="M 383.005,391.459 A 176.377,176.377 0 0 0 449.452,349.979"/>
+    <polygon style="fill: #000000" points="453.43,353.544 456.336,342.747 445.956,346.901 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="453.43,353.544 456.336,342.747 445.956,346.901 "/>
+  </g>
+  <g>
+    <rect style="fill: #ffffff" x="249" y="272" width="128" height="76"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x="249" y="272" width="128" height="76"/>
+    <text style="fill: #000000;text-anchor:middle;font-size:12.7998;font-family:sanserif;font-style:normal;font-weight:normal" x="313" y="313.9">
+      <tspan x="313" y="313.9">Guard fails</tspan>
+    </text>
+  </g>
+  <g>
+    <line style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x1="377.999" y1="308.632" x2="397.002" y2="308.232"/>
+    <polygon style="fill: #000000" points="397.108,313.23 407,308.021 396.897,303.233 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="397.108,313.23 407,308.021 396.897,303.233 "/>
+  </g>
+  <g>
+    <rect style="fill: #ffffff" x="24.6" y="270" width="200.8" height="77"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x="24.6" y="270" width="200.8" height="77"/>
+    <text style="fill: #000000;text-anchor:middle;font-size:12.7998;font-family:sanserif;font-style:normal;font-weight:normal" x="125" y="312.4">
+      <tspan x="125" y="312.4">Compiled assembly running</tspan>
+    </text>
+  </g>
+  <g>
+    <line style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x1="225.4" y1="308.5" x2="238.022" y2="309.302"/>
+    <polygon style="fill: #000000" points="237.705,314.292 248.002,309.937 238.339,304.312 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="237.705,314.292 248.002,309.937 238.339,304.312 "/>
+  </g>
+  <g>
+    <rect style="fill: #ffffff" x="636.475" y="279" width="157.05" height="60"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x="636.475" y="279" width="157.05" height="60"/>
+    <text style="fill: #000000;text-anchor:middle;font-size:12.7998;font-family:sanserif;font-style:normal;font-weight:normal" x="715" y="312.9">
+      <tspan x="715" y="312.9">Blackhole interpreter</tspan>
+    </text>
+  </g>
+  <g>
+    <rect style="fill: #ffffff" x="828" y="282" width="159" height="55"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x="828" y="282" width="159" height="55"/>
+    <text style="fill: #000000;text-anchor:middle;font-size:12.7998;font-family:sanserif;font-style:normal;font-weight:normal" x="907.5" y="313.4">
+      <tspan x="907.5" y="313.4">Bytecode interpreter</tspan>
+    </text>
+  </g>
+  <g>
+    <line style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x1="604" y1="308" x2="625.48" y2="308.661"/>
+    <polygon style="fill: #000000" points="625.326,313.659 635.475,308.969 625.634,303.664 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="625.326,313.659 635.475,308.969 625.634,303.664 "/>
+  </g>
+  <g>
+    <line style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x1="794.522" y1="309.352" x2="817" y2="309.451"/>
+    <polygon style="fill: #000000" points="816.978,314.451 827,309.496 817.022,304.451 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="816.978,314.451 827,309.496 817.022,304.451 "/>
+  </g>
+  <g>
+    <path style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" d="M 129.039,347.956 A 264.777,264.777 0 0 0 199.202,485.252"/>
+    <polygon style="fill: #000000" points="195.588,489.03 206.276,492.31 202.487,481.791 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="195.588,489.03 206.276,492.31 202.487,481.791 "/>
+  </g>
+</svg>
