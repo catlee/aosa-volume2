@@ -74,45 +74,33 @@ edge detection filter used to identify the borders of anatomical structures.
 \end{figure}
 
 For each one of these tasks, the image analysis community has developed a
-variety of algorighms, and continue developing new ones. Why do they continue
-doing this? you may ask, and the answer is that image processing is a
-combination of science, engineering, art, and ``cooking'' skills. Claiming that
-there is an algorithmic combination that is the ``right'' answer to an image
-processing task, is as mislead as claiming that there is such a thing as the
-``right'' type of chocolate dessert for a dinner. Instead of pursuing
+variety of algorithms, and continue developing new ones. \emph{``Why do they
+continue doing this?''} you may ask, and the answer is that image processing is
+a combination of science, engineering, art, and ``cooking'' skills. Claiming
+that there is an algorithmic combination that is the ``right'' answer to an
+image processing task, is as mislead as claiming that there is such a thing as
+the ``right'' type of chocolate dessert for a dinner. Instead of pursuing
 perfection, the community strives for producing a rich enough set of tools that
-ensures that there will be no shortage of options to try, when it comes the
-time to face a given image processing challenge.
-
-This state of affairs, of course comes at a price. The cost is that the image
-analyzer is confronted with the difficulty of choosing among tens of different
-tools that could be used in different combinations to achieve similar results.
-To make things more interesting, each one of those algorithmic choices comes
-with numeric and boolean parameters that can be tuned to regulate the behavior
-of the filters. For example, that median filter illustrated in the center of
-Figure~\ref{fig.itk.brim} has two numeric parameters, and that edge detection
-filter illustrated in the right of the same figure has five numeric parameters.
-The existance of those tunable parameters makes even more difficult to ever
-claim that method ``A'' is better than method ``B''; since we could only say
-that for a given application and a given set of input images, the method ``A''
-with a particular set of parameters, seems to produce better results than
-method ``B'' with a particular set of parameters.  And of course, here
-``better'' is judged by a mixture of subjective and objective measures of
-quality.
+ensures that there will be no shortage of options to try when it comes the
+time to face a given image processing challenge. This state of affairs, of
+course, comes at a price. The cost is that the image analyzer is confronted with
+the difficulty of choosing among tens of different tools that could be used in
+different combinations to achieve similar results.
 
 The image analysis community is also closely integrated with the research
 community. It is common to find specific research groups that become attached
 to the algorithmic families they have developed. This custom of ``branding'',
-and up to some level ``marketing'' leads to a situation where the best that the
-software can do for the community is to offer them a very complete set of
+and up to some level ``marketing'', leads to a situation where the best that the
+software toolkit can do is to offer the community a very complete set of
 algorithmic implementations that they can try, and then mix and match to create
-a recipe that satisfy their needs. These are some of the reasons why ITK was
+a recipe that satisfies their needs. These are some of the reasons why ITK was
 designed and implemented as a large collection of somewhat independent tools,
-many of which can be used to solve similar problems. The toolkit was also
-conceived as a resource that will grow and renew itself continously, as new
-algorithms and better implementations become available superseeding exiting
-ones, as well as new tools are developed in response to the emerging needs of
-new medical imaging technologies.
+many of which can be used to solve similar problems. In this context, a certain
+level of ``redundancy'' is not seen as a problem but as a valuable feature. The
+toolkit was also conceived as a resource that will grow and renew itself
+continously, as new algorithms and better implementations become available
+superseeding exiting ones, as well as new tools are developed in response to
+the emerging needs of new medical imaging technologies.
 
 Armed with this quick overview of the nature of activities that make the daily
 routine of the image analyzers who compose the ITK community, we can now dive
@@ -293,92 +281,22 @@ pipeline are implemented part in the \code{ProcessObject} and part in the
 
 \begin{aosasect2}{Factories}
 
-One of the fundamental design requirements of ITK was to have support for
-multiple platforms. This requirement emerged from the desire of maximizing the
-impact of the toolkit. By supporting many platforms it became easier to ensure
-that a larger community will benefit from the effort invested in developing the
-toolkit. There are however, fundamental differences among the many hardware and
-software platforms that make very difficult to create a single implementation
-of software that could run in all those platforms, without sacrificing the good
-fitness of a solution to each one of the individual platforms. The design
-pattern of ``Factories'' is one of the most effective ways of addressing this
-challenge.
+One of the fundamental design requirements of ITK is to provide support for
+multiple platforms. This requirement emerges from the desire to maximize the
+impact of the toolkit by making it usable to a broad community regardless of
+their platform of choice. ITK adopted the design pattern of ``Factories'' to
+address the challenge of supporting fundamental differences among the many
+hardware and software platforms, without sacrificing the good fitness of a
+solution to each one of the individual platforms.
 
-Three main elements are involved in the Factory pattern:
-
-\begin{aosaitemize}
-\item Factory registry
-\item Family of factories
-\item Alternative implementations of a service class
-\end{aosaitemize}
-
-\aosafigure{../images/itk/FactoriesDesignPattern.pdf}{Factory Design Pattern}{fig.itk.factorydesignpattern}
-
-To illustrate the use of Factories, let's consider the example of numerical
-methods that can be better implemented with libraries that are only available
-in some platforms. To be more specific, let's consider the case of Fast Fourier
-Transforms (FFT). ITK bases its FFT functionalities on the implementation
-provided by the third party library VXL, and alternatively on the FFTW library.
-This second one is a lot faster, but happens to be available only in Linux
-platforms\footnote{To be more precise: FFTW is ``easily'' and ``readily''
-available in Linux. The library, however can be built in other platforms with
-some investment of effort. The point is still valid for the example that we are
-trying to illustrate here.}. With the Factory pattern it is possible to write a
-FFT image filter class that, at construction time, will invoke the creation of
-a VXL-based or a FFTW-based implementation, depending on the platform in which
-we are running the code.
-
-For this Factory pattern to work, there must be a ``Factory registry'' where we
-keep a list of all available Factories. The registry has an API through which
-it is possible to request the list of Factories able to construct an object
-suitable for computing FFT. The registered factories are capable of
-constructing an instance of a Service class, in this case the filter that
-computes the FFT. Each one of the platform-dependent implementations of the
-service class have the same API, and therefore can be used interchangeably.  We
-could then have a VXL-based FFT filter, and a FFTW-based FFT filter as two
-alternative implementations of the service class that computes FFTs. For each
-one of these two implementations of the service class, we will have their
-corresponding Factories. That is, one VXL-related Factory that knows how to
-instantiate the VXL-based FFT filter, and a FFTW-related Factory that knows how
-to instantiate a FFTW-based filter. By selecting which Factories are registered and which ones are not, at any
-given time, we can control what specific variation of the service class will be
-instantiated in a particular platform.
-
-In ITK the Factory registry is implemented in the \code{ObjectFactoryBase}.
-This class maintains an internal list of all the factories that have been
-registered and that are available for instantiating other service classes. This
-pattern is illustrated in Figure~\ref{fig.itk.factorydesignpattern}, where
-multiple Factory classes are registered in the list of the
-\code{ObjectFactoryBase}, and each one knows how to instantiate a service
-class, in this case, one of the filters X, Y or Z.
-
-The request for instantiating a given service class is made by passing a string
-to the ObjectFactoryBase, asking it to find a Factory that claims to be capable
-of instantiating such type of class. If such Factory is found then it gets the
-request for instantiating the service class, and the freshly created object is
-returned to the originator of the request. Since the instantiation of the
-service class respect a common API, the recipient of the class does not have to
-be aware of the fact that it actually got a specialized version of the
-requested object. In C++ Object Oriented terms, the delivered class is a
-specialized class deriving from the base class that the originator of the
-request was asking for.
-
-One of the most appealing aspects of the Factory implementation in ITK is that
-the registration of Factories can be done at run time. It can actually be done
-by a process as simple as placing dynamic libraries in specific directories.
-This provides a natural mechanism for implementing a Plugin Architecture in a
-clean and transparent way. The \code{ObjectFactoryBase} does this in its method
-\code{LoadDynamicFactories}, where it recruits the help of the
-\code{DynamicLoader} class to search for dynamic libraries in the directories
-listed in the environment variable \code{ITK\_AUTOLOAD\_PATH}.
-
-The dynamic library has to provide an implementation of the \code{itkLoad()}
-C-function that, when called, returns a pointer to a Factory object. The
-returned Factory pointer is registered in the list of available Factories, and
-becomes available for the next round in which the creation of a service class
-is requested. This plugin mechanism is quite flexible and facilitates the
-development of extensible image analysis applications, that satisfy the
-requirements of providing an ever-growing set of image analysis capabilites.
+The Factory Pattern in ITK uses class names as keys to a registry of class
+constructors. The registration of Factories happens at run time, and can be
+done by simply placing dynamic libraries in specific directories that ITK
+applications search at start up time. This last feature provides a natural
+mechanism for implementing a Plugin Architecture in a clean and transparent
+way. The outcome is to facilitate the development of extensible image analysis
+applications, satisfying the requirements of providing an ever-growing set of
+image analysis capabilites.
 
 \end{aosasect2}
 
@@ -390,11 +308,9 @@ specific uses in mind, and therefore are fine-tunned to specific types of
 images. As a consequence, on a regular basis, new image file formats are
 conceived and promoted across the community. Aware of this situation, the ITK
 developement team designed an IO Architecture suitable for unlimited
-extensibility, in which it became easy to add support for more and more file
+extensibility, in which it is easy to add support for more and more file
 formats on a regular basis.
 
-
-%\aosafigure{../images/itk/BlockFunctionalDiagram.pdf}{IO Factories Dependencies}{fig.itk.io.factoriesblock}
 \aosafigure{../images/itk/ImageIOFactoriesDesignPattern.pdf}{IO Factories Dependencies}{fig.itk.io.factoriesregistry}
 
 These IO extensible architecture is built upon the Factories mechanism
@@ -402,8 +318,8 @@ described in the previous section. The main difference is that in the IO case,
 the IO Factories are registered in a specialized registry that is managed by
 the \code{ImageIOFactory} base class, shown on the upper left corner of
 Figure~\ref{fig.itk.io.factoriesregistry}. The actual functionality of reading
-and writing data from image file formats is implemented in a family of classes
-called \code{ImageIO} classes, shown on the right side of
+and writing data from image file formats is implemented in a family of
+\code{ImageIO} classes, shown on the right side of
 Figure~\ref{fig.itk.io.factoriesregistry}. These service classes are intended
 to be instantiated on deman when the user request to read or write an image.
 The services classes are not exposed to the application code. Instead,
@@ -428,29 +344,6 @@ or
 \item \code{writer->Update();}
 \end{aosaitemize}
 
-In both cases, the \code{ImageFileWriter} and \code{ImageFileWriter} will
-invoke the \code{CreateImageIO()} function in the \code{ImageIOFactory} and
-will ask it to identify Factories capable of instantiating service classes that
-know how to read and write that particular file format.
-
-As illustrated in Figure~\ref{fig.itk.io.factoriesregistry}, the
-\code{ImageIOFactory} holds a list of pointers to all the registered IO
-Factories. Each one of those Factories is able to respond to the calls:
-
-\begin{aosaitemize}
-\item \code{CanRead( filename )}
-\item \code{CanWrite( filename )}
-\end{aosaitemize}
-
-When the \code{ImageIOFactory} is asked to find a Factory capable of
-instantiating an ImageIO object that can read or write an image with such
-\code{filename}, it searches sequentially in its list of registered factories,
-asking at every step whether the current Factory item \code{CanRead()} or
-\code{CanWrite()} that filename. The first Factory that responds affirmatively
-get the assignment of instantiating the corresponding ImageIO object and pass
-it to the Reader or Writer in order to provide the services of reading or
-writing the image in disk.
-
 The self-contained nature of every IO Factory and ImageIO service classes is
 also reflected in the modularization. Typically, an ImageIO class depends on a
 specialized library that is dedicated to managing a specific file format. That
@@ -470,7 +363,8 @@ factories has been one of the most successful features in the Architectural
 design of ITK. It has made possible to easily manage a challenging situation
 without placing a burden in the code nor obscuring its implementation. More
 recently, the same IO architecture has been adapted to manage the process of
-reading and writing files containing spatial transformations.
+reading and writing files containing spatial transformations represented by the
+\code{Transform} class family.
 
 \end{aosasect2}
 
