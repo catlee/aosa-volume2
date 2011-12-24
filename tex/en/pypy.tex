@@ -196,12 +196,54 @@ inherits this allocation intensive pattern. In many cases, though, allocations
 are temporary and local to a function. \emph{Malloc removal} is an optimization
 that addresses these cases. Malloc removal removes these allocations by
 ``flattening'' the previously dynamically-allocated object into component
-scalars when possible. For example, a function that uses a dynamically allocated
-structure consisting of two integers will be rewritten to simply use two
-integers allocated on the C-stack. We will see how a similar technique is used
-on application level Python in the PyPy JIT in section~\ref{sec:jit}. PyPy also
-does inlining. Inlining improves performance and reduces the size of the final
-binary because it allows constant folding to take place.
+scalars when possible.
+
+To see how malloc removals works, consider the following function that computes
+the euclidean distance between two points on the plane in a roundabout fashion
+\begin{verbatim}
+def distance(x1, y1, x2, y2):
+    p1 = (x1, y1)
+    p2 = (x2, y2)
+    return math.hypot(p1[0] - p2[0], p1[1] - p2[1])
+\end{verbatim}
+
+When initially RTyped, the body of the function has the following operations:
+\begin{verbatim}
+v60 = malloc((GcStruct tuple2))
+v61 = setfield(v60, ('item0'), x1_1)
+v62 = setfield(v60, ('item1'), y1_1)
+v63 = malloc((GcStruct tuple2))
+v64 = setfield(v63, ('item0'), x2_1)
+v65 = setfield(v63, ('item1'), y2_1)
+v66 = getfield(v60, ('item0'))
+v67 = getfield(v63, ('item0'))
+v68 = int_sub(v66, v67)
+v69 = getfield(v60, ('item1'))
+v70 = getfield(v63, ('item1'))
+v71 = int_sub(v69, v70)
+v72 = cast_int_to_float(v68)
+v73 = cast_int_to_float(v71)
+v74 = direct_call(math_hypot, v72, v73)
+\end{verbatim}
+This code is suboptimal in several ways. Two tuples that never escape the
+function are allocated. Additionally, there is unnecessary indirection accessing
+its fields.
+
+Running malloc removal produces the following consise code:
+\begin{verbatim}
+v53 = int_sub(x1_0, x2_0)
+v56 = int_sub(y1_0, y2_0)
+v57 = cast_int_to_float(v53)
+v58 = cast_int_to_float(v56)
+v59 = direct_call((<* fn ll_math.ll_math_hypot>), v57, v58)
+\end{verbatim}
+The tuple allocations have been completely removed and the indirections
+flattened out. Later, we will see how a technique similar to malloc removal is
+used on application level Python in the PyPy JIT in section~\ref{sec:jit}.
+
+PyPy also does function inlining. Inlining improves performance and reduces the
+size of the final binary because it allows more constant folding and malloc
+removal to take place.
 
 The program, now in optimized, low-level flow-graphs, is passed to the backend
 to generate sources. Before it can generate C code, the C backend must perform
