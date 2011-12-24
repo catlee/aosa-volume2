@@ -380,6 +380,54 @@ developing the Insight Toolkit was to enable the streaming of image data
 through the Data Pipeline. More specifically, to be able to process large
 images by pushing sub-blocks of the image throught the data pipeline, and then
 assembling the resulting blocks on the output side of the pipeline.
+
+Streaming, unfortunately, can not be apply to all types of algorithms. Specific
+cases that are not suitable for streaming are:
+
+\begin{itemize}
+\item Iterative algorithms that, to compute a pixel value at every iteration,
+require to use as input the pixel values of its neighbors. This is the case of
+most PDE-solving-based algorithms, such as anisotropic diffusion, demons
+deformable registration, and dense level sets, for example.
+\item Algorightms that requires the full set of input pixel values in order to
+compute the value of one of the output pixels. Fourier transform and Infinite
+Impulse Response (IIR) filters, such as the Recursive Gaussian filter, are
+examples of this class.
+\item Region propagation or front propagation algorithms in which the
+modification of pixels also happens in an iterative way but for which the
+location of the regions or fronts can not be systematically partitioned in
+blocks in a predictable way. Region growing segmentation, sparse level sets,
+some implementations of mathematical morphology operations and some forms of
+watersheds are typical examples here.
+\item Image registration algorithms, given that they require to have access to
+the full input image data for computing metric values at every iteration of
+their optimization cycles.
+\end{itemize}
+
+Fortunately, on the other hand, the data pipeline structure of ITK enables
+support for streaming in a variety of transformation filters by taking
+advantage of the fact that all filters create their own output, and therefore
+they do not overwrite the memory of the input image. This comes at the price of
+memory consumption, since the pipeline has to allocate both the input and
+output images in memory simultaneously. Filters such as flipping, axes
+permutation, and geometric resampling fall in this category. In these cases,
+the data pipeline manages the matching of input regions to output regions by
+requiring every filter to provide a method called
+\code{GenerateInputRequestedRegion()} that takes as argument a rectangular
+output region. This method computes the rectangular input region that will be
+needed by this filter to compute that specific rectangular output region. This
+continuous negotiation in the data pipeline makes possible to find for every
+output block the corresponding section of input image that is required for
+computation.
+
+To be more precise here, we must say therefore that ITK supports
+Streaming\ldots but only in the algorithms that are \emph{``streamable''} in
+nature. That said, in the spirit of being progressive regarding the remaining
+algorithms, we should qualify this statement by not claiming that ``it is
+impossible to stream such algorithms'', but rather say that ``our typical
+approach to streaming is not suitable for these algorithms'' at this point, and
+that hopefully new techniques will be devised by the community in the future to
+addresss these cases.
 \end{aosasect2}
 
 \end{aosasect1}
