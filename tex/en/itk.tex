@@ -435,6 +435,31 @@ addresss these cases.
 \begin{aosasect1}{Lessons Learned}
 
 \begin{aosasect2}{Reusability}
+The principle of reusability can also be read as ``avoidance of redundancy''.
+In the case of ITK this has been achieved by a three-prone approach. First, the
+adoption of Object Oriented programming, and in particular the proper creation
+of class hierarchies where common functionalities are factorized in base
+classes. Second, the adoption of generic programming, implemented via the heavy
+use of C++ templates, that allow to factorize behaviors that are identified as
+patterns. Third, a generous use of C++ macros has also permitted to reuse
+standard snippets of code that are needed in a myriad of places across
+the toolkit.
+
+As a concrete example, the widespread use of explicity naming types via the C++
+``typedefs'', has proved to be particularly important. This practice plays two
+roles. In one hand it provides a human-readable informative name descring the
+nature of the type and its purpse. On the other hand, it ensures that the type
+is used consistently across the toolkit. As an example, during the refactoring
+of the toolkit for its 4.0 version, a massive effort was invested in collecting
+the cases where C++ integer types such as \code{int}, \code{unsigned int},
+\code{long} and \code{unsigned long}, were used all across the toolkit and to
+replace them with types named after the proper concept that the associated
+variables were representing. This was the most costly part of the process of
+ensuring that the toolkit was able to take advantage of 64bits types for
+managing images larger than 4Gigabytes in all platforms. A task that was of the
+utmost importance for promoting the use of ITK in the fields of Microscopy and
+Remote sensing, where image of tens of Gigabytes in size are of common
+occurrence.
 \end{aosasect2}
 
 \begin{aosasect2}{Maintainability}
@@ -446,30 +471,104 @@ The architecture satisfies the constraints that minimize maintenace cost.
 \item Repeated patterns
 \end{aosaitemize}
 \end{aosasect2}
+
 As the developers got involved in regular maintenance activities, they
-got exposed to the ``common failures'' of certain details. The things
-that raised common questions in the mailing lists, the details that
-new developers tend to miss and that led them to introduce buggy code.
-After dealing with such issues, developers learned to write code that
-is ``good for maintenance''. Some of this traits apply to both coding
-style and the actual organization of the code.
+got exposed to the ``common failures'' of certain details, in particular:
+
+\begin{itemize}
+\item Assumptions that some filters make regarding specific pixel types for
+their input or output images, but that are not enforced via types nor concept
+checking, and that may as well be missing to be specified in the documentation.
+\item Missing to write for readability. This is one of the most common
+challenges for any software whose new algorithm implementations originate in
+the research community. It is common in that environmen to write code that
+``just works'', and to forget that the purpose of code is not just to be
+executed at run time, but that it must be easily readable by the next
+developer. Typical good rules of ``clean code'' writing tend to be ignored when
+researchers are excited about getting their new shiny algorithm to work. For
+example, small functions that do one thing and one thing only (the single
+responsibility principle and the principle of least surprise), proper naming of
+variables and functions.
+\item Lack of attention to failure cases and error management. It is common to
+focus on the ``nice cases'' of data processing and to fail to provide code for
+managing all the cases that can go wrong. Helas, adopters of the toolkit
+quickly run into such cases once they start developing and deplying
+applications in the real world.
+\item Insuficient testing. It requires a lot of discipline to follow the
+practic of test driven development. Specially the notion of writing the tests
+first, and only implement functionalities as you test them. It is almost always
+the case that bugs in the code are hiding behind the cases that were skipped
+while implementing the testing code.
+\end{itemize}
+
+Thanks to the communication practices of Open Source communities, many of these
+items end up being exposed through questions that are commonly asked in the
+mailing lists, or that are directly reported as bugs by users  in the issue
+tracker. After dealing with such issues, developers learned to write code that
+is ``good for maintenance''. Some of these traits apply to both coding style
+and the actual organization of the code. It is our view that a developer only
+reaches mastery after passing some time doing maintenace and getting exposed to
+``all the things that can go wrong''.
 
 \begin{aosasect2}{The Invisible Hand}
-The software should look like writted by a single person. The best
-developers are the ones that write code that can be taken over by
-anybody else, should they be taken down by the ``Provervial Bus'' when
-crossing a street. We have grown to recognize that any trace of
-``personal touch'' is an indication of a defect introduced in the
-software.
+The software should look like writted by a single person. The best developers
+are the ones that write code that can be taken over by anybody else, should
+they be taken down by the ``Provervial Bus'' when crossing a street. We have
+grown to recognize that any trace of ``personal touch'' is an indication of a
+defect introduced in the software.
+
+In order to enforce and promote code style uniformity, the following tools have
+proved to be very effective:
+
+\begin{itemize}
+\item KWStyle: for automatic style checking. This is a simplified C++ parser
+that checks coding style and flags any violations.
+\item Gerrit: for regular code reviews. This tools serves the two purposes. In
+one hand, it prevents inmature code from entering the code base, by distilling
+its errors, deficiencies and imperfections during iterative review cycles where
+other developers contribute to improve the code. On the other hand, the tool
+also provide a virtual training camp in which new developers get to learn from
+more experienced developers (read ``experienced'' as: those who have made all
+the mistakes) on how to improve the code and avoid known problems that have
+been observed during maintenance cycles.
+\item Git hooks: that enforce the use of the KWStyle and Gerrit and that also
+perform some checks of their own. For example, ITK uses Git hooks that prevent
+commits of code with tabs, and with trailing blank spaces.
+\end{itemize}
+
+The team has also explored the use of ``decrustify'' as a tool for enforcing a
+consistent style. It is worth emphasizing that uniformity of style is not a
+simple matter of aesthetic appeal. It is really a matter of economics, since it
+is well known that the subsequent cost of maintenance of the code is about 13
+times the cost of the initial development, and that about 80\% of that
+maintenace cost is the time that developers dedicate to reading someoneelse's
+code, trying to figure out what it was supposed to do. Uniform style does
+wonders for reducing the time that it takes for developers to inmerse themselves
+into a newly open file and get to understand the code before they introduce any
+modifications in it. By the same token, it also reduces the chances that
+subsequent developers will misinterpret the code and that their modifications
+end up introducing new bugs when they were honestly trying to fix old bugs.
+
+The key for making these tools effective is to make sure that they are:
+\begin{itemize}
+\item Available to all developers, hence our preference for Open Source tools.
+\item Run on a regular basis. In the case of ITK, these tools have been
+integrated in the Nightly and Continuos Dashboard builds managed by
+CDash\footnote{\url{http://www.cdash.org/CDash/index.php?project=Insight}}.
+\item Run as close as possible to the point where the code is being written,
+since in this way, deviations can be fixed immediately, and developers train
+themselves by learning what kind of practices break style rules.
+\end{itemize}
+
 \end{aosasect2}
 
 \begin{aosasect2}{Refactoring}
-ITK Started in the year 2000 and grew continuously until the year
-2011. The development team had the truly unique opportunity to embark
-in a refactoring effort under the funding of the National Library of
-Medicine. This is not a minor feat. Once you have been working on a
-piece of software for over a decade, and you are offered the
-opportunity to clean it up: What would you change ?.
+ITK Started in the year 2000 and grew continuously until the year 2011. The
+development team had the truly unique opportunity to embark in a refactoring
+effort under the funding of the National Library of Medicine. This is not a
+minor feat. Once you have been working on a piece of software for over a
+decade, and you are offered the opportunity to clean it up: What would you
+change ?.
 \end{aosasect2}
 
 \begin{aosasect2}{Reproducibility}
@@ -487,7 +586,7 @@ variations of the original work. It is actually quite difficult in practice
 to verify if an implementation matches what was described in a paper.
 
 ITK disrupted, for the good, that environment and restored a culture of DYI (Do
-It Yourself), in a field that has grown accoustomed to theoretical reasoning,
+It Yourself), in a field that has grown accustomed to theoretical reasoning,
 and that had learned to dismiss experimental work. The new culture brought by
 ITK is a practical and pragmatic one in which the virtues of the software are
 judged by its practical results and not by the appearance of complexity that is
@@ -499,7 +598,18 @@ The culture of Reproducibilty is a continuation of the philosophy of Test
 Driven Developement, and systematically results in better software. Higher
 clarity, readability, robustness and focus.
 
-The Insight Journal...
+In order to fill the gap of lack reproducible pubications, the ITK community
+created the Insight Journal\footnote{\url{http://www.insight-journal.org}}.
+This is an Open Access, fully online publication, in which contributions are
+required to include code, data, parameters, and tests in order to enable the
+verification of reproducibility. Articles are published online in less than 24
+hours after submission. Then, they are made available for peer-review by any
+member of the community. Readers get full access to all the materials
+acompanying the article, namely: source code, data, parameters, and testing
+scripts. The Journal have provided a prolific space for sharing new code
+contributions, and from there, make their way into the code base. The Journal
+recently recevied its 500th Article and continues to be a used as the official
+entry gate for new code to be added to the ITK toolkit.
 \end{aosasect2}
 
 \end{aosasect1}
