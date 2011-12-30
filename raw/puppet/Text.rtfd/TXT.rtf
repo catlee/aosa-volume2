@@ -6,7 +6,7 @@
 {\list\listtemplateid2\listhybrid{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\*\levelmarker \{disc\}}{\leveltext\leveltemplateid101\'01\uc0\u8226 ;}{\levelnumbers;}\fi-360\li720\lin720 }{\listname ;}\listid2}
 {\list\listtemplateid3\listhybrid{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\*\levelmarker \{disc\}}{\leveltext\leveltemplateid201\'01\uc0\u8226 ;}{\levelnumbers;}\fi-360\li720\lin720 }{\listname ;}\listid3}}
 {\*\listoverridetable{\listoverride\listid1\listoverridecount0\ls1}{\listoverride\listid2\listoverridecount0\ls2}{\listoverride\listid3\listoverridecount0\ls3}}
-\margl1440\margr1440\vieww28520\viewh16600\viewkind0
+\margl1440\margr1440\vieww28260\viewh16600\viewkind0
 \deftab720
 \pard\pardeftab720\sa280
 
@@ -18,11 +18,15 @@
 \f1\fs24 \
 \
 
-\f0\fs30 Puppet is a tool for configuring and maintaining your computers: \'a0In its simple configuration language, you explain to Puppet how you want your machines configured, and it changes them as needed to match your specification. \'a0As you change that specification over time -- such as with package updates, new users, or configuration updates -- Puppet will automatically update your machines to match. \'a0If they are already configured as desired, then Puppet does nothing.
+\f0\fs30 Puppet is a tool for configuring and maintaining your computers: \'a0In its simple configuration language, you explain to Puppet how you want your machines configured, and it changes them as needed to match your specification. \'a0As you change that specification over time -- such as with package updates, new users, or configuration updates -- Puppet will automatically update your machines to match. \'a0If they are already configured as desired, then Puppet does nothing.\
+\
+In general, Puppet does everything it can to use existing system features to do its work; e.g., on Red Hat it will yum for packages and init.d for services, but on OS X it will use dmg for packages and launchd for services.  One of the guiding goals in Puppet is to have the work it does make sense whether you are looking at Puppet code or the system itself, so following system standards is critical.\
+\
+Puppet comes from multiple traditions of other tools.  In the open source world, it is most influenced by Cfengine, which was the first open source general-purpose configuration tool, and ISconf, whose use of 'make' for all work inspired the focus on explicit dependencies throughout the system.  In the commercial world, Puppet is a response to BladeLogic and Opsware (both since acquired by larger companies), each of which was successful in the market when Puppet was begun but each of which was focused on selling to executives at large companies rather than building great tools directly for system administrators.  Puppet is meant to solve similar problems to these tools, but it is focused on a very different user.
 \f1\fs24 \
 \
 
-\f0\fs30 For example, here is a simple class that configures ssh:
+\f0\fs30 For a simple example of how to use Puppet, here is a snippet of code that will make sure the secure shell service (SSH) is installed and configured properly:
 \f1\fs24 \
 \
 
@@ -44,12 +48,12 @@
 
 \f0\fs30 require => Package[ssh]
 \f1\fs24 \
+
+\f0\fs30 \}
+\f1\fs24 \
 \pard\pardeftab720\li1920
 
-\f0\fs30 \cf0 \}
-\f1\fs24 \
-
-\f0\fs30 service \{ sshd:
+\f0\fs30 \cf0 service \{ sshd:
 \f1\fs24 \
 
 \f0\fs30 	ensure => running,
@@ -70,7 +74,9 @@
 \f1\fs24 \
 \
 
-\f0\fs30 A normal Puppet site will have tens or even hundreds of these code snippets, which we reasonably call \'91classes\'92; we store these classes on disk in files called \'91manifests\'92, and collect them in related groups called \'91modules\'92. For instance, you might have an \'91ssh\'92 module with this \'91ssh\'92 class plus any other related classes, along with modules for \'91mysql\'92, \'91apache\'92, and \'91sudo\'92.
+\f0\fs30 A normal Puppet site will have tens or even hundreds of these code snippets, which we call \'91classes\'92; we store these classes on disk in files called \'91manifests\'92, and collect them in related groups called \'91modules\'92. For instance, you might have an \'91ssh\'92 module with this \'91ssh\'92 class plus any other related classes, along with modules for \'91mysql\'92, \'91apache\'92, and \'91sudo\'92.\
+\
+Most Puppet interactions are via the command line or long-running HTTP services, but there are graphical interfaces for some things, such as report processing.  Puppet Labs also produces commercial products around Puppet, which tend more toward graphical web-based interfaces.
 \f1\fs24 \
 \
 
@@ -106,7 +112,7 @@
 \f1\fs24 \
 \pard\pardeftab720\sa280
 
-\f0\b\fs48 \cf0 The Overview
+\f0\b\fs48 \cf0 Architectural Overview
 \f1\fs36 \
 \pard\pardeftab720
 
@@ -132,14 +138,23 @@
 \pard\pardeftab720
 
 \f1\fs24 \cf0 \
-\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardeftab720\pardirnatural
 
 \f2 \cf0 {{\NeXTGraphic PL_dataflow_cmyk_noTitle.pdf \width15840 \height12240
-}¬}
-\f1\b\fs28 \
+}¬}\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardeftab720\pardirnatural
+
+\f1\b\fs28 \cf0 \
 \pard\pardeftab720
 
-\f0\b0\fs30 \cf0 Thus, the agent has access to its own system information, its configuration, and each report it generates. \'a0The server has copies of all of this data, plus access to all of the Puppet modules, and any back-end databases and services that might be needed to compile the configuration.
+\f0\b0\fs30 \cf0 \
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardeftab720\pardirnatural
+
+\f2\fs24 \cf0 {{\NeXTGraphic Timing Diagram.pdf \width11660 \height7460
+}¬}\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardeftab720\pardirnatural
+
+\f0\fs30 \cf0 \
+\pard\pardeftab720
+\cf0 Thus, the agent has access to its own system information, its configuration, and each report it generates. \'a0The server has copies of all of this data, plus access to all of the Puppet modules, and any back-end databases and services that might be needed to compile the configuration.
 \f1\fs24 \
 \
 
@@ -206,11 +221,13 @@
 \f1\fs28 \
 \pard\pardeftab720
 
-\f0\b0\fs30 \cf0 Puppet\'92s compiler is really three chunks: \'a0A YACC-style parser generator and a customer lexer; a group of classes used to create our Abstract Syntax Tree (AST); and the Compiler class that handles the interactions of all of these classes and also functions as the API to this part of the system.
+\f0\b0\fs30 \cf0 As mentioned above, Puppet has a custom language built for specifying system configurations.  This was done \
+\
+Puppet\'92s compiler is really three chunks: \'a0A YACC-style parser generator and a customer lexer; a group of classes used to create our Abstract Syntax Tree (AST); and the Compiler class that handles the interactions of all of these classes and also functions as the API to this part of the system.
 \f1\fs24 \
 \
 
-\f0\fs30 The most complicated thing about the compiler is the fact that most Puppet code is lazily loaded on first reference, which means there aren\'92t really explicit calls to load and parse the code. 
+\f0\fs30 The most complicated thing about the compiler is the fact that most Puppet code is lazily loaded on first reference (to reduce both load times and irrelevant logging about missing but unneeded dependencies), which means there aren\'92t really explicit calls to load and parse the code. 
 \f1\fs24 \
 \
 
@@ -268,7 +285,7 @@
 \f1\fs24 \
 \
 
-\f0\fs30 The transaction is, like many of Puppet\'92s classes, relatively poorly named. \'a0It\'92s the framework for actually affecting the system, whereas everything else we\'92ve discussed just builds up and passes around objects, but it doesn\'92t have ACID-like behavior, and it cannot be reverted and is not atomic.
+\f0\fs30 Puppet's transaction class provides the framework for actually affecting the system, whereas everything else we\'92ve discussed just builds up and passes around objects.  Unlike transactions in more common systems, such as databases, Puppet transactions do not have behaviors like atomicity.
 \f1\fs24 \
 \
 
@@ -324,7 +341,7 @@
 \f1\fs24 \
 \
 
-\f0\fs30 This mix of behaviors makes Puppet::Type quite difficult to maintain. \'a0The whole class is less than 2,000 lines of code, but working at three levels -- resource, resource type, and resource type manager -- makes it convoluted. \'a0This is obviously why it\'92s a major target for being refactored.
+\f0\fs30 This mix of behaviors makes Puppet::Type quite difficult to maintain. \'a0The whole class is less than 2,000 lines of code, but working at three levels -- resource, resource type, and resource type manager -- makes it convoluted. \'a0This is obviously why it\'92s a major target for being refactored, but it's more plumbing than user-facing, so it's always been hard to justify effort here rather than directly in features.
 \f1\fs24 \
 \
 
@@ -477,7 +494,7 @@
 \f1\fs28 \
 \pard\pardeftab720
 
-\f0\b0\fs30 \cf0 You\'92ve probably detected by now that we have a tradition of bad class names in Puppet, and according to most people, this one takes the cake. \'a0The Indirector is a relatively standard inversion of control framework with significant extensibility. \'a0All of the hand-offs from one class to another go through the Indirector, via a standard REST-like interface (e.g., we support find, search, save, and destroy as methods), and switch Puppet from serverless to client/server is largely a question of configuring the agent to use an http endpoint for retrieving catalogs, rather than using a compiler endpoint.
+\f0\b0\fs30 \cf0 You\'92ve probably detected by now that we have a tradition of bad class names in Puppet, and according to most people, this one takes the cake. \'a0The Indirector is a relatively standard inversion of control framework with significant extensibility. \'a0Inversion of control systems allow you to separate development of functionality from how you control which functionality you use.  In Puppet's case, this allows us to have many plugins that provide very different functionality, such as reaching the compiler via HTTP or loading it in-process, and switch between them with a small configuration change rather than a code change.   In other words, Puppet's Indirector is basically an implementation of a service locator, as described on the Wikipedia page for 'inversion of control'.  All of the hand-offs from one class to another go through the Indirector, via a standard REST-like interface (e.g., we support find, search, save, and destroy as methods), and switch Puppet from serverless to client/server is largely a question of configuring the agent to use an http endpoint for retrieving catalogs, rather than using a compiler endpoint.
 \f1\fs24 \
 \
 
@@ -493,7 +510,7 @@
 \f1\fs24 \
 \
 
-\f0\fs30 For our 0.25 release (begun in 2008), we began the process of switching all networking to a RESTful model, but we chose a much more complicated route than just changing out the networking. \'a0We developed the Indirector as the standard framework for inter-component communication, and built REST endpoints as just one option. \'a0It took two releases to fully support REST, and we have not quite finished converting to using JSON (instead of YAML) for all serialization.
+\f0\fs30 For our 0.25 release (begun in 2008), we began the process of switching all networking to a RESTful model, but we chose a much more complicated route than just changing out the networking. \'a0We developed the Indirector as the standard framework for inter-component communication, and built REST endpoints as just one option. \'a0It took two releases to fully support REST, and we have not quite finished converting to using JSON (instead of YAML) for all serialization.  We undertook switching to JSON for two major reasons:  First, YAML processing ruby is painfully slow, and pure-ruby processing of JSON is a lot faster.  Second, most of the web seems to be moving to JSON, and it tends to be implemented more portably than YAML.  Certainly in the case of Puppet, the first use of YAML was not portable across languages, and was often not portable across different versions of Puppet, because it was essentially serialization of internal Ruby objects.
 \f1\fs24 \
 \
 
