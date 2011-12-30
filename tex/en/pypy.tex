@@ -19,18 +19,23 @@ indeed from any other dynamic language implementation.
 \end{aosasect1}
 
 \begin{aosasect1}{Overview of PyPy}
-PyPy, except for a negligible amount of C stubs, is written completely in
-Python. The PyPy source tree contains two major components. Firstly, there is
-the Python interpreter, which is the user-facing Python runtime that people
-using PyPy as a Python implementation invoke. The Python interpreter is actually
-written in a subset of Python called Restricted Python (abbreviated
-RPython). The purpose of writing the Python interpreter in RPython is that it
-can be fed to the second major part of PyPy, the RPython translation
-toolchain. The RPython translator takes RPython code and converts it to a
-choosen lower level language, most commonly C. This allows PyPy to be a
-self-hosting implementation. As we shall see throughout this chapter, the
-RPython translator also makes PyPy a general dynamic language implementation
+
+PyPy, except for a negligible amount of C stubs, is written completely
+in Python. The PyPy source tree contains two major
+components. Firstly, there is the Python interpreter, which is the
+user-facing Python runtime that people using PyPy as a Python
+implementation invoke. The Python interpreter is actually written in a
+subset of Python called Restricted Python (abbreviated RPython). The
+purpose of writing the Python interpreter in RPython is that it can be
+fed to the second major part of PyPy, the RPython translation
+toolchain. The RPython translator takes RPython code and converts it
+to a choosen lower level language, most commonly C
+(\aosafigref{fig:pypy:steps}). This allows PyPy to be a self-hosting
+implementation. As we shall see throughout this chapter, the RPython
+translator also makes PyPy a general dynamic language implementation
 framework.
+
+\aosafigure{../images/pypy/translation_steps.png}{Translation Steps}{fig:pypy:steps}
 
 PyPy's powerful abstractions make it the most flexible Python implementation. It
 has nearly 200 configuration options, which vary from selecting different
@@ -365,7 +370,9 @@ this is virtualizables require special treatment, since they may escape the
 trace. During JIT generation, code which accesses a virtualizable is rewritten
 to check if JITed assembly is running. If it is, the JIT is asked to update the
 fields from data in assembly. Additionally when the external call returns to
-JITed code, execution bails back to the interpreter.
+JITed code, execution bails back to the interpreter (\aosafigref{fig:pypy:bail}).
+
+\aosafigure{../images/pypy/guard_fails.png}{Bailing Back to the Interpreter}{fig:pypy:bail}
 
 When a guard fails, the compiled assembly is now longer valid, and control must
 return to the bytecode interpreter. This bailing out is one of the most
