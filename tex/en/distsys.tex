@@ -312,8 +312,8 @@ For example, in our image server application, all images would have
 redundant copies on another piece of hardware somewhere (ideally in a
 different geographic location in the event of a catastrophe like an
 earthquake or fire in the data center), and the services to access the
-images would be redundant, all potentially servicing requests. See 
-\aosafigref{fig.distsys.3}.
+images would be redundant, all potentially servicing requests. (See 
+\aosafigref{fig.distsys.3}.)
 (Load balancers are a great way to make this possible, but there is
 more on that below).
 
@@ -440,7 +440,7 @@ at two hard problems: scalability of storage and fast access of data.
 
 For the sake of this section, let's assume you have many terabytes (TB)
 of data and you want to allow users to access small portions 
-of that data at random. (\aosafigref{fig.distsys.7}) 
+of that data at random. (See \aosafigref{fig.distsys.7}.) 
 This is similar to locating an image file
 somewhere on the file server in the image application example.
 
@@ -636,7 +636,7 @@ Imagine there is a request for the same data (let's call it littleB)
 across several nodes, and that piece of data is not in the cache. If
 that request is routed thought the proxy, then all of those requests
 can be collapsed into one, which means we only have to read littleB
-off disk once. (\aosafigref{fig.distsys.14}) There is some cost associated with this design, since
+off disk once. (See \aosafigref{fig.distsys.14}.) There is some cost associated with this design, since
 each request can have slightly higher latency, and some requests may
 be slightly delayed to be grouped with similar ones. But it will
 improve performance in high load situations, particularly when that
@@ -661,7 +661,7 @@ which can result in decreased request latency. For example, let's say
 a bunch of nodes request parts of B: partB1, partB2, etc. We can
 set up our proxy to recognize the spatial locality of the individual
 requests, collapsing them into a single request and returning only
-bigB, greatly minimizing the reads from the data origin. (\aosafigref{fig.distsys.15}) This can make
+bigB, greatly minimizing the reads from the data origin. (See \aosafigref{fig.distsys.15}.) This can make
 a really big difference in request time when you are randomly
 accessing across TBs of data! Proxies are especially helpful under
 high load situations, or when you have limited caching, since they
@@ -719,7 +719,7 @@ piece of data, part 2 of B---how will you know where to find it? If
 you have an index that is sorted by data type---say data A, B, C---it
 would tell you the location of data B at the origin. Then you just
 have to seek to that location and read the part of B you want. 
-(\aosafigref{fig.distsys.16})
+(See \aosafigref{fig.distsys.16}.)
 
 \aosafigure{../images/distsys/indexes.jpg}{Indexes}{fig.distsys.16}
 
@@ -730,7 +730,7 @@ ideal for access with an index.
 
 Often there are many layers of indexes that serve as a
 map, moving you from one location to the next, and so forth, until
-you get the specific piece of data you want. (\aosafigref{fig.distsys.17})
+you get the specific piece of data you want. (See \aosafigref{fig.distsys.17}.)
 
 \aosafigure{../images/distsys/multipleIndexes.jpg}{Many layers of indexes}{fig.distsys.17}
 
@@ -810,7 +810,7 @@ Finally, another critical piece of any distributed system is a load
 balancer. Load balancers are a principal part of any architecture, as their
 role is to distribute load across a set of nodes responsible for
 servicing requests. This allows multiple nodes to transparently
-service the same function in a system. (\aosafigref{fig.distsys.18}) Their main purpose is to handle
+service the same function in a system. (See \aosafigref{fig.distsys.18}.) Their main purpose is to handle
 a lot of simultaneous connections and route those connections to one
 of the request nodes, allowing the system to scale to service more
 requests by just adding nodes.
@@ -925,7 +925,7 @@ and the actual work performed to service it.
 
 Enter queues. A queue is as simple as it sounds: a task comes in, is
 added to the queue and then workers pick up the next task as they have
-the capacity to process it. (\aosafigref{fig.distsys.21}) These tasks 
+the capacity to process it. (See \aosafigref{fig.distsys.21}.) These tasks 
 could represent simple writes to a
 database, or something as complex as generating a thumbnail preview
 image for a document. When a client submits task requests to a queue
