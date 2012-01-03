@@ -35,6 +35,7 @@ as a data management system.  Unsatisfied with the suitability of
 MATLAB for this task, Hunter began working on a new Python application
 built on top of the user interface toolkit GTK+, at the time the
 leading desktop windowing system for Linux.
+% TODO: TAB wrote: How does matplotlib handle data management better than Matlab?
 
 matplotlib was thus originally developed as a EEG/ECoG visualization
 tool for this GTK+ application, and this use case directed its
@@ -185,7 +186,7 @@ class SomeArtist(Artist):
     'an example Artist that implements the draw method'
 
     def draw(self, renderer):
-        'call the approriate renderer methods to paint self onto canvas'
+        """call the approriate renderer methods to paint self onto canvas"""
         if not self.get_visible():  return
 
         # create some objects and use renderer to draw self here
@@ -244,17 +245,20 @@ from matplotlib.figure import Figure
 fig = Figure()
 canvas = FigureCanvas(fig)
 
-# import the numpy library to generate the random numbers
+# Import the numpy library to generate the random numbers
 import numpy as np
 x = np.random.randn(10000)
 
-# now use a figure method to create an Axes artist; the Axes artist is
-# added automatically to the figure container fig.axes
+# Now use a figure method to create an Axes artist; the Axes artist is
+# added automatically to the figure container fig.axes.
+# Here "111" is from the MATLAB convention: create a grid with 1 row and 1
+# column, and use the first cell in that grid for the location of the new
+# Axes.
 ax = fig.add_subplot(111)
 
-# call the Axes method hist to generate the histogram; hist creates a
+# Call the Axes method hist to generate the histogram; hist creates a
 # sequence of Rectangle artists for each histogram bar and adds them
-# to the Axes container
+# to the Axes container.  Here "100" means create 100 bins.
 ax.hist(x, 100)
 
 # decorate the figure with a title and save it
@@ -264,17 +268,16 @@ fig.savefig('matplotlib_histogram.png')
 
 \begin{aosasect2}{Scripting layer (pyplot)}
 
-
-This API script above works great, especially for programmers, and is
-usually the appropriate programming paradigm when writing a web
-application server, a UI application, or perhaps a production-quality
-script.  For everyday purposes, particularly for interactive
-exploratory work by bench scientists who are not professional
-programmers, it is a bit syntactically heavy.  Most special purpose
-languages for data analysis and visualization provide a lighter
-scripting interface to simplify common tasks, and matplotlib does so
-as well in its \code{matplotlib.pyplot} interface.  The same code
-above, using pyplot, reads
+  This API script above works very well, especially for programmers,
+  and is usually the appropriate programming paradigm when writing a
+  web application server, a UI application, or perhaps a script to be
+  shared with other developers.  For everyday purposes, particularly
+  for interactive exploratory work by bench scientists who are not
+  professional programmers, it is a bit syntactically heavy.  Most
+  special purpose languages for data analysis and visualization
+  provide a lighter scripting interface to simplify common tasks, and
+  matplotlib does so as well in its \code{matplotlib.pyplot}
+  interface.  The same code above, using pyplot, reads
 
 \begin{verbatim}
 import matplotlib.pyplot as plt
@@ -331,10 +334,11 @@ internal state is managed.
 
 \end{aosaitemize}
 
-A somewhat stripped down and simplified version of matplotlib's core
-line plotting function \code{matplotlib.pyplot.plot} is shown below to
-illustrate the core functionality (all other pyplot scripting
-interface functions follow the same design).
+A somewhat stripped down and simplified version of pyplot's
+frequently-used line plotting function \code{matplotlib.pyplot.plot}
+is shown below to illustrate how a pyplot function wraps functionality
+in matplotlib's object-oriented core.  All other pyplot scripting
+interface functions follow the same design.
 
 \begin{verbatim}
 
@@ -358,7 +362,8 @@ the documentation signature are special conventions in Python to mean:
 all the arguments and keyword arguments that are passed to the method.
 This allows us to forward them on to the corresponding API method.
 The call \code{ax = gca()} invokes the stateful machinery to ``get
-current Axes'', and will create the \code{Figure} and \code{Axes} if
+current Axes'' (each Python interpreter can have only one ``current
+axes''), and will create the \code{Figure} and \code{Axes} if
 necessary.  The call to \code{ret = ax.plot(*args, **kwargs)} forwards
 the function call and its arguments to the appropriate \code{Axes}
 method, and stores the return value to be returned later.  Thus the
@@ -403,7 +408,9 @@ methods in the backend API was reduced considerably, to only:
 \begin{aosaitemize}
 
   \item \code{draw\_path}: Draw compound polygons, made up of line and
-    B\'ezier segments
+    B\'ezier segments.  This interfaces replaces many of the old
+    methods: \code{draw\_arc}, \code{draw\_line}, \code{draw\_lines},
+    \code{draw\_rectangle}.
 
   \item \code{draw\_image}: Draw raster images
 
@@ -416,9 +423,11 @@ methods in the backend API was reduced considerably, to only:
 
 It is possible to implement all of the drawing necessary for a new
 backend using only these methods.\footnote{We could also go one step
-further and draw text using \code{draw\_path}, removing the need for
-the \code{draw\_text} method, but we haven't gotten around to making
-that simplification.}  This is useful for getting a new backend
+  further and draw text using \code{draw\_path}, removing the
+  necessity for the \code{draw\_text} method, but we haven't gotten
+  around to making that simplification.  Of course, a backend would
+  still be free to implement its own \code{draw\_text} method to
+  output ``real'' text.}  This is useful for getting a new backend
 up-and-running more easily.  However, in some cases, a backend may
 want to override the behavior of the core in order to create more
 efficient output.  For example, when drawing markers (small symbols
@@ -473,18 +482,21 @@ coordinates in the final output file.  Most transformations are
 invertable, as well.  This makes it possible to click on an element of
 the plot and return its coordinate in data space.  The transform graph
 sets up dependencies between transformation nodes: when a parent
-node's transformation changes, such as when a figure window is
-resized, its children are all invalidated since any artists using
-those nodes must be recomputed.  This invalidation approach prevents
-unnecessary recomputations of all of the artists in the figure and
-contributes to better interactive performance.
+node's transformation changes, such as when an axes's limits are
+changed, any transformations related to that axes are invalidated
+since they will need to be redrawn.  Transformations related to other
+axes in the figure, of course, may be left alone, preventing
+unnecessary recomputations and contributing to better interactive
+performance.
 
-Transform nodes may be either simple affine transformations (scale,
-translation, rotation and skew) or non-affine transformations.
-Two-dimensional affine transformations are represented using a $3
-\times 3$ affine transformation matrix.  The transformed point
-$(x\prime, y\prime)$ is obtained by matrix-multiplying the original
-point $(x, y)$ by this matrix:
+Transform nodes may be either simple affine transformations and
+non-affine transformations.  Affine transformations are the family of
+transformations that preserves straight lines and ratios of distances,
+including rotation, translation, scale and skew.  Two-dimensional
+affine transformations are represented using a $3 \times 3$ affine
+transformation matrix.  The transformed point $(x\prime, y\prime)$ is
+obtained by matrix-multiplying the original point $(x, y)$ by this
+matrix:
 % FIXME: put this back in once we can find the bmatrix environment
 % \begin{math}
 % \begin{bmatrix} x' \\ y' \\ 1 \end{bmatrix} = \begin{bmatrix} s_x & \theta_x & t_x \\ \theta_y & s_y & t_y \\ 0 & 0 & 1 \end{bmatrix} \begin{bmatrix} x \\ y \\ 1 \end{bmatrix}
@@ -516,9 +528,10 @@ things.  A blended transformation is a special transformation node
 that uses one transformation for the $x$ axis and another for the $y$
 axis.  This is of course only possible if the given transformations
 are ``separable'', meaning the $x$ and $y$ coordinates are
-independent.  This is used, for example, to plot logarithmic plots
+independent, but the transformations themselves may be either affine
+or non-affine.  This is used, for example, to plot logarithmic plots
 where either or both of the $x$ and $y$ axes may have a logarithmic
-scale.  Having a blended transformation node allows of the available
+scale.  Having a blended transformation node allow the available
 scales to be combined in arbitrary ways.  Another thing the transform
 graph allows is the sharing of axes.  It is possible to ``link'' the
 limits of one plot to another and ensure that when one is panned or
@@ -555,25 +568,26 @@ certain contexts.
 \item \textbf{Handle missing data:} The data array may have portions
   where the data is missing or invalid.  The user may indicate this
   either by setting those values to NaN, or using Numpy masked arrays.
-  Vector output formats, such as PDF, do not have a concept of missing
-  data when plotting a polyline, so this step of the pipeline must
-  skip over the missing data segments using \code{MOVETO} commands,
-  which tell the renderer to pick up the pen and begin drawing again
-  at a new point.
+  Vector output formats, such as PDF, and rendering libraries, such as
+  Agg, do not often have a concept of missing data when plotting a
+  polyline, so this step of the pipeline must skip over the missing
+  data segments using \code{MOVETO} commands, which tell the renderer
+  to pick up the pen and begin drawing again at a new point.
 
 \item \textbf{Clipping:} Points outside of the boundaries of the
-  figure can increase the file size with invisible points, and, more
-  importantly, very large or very small coordinate values can cause
-  overflow errors in the rendering of the output file, resulting in
-  completely garbled output.  This step of the pipeline clips the
-  polyline as it exits and enter the edges of the figure to prevent
-  both of these problems.
+  figure can increase the file size by including many invisible
+  points.  More importantly, very large or very small coordinate
+  values can cause overflow errors in the rendering of the output
+  file, which results in completely garbled output.  This step of the
+  pipeline clips the polyline as it exits and enter the edges of the
+  figure to prevent both of these problems.
 
 \item \textbf{Snapping:} Perfectly vertical and horizontal lines can
   look fuzzy due to antialiasing when their centers are not aligned to
-  the center of a pixel (see \aosafigref{fig.matplotlib.pixelsnapping}).  The snapping step of the
-  pipeline first determines whether the entire polyline is made up of
-  horizontal and vertical segments (such as an axis-aligned
+  the center of a pixel (see
+  \aosafigref{fig.matplotlib.pixelsnapping}).  The snapping step of
+  the pipeline first determines whether the entire polyline is made up
+  of horizontal and vertical segments (such as an axis-aligned
   rectangle), and if so, rounds each resulting vertex to the nearest
   pixel center.  This step is only used for raster backends, since
   vector backends should continue to have exact data points.  Some
@@ -581,11 +595,15 @@ certain contexts.
   pixel snapping when viewed on screen.
 
 \item \textbf{Simplification:} When plotting really dense plots, many
-  of the points on the line may not actually be visible.  Including
+  of the points on the line may not actually be visible.  This is
+  particularly true of plots representing a noisy waveform.  Including
   these points in the plot increases file size, and may even hit
   limits on the number of points allowed in the file format.
   Therefore, any points that lie exactly on the line between their two
-  neighboring points are removed (see \aosafigref{fig.matplotlib.pathsimplification}).
+  neighboring points are removed (see
+  \aosafigref{fig.matplotlib.pathsimplification}).  This determination
+  is based on a threshold based on what would be visible at a given
+  resolution specified by the user.
 
 \end{aosaenumerate}
 
@@ -616,14 +634,17 @@ syntax, however, it requires that the user have a full and working
 installation of \TeX.  Therefore, matplotlib also includes its own
 internal math rendering engine, called mathtext.
 
-mathtext is a direct port of the most important subset of the
-\TeX\ math-rendering engine, glued onto a much simpler parser written
-using the pyparsing \cite{bib:pyparsing} parsing framework.  This port
-was written based on the published copy of the \TeX\ source code
-\cite{bib:texprogram}.  The simple parser builds up a tree of boxes
-and glue (in \TeX\ nomenclature), that are then laid out by the
-layout engine.  This makes for a nice, lightweight way to render most
-math expressions.
+mathtext is a direct port of the \TeX\ math-rendering engine, glued
+onto a much simpler parser written using the pyparsing
+\cite{bib:pyparsing} parsing framework.  This port was written based
+on the published copy of the \TeX\ source code \cite{bib:texprogram}.
+The simple parser builds up a tree of boxes and glue (in \TeX\
+nomenclature), that are then laid out by the layout engine.  While the
+complete \TeX\ math rendering engine is included, the large set of
+third-party \TeX\ and \LaTeX\ math libraries is not.  Features in such
+libraries are ported on an as-needed basis, with an emphasis on
+frequently used and non-discipline-specific features first.  This
+makes for a nice, lightweight way to render most math expressions.
 
 \end{aosasect1}
 
@@ -656,7 +677,7 @@ to baseline images.  All of the tests are run inside of the nose
 testing framework, which makes it very easy to generate a report of
 which tests failed.
 
-Complicating matters is that the image comparison can not be exact.
+Complicating matters is that the image comparison cannot be exact.
 Subtle changes in versions of the Freetype font-rendering library can
 make the output of text slightly different across different machines.
 These differences are not enough to be considered ``wrong'', but are
@@ -698,24 +719,24 @@ considerably since the testing framework was implemented.
 
 \begin{aosasect1}{Lessons learned}
 
-One of the important lessons from the development of matplotlib is,
-as Le Corbusier said, ``Good architects borrow''.  The early authors
-of matplotlib were largely scientists, self-taught programmers
-trying to get their work done, not formally trained computer
-scientists.  Thus we did not get the internal design right on the
-first try.  The decision to implement a user-facing scripting layer
-largely compatible with the MATLAB API benefited the project in
-three significant ways: it provided a time-tested interface to
-create and customize graphics, it made for an easy transition to
-matplotlib from the large base of MATLAB users, and most importantly
-for us in the context of matplotlib architecture, it freed
-developers to refactor the internal object-oriented API several
-times with a minimal impact to most users because the scripting
-interface was unchanged.  While we have had API users (as opposed to
-scripting users) from the outset, and most matplotlib developers are
-API users, most of these are power users able to adapt to API
-changes, and the scripting users can write code once and pretty much
-assume it is stable for all subsequent releases.
+  One of the important lessons from the development of matplotlib is,
+  as Le Corbusier said, ``Good architects borrow''.  The early authors
+  of matplotlib were largely scientists, self-taught programmers
+  trying to get their work done, not formally trained computer
+  scientists.  Thus we did not get the internal design right on the
+  first try.  The decision to implement a user-facing scripting layer
+  largely compatible with the MATLAB API benefited the project in
+  three significant ways: it provided a time-tested interface to
+  create and customize graphics, it made for an easy transition to
+  matplotlib from the large base of MATLAB users, and most importantly
+  for us in the context of matplotlib architecture, it freed
+  developers to refactor the internal object-oriented API several
+  times with a minimal impact to most users because the scripting
+  interface was unchanged.  While we have had API users (as opposed to
+  scripting users) from the outset, most of them are power users or
+  developers able to adapt to API changes.  The scripting users, on
+  the other hand, can write code once and pretty much assume it is
+  stable for all subsequent releases.
 
 For the internal drawing API, while we did borrow from GDK, we did not
 spend enough effort determining whether this was the right drawing
@@ -727,6 +748,10 @@ was developed from decades of experience Adobe had with its PostScript
 specification, which would give us mostly out-of-the-box compatibility
 with PDF itself, the Quartz Core Graphics framework, and the Enthought
 Enable Kiva drawing kit.
+% TODO: TAB: Can you include at least a link to what this interface
+% would have looked like? Is it as simple as the Drawable interface
+% described above? My gut says that PDF wouldn't be any easier to
+% work with than GDK; I'd love to be proven wrong!
 
 One of the curses of Python is that it is such an easy and expressive
 language that developers often find it easier to re-invent and
@@ -737,6 +762,8 @@ integration with existing efforts and APIs rather than reinventing
 functionality.  Integration with existing functionality is, however, a
 double edge sword, as it can make builds and releases more complex and
 reduce flexibility in internal development.
+% TODO: TAB: Any examples of Python libraries that could have been leveraged?
+% What would you look for/look to avoid in a library-to-leverage?
 
 \end{aosasect1}
 \end{aosachapter}
