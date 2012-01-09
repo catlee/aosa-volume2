@@ -342,9 +342,9 @@ To list just a few examples, there are plugins for different {\tt
 remote servers, and plugins for how to communicate on different types
 of underlying networks.
 
-One of the major benefits of using using plugins is that multiple
-groups of developers have freedom to experiment with alternate
-implementations without affecting the core of Open MPI.
+One of the major benefits of using plugins is that multiple groups of
+developers have freedom to experiment with alternate implementations
+without affecting the core of Open MPI.
 %
 This was a critical feature, particularly in the early days of the
 Open MPI project.  Sometimes the developers didn't always know what
@@ -358,8 +358,7 @@ compare and contrast.
 Code comparisons can be done without components, of course, but the
 component concept helps guarantee that all implementations expose
 exactly the same external API, and therefore provide exactly the same
-required semantics.  Losing components can also easily be removed
-because they are in self-contained directories.
+required semantics.  
 
 As a direct result of the flexibility that it provides, the component
 concept is utilized heavily throughout all three layers of Open MPI --
@@ -557,7 +556,7 @@ transport for message passing.
 Regardless of framework, each component contains a well-known,
 statically-allocated and initialized component struct.  
 %
-The struct must named according to the template {\tt
+The struct must be named according to the template {\tt
   mca\_\-<framework>\_\-<component>\_\-component}.  For example, the
 TCP network driver component's struct in the BTL framework is named
 {\tt mca\_\-btl\_\-tcp\_\-component}.
@@ -847,9 +846,10 @@ for their specific system.
 
 \begin{aosasect1}{Lessons Learned}
 
-With such a varied group of developers, it is inevitable that we would
-each learn {\em something}, and that as a group, we would learn many
-things.  The following list describes just a few of these lessons.
+With such a varied group of core Open MPI members, it is inevitable that
+we would each learn {\em something}, and that as a group, we would
+learn many things.  The following list describes just a few of these
+lessons.
 
 %--------------------------------------------------------------------------
 
@@ -979,8 +979,8 @@ actions are separated.
 
 \begin{aosasect2}{Miscellaneous}
 
-There are too many more lessons learned to describe in detail here,
-so the following is an abbreviated list that will hopefully be useful:
+There are too many more lessons learned to describe in detail here;
+the following is a few more lessons that can be summed up briefly:
 
 \begin{aosaitemize}
 \item We were fortunate to draw upon 15+ years of HPC research and
@@ -1000,16 +1000,6 @@ so the following is an abbreviated list that will hopefully be useful:
   implement that feature.  Or when newer ideas come along that
   obsolete older frameworks, don't hesitate to delete such kruft.
 
-\item Space vs.\ time can be an appropriate trade-off.  For example,
-  allocating space for $N$ incoming messages can be a net performance
-  win because individual {\tt malloc} overhead can be amortized across
-  receiving multiple messages.
-
-\item Accelerators (such as general purpose GPUs) are challenging some
-  of our initial designs; we did not account for their cross-cutting
-  behavior in the initial Open MPI designs.  They are forcing us to
-  re-think some of our base assumptions.
-
 \end{aosaitemize}
 
 \end{aosasect2}
@@ -1018,8 +1008,8 @@ so the following is an abbreviated list that will hopefully be useful:
 
 \begin{aosasect2}{Conclusion}
 
-If we had to list the three most important things that we've learned
-from the Open MPI project, I think they would be as follows:
+  If we had to list the three {\em most} important things that we've
+  learned from the Open MPI project, I think they would be as follows:
 
 \begin{aosaitemize}
 \item One size does not fit all (users).  The run-time plugin and
