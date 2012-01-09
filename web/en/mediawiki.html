@@ -23,8 +23,8 @@
       </table>
       <h1 class="chaptitle">MediaWiki</h1>
       <h1 class="chapterauthor">
-        <a href="intro.html#harihareswara-sumana">Sumana Harihareswara</a>,
-        <a href="intro.html#paumier-guillaume">Guillaume Paumier</a>
+        <a href="intro.html#paumier-guillaume">Guillaume Paumier</a>, 
+        <a href="intro.html#harihareswara-sumana">Sumana Harihareswara</a>
       </h1>
     </div>
 
@@ -34,13 +34,25 @@
 
 <p>Wikipedia is one of the top ten websites in the world, currently getting about 400 million unique visitors a month. It gets over 100,000 hits per second. Wikipedia isn't commercially supported by ads; it is entirely supported by a non-profit organization, the Wikimedia Foundation, which relies on donations as its primary funding model. This means that MediaWiki must not only run a top-ten website, but also do so on a shoestring budget. To meet these demands, MediaWiki has a heavy bias towards performance, caching and optimization. Expensive features that can't be enabled on Wikipedia are either reverted or disabled through a configuration variable; there is an endless balance between performance and features.</p>
 
-<p>The influence of Wikipedia on MediaWiki's architecture isn't limited to performance. Unlike generic CMSes, MediaWiki was originally written for a very specific purpose: supporting a community that creates and curates freely-reusable knowledge on an open platform. This means, for example, that MediaWiki doesn't include regular features found in corporate CMSes (like a publication workflow or ACLs), but does offer a variety of tools to handle spam and vandalism.</p>
+<p>The influence of Wikipedia on MediaWiki's architecture isn't limited to performance. Unlike generic content management systems (CMSes), MediaWiki was originally written for a very specific purpose: supporting a community that creates and curates freely-reusable knowledge on an open platform. This means, for example, that MediaWiki doesn't include regular features found in corporate CMSes, like a publication workflow or access control lists, but does offer a variety of tools to handle spam and vandalism.</p>
 
 <p>So, from the start, the needs and actions of a constantly evolving community of Wikipedia participants have affected MediaWiki's development, and vice versa. The architecture of MediaWiki has been driven many times by initiatives started or requested by the community, such as the creation of Wikimedia Commons, or the Flagged Revisions feature. Developers made major architectural changes because the way that MediaWiki was used by Wikipedians made it necessary.</p>
 
 <p>MediaWiki has also gained a solid external user base by being open-source software from the beginning. Third-party reusers know that, as long as such a high-profile website as Wikipedia uses MediaWiki, the software will be maintained and improved. MediaWiki used to be really focused on Wikimedia sites, but efforts have been made to make it more generic and better accommodate the needs of these third-party users. For example, MediaWiki ships with an excellent web-based installer, making the installation process much less painful than when everything had to be done via the command line, and the software contained hardcoded paths for Wikipedia.</p>
 
 <p>Still, MediaWiki is and remains Wikipedia's software, and this shows throughout its history and architecture.</p>
+
+<p>This chapter starts is organized in FIXME sections:</p>
+<ul>
+<li><b>Historical overview</b> gives a short overview of the history of MediaWiki, or rather its prehistory, and the circumstances of its creation.</li>
+<li><b>MediaWiki code base and practices</b> explains the choice of PHP, the importance and implementation of secure code, and how general configuration is handled.</li>
+<li><b>Database and text storage</b> dives into the distributed data storage system, and how its structure evolved to accommodate growth.</li>
+<li><b>Requests, caching and delivery</b> follows the execution of a web request through the components of MediaWiki it activates. This section includes a description of the different caching layers, and the asset delivery system.</li>
+<li><b>Languages</b> details the pervasive internationalization and localization system, why it matters, and how it is implemented.</li>
+<li><b>Users</b> presents how users are represented in the software, and how user permissions work.</li>
+<li><b>Content</b> details how content is structured, formatted and processed to generate the final HTML. A subsection focuses on how MediaWiki handles media files.</li>
+<li><b>Customizing and extending MediaWiki</b> explains how JavaScript, CSS, extensions, and skins can be used to customize a wiki, and how they modify its appearance and behavior. A subsection presents the software's machine-readable web API.</li>
+</ul>
 
 <h2> <span id="Historical_overview">Historical overview</span></h2>
 
@@ -58,7 +70,7 @@
 
 <p>So, in summer 2001, Wikipedia participant Magnus Manske (then a university student) started to work on a dedicated Wikipedia wiki engine in his free time. He aimed to improve Wikipedia's performance using a database-driven app, and to be able to develop Wikipedia-specific features that couldn't be provided by a "generic" wiki engine. Written in PHP and MySQL-backed, the new engine was simply called the "PHP script", "PHP wiki", "Wikipedia software" or "phase II".</p>
 
-<p>The "PHP script" was made available in August 2001, shared on SourceForge in September, and tested until late 2001. As Wikipedia suffered from recurring performance issues because of increasing traffic, the English language Wikipedia eventually switched from UseModWiki to the PHP script in January 2002. Other language versions also created in 2001 were slowly upgraded as well, although some of them would stay powered by UseModWiki until 2004. An automated program, called "User:Conversion script", converted the last version of the existing articles to the phase II format; Brion Vibber partly restored previous revisions of the UseModWiki history on the English Wikipedia in September 2002.</p>
+<p>The "PHP script" was made available in August 2001, shared on SourceForge in September, and tested until late 2001. As Wikipedia suffered from recurring performance issues because of increasing traffic, the English language Wikipedia eventually switched from UseModWiki to the PHP script in January 2002. Other language versions also created in 2001 were slowly upgraded as well, although some of them would stay powered by UseModWiki until 2004.
 
 <p>As PHP software using a MySQL database, the PHP script was the first iteration of what would later become MediaWiki. It also introduced many critical features still in use today, like namespaces to organize content (including talk pages), skins, and special pages (including maintenance reports, a contributions list and a user watchlist).</p>
 
@@ -84,7 +96,7 @@
 
 <p>PHP was chosen as the framework for Wikipedia's "Phase II" software in 2001; MediaWiki has grown organically since then, and is still evolving. Most MediaWiki developers are volunteers contributing in their free time, and they were very few in the early years. Some software design decisions or omissions may seem wrong in retrospect, but it's hard to criticize the founders for not implementing some abstraction which is now found to be critical, when the initial code base was so small, and the time taken to develop it so short.</p>
 
-<p>For example, MediaWiki uses unprefixed class names, which can cause conflicts when PHP core and PECL developers add new classes: MediaWiki <code>Namespace</code> class had to be renamed to <code>MWNamespace</code> to be compatible with PHP 5.3. Consistently using a prefix for all classes (e.g. "<code>MW</code>") would have made it easier to embed MediaWiki inside another application or library.</p>
+<p>For example, MediaWiki uses unprefixed class names, which can cause conflicts when PHP core and PECL (PHP Extension Community Library) developers add new classes: MediaWiki <code>Namespace</code> class had to be renamed to <code>MWNamespace</code> to be compatible with PHP 5.3. Consistently using a prefix for all classes (e.g. "<code>MW</code>") would have made it easier to embed MediaWiki inside another application or library.</p>
 
 <p>Relying on PHP was probably not the best choice for performance, since it has not benefited from improvements that some other dynamic languages have seen. Using Java would have been much better for performance, and simplified execution scaling for back-end maintenance tasks. On the other hand, PHP is very popular, which facilitates recruiting new developers.</p>
 
@@ -109,7 +121,7 @@ Database schema as of MediaWiki 1.19</div>
 </div>
 </div>
 
-<p>MediaWiki has been using a relational database back-end since the Phase II software. The default (and best-supported) DBMS for MediaWiki is MySQL, which is the one that all Wikimedia sites use, but other DBMSes (such as PostgreSQL, Oracle, and SQLite) have community-supported implementations. A sysadmin can choose a DBMS while installing MediaWiki, and MediaWiki provides both a database abstraction and a query abstraction layer that simplify database access for developers.</p>
+<p>MediaWiki has been using a relational database back-end since the Phase II software. The default (and best-supported) database management system (DBMS) for MediaWiki is MySQL, which is the one that all Wikimedia sites use, but other DBMSes (such as PostgreSQL, Oracle, and SQLite) have community-supported implementations. A sysadmin can choose a DBMS while installing MediaWiki, and MediaWiki provides both a database abstraction and a query abstraction layer that simplify database access for developers.</p>
 
 <p>The current layout contains dozens of tables. Many are about the wiki's content (e.g. <code>page</code>, <code>revision</code>, <code>category</code>, and <code>recentchanges</code>). Other tables include data about users (<code>user</code>, <code>user_groups</code>), media files (<code>image</code>, <code>filearchive</code>), caching (<code>objectcache</code>, <code>l10n_cache</code>, <code>querycache</code>) and internal tools (<code>job</code> for the job queue), among others<sup id="cite_ref-1" class="reference"><a href="#cite_note-1">[2]</a></sup>. Indices and summary tables are used extensively in MediaWiki, since SQL queries that scan huge numbers of rows can be very expensive, particularly on Wikimedia sites. Unindexed queries are usually discouraged.</p>
 
@@ -142,7 +154,7 @@ The main content tables in MediaWiki 1.4 and 1.5.</div>
 
 <p><code>MediaWiki::performRequest()</code> is then called to handle most of the URL request. It checks for bad titles, read restrictions, local interwiki redirects, and redirect loops, and determines whether the request is for a normal or a special page.</p>
 
-<p>Normal page requests are handed over to <code>MediaWiki::initializeArticle()</code>, to create an <code>Article</code> object for the page (<code>$wgArticle</code>), and then to <code>MediaWiki::performAction()</code>, which handles "standard" actions. Once the action has been completed, <code>MediaWiki::finalCleanup()</code> finalizes the request by committing DB transactions, outputting the HTML and launching deferred updates through the job queue. <code>MediaWiki::restInPeace()</code> commits the deferred updates and closes the task gracefully.</p>
+<p>Normal page requests are handed over to <code>MediaWiki::initializeArticle()</code>, to create an <code>Article</code> object for the page (<code>$wgArticle</code>), and then to <code>MediaWiki::performAction()</code>, which handles "standard" actions. Once the action has been completed, <code>MediaWiki::finalCleanup()</code> finalizes the request by committing database transactions, outputting the HTML and launching deferred updates through the job queue. <code>MediaWiki::restInPeace()</code> commits the deferred updates and closes the task gracefully.</p>
 
 <p>If the page requested is a Special page (i.e., not a regular wiki content page, but a special software-related page such as <code>Statistics</code>), <code>SpecialPageFactory::executePath</code> is called instead of <code>initializeArticle()</code>; the corresponding PHP script is then called. Special pages can do all sorts of magical things, and each has a specific purpose, usually independent of any one article or its content. Special pages include various kinds of reports (recent changes, logs, uncategorized pages) and wiki administration tools (user blocks, user rights changes), among others. Their execution workflow depends on their function.</p>
 
@@ -296,7 +308,7 @@ The main content tables in MediaWiki 1.4 and 1.5.</div>
 
 <h3> <span id="API">API</span></h3>
 
-<p>The other main entry point for MediaWiki, besides <code>index.php</code>, is <code>api.php</code>, used to access its machine-readable query API (Application Programming Interface).</p>
+<p>The other main entry point for MediaWiki, besides <code>index.php</code>, is <code>api.php</code>, used to access its machine-readable web query API (Application Programming Interface).</p>
 
 <p>Wikipedia users originally created "bots" that worked by screen scraping the HTML content served by MediaWiki; this method was very unreliable and broke many times. To improve this situation, developers introduced a read-only interface (located at <code>query.php</code>), which then evolved into a full-fledged read and write machine API providing direct, high-level access to the data contained in the MediaWiki database<sup id="cite_ref-7" class="reference"><a href="#cite_note-7">[8]</a></sup>.</p>
 
