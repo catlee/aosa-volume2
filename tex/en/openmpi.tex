@@ -674,7 +674,7 @@ struct mca_btl_base_component_2_0_0_t {
 \end{verbatim}
 \end{aosabox}
 
-As an example of the TCP BTL framework qury functions, the TCP BTL
+As an example of the TCP BTL framework query functions, the TCP BTL
 component {\tt btl\_\-init} function does several things:
 \begin{aosaitemize}
 \item Create a listening socket for each ``up'' IPv4 and IPv6 interface
@@ -688,10 +688,8 @@ Similarly, plugins can extend the framework-specific component struct
 with their own members.
 %
 The {\tt tcp} component in the {\tt btl} framework does this; it
-caches many data members in its component struct.
-
-some algorithm rules and other meta data on its component struct.  See
-the ``TCP Component Struct (in the BTL Framework)'' code box.
+caches many data members in its component struct; see the ``TCP
+Component Struct (in the BTL Framework)'' code box.
 
 \begin{aosabox}{TCP Component Struct (in the BTL Framework)}
 \begin{verbatim}
@@ -804,9 +802,9 @@ throughout the Open MPI code base, along with an associated default
 value and descriptive string defining what the parameter is and how it
 is used.
 %
-The general rule of thumb is that instead of hard-coding constants,
-developers use MCA parameters instead, thereby allowing power users to
-tweak run-time behavior.
+The general rule of thumb is that rather than hard-coding constants,
+developers use run-time settable MCA parameters, thereby allowing
+power users to tweak run-time behavior.
 
 There are a number of MCA parameters in the base code of the three
 abstraction layers, but the bulk of Open MPI's MCA parameters are
@@ -989,7 +987,8 @@ so the following is an abbreviated list that will hopefully be useful:
   make designs that have (mostly) successfully carried us for more
   than eight years.  When embarking on a new software project, {\em
     look to the past}.  Be sure to understand what has already been
-  done, why it was done, and what its strengths and weaknesses were.
+  done, {\em why} it was done, and what its strengths and weaknesses
+  were.
 
 \item The concept of components -- allowing multiple different
   implementations of the same functionality -- has saved us many
@@ -998,8 +997,8 @@ so the following is an abbreviated list that will hopefully be useful:
 \item Similarly, we continually add and remove frameworks as
   necessary.  When developers start arguing about the ``right'' way to
   implement a new feature, add a framework that fronts components that
-  implement that feature.  Or when newer ideas come along that obsolte
-  older frameworks, don't hesitate to delete such kruft.
+  implement that feature.  Or when newer ideas come along that
+  obsolete older frameworks, don't hesitate to delete such kruft.
 
 \item Space vs.\ time can be an appropriate trade-off.  For example,
   allocating space for $N$ incoming messages can be a net performance
@@ -1007,7 +1006,7 @@ so the following is an abbreviated list that will hopefully be useful:
   receiving multiple messages.
 
 \item Accelerators (such as general purpose GPUs) are challenging some
-  of our initial designs; we didn't account for their cross-cutting
+  of our initial designs; we did not account for their cross-cutting
   behavior in the initial Open MPI designs.  They are forcing us to
   re-think some of our base assumptions.
 
