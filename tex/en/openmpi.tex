@@ -2,9 +2,8 @@
 
 \begin{aosasect1}{Background}
 
-Open MPI~\cite{gabriel04:_open_mpi} is an open source software
+Open MPI~\cite{bib:open-mpi-general} is an open source software
 implementation of The Message Passing Interface (MPI) standard.
-%
 Before the architecture and innards of Open MPI will make any sense,
 a little background on the MPI standard must be discussed.
 
@@ -15,19 +14,15 @@ a little background on the MPI standard must be discussed.
 The MPI standard is created and maintained by the MPI
 Forum\footnote{\url{http://www.mpi-forum.org/}}; an open group
 consisting of parallel computing experts from both industry and
-academia.
-%
-MPI defines an API that is used for a specific type of portable,
-high-performance inter-process communication (IPC): {\em message
-  passing}.  Specifically, the MPI document describes the reliable
-transfer of discrete, typed messages between MPI processes.
-%
+academia.  MPI defines an API that is used for a specific type of
+portable, high-performance inter-process communication (IPC):
+\emph{message passing}.  Specifically, the MPI document describes the
+reliable transfer of discrete, typed messages between MPI processes.
 Although the definition of an ``MPI process'' is subject to
 interpretation on a given platform, it usually corresponds to the
-operating system's concept of a process (e.g., a POSIX process).
-%
-MPI is specifically intended to be implemented as middleware, meaning
-that upper-level applications call MPI functions to perform message
+operating system's concept of a process (e.g., a POSIX process).  MPI
+is specifically intended to be implemented as middleware, meaning that
+upper-level applications call MPI functions to perform message
 passing.
 
 MPI defines a high-level API, meaning that it abstracts away whatever
@@ -49,8 +44,7 @@ is source compatible across a wide variety of platforms and network
 types.
 
 MPI defines not only point-to-point communication (e.g., send and
-receive), it also defines other communication patterns, such as {\em
-  collective} communication.  Collective operations are where multiple
+receive), it also defines other communication patterns, such as \emph{collective} communication.  Collective operations are where multiple
 processes are involved in a single communication action.  Reliable
 broadcast, for example, is where one process has a message at the
 beginning of the operation. At the end of the operation, all processes
@@ -58,7 +52,7 @@ in a group have the message.
 
 MPI defines other concepts and communications patterns that are not
 described here.\footnote{As of this writing, the most recent version
-  of the MPI standard is MPI-2.2~\cite{mpi-2.2}.  Draft versions of
+  of the MPI standard is MPI-2.2~\cite{bib:mpi-22}.  Draft versions of
   the upcoming MPI-3 standard have been published; it may be finalized
   as early as late 2012.}
 
@@ -92,7 +86,7 @@ That is, the applications using MPI are both parallel in nature and
 highly compute-intensive.  It is not unusual for all the processor
 cores in an MPI job to run at 100\% utilization.  To be clear, MPI
 jobs typically run in dedicated environments where the MPI processes
-are the {\em only} application running on the machine (in addition to
+are the \emph{only} application running on the machine (in addition to
 bare-bones operating system functionality, of course).
 
 As such, MPI implementations are typically focused on providing
@@ -123,10 +117,9 @@ extremely high performance, measured by metrics such as:
 \begin{aosasect2}{Open MPI}
 
 The first version of the MPI standard, MPI-1.0, was published in
-1994~\cite{mpi_forum93:_mpi}.  
-%
+1994~\cite{bib:mpi-forum-93}.  
 MPI-2.0, a set of additions on top of MPI-1, was completed in
-1996~\cite{geist96:_mpi2_lyon}.
+1996~\cite{bib:mpi-geist-96}.
 
 In the first decade after MPI-1 was published, a variety of MPI
 implementations sprung up.  Many were provided by vendors for their
@@ -150,10 +143,10 @@ differences in optimizations and features, our software code bases
 were quite similar.  Each of the four code bases had their own
 strengths and weaknesses, but on the whole, they more-or-less did the
 same things.  So why compete?  Why not pool our resources, work
-together, and make an {\em even better} MPI implementation?
+together, and make an \emph{even better} MPI implementation?
 
-After {\em much} discussion, the decision was made to abandon our four
-existing code bases and take only the best {\em ideas} from the prior
+After \emph{much} discussion, the decision was made to abandon our four
+existing code bases and take only the best \emph{ideas} from the prior
 projects.  This decision was mainly predicated upon the following
 premises:
 
@@ -233,7 +226,7 @@ Open MPI has three main abstraction layers, shown in
 \aosafigref{fig.openmpi.layers}:
 
 \begin{aosaitemize}
-\item {\em Open, Portable Access Layer (OPAL)}: OPAL is the bottom
+\item \emph{Open, Portable Access Layer (OPAL)}: OPAL is the bottom
   layer of Open MPI's abstractions.  Its abstractions are focused on
   individual processes (vs.\ parallel jobs).  It provides utility and
   glue code such as generic linked lists, string manipulation,
@@ -245,7 +238,7 @@ Open MPI has three main abstraction layers, shown in
   memory between processes on the same server, processor and memory
   affinity, high-precision timers, etc.
 
-\item {\em Open MPI Run-Time Environment (ORTE)}\footnote{Pronounced
+\item \emph{Open MPI Run-Time Environment (ORTE)}\footnote{Pronounced
     ``or-tay.''}: An MPI implementation must provide not only the
   required message passing API, but also an accompanying run-time
   system to launch, monitor, and kill parallel jobs.  In Open MPI's
@@ -263,7 +256,7 @@ Open MPI has three main abstraction layers, shown in
   managed environments, such as (but not limited to): Torque / PBS
   Pro, SLURM, Oracle Grid Engine, and LSF.
 
-\item {\em Open MPI}: The MPI layer is the highest abstraction layer,
+\item \emph{Open MPI}: The MPI layer is the highest abstraction layer,
   and is the only one exposed to applications.  The MPI API is
   implemented in this layer, as are all the message passing semantics
   defined by the MPI standard.
@@ -314,7 +307,7 @@ We therefore spent a considerable amount of time designing an
 architecture that would allow us to be different -- even while sharing
 a common code base.
 
-Run-time loadable {\em components} were a natural choice (a.k.a.,
+Run-time loadable \emph{components} were a natural choice (a.k.a.,
 dynamic shared objects, or ``DSOs'', or ``plugins'').  Components
 enforce a common API but place few limitations on the implementation
 of that API.
@@ -364,7 +357,7 @@ As a direct result of the flexibility that it provides, the component
 concept is utilized heavily throughout all three layers of Open MPI --
 in each layer, there are many different types of components.
 %
-Each type of component is enclosed in a {\em framework}.
+Each type of component is enclosed in a \emph{framework}.
 %
 A component belongs to exactly one framework, and a framework supports
 exactly one kind of component.
@@ -380,7 +373,7 @@ the Modular Component Architecture (MCA).
 \aosafigure{../images/openmpi/open-mpi-mca.pdf}{Framework
   architectural view of Open MPI, showing just a few of Open MPI's
   frameworks and components (i.e., plugins).  Each framework contains
-  a {\em base} and one or more components.  This structure is
+  a \emph{base} and one or more components.  This structure is
   replicated in each of the layers shown in
   \aosafigref{fig.openmpi.layers}.  The sample frameworks listed in
   this figure are spread across all three layers: {\tt btl} and {\tt
@@ -407,7 +400,7 @@ the {\tt memory} directory.
 Framework directories contain at least the following three items:
 
 \begin{aosaenumerate}
-\item {\em Component interface definition:} A header file named {\tt
+\item \emph{Component interface definition:} A header file named {\tt
     <framework>.h} will be located in the top-level framework
   directory (e.g., the Memory framework contains {\tt
     memory/memory.h}).  This well-known header file defines the
@@ -416,7 +409,7 @@ Framework directories contain at least the following three items:
   functions, structs for marshaling these function pointers, and any
   other necessary types, attribute fields, macros, declarations, etc.
 
-\item {\em Base code}: The {\tt base} subdirectory contains the glue
+\item \emph{Base code}: The {\tt base} subdirectory contains the glue
   code that provides the core functionality of the framework.  For
   example, the {\tt memory} framework's base directory is {\tt
     memory/base}.  The base is typically comprised of logistical grunt
@@ -424,7 +417,7 @@ Framework directories contain at least the following three items:
   utility functionality that may be utilized by multiple components,
   etc.
 
-\item {\em Components}: All other subdirectories in the framework
+\item \emph{Components}: All other subdirectories in the framework
   directory are assumed to be components.  Just like the framework,
   the names of the components are the same names as their
   subdirectories (e.g., the {\tt memory/posix} subdirectory contains
@@ -463,7 +456,7 @@ system.
 If it is not, the component will reply ``No, I do not want to run,''
 causing the framework to close and unload that component.
 % 
-If that network type {\em is} available, the component will reply
+If that network type \emph{is} available, the component will reply
 ``Yes, I want to run,'' causing the framework to keep the component
 open for further use.
 
@@ -480,7 +473,7 @@ resumed later -- must be performed using the same back-end
 checkpointing system for each process in the job.
 %
 The plugin that interfaces to the desired back-end checkpointing
-system is the {\em only} checkpoint plugin that must be loaded in each
+system is the \emph{only} checkpoint plugin that must be loaded in each
 process -- all others are unnecessary.
 
 %%%%%
@@ -489,7 +482,7 @@ process -- all others are unnecessary.
 
 Most frameworks allow their components to be loaded at run-time via
 DSOs.  This is the most flexible method of finding and loading
-components; it allows features such as explicitly {\em not} loading
+components; it allows features such as explicitly \emph{not} loading
 certain components, loading 3rd party components that were not
 included in the main line Open MPI distribution, etc.
 
@@ -525,8 +518,8 @@ before MPI has even been initialized.
 
 \begin{aosasect2}{Plugin Components}
 
-Open MPI plugins are divided into two parts: a {\em component}
-struct and a {\em module} struct.
+Open MPI plugins are divided into two parts: a \emph{component}
+struct and a \emph{module} struct.
 %
 The component struct and the functions to which it refers are
 typically collectively referred to as ``the component.''  Similarly,
@@ -604,40 +597,40 @@ The base component struct is the core of the TCP BTL component; it
 contains the following function pointers:
 
 \begin{aosaitemize}
-\item {\em Open.} The {\em open} call is the initial query function
+\item \emph{Open.} The \emph{open} call is the initial query function
   invoked on a component.  It allows a component to initialize itself,
   look around the system where it is running, and determine whether it
   wants to run.  If a component can always be run, it can provide a
   {\tt NULL} open function pointer.
 
-  The TCP BTL component {\em open} function mainly initializes some
+  The TCP BTL component \emph{open} function mainly initializes some
   data structures and ensures that invalid parameters were not set by
   the user.
 
-\item {\em Close.} When a framework decides that a component is no
-  longer needed, it calls the {\em close} function to allow the
+\item \emph{Close.} When a framework decides that a component is no
+  longer needed, it calls the \emph{close} function to allow the
   component to release any resources that it has allocated.  The close
   function is invoked on all remaining components when processes are
-  shutting down.  However, {\em close} can also be invoked on
+  shutting down.  However, \emph{close} can also be invoked on
   components that are rejected at run-time so that they can be closed
   and ignored for the duration of the process.
 
-  The TCP BTL component {\em close} function closes listening sockets
+  The TCP BTL component \emph{close} function closes listening sockets
   and frees resources (e.g., receiving buffers).
 
-\item {\em Query.} This call is a generalized ``do you want to run?''
+\item \emph{Query.} This call is a generalized ``do you want to run?''
   function.  Not all frameworks utilize this specific call -- some
   need more specialized query functions.
 
-  The BTL framework does not use the generic {\em query} function (it
+  The BTL framework does not use the generic \emph{query} function (it
   defines its own; see below), so the TCP BTL does not fill it in.
 
-\item {\em Parameter registration.} This function is typically the
+\item \emph{Parameter registration.} This function is typically the
   first function called on a component.  It allows the component to
   register any relevant run-time, user-settable parameters.  Run-time
   parameters are discussed further below.
 
-  The TCP BTL component {\em register} function creates a variety of
+  The TCP BTL component \emph{register} function creates a variety of
   user-settable run-time parameters, such as allowing the
   specification of which IP interface(s) to use.
 \end{aosaitemize}
@@ -650,7 +643,7 @@ This nesting allows frameworks to add their own attributes and
 function pointers.  
 %
 For example, frameworks that need a more specialized query function
-(as compared to the {\em query} function provided on the basic
+(as compared to the \emph{query} function provided on the basic
 component) can add a function pointer in its framework-specific
 component struct.
 
@@ -787,7 +780,7 @@ users who aggressively want to tweak their hardware and software
 stacks to eek out every possible compute cycle.
 %
 Although these users typically do not want to tinker with the actual
-code of their MPI implementation, they {\em do} want to tinker by
+code of their MPI implementation, they \emph{do} want to tinker by
 selecting different internal algorithms, choosing different resource
 consumption patterns, or forcing specific network protocols in
 different circumstances.
@@ -847,7 +840,7 @@ for their specific system.
 \begin{aosasect1}{Lessons Learned}
 
 With such a varied group of core Open MPI members, it is inevitable that
-we would each learn {\em something}, and that as a group, we would
+we would each learn \emph{something}, and that as a group, we would
 learn many things.  The following list describes just a few of these
 lessons.
 
@@ -877,7 +870,7 @@ performance-critical operations, such as shared memory locking and
 atomic operations.
 
 It is worth noting that Figures~\ref{fig.openmpi.layers}
-and~\ref{fig.openmpi.mca} show two different {\em architectural} views
+and~\ref{fig.openmpi.mca} show two different \emph{architectural} views
 of Open MPI.
 %
 They do not represent the run-time call stacks or calling invocation
@@ -891,7 +884,7 @@ It is acceptable (albeit undesirable) and unfortunately sometimes
 necessary to have gross, complex code in the name of performance
 (e.g., the aforementioned assembly code).
 %
-However, it is {\em always} preferable to spend time trying to figure
+However, it is \emph{always} preferable to spend time trying to figure
 out how to have good abstractions to discretize and hide complexity
 whenever possible.  A few weeks of design can literally save hundreds
 or thousands of man-hours of maintenance on tangled, subtle, spaghetti
@@ -924,7 +917,7 @@ opening DSOs and finding symbols in them.  Libltdl is supported on a
 wide variety of operating systems and environments, including
 Microsoft Windows.
 
-Open MPI {\em could} have provided this functionality itself -- but
+Open MPI \emph{could} have provided this functionality itself -- but
 why?
 %
 Libltdl is a fine piece of software, is actively maintained, is
@@ -952,7 +945,7 @@ common case.
 % 
 For example, emphasis is placed on splitting many operations into two
 phases: setup and repeated action.  The assumption is that setup may
-be expensive (meaning: slow).  So do it {\em once} and get it over
+be expensive (meaning: slow).  So do it \emph{once} and get it over
 with.
 %
 Optimize for the much more common case: repeated operation.
@@ -960,10 +953,10 @@ Optimize for the much more common case: repeated operation.
 For example, {\tt malloc()} can be slow, especially if pages need to
 be allocated from the operating system.  So instead of allocating just
 enough bytes for a single incoming network message, allocate enough
-space for a {\em bunch} of incoming messages, divide the result up
+space for a \emph{bunch} of incoming messages, divide the result up
 into individual message buffers, and setup a freelist to maintain
-them.  In this way, the {\em first} request for a message buffer may
-be slow.  But {\em successive} requests will be much faster because
+them.  In this way, the \emph{first} request for a message buffer may
+be slow.  But \emph{successive} requests will be much faster because
 they will just be de-queues from a freelist.
 
 %%%%%
@@ -985,10 +978,10 @@ the following is a few more lessons that can be summed up briefly:
 \begin{aosaitemize}
 \item We were fortunate to draw upon 15+ years of HPC research and
   make designs that have (mostly) successfully carried us for more
-  than eight years.  When embarking on a new software project, {\em
-    look to the past}.  Be sure to understand what has already been
-  done, {\em why} it was done, and what its strengths and weaknesses
-  were.
+  than eight years.  When embarking on a new software project,
+  \emph{look to the past}.  Be sure to understand what has already
+  been done, \emph{why} it was done, and what its strengths and
+  weaknesses were.
 
 \item The concept of components -- allowing multiple different
   implementations of the same functionality -- has saved us many
@@ -1008,8 +1001,8 @@ the following is a few more lessons that can be summed up briefly:
 
 \begin{aosasect2}{Conclusion}
 
-  If we had to list the three {\em most} important things that we've
-  learned from the Open MPI project, I think they would be as follows:
+If we had to list the three \emph{most} important things that we've
+learned from the Open MPI project, I think they would be as follows:
 
 \begin{aosaitemize}
 \item One size does not fit all (users).  The run-time plugin and

@@ -149,24 +149,24 @@ and PNG output.
 
 The \code{Artist} hierarchy is the middle layer of the matplotlib
 stack, and is the place where much of the heavy lifting happens.
-Continuing with the analogy that the \code{FigureCanvas} from the backend
-is the paper, the \code{Artist} is the object that knows how to take the
-\code{Renderer} (the paintbrush) and put ink on the canvas.  Everything you
-see in a matplotlib \code{Figure} is an \code{Artist} instance: the title, the
-lines, the tick labels, the images, and so on all correspond to
-individual \code{Artist} instances (see Figure
-\cite{fig.matplotlib.artists_tree}).  The base class is
-\code{matplotlib.artist.Artist} and contains attributes every \code{Artist}
-shares: the transformation which translates the artist coordinate
-system to the canvas coordinate system (discussed in more detail
-below), the visibility, the clip box which defines the region the
-artist can paint into, the label, and the interface to handle user
+Continuing with the analogy that the \code{FigureCanvas} from the
+backend is the paper, the \code{Artist} is the object that knows how
+to take the \code{Renderer} (the paintbrush) and put ink on the
+canvas.  Everything you see in a matplotlib \code{Figure} is an
+\code{Artist} instance: the title, the lines, the tick labels, the
+images, and so on all correspond to individual \code{Artist} instances
+(see \aosafigref{fig.matplotlib.artiststree}).  The base class is
+\code{matplotlib.artist.Artist} and contains attributes every
+\code{Artist} shares: the transformation which translates the artist
+coordinate system to the canvas coordinate system (discussed in more
+detail below), the visibility, the clip box which defines the region
+the artist can paint into, the label, and the interface to handle user
 interaction such as ``picking'', i.e. detecting when a mouse click
 happens over the artist.
 
-\aosafigure{../images/matplotlib/artists_figure.pdf}{}{fig.matplotlib.artists_figure}
+\aosafigure{../images/matplotlib/artists_figure.pdf}{A Figure}{fig.matplotlib.artistsfigure}
 
-\aosafigure{../images/matplotlib/artists_tree.pdf}{The heirarchy of Artist instances used to draw the Figure \cite{fig.matplotlib.artists_figure}.}{fig.matplotlib.artists_tree}
+\aosafigure{../images/matplotlib/artists_tree.pdf}{The Hierarchy of Artist Instances Used to Draw\aosafigref{fig.matplotlib.artistsfigure}.}{fig.matplotlib.artiststree}
 
 The coupling between the \code{Artist} hierarchy and the backend
 happens in the draw method.  For example, in the mockup class below
