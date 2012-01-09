@@ -41,6 +41,7 @@ aosa2.pdf : aosa2.tex aosa2.bib ${SRC}
 	${BIBTEX} aosa2
 	${LATEX} aosa2
 	${LATEX} aosa2
+	${LATEX} aosa2
 
 questions:
 	@(for i in *.tex; do echo `fgrep aosaquestion $$i | wc -l` $$i; done) | sort -n -r
