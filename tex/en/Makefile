@@ -25,10 +25,8 @@ CHAPTERS = \
 	oscar \
 	osm \
 	pjs \
-	postgresql \
 	puppet \
 	pypy \
-	scummvm \
 	sqlalchemy \
 	twisted \
 	yesod \
