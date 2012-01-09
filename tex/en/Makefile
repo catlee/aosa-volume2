@@ -4,7 +4,6 @@ BIBTEX = bibtex
 CHAPTERS = \
   frontmatter \
 	intro \
-	diaspora \
 	distsys \
 	erlang \
 	ffreleng \
@@ -13,7 +12,6 @@ CHAPTERS = \
 	ghc \
 	git \
 	gpsd \
-	inkscape \
 	ironlang \
 	itk \
 	mailman \
