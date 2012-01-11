@@ -149,13 +149,11 @@ string, etc., and will consume a stream of \code{ByteString}s, producing a
 \code{Response}. So the revised definition of an \code{Application} is:
 
 \begin{verbatim}
-type Application = Request -> Iteratee ByteString IO Response
+type Application = Request -> Iteratee ByteString I/O Response
 \end{verbatim}
 
-% \code{IO}, not I/O (the rule from the style guide) to reflect the datatype
-
-The \code{IO} simply explains what types of side effects an application can
-perform. In the case of \code{IO}, it can perform any kind of interaction
+The \code{I/O} simply explains what types of side effects an application can
+perform. In the case of \code{I/O}, it can perform any kind of interaction
 with the outside world, an obvious necessity for the vast majority of
 web applications.
 
