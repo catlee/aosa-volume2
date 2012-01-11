@@ -10,7 +10,7 @@ since. Yesod cut its teeth on real life projects, with all of its
 initial features borne out of an actual, real life need. At first,
 development was almost entirely a one-man show. After about a year of
 development, the community efforts kicked in, and Yesod has since
-blossomed into a thriving open-source project.
+blossomed into a thriving open source project.
 
 During the embryonic phase, when Yesod was incredibly ephemeral and
 ill-defined, it would have been counter-productive to try and get a
@@ -96,13 +96,13 @@ address this issue: Python has WSGI and Ruby has Rack. In Haskell, we
 have WAI.
 
 WAI is not intended to be a high level interface. It has two specific
-goals: generality and performance. By staying general WAI has been
-able to support backends for everything from standalone servers to old
+goals: generality and performance. By staying general, WAI has been
+able to support back ends for everything from standalone servers to old
 school CGI and even works directly with Webkit to produce faux desktop
 applications. The performance side will introduce us to a number of
 the cool features of Haskell.
 
-\aosafigure{../images/yesod/overview.png}{Overall Structure of a Yesod Application}{fig.yesod.overall}
+\aosafigure{../images/yesod/overview.png}{Overall structure of a Yesod application}{fig.yesod.overall}
 
 \begin{aosasect2}{Datatypes}
 
@@ -118,42 +118,44 @@ takes a request and returns a response. In Haskell lingo:
 type Application = Request -> Response
 \end{verbatim}
 
-This just raises the question: what do Request and Response look like?
-A Request has a number of pieces of information, but the most basic
+This just raises the question: what do \code{Request} and \code{Response} look like?
+A request has a number of pieces of information, but the most basic
 are the requested path, query string, request headers, and request
-body. And a Response has just three components: a status code,
+body. And a response has just three components: a status code,
 response headers and response body.
 
 How do we represent something like a query string? Haskell keeps a
 strict separation between binary and textual data. The former is
-represented by ByteString, the latter by Text. Both are highly
+represented by \code{ByteString}, the latter by \code{Text}. Both are highly
 optimized datatypes that provide a high level, safe API. In the case
 of query string we store the raw bytes transferred over the wire as a
-ByteString and the parsed, decoded values as Text.
+\code{ByteString} and the parsed, decoded values as \code{Text}.
 
 \end{aosasect2}
 
 \begin{aosasect2}{Streaming}
 
-A ByteString represents a single memory buffer. If we were to naively
-use a plain ByteString for holding the entire request or response
+A \code{ByteString} represents a single memory buffer. If we were to naively
+use a plain \code{ByteString} for holding the entire request or response
 bodies, our applications could never scale to large requests or
 responses. Instead, we use a technique called enumerators, very
-similar in concept to generators in Python. Our application becomes a
-consumer of a stream of ByteStrings representing the incoming request
+similar in concept to generators in Python. Our \code{Application} becomes a
+consumer of a stream of \code{ByteString}s representing the incoming request
 body, and a producer of a separate stream for the response.
 
-We now need to slightly revise our definition of an application. An
-application will take a request value, containing headers, query
-string, etc, and will consume a stream of ByteStrings, producing a
-Response. So the revised definition of an Application is:
+We now need to slightly revise our definition of an \code{Application}. An
+\code{Application} will take a \code{Request} value, containing headers, query
+string, etc., and will consume a stream of \code{ByteString}s, producing a
+\code{Response}. So the revised definition of an \code{Application} is:
 
 \begin{verbatim}
 type Application = Request -> Iteratee ByteString IO Response
 \end{verbatim}
 
-The IO simply explains what types of side effects an application can
-perform. In the case of IO, it can perform any kind of interaction
+% \code{IO}, not I/O (the rule from the style guide) to reflect the datatype
+
+The \code{IO} simply explains what types of side effects an application can
+perform. In the case of \code{IO}, it can perform any kind of interaction
 with the outside world, an obvious necessity for the vast majority of
 web applications.
 
@@ -162,7 +164,7 @@ web applications.
 \begin{aosasect2}{Builder}
 
 The trick in our arsenal is how we produce our response buffers. We
-have a two competing desires here: minimizing system calls, and
+have two competing desires here: minimizing system calls, and
 minimizing buffer copies. On the one hand, we want to minimize system
 calls for sending data over the socket. To do this we need to store
 outgoing data in a buffer. However, if we make this buffer too large,
@@ -171,7 +173,7 @@ time. On the other hand, we want to minimize the number of times data
 is copied between buffers, preferably copying just once from the
 source to destination buffer.
 
-Haskell's solution is the builder. A builder is an instruction for how
+Haskell's solution is the \emph{builder}. A builder is an instruction for how
 to fill a memory buffer, such as place the five bytes "hello" in the
 next open position. Instead of passing a stream of memory buffers to
 the server, a WAI application passes a stream of these
@@ -204,11 +206,11 @@ parlance, this is a \emph{handler}. WAI has some basic, standard
 handlers, such as a standalone server (Warp, discussed below),
 FastCGI, SCGI and CGI. This spectrum allows WAI applications to be run
 on anything from dedicated servers down to shared hosting. But in
-addition to these, WAI has some more interesting backends:
+addition to these, WAI has some more interesting back ends:
 
 \begin{aosadescription}
   
-\item{Webkit:} This backend embeds a Warp server and calls out to
+\item{Webkit:} This back end embeds a Warp server and calls out to
   QtWebkit. By launching a server, followed by launching a new
   standalone browser window, we have faux desktop applications.
 
@@ -224,7 +226,7 @@ addition to these, WAI has some more interesting backends:
 
 Most developers will likely use Warp. It is lightweight enough to be
 used for testing. It requires no config files, no folder hierarchy and
-no long-running, administrator owned process. It's a simple library
+no long-running, administrator-owned process. It's a simple library
 that gets compiled into your application or run via the Haskell
 interpreter. On the flip side, Warp is an incredibly fast server, with
 protection from all kinds of attack vectors, such as slow loris and
@@ -256,7 +258,7 @@ switches between different green threads waiting for activity.
 
 Under the surface, GHC uses whatever system is provided by the host
 operating system, such as \code{kqueue}, \code{epoll} and
-\code{select}. This gives us all the performance of an event-based IO
+\code{select}. This gives us all the performance of an event-based I/O
 system, without worrying about cross-platform issues or writing in a
 callback-oriented way.
 
@@ -264,9 +266,11 @@ callback-oriented way.
 
 \begin{aosasect2}{Middleware}
 
+% TA: \code{Application} or just application in this case?
+
 In between handlers and applications, we have
 middlewares. Technically, a middleware is an \emph{application
-  transformer}: it takes one application, and returns a new one. This
+  transformer}: it takes one \code{Application}, and returns a new one. This
 is defined as:
 
 \begin{verbatim}
@@ -321,7 +325,7 @@ know that automated testing is a necessity for any serious
 applications. \code{wai-test} is the recommended approach to testing a
 WAI application. Since requests and responses are simple datatypes, it
 is easy to mock up a fake request, pass it to an application, and test
-properties about the response. wai-test simply provides some
+properties about the response. \code{wai-test} simply provides some
 convenience functions for testing common properties like the presence
 of a header or a status code.
 
@@ -394,18 +398,17 @@ examples:
 \end{aosaenumerate}
 
 As a real-life example, suppose that a user submits his/her name to an
-application via a form. This data would be represented with the Text
+application via a form. This data would be represented with the \code{Text}
 datatype. Now we would like to display this variable, called
 \code{name}, in a page. The type system---at compile time---prevents
 it from being simply stuck into a Hamlet template, since it's not of
-type Html. Instead we must convert it somehow. For this, there are two
+type \code{Html}. Instead we must convert it somehow. For this, there are two
 conversion functions:
 
 \begin{aosaenumerate}
 
 \item \code{toHtml} will automatically escape any entities. So if a user
-  submits the string \code{{\textless}script src="http://example.com/evil.js"{\textgreater}{\textless}/script{\textgreater}}, the less
-  than signs will automatically be converted to \code{\&{\textless}}.
+  submits the string \code{{\textless}script src="http://example.com/evil.js"{\textgreater}{\textless}/script{\textgreater}}, the less-than signs will automatically be converted to \code{\&{\textless}}.
 
 \item \code{preEscapedText}, on the other hand, will leave the content
   precisely as it is now.
@@ -413,7 +416,7 @@ conversion functions:
 \end{aosaenumerate}
 
 So in the case of untrusted input from a possibly nefarious user,
-toHtml would be our recommended approach. On the other hand, let us
+\code{toHtml} would be our recommended approach. On the other hand, let us
 say we have some static HTML stored on our server that we would like
 to insert into some pages verbatim. In that case, we could load it
 into a \code{Text} value and then apply \code{preEscapedText}, thereby
@@ -433,7 +436,7 @@ return [hamlet|
     <div .copyright>#{preEscapedText snippet}
 |]
 \end{verbatim}
-\caption{Proper HTML Handling}
+\caption{Proper HTML handling}
 \label{fig.yesod.html}
 \end{figure}
 
@@ -527,16 +530,16 @@ citizen.
 
 The result of this design decision is Persistent, Yesod's preferred
 storage option. There are really two guiding lights for Persistent:
-make it as backend agnostic as possible, and let user code be
+make it as back end-agnostic as possible, and let user code be
 completely type-checked.
 
 At the same time, we fully recognize that it is impossible to
 completely shield the user away from all details of the
-backend. Therefore, we provide two types of escape routes:
+back end. Therefore, we provide two types of escape routes:
 
 \begin{aosaitemize}
 
-\item Provide backend-specific functionality as necessary. For
+\item Provide back end-specific functionality as necessary. For
   example, Persistent provides features for SQL joins and MongoDB
   lists and hashes. Proper portability warnings will apply, but if you
   want this functionality, it's there.
@@ -575,7 +578,7 @@ respectively.
 There is nothing surprising about the first two mappings, but the last
 one is interesting. There is no specific constructor for storing PNG
 content in a database, so instead we use a more generic type (a
-ByteString, which is just a sequence of bytes). We could use the same
+\code{ByteString}, which is just a sequence of bytes). We could use the same
 mechanism to store other types of arbitrary data.
 
 \begin{aosabox}{Storing Images}
@@ -595,7 +598,7 @@ type: \code{Text} becomes a \code{VARCHAR}, \code{Day} becomes a
 
 The story for MongoDB is very similar. \code{Person} becomes its own
 \emph{document}, and its three fields each become a MongoDB
-\emph{field}. There is no need for data types or creation of a schema
+\emph{field}. There is no need for datatypes or creation of a schema
 in MongoDB.
 
 \begin{tabular}{lll}
@@ -658,7 +661,7 @@ non-SQL database like MongoDB?
 
 Persistent allows you to define your entities in a high-level syntax,
 and will automatically create the SQL schema for you. In the case of
-MongoDB, we currently use a schema-less approach. This also allows
+MongoDB, we currently use a schemaless approach. This also allows
 Persistent to ensure that your Haskell datatypes match perfectly with
 the database's definitions.
 
@@ -678,7 +681,7 @@ each Persistent backend defines its own set of migration rules. In
 PostgreSQL, which has a rich set of \code{ALTER TABLE} rules, we use
 those extensively. Since SQLite lacks much of that functionality, we
 are reduced to creating temporary tables and copying rows. MongoDB's
-schema-less approach means no migration support is required.
+schemaless approach means no migration support is required.
 
 This feature is purposely limited to prevent any kind of data loss. It
 will not remove any columns automatically; instead, it will give you
@@ -692,13 +695,13 @@ dangerous behavior.
 \begin{aosasect2}{Relations}
 
 Persistent is non-relational in nature, meaning it has no requirement
-for backends to support relations. However, in many use cases, we may
+for back ends to support relations. However, in many use cases, we may
 want to use relations. In those cases, developers will have full
 access to them.
 
 Assume we want to now store a list of skills with each user. If we
 were writing a MongoDB-specific app, we could go ahead and just store
-that list as a new field in the original Person entity. But that
+that list as a new field in the original \code{Person} entity. But that
 approach would not work in SQL. In SQL, we call this kind of
 relationship a one-to-many relationship.
 
@@ -732,9 +735,11 @@ returned by the insertion and query functions \code{insert} and
 
 \begin{aosasect1}{Yesod}
 
-If we are looking through the typical Model-View-Controller (MVC)
+If we are looking at the typical Model-View-Controller (MVC)
 paradigm, Persistent is the model and Sheakespeare is the view. This
 would leave Yesod as the controller.
+
+% TA: should i18n -> internationalization?
 
 The most basic feature of Yesod is routing. It features a declarative
 syntax and type-safe dispatch. Layered on top of this, Yesod provides
@@ -745,7 +750,7 @@ Yesod is really routing.
 This layered approach makes it simpler for users to swap different
 components of the system. Some people are not interested in using
 Persistent. For them, nothing in the core system even mentions
-Persistent. Likewise, while commonly used features, not everyone needs
+Persistent. Likewise, while they are commonly used features, not everyone needs
 authentication or static file serving.
 
 On the other hand, many users \emph{will} want to integrate all of
@@ -773,11 +778,11 @@ path of the domain, I'm called HomepageR, and I answer GET requests."
 doesn't hold any special meaning besides giving a cue to the developer
 that something is a route.)
 
-The second line defines the add entry page. This time, we answer both
+The second line defines the add-entry page. This time, we answer both
 GET and POST requests. You might be wondering why Yesod, as opposed to
 most frameworks, requires you to explicitly state your request
 methods. The reason is that Yesod tries to adhere to RESTful
-principles as much as possible, and a GET and POST request really have
+principles as much as possible, and GET and POST requests really have
 very different meanings. Not only do you state these two methods
 separately, but later you will define their handler functions
 separately. (This is actually an optional feature in Yesod. If you
@@ -788,7 +793,7 @@ The third line is a bit more interesting. After the second slash we
 have \code{\#EntryId}. This defines a parameter of type
 \code{EntryId}. In the Persistent section, we already alluded to this
 feature: Yesod will now automatically marshal the path component into
-the relevant ID value. Assuming an SQL backend (Mongo is addressed
+the relevant ID value. Assuming a SQL backend (Mongo is addressed
 later), if a user requests \code{/entry/5}, the handler function will
 get called with an argument \code{EntryId 5}. But if the user requests
 \code{/entry/some-blog-post}, Yesod will return a 404.
@@ -818,7 +823,7 @@ approach, however, provides some advantages:
   example. In Yesod, your \code{\#EntryId} will still work, and the type
   system will instruct Yesod how to parse the route. In a regex
   system, you would have to go through all of your routes and change
-  the \verb=\d+= to whatever monstrosity of regex is needed to match.
+  the \verb=\d+= to whatever monstrosity of regex is needed to match GUIDs.
 
 \end{aosaitemize}
 
@@ -828,8 +833,8 @@ This approach to routing gives birth to one of Yesod's most powerful
 features: type-safe URLs. Instead of just splicing together pieces of
 text to refer to a route, every route in your application can be
 represented by a Haskell value. This immediately eliminates a large
-number of 404 not found errors: it is simply not possible to produce
-an invalid URL.  (It is still possible to produce a 404 URL, such as
+number of 404 Not Found errors: it is simply not possible to produce
+an invalid URL.  (It is still possible to produce a URL that would lead to a 404 error, such as
 by referring to a blog post that does not exist. However, all URLs
 will be formed correctly.)
 
@@ -857,7 +862,7 @@ redirect RedirectTemporary (EntryR entryId)
 
 Hamlet, Lucius and Julius all include built-in support for these
 type-safe URLs. Inside a Hamlet template, you can easily create a link
-to the add entry page:
+to the add-entry page:
 
 \begin{verbatim}
 <a href=@{AddEntryR}>Create a new entry.
@@ -877,19 +882,19 @@ to update every single reference throughout your codebase.
 Once you define your routes, you need to tell Yesod how you want to
 respond to requests. This is where \emph{handler functions} come into
 play. The setup is simple; for each resource (e.g., \code{HomepageR})
-and request method, create a function named methodResourceR. For our
+and request method, create a function named \code{methodResourceR}. For our
 previous example, we would need four functions: \code{getHomepageR},
 \code{getAddEntryR}, \code{postAddEntryR}, and \code{getEntryR}.
 
 All of the parameters collected from the route are passed in as
 arguments to the handler function. \code{getEntryR} will take a first
-arugment of type EntryId, while all the other functions will take no
+argument of type \code{EntryId}, while all the other functions will take no
 arguments.
 
 The handler functions live in a \code{Handler} monad, which provides a
 great deal of functionality, such as redirecting, accessing sessions,
 and running database queries. For the last one, a typical way to start
-of the \code{getEntryR} function would be:
+off the \code{getEntryR} function would be:
 
 \begin{verbatim}
 getEntryR entryId = do
@@ -945,7 +950,7 @@ toWidget [julius|alert("Some special Javascript to play with my navbar");|]
 But there is even more power at work here. When you produce a page in
 Yesod, the standard approach is to combine a number of widgets
 together into a single widget containing all your page content, and
-then apply defaultLayout. This function is defined per site, and
+then apply \code{defaultLayout}. This function is defined per site, and
 applies the standard site layout.
 
 There are two out-of-the-box approaches to handle where the CSS and
@@ -967,7 +972,7 @@ is the preferred approach, since it allows a few extra optimizations:
 \begin{aosaenumerate}
  
 \item The files are created with names based on a hash of the
-  contents. This means you can place cache values far in the future
+  contents. This means you can place cached values far in the future
   without worries of users receiving stale content.
  
 \item Your Javascript can be asynchronously loaded.
@@ -979,7 +984,7 @@ contain raw Javascript, they also contain a list of Javascript
 dependencies. For example, many sites will refer to the jQuery library
 and then add some Javascript that uses it. Yesod is able to
 automatically turn all of that into an asynchronous load via
-yepnope.js.
+\code{yepnope.js}.
 
 In other words, widgets allow you to create modular, composable code
 that will result in incredibly efficient serving of your static
@@ -1000,9 +1005,9 @@ routes. For example, to add the static subsite, you would write:
 \end{verbatim}
 
 The first argument tells where in the site the subsite starts. The
-static subsite is usually used at /static, but you could use whatever
-you want. StaticR is the name of the route; this is also entirely up
-to you, but convention is to use StaticR. Static is the name of the
+static subsite is usually used at \code{/static}, but you could use whatever
+you want. \code{StaticR} is the name of the route; this is also entirely up
+to you, but convention is to use \code{StaticR}. \code{Static} is the name of the
 static subsite; this is one you do not have control
 over. \code{getStatic} is a function that returns the settings for the
 static site, such as where the static files are located.
@@ -1043,7 +1048,7 @@ project. The second lesson is:
 
 One of the most difficult steps in Yesod's development was moving from
 a single-person team---me---to collaborating with others. It started
-off simply with merging pull requests on Github, and eventually moved
+off simply with merging pull requests on GitHub, and eventually moved
 to having a number of core maintainers. I had established some of my
 own development patterns, which were nowhere explained or
 documented. As a result, contributors found it difficult to pull my
