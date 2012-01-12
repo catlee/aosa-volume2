@@ -80,41 +80,59 @@ Mercurial, and Veracity.
 
 Now is a good time to take a step back and look at the alternative VCS
 solutions to Git. Understanding these differences will allow us to explore
-the architectural choices made while developing Git.
+the architectural choices faced while developing Git.
 
-\begin{aosasect2}{Fundamental Design Dimensions}
+A version control system usually has three core functional
+requirements, namely:
+\begin{aosaitemize}
+  \item storing content
+  \item tracking changes to the content (history including merge metadata)
+  \item distributing the content and history with collaborators
+\end{aosaitemize}
 
-DIAGRAM: depicting three dimensions of major design decisions for a VCS.
+\emph{Note: The third requirement above isn't a functional requirement for
+all VCSs.}
 
-There are three primary distribution modes for VCSes: local, client/server
-and distributed (or peer-to-peer). Some VCSes can support all of these, some
-just one. Git can support all three modes of distribution.
+\begin{aosasect2}{Content Storage}
 
-Another dimension to major VCS fundamental design decisions is how content
-is stored. There are two primary camps: delta based and directed acyclic
-graph (DAG) based. Each have their benefits and limitations. Git stores its
-content in DAGs.
+The most common design choices for storing content in the VCS world are:
+\begin{aosaitemize}
+  \item delta based
+  \item directed acyclic graph (DAG)
+\end{aosaitemize}
 
-A third design decision is how merge histories are managed. Here there are
-also two primary camps: using a linear model and using directed acyclic
-graphs. Git uses DAGs again, this time for the merge history.
+Git stores the content as a directed acyclic graph (DAG). Where a hierarchy
+mimicking the filesystem's directory structure is created with objects of
+different types (see 'Object Database' below).
 
 \end{aosasect2}
+\begin{aosasect2}{Commit and Merge Histories}
 
-\begin{aosasect2}{Version Control System Lineages}
+On the history and change tracking front most VCS software uses one of
+the following approaches to solve this:
+\begin{aosaitemize}
+  \item linear history
+  \item directed acyclic graph (DAG) for history
+\end{aosaitemize}
 
-Subversion and its ancestors (e.g. SCCS, RCS, CVS) only support linear
-histories where later versions supercede earlier versions. Git is not part
-of this family.
+Again Git uses a DAG, this time to store its history. Each commit contains
+metadata about its ancestors. A commit in Git can have zero or many
+(theoretically unlimited) parent commits. For example, the first commit
+in a Git repository would have zero parents. The result of a three way merge
+would have three parents.
+
+Another primary difference between Git, Subversion and its linear history
+ancenstors, is its ability to directly support branching that will record
+most merge history cases.
 
 \aosafigure{../images/git/dag-example.png}{Example of a DAG representation
   in Git}{fig.git.dag}
 
-Instead Git enables full branching capability using directed acyclic
+Git enables full branching capability using directed acyclic
 graphs (DAG) to store content. The history of a file is linked all the way
 up its directory structure (via nodes representing directories) to the root
 directory, which is then linked to a commit node. This commit node in turn
-can have one or more parents (more on this later). This affords Git two
+can have one or more parents. This affords Git two
 properties that allow us to reason about our history and content in
 more definite ways than the RCS family. Namely:
 \begin{aosaitemize}
@@ -128,6 +146,78 @@ more definite ways than the RCS family. Namely:
 \end{aosaitemize}
 
 \end{aosasect2}
+\begin{aosasect2}{Distribution}
+
+To tackle content distribution of a working copy to collaborators on a
+project VCS solutions have handled this in one of three ways:
+\begin{aosaitemize}
+  \item local-only: this would be for VCS solutions that do not make the
+    third functional requirement above
+  \item central server: where all changes to the repository must transact
+    via one specific repository for it to be recorded in history at all.
+  \item distributed model: where there will often be publically accessible
+    repositories for collaborators to "push" to but commits can be made
+    locally and pushed to these public nodes later. Allowing offline work.
+\end{aosaitemize}
+
+\end{aosasect2}
+
+To demonstrate the benefits and limitations of each major design choice
+for VCS functional needs, we will consider a Subversion and Git repository
+(on a server), content wise they are equivalent (the HEAD of the default
+branch in the Git repository has the equivalent content as the Subversion
+repository's latest revision on trunk). A developer, named Alex,
+has a local checkout of the Subversion repository and a local clone of the
+Git repository locally.
+
+Let us say Alex makes a change to a 1MB file in the local Subversion
+checkout then commits the change. Locally the checkout of the file mimicks
+the latest change and local meta data is updated. In the centralized
+Subversion repository, during Alex's commit, a diff is generated between the
+previous snapshot of the files and the new changes and this delta is stored
+in the repository.
+
+Contrast this with the way Git works.
+When Alex makes the same modification to the equivalent file in the local
+Git clone, the change will be recorded locally first then Alex can "push"
+the local pending commits to a public repository so the work can be shared
+more easily with other collaborators on the project. The content changes are
+stored identically for each Git repository that the commit exists in. Upon
+the local commit (the simplest case), the local Git repository will create a
+new object representing a file for the changed file (with all its content
+inside). For each directory above the changed file (plus the repository
+root directory) a new tree object is created with a new identifier. A DAG
+is created starting from the newly created root tree object pointing to
+blobs (reusing existing blob references where the files content hasn't
+changed in this commit) and referencing the newly created blob in place
+of that file's previous blob object in the previous tree hierarchy. At this
+point the commit is still just local to the current Git clone on Alex's
+local device. When Alex "pushes" the commit to a publically accessible
+Git repository this commit gets sent to that repository. After the public
+repository verifies the commit can apply to the branch the same objects
+are stored in the public repository as were originally created in the
+local Git repository.
+
+There are a lot more moving parts in the Git scenario, both under the
+covers and two user interactions with the tool as opposed to just one
+to share the commit with others. However, there are benefits to this
+model such as:
+\begin{aosaitemize}
+  \item providing the ability for the collaborators to work offline and
+    commit incrementally as they work offline
+  \item allowing the collaborator to determine when his/her work is
+    ready to share
+  \item offer the collaborator history access to the repository when
+    offline
+\end{aosaitemize}
+
+In the Subversion scenario the collaborator didn't have to remember
+to push to the public remote repository when ready for others to
+view the changes made. When a small modification to a larger file is sent
+to the central repository in Subversion the delta stored is much more
+efficient than storing the complete file contents for each version.
+However, as we will see later there is a work around for this that Git
+uses in certain scenarios.
 
 \end{aosasect1}
 
