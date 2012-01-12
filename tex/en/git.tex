@@ -60,7 +60,7 @@ and how it tracks the merging of trees.
 
 Despite BitKeeper influencing the original design of Git, it is implemented
 in fundamentally different ways and allows even more distributed plus
-local-only workflows, which weren't possible with BitKeeper, which requires
+local-only workflows, which were not possible with BitKeeper, which requires
 a server.
 
 Around this time (circa 2005) three other open source distributed VCS projects
@@ -90,7 +90,7 @@ requirements, namely:
   \item distributing the content and history with collaborators
 \end{aosaitemize}
 
-\emph{Note: The third requirement above isn't a functional requirement for
+\emph{Note: The third requirement above is not a functional requirement for
 all VCSs.}
 
 \begin{aosasect2}{Content Storage}
@@ -188,7 +188,7 @@ new object representing a file for the changed file (with all its content
 inside). For each directory above the changed file (plus the repository
 root directory) a new tree object is created with a new identifier. A DAG
 is created starting from the newly created root tree object pointing to
-blobs (reusing existing blob references where the files content hasn't
+blobs (reusing existing blob references where the files content has not
 changed in this commit) and referencing the newly created blob in place
 of that file's previous blob object in the previous tree hierarchy. At this
 point the commit is still just local to the current Git clone on Alex's
@@ -211,7 +211,7 @@ model such as:
     offline
 \end{aosaitemize}
 
-In the Subversion scenario the collaborator didn't have to remember
+In the Subversion scenario the collaborator did not have to remember
 to push to the public remote repository when ready for others to
 view the changes made. When a small modification to a larger file is sent
 to the central repository in Subversion the delta stored is much more
@@ -326,7 +326,7 @@ directories:
 This is the actual repository. The directory that contains the working set
 of files is the \emph{working directory}, which is typically the parent of
 the .git directory (or \emph{repository}). If you were creating a Git
-remote repository that wouldn't have a working directory you could
+remote repository that would not have a working directory you could
 initialize it using the \code{git init --bare} command. This would create
 just the pared down repository files at the root, instead of creating it
 as a subdirectory under the working tree.
@@ -564,7 +564,7 @@ protocol of the client (assuming the server supports it).
 As mentioned previously Git differs fundamentally in merge history approach
 than the RCS family of VCSes. Subversion, for example, represents
 file or tree history has a linear progression. Whatever has a higher revision
-number will supercede anything before it. Branching isn't supported directly,
+number will supercede anything before it. Branching is not supported directly,
 only through an unenforced directory structure within the repository.
 
 Let us first use an example to show how this can be problematic when
@@ -622,8 +622,8 @@ but less useful for embedding inside or linking with longer running
 applications or services.
 
 To combat this Shawn Pearce spearheaded an effort to create a linkable Git
-library with more permissive licensing that didn't inhibit use of the
-library. This was called libgit2. It didn't find much traction until a
+library with more permissive licensing that did not inhibit use of the
+library. This was called libgit2. It did not find much traction until a
 student named, Vincent Marti chose it for his Google Summer of Code project
 last year. Since then Vincent and GitHub have continued contributing to the
 libgit2 project and created Ruby bindings for it in a project called Rugged.
