@@ -18,41 +18,27 @@ To understand Git's design philosophy better it is helpful to understand the
 circumstances from which the Git project was started in the Linux Kernel
 community.
 
+The Linux kernel was unusual to most commercial software projects at that
+time due to the large number of committers and the high variance of
+contributors with respect to involvement and knowledge in the existing
+codebase. The core development community struggled to find a VCS that
+satisfied most of their needs. Initially the version control systems
+reviewed were open source projects themselves and they were from the linear
+history lineage such as SCCS, RCS, and CVS.
+
 Git is an open source project that was born out of the needs and
 frustrations of the Linux Kernel development community in 2005. At that time
 the Linux kernel codebase had been managed across two VCS systems (BitKeeper
-and CVS) for a few years already.
+and CVS) for a few years already. BitKeeper offered a different more
+view of VCS history lineage to the popular open source projects at this
+time.
 
-The Linux Kernel was first released in late 1991. It rapidly grew a
-community of core developers and contributors by the mid-to-late 1990s. Along
-side individuals adopting Linux there were organisations and teams of
-developers creating Linux distributions based on top of the Linux Kernel
-project by the close of the decade. These distributions would sometimes
-temporarily fork the official version of the kernel if patches relevant to
-their user base were not yet included in the Kernel codebase when releasing
-new versions of their distribution thus essentially forking the project and
-then merging upstream changes later on.
+BitMover, the company that built BitKeeper, provided free licenses and VCS
+hosting services to core developers on the Linux kernel until early 2005
+when it announced it would no longer provide free licenses or VCS hosting
+services as of mid-2005.
 
-By the late 1990s Torvalds and other core developers voiced concerns
-about managing patches from a large number of contributors for the
-Kernel codebase using any of the open source VCSes available to them at
-that time.
-
-Between late 1999 and early 2005 many of the core developers of the Linux
-Kernel opted to use BitKeeper, a proprietary distributed VCS made by
-BitMover Inc. However, several key Linux Kernel developers (including Alan
-Cox) refused to use BitKeeper, due to concerns over the proprietary Bitmover
-license. By 2002 BitMover provided a way for the Linux BitKeeper servers to
-interoperate with the Linux CVS server in a few ways. It offered a
-public release and free use of its servers to a shortlist of free and
-open source projects including the Linux Kernel. For a few years the
-Linux Kernel would be maintained across two VCS systems in this way.
-
-This ended during the first half of 2005, when BitMover retracted its
-"Free Use" version for a number of key Linux Kernel developers and Git
-was born to fill this void.
-
-In April 2005, days after the BitMover announcement, Linus Torvalds began
+In April 2005, days after this BitMover announcement, Linus Torvalds began
 development in haste of what was to become Git as we know it today. He began
 by writing a collection of scripts to help him manage email patches to apply
 one after the other. The aim of this initial collection of scripts was to
@@ -67,10 +53,10 @@ three usability design goals from the outset:
   \item offer high performance
 \end{aosaitemize}
 
-These design goals have been accomplished and maintained as I will attempt
-to show when dissecting Git's use of DAGs for content storage, reference
-pointers for heads, object model representatation, remote protocol and how
-it tracks the merging of trees.
+These design goals have been accomplished and maintained to a degree as I
+will attempt to show by dissecting Git's use of DAGs for content storage,
+reference pointers for heads, object model representatation, remote protocol
+and how it tracks the merging of trees.
 
 Despite BitKeeper influencing the original design of Git, it is implemented
 in fundamentally different ways and allows even more distributed plus
@@ -81,9 +67,12 @@ Around this time (circa 2005) three other open source distributed VCS projects
 were initiated, including Mercurial, which is a project covered in volume 1
 of this title series. All of these dCVS tools offer slightly different ways
 to enable distributed workflows, which centralized VCS systems before them
-were not capable for handling directly. \emph{Note: Subversion has an
+were not capable of handling directly. \emph{Note: Subversion has an
 extension maintained by different developers to support server-to-server
 synchronization named SVK.}
+
+Open source DVCS projects today include Bazaar, Darcs, Fossil, Git,
+Mercurial, and Veracity.
 
 \end{aosasect1}
 
@@ -114,25 +103,9 @@ graphs. Git uses DAGs again, this time for the merge history.
 
 \begin{aosasect2}{Version Control System Lineages}
 
-At the heart of every VCS tool is tracking the history of an evolving
-\emph{work}. The Revision Control System (RCS) was one of the first popular
-VCSes. It was based on tracking revisions of individual files taking care of
-storing, retrieving, logging, identifying, and merging revisions. It offered
-a number of improvements over the more primitive VCS it was based on,
-Source Code Control System (SCCS). It did this by providing an easier
-interface and improving performance of retrieving versions for its primary
-use case. The Concurrent Versions System (CVS) was built on top of RCS adding
-a client/server model, which made sharing changes of the work on a team more
-tenable than its predecessor. Subversion was CVS's successor, which added
-better support for renaming files/folders and also dropped first class
-support of trunking and tags, opting instead for an unenforced repository
-directory structure convention. Subversion continued CVS's centralized
-client/server approach, however.
-
-This VCS product family only support linear histories where later
-versions supercede earlier versions. Git is not part of this family; there is
-no easy conceptual evolution from Subversion to Git in terms of tracking
-histories or content.
+Subversion and its ancestors (e.g. SCCS, RCS, CVS) only support linear
+histories where later versions supercede earlier versions. Git is not part
+of this family.
 
 \aosafigure{../images/git/dag-example.png}{Example of a DAG representation
   in Git}{fig.git.dag}
