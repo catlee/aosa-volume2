@@ -341,17 +341,7 @@ specific changes in a file or set of files you can using \code{git add -p}.
 
 The \emph{Git index}, by default, is stored as a single file inside the
 repository directory. The paths to these three areas can be customized
-using the following environment variables:
-\begin{aosaitemize}
-  \item \code{GIT\_DIR}: sets the repository directory or the \emph{.git}
-  directory.
-  \item \code{GIT\_INDEX}: sets the path to the \emph{index}. This is often
-  referred to as the staging area as well.
-  \item \code{GIT\_WORK\_DIR}: sets the path to the \emph{working directory}
-  for the local Git repository. The work directory represents the "live"
-  state of the current head (or HEAD) of the Git repository. This is usually
-  a reference to the current branch.
-\end{aosaitemize}
+using environment variables.
 
 It is helpful to understand the interactions that take place between these
 three areas (the repository, index and working areas) during the execution
