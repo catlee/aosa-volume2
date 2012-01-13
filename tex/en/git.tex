@@ -496,30 +496,8 @@ corresponding \emph{packed} file.
 
 We can count the number of \emph{loose} (or unpacked) objects in the local
 Git repository using \code{git count-objects}. Now we can have Git pack
-\emph{loose} objects in the object database using \code{git repack}. Now we
-can ask Git to remove loose objects already packed using
-\code{git prune-packed}. We can also find redundant pack files in our local
-repository using \code{git pack-redundant}.
-
-On a small sized repository with commits in the order of 100 and number of
-files (or blobs) also in the order of 100 you might see output that looks
-like the following:
-
-\begin{aosaitemize}
-  \item \code{git repack} \newline
-\begin{verbatim}Counting objects: 800, done.
-Delta compression using up to 8 threads.
-Compressing objects: 100% (792/792), done.
-Writing objects: 100% (800/800), done.
-Total 800 (delta 358), reused 0 (delta 0)\end{verbatim}
-  \item \code{git count-objects} \newline
-\begin{verbatim}817 objects, 9004 kilobytes\end{verbatim}
-  \item \code{git prune-packed}
-  \item \code{git count-objects} \newline
-\begin{verbatim}17 objects, 88 kilobytes\end{verbatim}
-  \item \code{git pack-redundant} \newline
-\begin{verbatim}fatal: Zero packs found!\end{verbatim}
-\end{aosaitemize}
+\emph{loose} objects in the object database, remove loose objects already
+packed, and find redundant pack files with Git plumbing commands if desired.
 
 There are two versions of pack files as of this writing: version 1 and
 version 2. Version 1 being used in versions of Git before version 1.6 of Git
