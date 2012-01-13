@@ -48,3 +48,6 @@ questions:
 
 clean:
 	@rm -f aosa2.pdf *.aux *.bak *.bbl *.blg *.log *.toc *~
+
+cleanish:
+	@rm -f *.aux *.bak *.bbl *.blg *.log *.toc *~
