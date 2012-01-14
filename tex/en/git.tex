@@ -611,4 +611,41 @@ but the future of Git appears bright.
 
 \end{aosasect1}
 
+\begin{aosasect1}{Lessons Learned}
+
+In software, every design decision is ultimately a trade-off. As a power
+user of Git for version control and someone who has developed software
+around the Git object database model I have a deep fondness of Git in its
+present form. Therefore, these lessons learned are more of a reflection
+of common recurring complaints about Git that due to design decisions and
+focus of the Git core developers.
+
+One of the most common complaints by developers and managers that evaluate
+Git for their project's version control needs has been the lack of IDE
+integration on par with other VCS tools. The toolkit design of Git has made
+this more challenging than integrating other modern VCS tools into IDE
+and related tools.
+
+Earlier in Git's history some of the commands were implemented as shell
+scripts. These shell script command
+implementations made Git less portable, especially to Windows. I am
+sure the Git core developers did not lose sleep over this fact, but it
+has impacted adoption of Git in larger organizations negatively due to
+portability issues that were prevalent in the early days of Git's
+development. Today another project named Git for Windows has been started
+by volunteers to ensure new versions of Git are ported to Windows in a
+timely manner.
+
+An indirect consequence of designing Git around a toolkit design
+with a lot of plumbing commands is that new users get lost quickly from
+getting lost in all the available subcommands to not being able to
+understand error messages because a low level plumbing task failed. This
+has made adopting Git harder for some developer teams.
+
+Even with these complaints about Git, I am excited about the possibilities
+of future development on the Git Core project plus all the related open
+source projects that have been launched from it.
+
+\end{aosasect1}
+
 \end{aosachapter}
