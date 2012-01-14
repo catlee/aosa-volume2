@@ -16,7 +16,8 @@ to enable this and how this differs from other VCSes.
 \begin{aosasect1}{Git's Origin}
 To understand Git's design philosophy better it is helpful to understand the
 circumstances from which the Git project was started in the Linux Kernel
-community.
+community, which had initially been maintained via tarballs and patches for
+years initially.
 
 The Linux kernel was unusual to most commercial software projects at that
 time due to the large number of committers and the high variance of
@@ -29,12 +30,12 @@ history lineage such as SCCS, RCS, and CVS.
 Git is an open source project that was born out of the needs and
 frustrations of the Linux Kernel development community in 2005. At that time
 the Linux kernel codebase had been managed across two VCS systems (BitKeeper
-and CVS) for a few years already. BitKeeper offered a different more
-view of VCS history lineage to the popular open source projects at this
+and CVS) by different core developers. BitKeeper offered a different
+view of VCS history lineage to the popular open source VCS projects at this
 time.
 
 BitMover, the company that built BitKeeper, provided free licenses and VCS
-hosting services to core developers on the Linux kernel until early 2005
+hosting services to some core developers on the Linux kernel until early 2005
 when it announced it would no longer provide free licenses or VCS hosting
 services as of mid-2005.
 
@@ -579,7 +580,7 @@ be applied to the branch.
 
 \end{aosasect1}
 
-\begin{aosasect1}{Current and Future Work}
+\begin{aosasect1}{What's Next?}
 
 As mentioned previously, Git core as we know it today is based on a toolkit
 design philosophy from the Unix world, which is very handy for scripting,
