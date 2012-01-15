@@ -46,11 +46,11 @@ levels of a system.
 
 GDB also needs to be able to debug programs compiled by different
 compilers (not just the GNU C compiler), to debug programs compiled
-years earlier by versions of compilers, and to debug programs whose
-symbolic info is missing, out of date, or simply incorrect.  So
-another design consideration is that GDB should continue to work and
-be useful even if data about the program is missing, or corrupted, or
-simply incomprehensible.
+years earlier by long-obsolete versions of compilers, and to debug
+programs whose symbolic info is missing, out of date, or simply
+incorrect.  So another design consideration is that GDB should
+continue to work and be useful even if data about the program is
+missing, or corrupted, or simply incomprehensible.
 
 The following sections assume a passing familiarity with using GDB
 from the command line; if you're new to GDB, give it a try, and peruse
@@ -78,6 +78,7 @@ of the original plan.
 
 \begin{aosasect1}{Block Diagram}
 
+% simplify/add zoomed versions
 \aosafigure{../images/gdb/gdb-structure.pdf}{Overall Structure of GDB}{fig.gdb.structure}
 
 At the largest scale, GDB can be said to have two sides to it:
@@ -87,7 +88,8 @@ the program.  Symbolic information includes function and variable
 names and types, line numbers, machine register usage, and so forth.
 The symbol side extracts symbolic information from the program's
 executable file, parses expressions, finds the memory address of a
-given line number, and so forth.
+given line number, lists source code, and in general works with
+the program as the programmer wrote it.
 
 2) The ``target side'' is concerned with the manipulation of the
 target system.  It has facilities to start and stop the program, to
@@ -102,22 +104,25 @@ message packets to send over a wire, and waits for response packets in
 return.
 
 The two sides are somewhat independent of each other; you can look
-around your program's machine code, display variable types, etc,
-without actually running the program.  Conversely, it is possible to
-do pure machine-language debugging even if no symbols are available.
+around your program's code, display variable types, etc, without
+actually running the program.  Conversely, it is possible to do pure
+machine-language debugging even if no symbols are available.
 
 In the middle, tying the two sides together, is the command
 interpreter and the main execution control loop.
 
 To take a simple case of how it all ties together, consider the print
-command from above.  The command interpreter finds the printing code,
-which parses the expression into a simple tree structure and then
-evaluates it by walking the tree.  At some point the evaluator will
-consult the symbol table to find out that \code{positive\_variable} is
-an integer global variable that is stored at, say, memory address
-\code{0x658932}.  It then calls a target-side function to read the
-four bytes of memory at that address, and hands the bytes to a
-printing function that displays them as a decimal number.
+command from above.  The command interpreter finds the print command
+function, which parses the expression into a simple tree structure and
+then evaluates it by walking the tree.  At some point the evaluator
+will consult the symbol table to find out that
+\code{positive\_variable} is an integer global variable that is stored
+at, say, memory address \code{0x658932}.  It then calls a target-side
+function to read the four bytes of memory at that address, and hands
+the bytes to a formatting function that displays them as a decimal
+number.
+
+% add a note explaining code<->address mapping
 
 Single-stepping is not so simple; the command \code{step} conceals a
 complicated dance going on behind the scenes.  When the user asks to
@@ -135,9 +140,11 @@ repeating until the PC gets to a different line.  This basic algorithm
 has the advantage that it always does the right thing, whether the
 line has jumps, subroutine calls, etc, and does not require GDB to
 interpret all the details of the machine's instruction set.  A
-disadvantage is that there is a lot of interaction with the target for
+disadvantage is that there are many interactions with the target for
 each single-step, which for some embedded targets results in
 noticeably slow stepping.
+
+% add a display of asm code with source code
 
 \end{aosasect1}
 
@@ -181,17 +188,18 @@ then we are doing ``native'' debugging, otherwise it is ``cross''
 debugging, using some kind of wire connecting the two systems.  Target
 definitions fall in turn into two main classes:
 
-** ``Architecture'' definitions - the machine language byte(s) for a
-trap instruction, how to disassemble machine code, how to walk
-through the call stack.  These are currently handled by ``gdbarch''
-objects, of which more later.
+** ``Architecture'' definitions - how to disassemble machine code, how
+to walk through the call stack, the trap instruction to insert at
+breakpoints.  Originally done with macros, they were migrated to
+regular C accessed by via ``gdbarch'' objects, described in more depth
+below.
 
 ** ``Native'' definitions - these define the specifics of arguments to
 \code{ptrace} (which vary considerably between flavors of Unix), how
 to find shared libraries that have been loaded, and so forth, which
 only apply to the native debugging case.  Native definitions are a
-last holdout of 1980s-style macro definitions, although most are now
-figured out using \code{autoconf}.
+last holdout of 1980s-style macros, although most are now figured out
+using \code{autoconf}.
 
 \end{aosasect1}
 
@@ -199,7 +207,7 @@ figured out using \code{autoconf}.
 
 Before drilling down into the parts of GDB, let's take a look at the
 major data structures that GDB works with.  As GDB is a C program,
-these are implemented as \\code{struct}s rather than as C++-style
+these are implemented as \code{struct}s rather than as C++-style
 objects, but in most cases they are treated as objects, and here we
 follow GDBers' frequent practice in calling them objects.
 
@@ -212,13 +220,11 @@ the user.  The user creates a breakpoint with the \code{break}
 command, whose argument specifies a {\em location}, which can be a
 function name, a source line number, or a machine address.  GDB
 assigns a small positive integer to the breakpoint object, which the
-user uses subsequently to operate on the breakpoint.  (Negative
-integers identify breakpoints created by GDB itself for internal use.)
-Within GDB, the breakpoint is a C struct with a number of fields.  The
-location gets translated to a machine address, but is also saved in
-its original form, since the address may change and need
-recomputation, for instance if the program is recompiled and reloaded
-into a session.
+user uses subsequently to operate on the breakpoint.  Within GDB, the
+breakpoint is a C struct with a number of fields.  The location gets
+translated to a machine address, but is also saved in its original
+form, since the address may change and need recomputation, for
+instance if the program is recompiled and reloaded into a session.
 
 Several kinds of breakpoint-like objects actually share the breakpoint
 struct, including watchpoints, catchpoints, and tracepoints.  This
@@ -408,12 +414,13 @@ function can call out to generic code to finish the job.
 
 \begin{aosasect1}{Target Side}
 
-The target side is all about manipulation of the program and raw data.
+The target side is all about manipulation of program execution and raw
+data.
 
 In a sense, the target side is a complete low-level debugger; if you
 are content to step by instructions and dump raw memory, you can use
-GDB without benefit of any symbols at all.  (You may end up operating
-in this mode anyway, if the program happens to stop in a library whose
+GDB without needing any symbols at all.  (You may end up operating in
+this mode anyway, if the program happens to stop in a library whose
 symbols have been stripped out.)
 
 \begin{aosasect2}{Target Vectors and the Target Stack}
@@ -428,24 +435,29 @@ from files to core dumps to live programs, attach and detach, and so
 forth.
 
 So in 1990 John Gilmore redesigned the target side of GDB to send all
-platform-specific operations through the {\em target vector}, which is
-basically a class of objects, each of what defines the the specifics
-of a type of target system.  In practice, each target vector is a
+target-specific operations through the {\em target vector}, which is
+basically a class of objects, each of which defines the the specifics
+of a type of target system.  Each target vector is implemented as a
 structure of several dozen function pointers (often called
-``methods''), ranging from the reading and writing of memory and
-registers, to setting parameters for the handling of shared libraries.
+``methods''), whose purposes range from the reading and writing of
+memory and registers, to resuming program execution, to setting
+parameters for the handling of shared libraries.  There are about 40
+target vectors in GDB, ranging from the well-used target vector for
+Linux, to obscure vectors such as the one that operates a Xilinx
+MicroBlaze.  Core dump support uses a target vector that gets data by
+reading a corefile, and there is another target vector that reads data
+from the executable.
 
-In addition, it is often useful to blend methods from several target
-vectors.  For instance, consider the printing of an initialized global
-variable on Unix; before the program starts running, printing should
-still work, but the bytes should come from the executable's
-\code{.data} section, and in fact there is a target vector for
-executable programs, for which the memory read method simply reads
-from the file.  But while the program is running, the bytes should
-instead come from the process's address space.  So GDB has a ``target
-stack'' where the target vector for processes effectively gets pushed
-on top of the executable's target vector when the process starts
-running, and is then popped when it exits.
+It is often useful to blend methods from several target vectors.
+Consider the printing of an initialized global variable on Unix;
+before the program starts running, printing the variable should work,
+but at that point there is no process to read, and bytes need to come
+from the executable's \code{.data} section.  So GDB uses the target
+vector for executables, and reads from the binary file.  But while the
+program is running, the bytes should instead come from the process's
+address space.  So GDB has a ``target stack'' where the target vector
+for live processes is pushed on top of the executable's target vector
+when the process starts running, and is then popped when it exits.
 
 % waffling about figure, the current reality is not exactly a stack,
 % and not clear how to present graphically
@@ -453,7 +465,8 @@ running, and is then popped when it exits.
 
 In reality, the target stack turns out not to be quite as stack-like
 as one might think.  Target vectors are not really orthogonal to each
-other; it almost never makes sense to have the executable's methods
+other; if you have both an executable and a live process in the
+session, it almost never makes sense to have the executable's methods
 override the live process's methods.  So GDB has ended up with a
 notion of {\em stratum} in which ``process-like'' target vectors are
 all at one stratum, while ``file-like'' target vectors get assigned to
@@ -461,7 +474,7 @@ a lower stratum, and target vectors can get inserted as well as pushed
 and popped.
 
 (Although GDB maintainers don't like the target stack much, no one has
-proposed -- and prototyped -- a better alternative.)
+proposed -- and prototyped -- any better alternative.)
 
 \end{aosasect2}
 
@@ -691,7 +704,7 @@ parameter names for component pieces.  In addition, MI commands can be
 prefixed with sequence identifiers that are echoed back in results,
 ensuring reported results are matched up with the right commands.
 
-% need MI example
+% need MI example - output of x/16w?
 
 The Eclipse development environment is the most notable client of the
 MI.
@@ -717,13 +730,14 @@ split-screen interface.
 As an original GNU program, GDB development started out following the
 ``cathedral'' model of development.  Originally written by Stallman,
 GDB then went through a succession of ``maintainers'', each of whom
-was a combination architect, patch reviewer, and release manager, and
-who had the sole access to the source repository.
+was a combination architect, patch reviewer, and release manager, with
+access to the source repository limited to a handful of Cygnus
+employees.
 
-In 1999, GDB moved to a public source repository, and expanded to a
-team of dozen-odd maintainers, aided by scores of individuals with
-commit privileges.  This has accelerated development considerably.
-% provide some numbers?
+In 1999, GDB migrated to a public source repository, and expanded to a
+team of several dozen maintainers, aided by scores of individuals with
+commit privileges.  This has accelerated development considerably,
+with the 10-odd commits each week growing to 100 or more nowadays.
 
 \end{aosasect2}
 
@@ -731,9 +745,9 @@ commit privileges.  This has accelerated development considerably.
 
 As a program that a) is highly system-specific, b) has a great many
 ports to systems ranging from the smallest to the largest in
-computerdom, c) has hundreds of commands, options, and usage styles,
-it is difficult for even the experienced GDB hacker to anticipate all
-the effects of a change.
+computerdom, and c) has hundreds of commands, options, and usage
+styles, it is difficult for even the experienced GDB hacker to
+anticipate all the effects of a change.
 
 This is where the testsuite comes in.  The testsuite consists of a
 number of test programs combined with \code{expect} scripts, using a
@@ -763,6 +777,10 @@ native debugging, and some embedded targets will have more failures.
 
 \begin{aosasect1}{Lessons Learned}
 
+% add examples tying into arch changes?
+% explain lessons learned from need to re-architect
+% ``could not have done perfect design at the outset - incremental is good''
+
 \begin{aosasect2}{Open Development Wins}
 
 GDB started out as an exemplar of the ``cathedral'' development
@@ -786,12 +804,14 @@ However, it still makes sense to make a development plan and publish it.
 It helps guide full-time developers, it can be shown to potential funders,
 volunteers think about what they can do to advance it.
 
-But don't bother with dates or timeframes!  For that matter, don't
+But don't try to force dates or timeframes!  For that matter, don't
 cling to the plan itself if it's become dated.  For a long time, GDB
 had a plan to restructure as a library \code{libgdb} with a
-well-defined API, that could be linked into other programs.  The idea
-has come up periodically for at least 17 years now, but it remains
-unlikely to happen.
+well-defined API, that could be linked into other programs, and the
+build process was even changed to build a \code{libgdb.a} as an
+intermediate step.  Although the idea came up periodically since then,
+it never went further, and as of January 2012 we have abandoned it
+entirely and are expunging the pointless bits of code.
 
 \end{aosasect2}
 
@@ -812,7 +832,7 @@ debugger running.
 
 \begin{aosasect2}{Don't Get Too Attached to the Code}
 
-When you spend a lot of time with a single body of code, and it's an
+When you spend a long time with a single body of code, and it's an
 important program that also pays the bills, it's easy to get attached
 to it, and even to mold your thinking to fit the code, rather than the
 other way around.
@@ -820,9 +840,9 @@ other way around.
 Don't.
 
 Everything in the code originated with a series of conscious
-decisions; some inspired, some less so (ahem).  The clever
-space-saving trick of 1991 is a pointless complexity with the
-multi-gigabyte RAMs of 2011.
+decisions; some inspired, some less so.  The clever space-saving trick
+of 1991 is a pointless complexity with the multi-gigabyte RAMs of
+2011.
 
 GDB once supported the Gould supercomputer; when they turned off the
 last machine, around 2000, there really wasn't any point in keeping
@@ -841,5 +861,6 @@ more reason to get started on them now!
 \end{aosasect1}
 
 % do we want citations / references??
+% add \cite and .bib for main websites at least?
 
 \end{aosachapter}
