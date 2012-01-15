@@ -24,18 +24,10 @@
     </div>
 
 <p>
-FreeRTOS is an open source real-time operating system (RTOS) for embedded systems.
-FreeRTOS's web site<sup class="footnote"><a href="#footnote-1">1</a></sup> sums it up 
-like this:
-</p>
-
-<p>
-"FreeRTOS(tm) includes official ports to 27 architectures [and 17 toolchains] and 
-receives more than 77,500 downloads a year. It is market leading, robust, supported, 
-portable, open source, free to download, and free to deploy.  FreeRTOS can be used in 
-commercial applications without any requirement to expose your proprietary source 
-code. With a growing ecosystem, FreeRTOS is commonly integrated with both open source 
-and commercial TCP/IP, file system, and USB components."
+FreeRTOS (prounounced as "free-arr-toss") is an open source real-time operating 
+system (RTOS) for embedded systems. FreeRTOS supports many different architectures 
+and compiler toolchains, and is designed to be "small, simple, and easy to use."
+<sup class="footnote"><a href="#footnote-1">1</a></sup>
 </p>
 
 <p>
@@ -166,37 +158,6 @@ FreeRTOS core and the hardware-dependent code. We'll discuss the hardware-depend
 code in the next section.
 </p>
 
-<p>
-Table 1 summarizes the FreeRTOS core code.
-</p>
-
-<div class="table" id="tbl.freertos.files">
-  <table>
-  <tr>
-    <th>Function</th><th>Lines of Code</th><th>Percent of Core FreeRTOS</th>
-  </tr>
-  <tr><td>Tasks</td><td>4340</td><td>48%</td></tr>
-  <tr><td>Communication</td><td>3526</td><td>39%</td></tr>
-  <tr><td>Hardware Interfacing</td><td> 570</td><td>6%</td></tr>
-  <tr><td>Misc.</td><td> 551</td><td>6%</td></tr>
-  <tr><td>Total</td><td>8987</td><td>100%</td></tr>
-<!-- Here are the original files/counts, left in comments for later reference:
-  <tr><td><code>FreeRTOS.h   </code></td><td> 468</td></tr> - config
-  <tr><td><code>projdefs.h   </code></td><td>  83</td></tr> - config
-  <tr><td><code>StackMacros.h</code></td><td> 174</td></tr> - hw    
-  <tr><td><code>portable.h   </code></td><td> 396</td></tr> - hw    
-  <tr><td><code>queue.c      </code></td><td>1539</td></tr> - comm  
-  <tr><td><code>queue.h      </code></td><td>1270</td></tr> - comm  
-  <tr><td><code>semphr.h     </code></td><td> 717</td></tr> - comm  
-  <tr><td><code>list.c       </code></td><td> 197</td></tr> - tasks 
-  <tr><td><code>list.h       </code></td><td> 314</td></tr> - tasks 
-  <tr><td><code>tasks.c      </code></td><td>2522</td></tr> - tasks 
-  <tr><td><code>task.h       </code></td><td>1307</td></tr> - tasks 
--->
-
-</table>
-</div>
-
 </div>
 
 </div>
@@ -223,9 +184,9 @@ compiler toolchain you choose. This figure shows FreeRTOS's layers:
 <p>
 FreeRTOS ships with all the hardware-independent as well as hardware-dependent code 
 you'll need to get a system up and running. It supports many compilers (CodeWarrior, 
-GCC, IAR, SDCC, etc.) as well as many processor architectures (ARM7, ARM Cortex-M3, 
-various PICs, Silicon Labs 8051, x86, etc.). See the FreeRTOS website for all 
-supported architectures and compilers.
+GCC, IAR, etc.) as well as many processor architectures (ARM7, ARM Cortex-M3, various 
+PICs, Silicon Labs 8051, x86, etc.). See the FreeRTOS website for all supported 
+architectures and compilers.
 </p>
 
 <p>
@@ -252,16 +213,15 @@ tick frequency, the minimal stack size and the total heap size:
 
 <p>
 Hardware-dependent code lives in separate files for each compiler toolchain and CPU 
-architecture. For instance, if you're working with the IAR compiler on an ARM 
+architecture. For example, if you're working with the IAR compiler on an ARM 
 Cortex-M3 chip, the hardware-dependent code lives in the 
 <code>FreeRTOS/Source/portable/IAR/ARM_CM3/</code> directory.  
-<code>FreeRTOS/Source/portable/IAR/ARM_CM3/portmacro.h</code> declares all of the 
-hardware-specific functions, while <code>port.c</code> and <code>portasm.s</code> in 
-that same directory contain all of the actual hardware-dependent code. The 
-hardware-independent header file <code>portable.h</code> <code>#include</code>'s the 
-correct <code>portmacro.h</code> file at compile time.  FreeRTOS calls the 
-hardware-specific functions using <code>#define</code>'d functions declared in 
-<code>portmacro.h</code>.
+<code>portmacro.h</code> declares all of the hardware-specific functions, while 
+<code>port.c</code> and <code>portasm.s</code> contain all of the actual 
+hardware-dependent code. The hardware-independent header file <code>portable.h</code> 
+<code>#include</code>'s the correct <code>portmacro.h</code> file at compile time.  
+FreeRTOS calls the hardware-specific functions using <code>#define</code>'d functions 
+declared in <code>portmacro.h</code>.
 </p>
 
 <p>
@@ -672,10 +632,12 @@ list size operations.
 
 <p>
 All new lists are initialized to contain a single element: the <code>xListEnd</code> 
-element.  <code>xListEnd.xItemValue</code> is a sentinal value which is the largest 
-value for the <code>xItemValue</code> variable: 0xffff when <code>portTickType</code> 
-is a 16-bit value and 0xffffffff when <code>portTickType</code> is a 32-bit value.  
-This sentinel value is a reserved value: other list elements must not use this value.
+element.  <code>xListEnd.xItemValue</code> is a sentinal value which is equal to the 
+largest value for the <code>xItemValue</code> variable: 0xffff when 
+<code>portTickType</code> is a 16-bit value and 0xffffffff when 
+<code>portTickType</code> is a 32-bit value. Other list elements may also have the 
+same value; the insertion algorithm ensures that <code>xListEnd</code> is always the 
+last item in the list.
 </p>
  
 <p>
@@ -784,15 +746,29 @@ to keep track of where we've just read from and written to.
 
 <p>
 When creating a queue the user specifies the length of the queue and the size of each 
-element in the queue. <code>pcHead</code> and <code>pcTail</code> are used to keep 
-track of the queue's internal storage. Adding an item into a queue does a deep copy 
-of the item into the queue's internal storage.  FreeRTOS makes a deep copy instead of 
-storing a pointer to the item because the lifetime of the item inserted may be much 
-shorter than the lifetime of the queue.  For instance, consider a queue of simple 
-integers inserted and removed using local variables across several function calls.  
-If the queue stored pointers to the integers' local variables, the pointers would be 
-invalid as soon as the integers' local variables went out of scope and the local 
-variables' memory was used for some new value.
+item to be tracked by the queue. <code>pcHead</code> and <code>pcTail</code> are used 
+to keep track of the queue's internal storage. Adding an item into a queue does a 
+deep copy of the item into the queue's internal storage.
+</p>
+
+<p>
+FreeRTOS makes a deep copy instead of storing a pointer to the item because the 
+lifetime of the item inserted may be much shorter than the lifetime of the queue.  
+For instance, consider a queue of simple integers inserted and removed using local 
+variables across several function calls.  If the queue stored pointers to the 
+integers' local variables, the pointers would be invalid as soon as the integers' 
+local variables went out of scope and the local variables' memory was used for some 
+new value.
+</p>
+
+<p>
+FreeRTOS allows the user to choose what to queue. The user can queue copies of items 
+if the items are small, like in the simple integer example in the previous paragraph, 
+or the user can queue pointers to the items if the items are large. Note that in both 
+cases FreeRTOS does a deep copy: if the user chooses to queue copies of items then 
+the queue stores a deep copy of each item; if the user chooses to queue pointers then 
+the queue stores a deep copy of the pointer. The queue doesn't care what data you're 
+storing in it, it just needs to know the data's size.
 </p>
 
 <p>
@@ -824,6 +800,13 @@ insert/remove returns with a "failed" status.
 </p>
 
 <p>
+The rest of the system keeps going while a task is blocking on a queue; other tasks 
+continue to run. A blocked task will periodically check the queue status and if the 
+task is still blocked it will yield to other tasks. This way the blocked task doesn't 
+waste CPU cycles that can be used productively by other tasks.
+</p>
+
+<p>
 FreeRTOS uses the <code>xTasksWaitingToSend</code> list to keep track of tasks that 
 are blocking on inserting into the queue. Each time an element is removed from a 
 queue the <code>xTasksWaitingToSend</code> list is checked. If a task is waiting in 
@@ -852,6 +835,18 @@ access is done.  If the queue is not ready, then the system timer is checked. If
 task has been blocking longer than the requested timeout the queue access returns 
 with a "failed" status. If the requested timeout has not been reached yet then the 
 task will attempt the queue access again the next time it runs.
+<!-- EDIT: RB: I think it is easy for people to misinterpret this.  A task that is 
+waiting
+on a queue (to send or receive) will remain blocked as long as the operation cannot
+complete, and its time out has not expired.  If an interrupt or another task
+performs an operation that allows the blocked tasks operation to complete, the
+blocked task will leave the blocked state.  However, by the time it actually
+runs it is possible that a higher priority task or interrupt has performed yet another
+operation on the queue that means the task that was unblocked still cannot perform
+its operation - and that is the only time it will loop back to the top of the queue
+function (after checking to see if there is any block time remaining).  I realise
+that is probably not a particularly clear explanation.  Let me know if you would
+like further explanation - I could provide a sequence diagram  to make it clearer. --> 
 </p>
 
 <div class="subsect">
@@ -1024,7 +1019,7 @@ was a geek when she married me!
 <div class="footnotes">
 <h2>Footnotes</h2>
 <ol>
-<li id="footnote-1"<code class="url">http://www.freertos.org</code</li>
+<li id="footnote-1"<code class="url">http://www.freertos.org/index.html?http://www.freertos.org/FreeRTOS_Features.html </code</li>
 <li id="footnote-2"<code class="url">http://www.netrino.com/node/202</code></li>
 <li id="footnote-3"<code class="url">http://www.eetimes.com/discussion/beginner-s-corner/4023947/Introduction-to-Priority-Inversion</code></li>
 <li id="footnote-4"<code class="url">http://www.freertos.org/Documentation/FreeRTOS-documentation-and-book.html</code</li>
