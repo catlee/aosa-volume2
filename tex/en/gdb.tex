@@ -4,8 +4,8 @@ GDB, the GNU Debugger, was among the first programs to be written for
 the Free Software Foundation, and it has been a staple of free and
 open-source software systems ever since.  Originally designed as a
 plain Unix source-level debugger, it has since been expanded to a wide
-range of uses, including with many embedded systems, and has grown by
-an order of magnitude.
+range of uses, including with many embedded systems, and has grown from
+a few thousand lines of C to over half a million.
 
 This chapter will delve into the overall internal structure of GDB,
 showing how it has gradually developed as new user needs and new
@@ -15,11 +15,8 @@ features have come in over time.
 
 GDB is designed to be a symbolic debugger for programs written in
 compiled imperative languages such as C, C++, Ada, Fortran and so
-forth.  ``Debugger'' is a traditional misnomer, as GDB doesn't
-actually remove bugs from programs; instead, it helps the developer
-study the program's behavior closely, in enough detail to find the
-bugs and maybe get some ideas about how to fix them.  The typical
-usage looks something like this:
+forth.  Using its original command-line interface, a typical usage
+looks something like this:
 
 \begin{verbatim}
 % gdb myprog
@@ -47,12 +44,13 @@ the compiler, and programs that exploit every hardware option for
 performance, so it needs to have detailed knowledge down to the lowest
 levels of a system.
 
-GDB must also work with programs compiled by different compilers,
-with programs compiled years earlier by compilers that no longer exist,
-with programs whose symbolic info is missing, out of date, or simply
-incorrect.  So another design consideration is that GDB should
-continue to work and be useful even if data is missing, or corrupted,
-or simply incomprehensible.
+GDB also needs to be able to debug programs compiled by different
+compilers (not just the GNU C compiler), to debug programs compiled
+years earlier by versions of compilers, and to debug programs whose
+symbolic info is missing, out of date, or simply incorrect.  So
+another design consideration is that GDB should continue to work and
+be useful even if data about the program is missing, or corrupted, or
+simply incomprehensible.
 
 The following sections assume a passing familiarity with using GDB
 from the command line; if you're new to GDB, give it a try, and peruse
@@ -62,11 +60,11 @@ the manual.
 
 \begin{aosasect1}{Origins of GDB}
 
-GDB is an old program.  It came into existence around 1985, written
-by Richard Stallman along with GCC, GNU Emacs, and other early
-components of GNU.  (In those days, there were no public source
-control repositories, and much of the detailed development history
-has simply been lost.)
+GDB is an old program.  It came into existence around 1985, written by
+Richard Stallman along with GCC, GNU Emacs, and other early components
+of GNU.  (In those days, there were no public source control
+repositories, and much of the detailed development history is now
+lost.)
 
 The earliest readily-available releases are from 1988, and comparison
 with present-day sources shows that only a handful of lines bear much
@@ -87,9 +85,9 @@ At the largest scale, GDB can be said to have two sides to it:
 1) The ``symbol side'' is concerned with symbolic information about
 the program.  Symbolic information includes function and variable
 names and types, line numbers, machine register usage, and so forth.
-The symbol side reads symbolic information from the file, parses
-expressions, finds the memory address of a given line number, and so
-forth.
+The symbol side extracts symbolic information from the program's
+executable file, parses expressions, finds the memory address of a
+given line number, and so forth.
 
 2) The ``target side'' is concerned with the manipulation of the
 target system.  It has facilities to start and stop the program, to
@@ -98,26 +96,28 @@ on.  The specifics of how this is done can vary drastically between
 systems; most Unix-type systems provide a special system call named
 \code{ptrace} that gives one process the ability to read and write the
 state of a different process, and so on Unix, GDB's target side is
-mostly about preparing ptrace calls and interpreting the results.
+mostly about making \code{ptrace} calls and interpreting the results.
+But for cross-debugging an embedded system, the target side constructs
+message packets to send over a wire, and waits for response packets in
+return.
 
 The two sides are somewhat independent of each other; you can look
 around your program's machine code, display variable types, etc,
-without having anything running.  Conversely, it is possible to do
-pure machine-language debugging even if no symbols are avaiable.
+without actually running the program.  Conversely, it is possible to
+do pure machine-language debugging even if no symbols are available.
 
 In the middle, tying the two sides together, is the command
-interpreter (actually several of them) and the main execution control
-loop.
+interpreter and the main execution control loop.
 
 To take a simple case of how it all ties together, consider the print
 command from above.  The command interpreter finds the printing code,
 which parses the expression into a simple tree structure and then
 evaluates it by walking the tree.  At some point the evaluator will
-consult the symbol table to find out that \code{positive\_variable} is a
-global variable that is stored at, say, memory address 0x658932.  It
-then calls a target side function to read the four bytes of memory at
-that address, and hands the bytes to a printing function that displays
-them as a decimal number.
+consult the symbol table to find out that \code{positive\_variable} is
+an integer global variable that is stored at, say, memory address
+\code{0x658932}.  It then calls a target-side function to read the
+four bytes of memory at that address, and hands the bytes to a
+printing function that displays them as a decimal number.
 
 Single-stepping is not so simple; the command \code{step} conceals a
 complicated dance going on behind the scenes.  When the user asks to
@@ -155,24 +155,31 @@ makefile fragments to adapt to a specific architecture and operating
 system.  Although the stated goal of the GNU project was a
 self-contained ``GNU operating system'', bootstrapping would have to
 be done on a variety of existing systems; the Linux kernel was still
-years in the future.  The \code{configure} shell script was the first
-step of the process, adding links and constructing files, most
-importantly the makefile used for the actual build.
+years in the future.  The \code{configure} shell script is the first
+key step of the process.  It can do a variety of things, such as
+making a symbolic link from a system-specific file to a generic header
+name, or constructing files from pieces, more importantly the makefile
+used to build the program.
 
-Over time, the portability bits came to be separated into three
-classes, each with its own makefile fragment and header file.
+Programs like GCC and GDB have additional portability needs over
+something like \code{cat} or \code{diff}, and over time, their
+portability bits came to be separated into three classes, each with
+its own makefile fragment and header file.
 
-* ``Host'' definitions are for the machine that GDB is running on, and
-might include things like the sizes of the host's integer types.
-Nearly all of these are easily discovered just by automated testing of
-the host, and the formerly-handwritten host header files have been
-superseded by an \code{autoconf}-generated configure script.
+* ``Host'' definitions are for the machine that GDB itself runs on,
+and might include things like the sizes of the host's integer types.
+Originally done as handwritten header files, it eventually occurred to
+people that they could be calculated by having \code{configure} run
+little test programs using the same compiler that was going to be used
+to build the tool.  This is what \code{autoconf} is all about, and
+today nearly all GNU tools and many (if not most) Unix programs use
+autoconf-generated configure scripts.
 
 * ``Target'' definitions are specific to the machine that the program
-being debugged is running on.  If same as the host, then we are doing
-``native'' debugging, otherwise it is ``cross'' debugging, using some
-kind of wire connecting the two systems.  Target definitions fall in
-turn into two main classes:
+being debugged is running on.  If the target is the same as the host,
+then we are doing ``native'' debugging, otherwise it is ``cross''
+debugging, using some kind of wire connecting the two systems.  Target
+definitions fall in turn into two main classes:
 
 ** ``Architecture'' definitions - the machine language byte(s) for a
 trap instruction, how to disassemble machine code, how to walk
@@ -180,11 +187,11 @@ through the call stack.  These are currently handled by ``gdbarch''
 objects, of which more later.
 
 ** ``Native'' definitions - these define the specifics of arguments to
-\code{ptrace()} (which vary considerably between flavors of Unix), how to
-find shared libraries that have been loaded, and so forth, which only
-apply to the native debugging case.  Native definitions are the last
-holdout of old-style C macros, although most are now figured out using
-autoconf.
+\code{ptrace} (which vary considerably between flavors of Unix), how
+to find shared libraries that have been loaded, and so forth, which
+only apply to the native debugging case.  Native definitions are a
+last holdout of 1980s-style macro definitions, although most are now
+figured out using \code{autoconf}.
 
 \end{aosasect1}
 
@@ -192,25 +199,26 @@ autoconf.
 
 Before drilling down into the parts of GDB, let's take a look at the
 major data structures that GDB works with.  As GDB is a C program,
-these are implemented as \\code{struct}s rather than as C++-style objects, but
-in most cases they are treated as objects, and here we follow GDBers'
-frequent practice in calling them objects.
+these are implemented as \\code{struct}s rather than as C++-style
+objects, but in most cases they are treated as objects, and here we
+follow GDBers' frequent practice in calling them objects.
 
 \end{aosasect1}
 
 \begin{aosasect2}{Breakpoints}
 
 A breakpoint is the main kind of object that is directly accessible to
-the user.  The user creates a breakpoint with the \code{break} command,
-whose argument specifies a {\em location}, which can be a function
-name, a source line number, or a machine address.  GDB assigns a small
-positive integer to the breakpoint object, which the user uses
-subsequently to operate on the breakpoint.  (Negative integers
-identify breakpoints created by GDB itself for internal use.)  Within
-GDB, the breakpoint is a C struct with a number of fields.  The
-location string must be stored in its original form, since the
-machine-level address may change and need recomputation, if the
-program is recompiled and reloaded into the session.
+the user.  The user creates a breakpoint with the \code{break}
+command, whose argument specifies a {\em location}, which can be a
+function name, a source line number, or a machine address.  GDB
+assigns a small positive integer to the breakpoint object, which the
+user uses subsequently to operate on the breakpoint.  (Negative
+integers identify breakpoints created by GDB itself for internal use.)
+Within GDB, the breakpoint is a C struct with a number of fields.  The
+location gets translated to a machine address, but is also saved in
+its original form, since the address may change and need
+recomputation, for instance if the program is recompiled and reloaded
+into a session.
 
 Several kinds of breakpoint-like objects actually share the breakpoint
 struct, including watchpoints, catchpoints, and tracepoints.  This
@@ -233,8 +241,7 @@ sometimes growing to occupy multiple gigabytes of RAM.  To some
 extent, this is unavoidable; a large application in C++ can have
 millions of symbols in its own right, and it pulls in system header
 files which can have millions more symbols.  Each local variable, each
-named type, each value of an enum - they all have symbols, and the
-user can decide to type in the name of any one of them at any time.
+named type, each value of an enum - all of these are separate symbols.
 
 GDB uses a number of tricks to reduce symbol table space, such as
 partial symbol tables (more about those later), bit fields in structs,
@@ -243,7 +250,9 @@ etc.
 In addition to symbol tables that basically map character strings to
 address and type information, GDB builds line tables that support
 lookup in two directions; from source lines to addresses, and then
-from addresses back to source lines.
+from addresses back to source lines.  (For instance, the
+single-stepping algorithm described earlier crucially depends on the
+address-to-source mapping.)
 
 \end{aosasect2}
 
@@ -253,8 +262,8 @@ The procedural languages for which GDB was designed share a common
 runtime architecture, in that function calls cause the program counter
 to be pushed on a stack, along with some combination of function
 arguments and local arguments.  The assemblage is called a {\em stack
-frame}, or ``frame'' for short, and at any moment in a program's
-execution, the stack will consist of a sequence of frames chained
+  frame}, or ``frame'' for short, and at any moment in a program's
+execution, the stack consists of a sequence of frames chained
 together.  The details of a stack frame vary radically from one chip
 architecture to the next, and is also dependent on the operating
 system, compiler, and optimization options.
@@ -263,17 +272,18 @@ A port of GDB to a new chip may need a considerable volume of code to
 analyze the stack, as programs (especially buggy ones, which are the
 ones debugger users are mostly interested in!) can stop anywhere, with
 frames possibly incomplete, or partly overwritten by the program.
-Worse, the construction of stack frames is overhead that slows down an
+Worse, constructing a stack frame for each function call slows down the
 application, and a good optimizing compiler will take every
 opportunity to simplify stack frames, or even eliminate then
 altogether, such as for tail calls.
 
 The result of GDB's chip-specific stack analysis is recorded in a
-series of frame objects.  Originally these were not represented as
-first-class objects, and the literal value of the frame pointer
-register was used to refer to a frame.  This approach breaks down with
-compiler optimizations, inlining, and so forth, and eventually GDB
-switched to a linked list of frame objects.
+series of frame objects.  Originally GDB kept track of frames by using
+the literal value of a fixed frame pointer register.  This approach
+breaks down for inlined function calls and other kinds of compiler
+optimizations, and around 2003(?), GDBers introduced explicit frame
+objects that recorded what had been figured out about each frame, and
+were linked together, mirroring the program's stack frames.
 
 \end{aosasect2}
 
@@ -305,36 +315,43 @@ the value is to be constructed lazily.
 
 \begin{aosasect1}{The Symbol Side}
 
-The symbol side of GDB is mainly responsible for reading the compiled
-executable, extracting any symbolic information it finds, and building
-it into a symbol table.
+The symbol side of GDB is mainly responsible for reading the
+executable file, extracting any symbolic information it finds, and
+building it into a symbol table.
 
-The process starts with the BFD library, which is the common binary
-file reading machinery shared with the GNU assembler, linker, and
-other minor tools (the ``binutils'').  BFD offers a single API to read
-the original Unix \code{a.out} format for executable programs, COFF (used on
-System V Unix and MS Windows), and ELF (modern Unix, GNU/Linux, and
-most embedded systems), among others.
+The reading process starts with the BFD library.  BFD is a sort of
+universal library for handling binary and object files; running on any
+host, it can read and write the original Unix \code{a.out} format,
+COFF (used on System V Unix and MS Windows), and ELF (modern Unix,
+GNU/Linux, and most embedded systems), and some other file formats.
+Internally, the library has a complicated structure of C macros that
+expand into code incorporating the arcane details of object file
+formats for dozens of different systems.  Introduced in 1990, BFD is
+also used by the GNU assembler and linker, and its ability to produce
+object files for any target is key to cross-development using GNU
+tools.  (Porting BFD is also a key first step in porting GNU to a
+a new target.)
 
-BFD pulls blocks of data from the executable file into GDB's memory,
-then for each format, GDB has two levels of reader.  The first level
-is for basic symbols, which are just the names that the linker uses to
-do its work.  These are strings with addresses and not much else; we
-assume that addresses in text sections are functions, and addresses in
-data sections are, uh, data.
+GDB only needs BFD for reading, and calls it to pull blocks of data
+from the executable file into GDB's memory.  GDB then has two levels
+of reader functions of its own.  The first level is for basic symbols
+aka ''minimal symbols'', which are just the names that the linker needs
+to do its work.  These are strings with addresses and not much else;
+we assume that addresses in text sections are functions, and addresses
+in data sections are data, and so forth.
 
 The second level is detailed symbolic information, which typically has
 its own format different from the basic executable file format; for
-instance, DWARF information is encapsulated in specially-named
-sections of an ELF file.  By contrast, the old \code{stabs} format of
-Berkeley Unix used specially-flagged symbols stored in the general
-symbol table.
+instance, information in the DWARF debug format is contained in
+specially-named sections of an ELF file.  By contrast, the old
+\code{stabs} debug format of Berkeley Unix used specially-flagged
+symbols stored in the general symbol table.
 
 The code for reading symbolic information is somewhat tedious, as the
 different symbolic formats encode every kind of type information that
 could be in a source program, but each goes about it in its own
-idiosyncratic ways.  A GDB reader just walks through the format,
-constructing GDB symbols that best correspond to what the symbolic
+idiosyncratic way.  A GDB reader just walks through the format,
+constructing GDB symbols that we think correspond to what the symbolic
 format intends.
 
 \end{aosasect1}
@@ -346,17 +363,24 @@ construction of the symbol table can take quite a while, maybe even
 several minutes.  Measurements consistently show that the time is
 {\em not} in file reading as one might expect, but in the in-memory
 construction of GDB symbols; there are literally millions of small
-interconnected objects, and the time adds up.
+interconnected objects involved, and the time adds up.
 
 Most of the symbolic information will never be looked at in a session,
 since it is local to functions that the user may never examine.  So
-when GDB first pulls in a program, it does a cursory scan through the
-symbolic information, looking for just the globally-visible symbols
-and recording only them in the symbol table.  Complete symbolic info
-for a function is filled in only if the user stops inside it.
+when GDB first pulls in a program's symbols, it does a cursory scan
+through the symbolic information, looking for just the
+globally-visible symbols and recording only them in the symbol table.
+Complete symbolic info for a function or method is filled in only if
+the user stops inside it.
 
 Partial symbol tables allow GDB to start up in only a few seconds, even
 for large programs.
+
+(Shared library symbols are also dynamically loaded, but the process
+is rather different.  Typically GDB uses a system-specific technique
+to be notified when the library is loaded, then it builds a symbol
+table with functions at the addresses that were decided on by the
+dynamic linker.)
 
 \end{aosasect2}
 
@@ -415,7 +439,7 @@ In addition, it is often useful to blend methods from several target
 vectors.  For instance, consider the printing of an initialized global
 variable on Unix; before the program starts running, printing should
 still work, but the bytes should come from the executable's
-@code{.data} section, and in fact there is a target vector for
+\code{.data} section, and in fact there is a target vector for
 executable programs, for which the memory read method simply reads
 from the file.  But while the program is running, the bytes should
 instead come from the process's address space.  So GDB has a ``target
@@ -429,10 +453,9 @@ running, and is then popped when it exits.
 
 In reality, the target stack turns out not to be quite as stack-like
 as one might think.  Target vectors are not really orthogonal to each
-other; it never makes sense to have an ``exec,process,exec,corefile''
-combination for example, and even if you decided it should mean
-something, it would be very confusing to the hapless user.  So GDB has
-a notion of {\em stratum} in which ``process-like'' target vectors are
+other; it almost never makes sense to have the executable's methods
+override the live process's methods.  So GDB has ended up with a
+notion of {\em stratum} in which ``process-like'' target vectors are
 all at one stratum, while ``file-like'' target vectors get assigned to
 a lower stratum, and target vectors can get inserted as well as pushed
 and popped.
@@ -477,38 +500,50 @@ this point may contain as many as 130 methods and variables defining
 a target architecture.  On the average, most aren't needed, and a
 simple target might only need a dozen or so methods.
 
+% add a before/after example from the sources
+
 \end{aosasect2}
 
 \begin{aosasect2}{Execution control}
 
-The heart of GDB is its execution control loop.  We touched on it earlier
-when describing single-stepping over a line - the process entailed looping
-over multiple instructions until finding one associated with a different
-source line.
+The heart of GDB is its execution control loop.  We touched on it
+earlier when describing single-stepping over a line - the algorithm
+entailed looping over multiple instructions until finding one
+associated with a different source line.
 
 The loop is called \code{wait\_for\_inferior}, or ``wfi'' for short.
 
 Conceptually it is inside the main command loop, and is only entered
 for commands that cause the program to resume execution.  When the
-user types \code{continue} or \code{step} and then waits while nothing seems
-to be happening, GDB may in fact be quite busy.  In addition to the
-single-stepping loop mentioned above, the program may be hitting trap
-instructions and reporting the exception to GDB.  If the exception is
-due to the trap being a breakpoint inserted by GDB, it then tests the
-breakpoint's condition, and if false, it removes the trap,
-single-steps the original instruction, re-inserts the trap, and then
-lets the program resume.  Similarly, if a signal is raised, GDB may
-choose to ignore it, or handle it one of several ways specified in
+user types \code{continue} or \code{step} and then waits while nothing
+seems to be happening, GDB may in fact be quite busy.  In addition to
+the single-stepping loop mentioned above, the program may be hitting
+trap instructions and reporting the exception to GDB.  If the
+exception is due to the trap being a breakpoint inserted by GDB, it
+then tests the breakpoint's condition, and if false, it removes the
+trap, single-steps the original instruction, re-inserts the trap, and
+then lets the program resume.  Similarly, if a signal is raised, GDB
+may choose to ignore it, or handle it one of several ways specified in
 advance.
 
 All of this activity is managed by \code{wait\_for\_inferior}.
 Originally this was a simple loop, waiting for the target to stop and
-then deciding what to do about it, but as ports to unusual systems
+then deciding what to do about it, but as ports to various systems
 needed special handling, it grew to a thousand lines, with goto
-statements criss-crossing it for poorly-understood reasons.  It was
-also a problem for any kind of asynchronous handling or debugging of
-threaded programs, in which the user wants to interact with GDB while
-some or all of the program is still running.
+statements criss-crossing it for poorly-understood reasons.  A typical
+difficult situation might arise, for instance, when a system's
+\code{ptrace} would not deliver a signal as soon as it was raised, but
+only after running several more instructions.
+% dig up a real-life example
+
+Worse, with the proliferation of Unix variants, there was no one
+person who understood all their fine points, and maybe no access to
+all of them for testing, so there was a strong incentive to modify the
+code in a way that preserved behavior for existing ports.
+
+It was also a problem for any kind of asynchronous handling or
+debugging of threaded programs, in which the user wants to interact
+with GDB while some or all of the program is still running.
 
 The conversion to an event-oriented model took several years.  I broke
 up \code{wait\_for\_inferior} in 1999, introducing an execution control state
@@ -531,7 +566,7 @@ sometimes the ``stub protocol'', referring to the target's
 implementation of the protocol.
 
 The basic protocol is simple, reflecting the desire to have it work on
-small embedded systems of the 1980s, with memory measured in
+small embedded systems of the 1980s, whose memories were measured in
 kilobytes.  For instance, the protocol packet \code{\$g} requests all
 registers, and expects a reply consisting of all the bytes of all the
 registers, all run together - the assumption being that their number,
@@ -608,7 +643,8 @@ has gone slowly.
 
 GDB is fundamentally a command-line debugger.  Over time people have
 tried various schemes to make it into a graphical windowed debugger,
-and in the process it has picked up additional user interfaces.
+but despite all the time and effort, none of these are universally
+accepted.
 
 \begin{aosasect2}{Command-line Interface}
 
@@ -631,29 +667,29 @@ control, and argument parsing is completely up to the function.  Some
 commands, such as \code{run}, handle their arguments similarly to
 traditional C \code{argc}/\code{argv} standards, while others, such as
 \code{print}, assume that the remainder of the line is a single
-programming language expression.
+programming language expression, and give the entire line over to a
+language-specific parser.
 
 \end{aosasect2}
 
 \begin{aosasect2}{Machine Interface}
 
-The command line makes a good universal fallback, but it's not suitable
-for modern window-based programming environments, and people have developed
-a number of schemes to deal with this.
+One way to provide a debugging GUI is to use GDB as a sort of
+``backend'' to a graphical interface program, translating mouse clicks
+into commands, and formatting print results into windows.  This has
+been made to work several times, such as for DDD, but it's not the
+ideal approach, because sometimes results are formatted for human
+readability, omitting details and relying on human ability to supply
+context.
 
-As GDB's syntax and output format are well-known and generally stable,
-many people have used it as a sort of ``backend'', running GDB under the
-control of a GUI, translating mouse clicks into commands, and
-formatting print results into windows.  It's not the ideal approach,
-because sometimes results are formatted for human readability, omitting
-details and relying on human ability to supply context.
-
-To solve this problem, GDB has an alternate UI, known as the Machine
-Interface or MI for short.  It is still fundamentally a command-line
-interface, but both commands and results have additional syntax that
-makes everything explicit = each argument is bounded by quotes, while
-complex output has delimiters for subgroups, and parameters names for
-component pieces.
+To solve this problem, GDB has an alternate ``user'' interface, known
+as the Machine Interface or MI for short.  It is still fundamentally a
+command-line interface, but both commands and results have additional
+syntax that makes everything explicit--each argument is bounded by
+quotes, while complex output has delimiters for subgroups, and
+parameter names for component pieces.  In addition, MI commands can be
+prefixed with sequence identifiers that are echoed back in results,
+ensuring reported results are matched up with the right commands.
 
 % need MI example
 
@@ -709,13 +745,17 @@ The testsuite also has the ability to run cross-debugging to both live
 hardware and simulators, and to have tests that are specific to a
 single architecture or configuration.
 
-At the end of 2011, the testsuite includes some 18,000 test cases.  It
-is rare for even well-supported platforms to get all the way to zero
-failures; 10-20 failures is usually reasonable.
+At the end of 2011, the testsuite includes some 18,000 test cases,
+which includes basic functionality, language-specific tests,
+architecture-specific tests, and MI tests.  Most of these are generic
+and are run for any configuration.  GDB contributors are expected to
+run the testsuite on patched sources and observe no regressions, and
+for new features, new tests are expected to accompany each feature.
 
-Contributors are expected to run the testsuite on patched sources
-and observe no regressions, and for new features, new tests are
-expected to accompany each feature.
+However, as no one has access to all platforms that might be affected
+by a change, it is rare to get all the way to zero failures; 10-20
+failures is usually reasonable for a trunk snapshot configured for
+native debugging, and some embedded targets will have more failures.
 
 \end{aosasect2}
 
