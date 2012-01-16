@@ -111,40 +111,57 @@ machine-language debugging even if no symbols are available.
 In the middle, tying the two sides together, is the command
 interpreter and the main execution control loop.
 
+\begin{aosasect1}{Examples of Operation}
+
 To take a simple case of how it all ties together, consider the print
 command from above.  The command interpreter finds the print command
 function, which parses the expression into a simple tree structure and
 then evaluates it by walking the tree.  At some point the evaluator
 will consult the symbol table to find out that
 \code{positive\_variable} is an integer global variable that is stored
-at, say, memory address \code{0x658932}.  It then calls a target-side
+at, say, memory address \code{0x601028}.  It then calls a target-side
 function to read the four bytes of memory at that address, and hands
 the bytes to a formatting function that displays them as a decimal
 number.
 
-% add a note explaining code<->address mapping
+To display source code and its compiled version, GDB does a
+combination of reads from the source file and the target system, then
+uses compiler-generated line number information to connect the two.
+So in the example here, line 232 has the address \code{0x4004be}, line
+233 is at \code{0x4004ce}, and so forth.
 
-Single-stepping is not so simple; the command \code{step} conceals a
-complicated dance going on behind the scenes.  When the user asks to
-step to the next line in the program, the target side is asked to
-execute only a single instruction of the program and then stop it
-again (this is one of the things that \code{ptrace} can do).  Upon being
-informed that the program has stopped, GDB asks for the program
-counter register (another target side operation) and then compares it
-with the range of addresses that the symbol side says is associated
-with the current line.  It the PC is outside that range, then GDB
-leaves the program stopped, figures out the new source line, and
-reports that to the user.  If the PC is still in the range of the
-current line, then GDB steps by another instruction and checks again,
-repeating until the PC gets to a different line.  This basic algorithm
-has the advantage that it always does the right thing, whether the
-line has jumps, subroutine calls, etc, and does not require GDB to
-interpret all the details of the machine's instruction set.  A
-disadvantage is that there are many interactions with the target for
-each single-step, which for some embedded targets results in
-noticeably slow stepping.
+% this should be a sidebar if possible
+\begin{verbatim}
+[...]
+232  result = positive_variable * arg1 + arg2;
+0x4004be <+10>:  mov  0x200b64(%rip),%eax  # 0x601028 <positive_variable>
+0x4004c4 <+16>:  imul -0x14(%rbp),%eax
+0x4004c8 <+20>:  add  -0x18(%rbp),%eax
+0x4004cb <+23>:  mov  %eax,-0x4(%rbp)
 
-% add a display of asm code with source code
+233  return result;
+0x4004ce <+26>:  mov  -0x4(%rbp),%eax
+[...]
+\end{verbatim}
+
+The single-stepping command \code{step} conceals a complicated dance
+going on behind the scenes.  When the user asks to step to the next
+line in the program, the target side is asked to execute only a single
+instruction of the program and then stop it again (this is one of the
+things that \code{ptrace} can do).  Upon being informed that the
+program has stopped, GDB asks for the program counter register
+(another target side operation) and then compares it with the range of
+addresses that the symbol side says is associated with the current
+line.  It the PC is outside that range, then GDB leaves the program
+stopped, figures out the new source line, and reports that to the
+user.  If the PC is still in the range of the current line, then GDB
+steps by another instruction and checks again, repeating until the PC
+gets to a different line.  This basic algorithm has the advantage that
+it always does the right thing, whether the line has jumps, subroutine
+calls, etc, and does not require GDB to interpret all the details of
+the machine's instruction set.  A disadvantage is that there are many
+interactions with the target for each single-step, which for some
+embedded targets results in noticeably slow stepping.
 
 \end{aosasect1}
 
@@ -156,20 +173,19 @@ portable across a variety of systems.  However, its portability
 strategy has changed considerably over the years.
 
 Originally, GDB started out similar to the other GNU programs of the
-time; coded in a minimal common subset of C, for the sake of
-bootstrapping, and using a combination of preprocessor macros and
-makefile fragments to adapt to a specific architecture and operating
-system.  Although the stated goal of the GNU project was a
-self-contained ``GNU operating system'', bootstrapping would have to
-be done on a variety of existing systems; the Linux kernel was still
-years in the future.  The \code{configure} shell script is the first
-key step of the process.  It can do a variety of things, such as
-making a symbolic link from a system-specific file to a generic header
-name, or constructing files from pieces, more importantly the makefile
-used to build the program.
+time; coded in a minimal common subset of C, and using a combination
+of preprocessor macros and makefile fragments to adapt to a specific
+architecture and operating system.  Although the stated goal of the
+GNU project was a self-contained ``GNU operating system'',
+bootstrapping would have to be done on a variety of existing systems;
+the Linux kernel was still years in the future.  The \code{configure}
+shell script is the first key step of the process.  It can do a
+variety of things, such as making a symbolic link from a
+system-specific file to a generic header name, or constructing files
+from pieces, more importantly the makefile used to build the program.
 
 Programs like GCC and GDB have additional portability needs over
-something like \code{cat} or \code{diff}, and over time, their
+something like \code{cat} or \code{diff}, and over time, GDB's
 portability bits came to be separated into three classes, each with
 its own makefile fragment and header file.
 
@@ -177,14 +193,14 @@ its own makefile fragment and header file.
 and might include things like the sizes of the host's integer types.
 Originally done as handwritten header files, it eventually occurred to
 people that they could be calculated by having \code{configure} run
-little test programs using the same compiler that was going to be used
+little test programs, using the same compiler that was going to be used
 to build the tool.  This is what \code{autoconf} is all about, and
 today nearly all GNU tools and many (if not most) Unix programs use
-autoconf-generated configure scripts.
+\code{autoconf}-generated configure scripts.
 
-* ``Target'' definitions are specific to the machine that the program
-being debugged is running on.  If the target is the same as the host,
-then we are doing ``native'' debugging, otherwise it is ``cross''
+* ``Target'' definitions are specific to the machine running the
+program being debugged.  If the target is the same as the host, then
+we are doing ``native'' debugging, otherwise it is ``cross''
 debugging, using some kind of wire connecting the two systems.  Target
 definitions fall in turn into two main classes:
 
@@ -335,10 +351,10 @@ expand into code incorporating the arcane details of object file
 formats for dozens of different systems.  Introduced in 1990, BFD is
 also used by the GNU assembler and linker, and its ability to produce
 object files for any target is key to cross-development using GNU
-tools.  (Porting BFD is also a key first step in porting GNU to a
+tools.  (Porting BFD is also a key first step in porting the tools to a
 a new target.)
 
-GDB only needs BFD for reading, and calls it to pull blocks of data
+GDB only uses BFD to read files, using it to pull blocks of data
 from the executable file into GDB's memory.  GDB then has two levels
 of reader functions of its own.  The first level is for basic symbols
 aka ''minimal symbols'', which are just the names that the linker needs
@@ -396,12 +412,12 @@ Source language support mainly consists of expression parsing and value
 printing.
 
 The details of expression parsing are left up to each language, but in
-the general the parser is based on a \code{yacc} grammar fed by a handwritten
-lexical analyzer.  In keeping with GDB's goal of providing more
-flexibility to the interactive user, the parser is not expected to be
-especially stringent; for instance, if it can guess at a reasonable
-type for an expression, it will simply assume that type, rather than
-require the user to add a cast or type conversion.
+the general the parser is based on a \code{yacc} grammar fed by a
+handwritten lexical analyzer.  In keeping with GDB's goal of providing
+more flexibility to the interactive user, the parser is not expected
+to be especially stringent; for instance, if it can guess at a
+reasonable type for an expression, it will simply assume that type,
+rather than require the user to add a cast or type conversion.
 
 Also, since the parser need not handle statements or type
 declarations, it is much simpler than the full language parser.
@@ -466,12 +482,12 @@ when the process starts running, and is then popped when it exits.
 In reality, the target stack turns out not to be quite as stack-like
 as one might think.  Target vectors are not really orthogonal to each
 other; if you have both an executable and a live process in the
-session, it almost never makes sense to have the executable's methods
-override the live process's methods.  So GDB has ended up with a
-notion of {\em stratum} in which ``process-like'' target vectors are
-all at one stratum, while ``file-like'' target vectors get assigned to
-a lower stratum, and target vectors can get inserted as well as pushed
-and popped.
+session, while it makes sense to have the live process's methods
+override the executable's methods, it almost never makes sense to do
+the reverse.  So GDB has ended up with a notion of {\em stratum} in
+which ``process-like'' target vectors are all at one stratum, while
+``file-like'' target vectors get assigned to a lower stratum, and
+target vectors can get inserted as well as pushed and popped.
 
 (Although GDB maintainers don't like the target stack much, no one has
 proposed -- and prototyped -- any better alternative.)
@@ -490,28 +506,20 @@ on.  GDB's code for all this typically ranges from 1,000 to over
 
 Originally this was handled using target-specific preprocessor macros,
 but as the debugger became more sophisticated, these got larger and
-larger, and were eventually made into regular C functions called from
-the macros.  Things didn't stop there though.
-
-The general definitions for an architecture gradually became more and
-more complicated, as chip designers introduced dozens of extensions
-and variants on each basic architecture, and as compiler designers
-introduced new kinds of architecture-specific optimizations.  Worse,
-the architecture code often needed heuristic analysis to guess at
-likely interpretation of corrupted state.
-
-The original macro definition scheme was simply unequal to the task,
-and worse, multiple-architecture designs were on the horizon, for
-which macros would not work at all.  I proposed changing to an
-object-based design in 1995, and starting in 1998 Cygnus Solutions
-funded Andrew Cagney to start the changeover.  It took several years,
-and contributions from dozens of hackers to finish the job, affecting
-perhaps 80,000 lines of code in all.
+larger, and over time long macro definitions were made into regular C
+functions called from the macros.  While this helped, it did not help
+much with architectural variants (Arm vs Thumb, 32-bit vs 64-bit
+versions of MIPS or x86, etc), and worse, multiple-architecture
+designs were on the horizon, for which macros would not work at all.
+I proposed changing to an object-based design in 1995, and starting in
+1998 Cygnus Solutions funded Andrew Cagney to start the changeover.
+It took several years, and contributions from dozens of hackers to
+finish the job, affecting perhaps 80,000 lines of code in all.
 
 The introduced constructs are called \code{gdbarch} objects, and at
-this point may contain as many as 130 methods and variables defining
-a target architecture.  On the average, most aren't needed, and a
-simple target might only need a dozen or so methods.
+this point may contain as many as 130 methods and variables defining a
+target architecture, although a simple target might only need a dozen
+or so of these.
 
 % add a before/after example from the sources
 
@@ -543,27 +551,25 @@ All of this activity is managed by \code{wait\_for\_inferior}.
 Originally this was a simple loop, waiting for the target to stop and
 then deciding what to do about it, but as ports to various systems
 needed special handling, it grew to a thousand lines, with goto
-statements criss-crossing it for poorly-understood reasons.  A typical
-difficult situation might arise, for instance, when a system's
-\code{ptrace} would not deliver a signal as soon as it was raised, but
-only after running several more instructions.
-% dig up a real-life example
+statements criss-crossing it for poorly-understood reasons.  For
+instance, with the proliferation of Unix variants, there was no one
+person who understood all their fine points, nor did we have access to
+all of them for regression testing, so there was a strong incentive to
+modify the code in a way that exactly preserved behavior for existing
+ports.
 
-Worse, with the proliferation of Unix variants, there was no one
-person who understood all their fine points, and maybe no access to
-all of them for testing, so there was a strong incentive to modify the
-code in a way that preserved behavior for existing ports.
-
-It was also a problem for any kind of asynchronous handling or
-debugging of threaded programs, in which the user wants to interact
-with GDB while some or all of the program is still running.
+The single big loop was also a problem for any kind of asynchronous
+handling or debugging of threaded programs, in which the user wants to
+start and stop a single thread, while allowing the rest of the program
+to continue running.
 
 The conversion to an event-oriented model took several years.  I broke
-up \code{wait\_for\_inferior} in 1999, introducing an execution control state
-structure to replace the pile of local and global variables, and
-converting the tangle of jumps into smaller independent functions.  At
-the same time Elena Zannoni and others introduced event queues that
-included both input from the user and notifications from the inferior.
+up \code{wait\_for\_inferior} in 1999, introducing an execution
+control state structure to replace the pile of local and global
+variables, and converting the tangle of jumps into smaller independent
+functions.  At the same time Elena Zannoni and others introduced event
+queues that included both input from the user and notifications from
+the inferior.
 
 \end{aosasect2}
 
@@ -805,13 +811,15 @@ It helps guide full-time developers, it can be shown to potential funders,
 volunteers think about what they can do to advance it.
 
 But don't try to force dates or timeframes!  For that matter, don't
-cling to the plan itself if it's become dated.  For a long time, GDB
-had a plan to restructure as a library \code{libgdb} with a
-well-defined API, that could be linked into other programs, and the
-build process was even changed to build a \code{libgdb.a} as an
-intermediate step.  Although the idea came up periodically since then,
-it never went further, and as of January 2012 we have abandoned it
-entirely and are expunging the pointless bits of code.
+cling to the plan itself if it has become outdated.  For a long time,
+GDB had a plan to restructure as a library \code{libgdb} with a
+well-defined API, that could be linked into other programs (in
+particular ones with GUIs), and the build process was even changed to
+build a \code{libgdb.a} as an intermediate step.  Although the idea
+came up periodically since then, the primacy of Eclipse and MI meant
+that the library's main rationale has been sidestepped, and as of
+January 2012 we have abandoned the library concept and are expunging
+the now-pointless bits of code.
 
 \end{aosasect2}
 
