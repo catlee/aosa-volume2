@@ -153,26 +153,9 @@ The next two lines of code show how to check that the user has permission to do 
 
 In Moodle, users can have different permissions in different places. For example, a user might be a Teacher in one course, and a Student in another, and so have different permissions in each place. These places are called contexts. Contexts in Moodle form a hierarchy rather like a folder hierarchy in a file-system. At the top level is the system context (and, since our script is not very well integrated into Moodle, we use that context).
 
-Within the system context are a number of contexts for the different categories that have been created to organise courses. These can be nested, with one category containing other categories. Category contexts can also contain Course contexts. Finally, each activity in a course will have its own Module context. (DIAGRAM)
+Within the system context are a number of contexts for the different categories that have been created to organise courses. These can be nested, with one category containing other categories. Category contexts can also contain Course contexts. Finally, each activity in a course will have its own Module context. 
 
-System
-   Humanities faculty
-      History department
-         History 101
-            …
-         Napoleon 202
-            Social forum
-            Resource: Napoleon biography
-            Forum: was Napoleon right?
-            Quiz: Napoleon facts
-            … 
-      Art department
-         Art 101
-         …
-      Introduction to the humanities
-   Science faculty
-      …
-   …
+[Contexts.dia]
 
 // 4 Checking the user has permission to use this script
 --------------------------------------------------------
@@ -369,7 +352,48 @@ If the theme wished to completely change this output, it would define a subclass
 Database abstraction
 ====================
 
-TODO
+The hello world script was sufficiently simple that it did not need to access the database, although several of the Moodle library calls used did do database queries. Now I will quickly talk about the Moodle database layer.
+
+Moodle used to use the ADOdb library of as the basis of its database abstraction layer, but there were issues for us, and the extra layer of library code had a noticeable impact on performance, so in Moodle 2.0 we switched to our own abstraction layer, which is a thin wrapper around the various PHP database libraries.
+
+The moodle_database class
+-------------------------
+
+The heart of the library is the moodle_database class. This defines the interface provided by the $DB global variable, which gives access to the database connection. A typical usage might be
+
+$course = $DB->get_record('course', array('id' => $courseid));
+
+That translates into the SQL
+
+SELECT * FROM mdl_course WHERE id = $courseid;
+
+and returns the data as a plain PHP object with public fields, so you could access $course->id, $course->fullname, etc.
+
+Simple methods like this deal with basic queries, and simple updates and inserts. Sometimes it is necessary to do more complex SQL, for example to run reports. In that case, there are methods to execute arbitrary SQL
+
+$courseswithactivitycounts = $DB->get_records_sql(
+        'SELECT c.id, ' . $DB->sql_concat('shortname', "''", 'fullname') . ' AS coursename,
+                COUNT(1) AS activitycount
+         FROM {course} c
+         JOIN {course_modules} cm ON cm.course = c.id
+         WHERE c.category = :categoryid
+         GROUP BY c.id, c.shortname, c.fullname ORDER BY c.shortname, c.fullname',
+        array('categoryid' => $category));
+
+Some things to note there:
+1. The table names are wrapped in {} so that the library can find them and prepend the table name prefix.
+2. The library uses placeholders to insert values into the SQL. In some cases this can use the facilities of the underlying database driver. In other cases the we have to insert the values ourselves. Our library can support either named placeholders (as above) or anonymous ones, using ? as the placeholder.
+3. In order that the SQL works on all our supported databases you have to use the right subset of standard SQL. For example, you can see that I have used the AS keyword for column aliases, but not for table aliases. Both of those things are necessary.
+4. Even so, there are some things where no subset of standard SQL will work on all our supported databases, for example, every database has a different way to concatenate strings. In these cases, we have compatibility function to generate the correct SQL.
+
+Defining the database structure
+-------------------------------
+
+Another area where database management systems differ a lot is in the SQL syntax required to define tables. To get round this problem, each Moodle plugin (and Moodle core) defines the required database tables in an XML format, and the Moodle install system parses that, and uses the information to create the right tables and indexes in the database. There is a developer tool called XMLDB built into Moodle to help create and edit these install files.
+
+If the database structure needs to change between two releases of Moodle (or of a plugin), then the developer is responsible for writing code (using an additional database object that provides DML methods) to update the database structure, while preserving all the users' data. Thus, Moodle will always self-update from one release to the next, simplifying the maintenance task for administrators.
+
+One contentious point, stemming from the fact that Moodle started out using MySQL 3, is that the Moodle database does not use foreign keys. This allows some buggy behaviour to remain undetected even though modern databases would be capable of detecting the problem. The difficulty is that people have been running Moodle sites without foreign keys for years, so there is almost certainly inconsistent data present, and so adding the keys now would be impossible, without a very difficult clean-up job. Even so, since the XMLDB system was added to Moodle 1.7 (in 2006!), the install.xml files have contained the definitions of the foreign keys that should exist, and we are still hoping, one day, to do all the work necessary to allow us to create them during the install process.
 
 
 What I have not covered
@@ -381,24 +405,21 @@ I hope I have given you a good overview of how Moodle works. Due to lack of spac
 Lessons learned
 ===============
 
-TODO turn these bullets into proper writing.
+One interesting aspect of working on Moodle is that it came out of a research project. Moodle enables (but does not enforce) a social constructivist pedagogy (http://docs.moodle.org/en/Pedagogy). That is, we learn best by actually creating something, and we learn from each other as a community. What made Martin Dougiamas's PhD question interesting is that he was not asking whether this was an effective model for education, but rather he was asking whether that is an effective model for running an open source project. That is, can we view the Moodle project as an attempt to learn how to build and use a VLE, and an attempt to learn that by actually building an using Moodle as a community where teacher, developers, administrators and students all teach and learn from each other. I find this a very good model for how to think about the process of doing software development.
 
-A. Nothing is as simple as it seems.
+Perhaps the most important consequence of this is that you should not be afraid to start by implementing the simplest thing at first. To give an example, at first Moodle had a few hard-coded roles like Teacher, Student, Administrator. That was enough for many years. Eventually, it proved too inflexible, and so the Roles system was introduced. When it came time to design the roles system, there was a lot of experience in the community about how people were using Moodle, and a lot of little feature requests that showed what people needed from a more flexible access control system. This all helped design the Roles system to be as simple as possible, but as complex as necessary. In fact, the first version of the roles system ended up slightly too complex, and it was subsequently simplified a little.
 
-B. Still, start with the simple solution, and only move to something more complex when the need arises. You *can* change the architecture later - and by then you will have a much better idea what is needed. Later, the technology may have moved on, making it easier to implement the complex thing.
+Now, if you take the view that programming is a problem solving exercise, then you might think that Moodle got the design wrong the first time, and later had to waste time correcting it. I suggest that is an unhelpful viewpoint. At the time Moodle started, no-one knew enough to design the roles system we have now. If you take the learning viewpoint, then the various stages Moodle went through were necessary and inevitable.
 
-C. The most profound thing I have learned from Moodle, which I have not yet alluded to, is that writing software is a learning process. Working on educational software is a good way to realise this, particularly Moodle which embraces a Social Constructivist pedagogy. I strongly recommend the article http://docs.moodle.org/en/Pedagogy. Don't think of building your software as a problem to solve. Rather, think of it as something you have to learn. Something you can only learn by doing it, and by iterating with others, particularly your users.
+For this to work, it must be possible to change almost any aspect of a system's architecture. I think Moodle shows that this is possible. It does take a certain amount of effort, but it can be done when necessary, and from the user's point of view it is just a gradual evolution.
 
 
 
-THINGS I NEED TO REVIEW:
 
-1. Consistent Tense, Person, etc. (this is a lot better than it was, but the number of corrections I just made tells me that it needs at least one more pass!)
 
-2. Write the database abstraction section.
+NOTES:
 
-3. Write Lessons learned.
+The diagrams are pretty sucky. They need to be redrawn the same, but better.
+Moodle course.tiff / .png is a screen-grab of http://dev.moodle.org/course/view.php?id=2 - which you should be able to get into, if you what to alter the aspect ratio, or what is shown.
 
-4. Draw the diagram showing example contexts.
-
-Word count: probably a bit more than last time, which was 5014
+Word count: 6179
