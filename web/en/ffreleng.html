@@ -61,8 +61,8 @@
     <!-- Introduction does not need a section div -->
     <p>
     The Mozilla Release Engineering team has made a lot of advances
-    recently in how our release automation works. What we have so far
-		is not perfect, but it's getting much closer to our goal of being
+    recently in how our release automation works. We have reduced the requirements for humans to run commands during signing, check disk space, send emails to stakeholders throughout the process, and many other steps that are small but stack up into quite an undertaking for a release engineer. With so many steps there are always more opportunities for human error so while what we have now
+		is not perfect, it's getting much closer to our goal of being
 		able to push a button and walk away, with minimal human
 		interventions, eliminating many of the headaches and do-overs we
 		experienced with our older part manual, part automated release
@@ -101,7 +101,7 @@
     <p>
     This section describes the mechanics of how we generate release
     builds for the Firefox product. Most of this chapter details the
-		complexity that occurs once the release builds start, but there is also plenty
+		significant steps in a release process that occurs once the builds start, but there is also plenty
 		of complex cross-group communications to deal with before Release
 		Engineering even starts to generate release builds, so lets start
 		there.
@@ -362,7 +362,7 @@ arises.</li>
         code that goes into the official builds, it also records the
         revisions of source and tools used on a per-release basis for
         future comparison of what changed between releases. For
-				Firefox releases, one example tag is FIREFOX_6_0_2_RELEASE.
+				Firefox releases, one example tag set is FIREFOX_10_0_RELEASE FIREFOX_10_0_BUILD1 FENNEC_10_0_RELEASE FENNEC_10_0_BUILD1. These tags allow us to keep a history of Firefox and Fennec (mobile Firefox) releases' version and build numbers in our release repos.
         </p>
         <p>
 				Once all the repositories are tagged, a series of dependent
@@ -375,13 +375,12 @@ arises.</li>
 				builds if we ever needed to (if our VCS failed somehow).
         </p>
         <p>
-        For the main Firefox source repository, the first thing we
-        actually do is to create a release branch (relbranch) based on
-        the signed-off revision given by the Release Coordinator.
-        This release branch is implemented as an in-repository named
-        branch whose parent changeset is the signed-off revision. The
-        release branch is used to make release-specific modifications
-        to the source code, such as bumping the version numbers, or
+        For the Firefox build's source, sometimes we
+        need to do a cut over from an earlier repo. For example with a beta release this means pulling in the signed off revision from Mozilla-Aurora (our more-stable-than-nightly repo) for Firefox 10.0b1. For a release it means pulling in the approved changes from Mozilla-Beta (typically the same code used for 10.0b6) to the Mozilla-Release repo. 
+        This release branch is then created in as a named
+        branch whose parent changeset is the signed-off revision from the 'go' to build provided by the Release Coordinator. This
+        release branch can be used to make release-specific modifications
+        to the source code, such as bumping version numbers, or
         finalizing the set of locales that will be built. If a
         critical security vulnerability is discovered in the future
         that requires an immediate fix (a "chemspill" situation), a
@@ -437,9 +436,9 @@ arises.</li>
         </p>
         <p>
         Today our tagging is done in two parallel jobs: one for
-        desktop Firefox which takes around 20 minutes to complete,
+        desktop Firefox which takes around 20 minutes to complete as it includes tagging 80+ locale repos,
         and another for mobile Firefox which takes around 10 minutes
-        to complete. In the future we would like to streamline our release
+        to complete since we have less locales currently available for our mobile releases. In the future we would like to streamline our release
         automation process so that we tag <em>all</em> the various repositories
         in parallel. The initial builds can be started as soon as the
 				product code  and tools talos requirement repository is tagged
@@ -523,7 +522,7 @@ arises.</li>
       <p>
       In order for users to be sure that the copy of Firefox they have
       downloaded is indeed the one we just built, we apply a few
-      different types of digital signatures to the builds.
+      different types of digital signatures to the builds. 
       </p>
       <p>
       The first type of signing done is for our windows builds. We use
@@ -531,12 +530,13 @@ arises.</li>
       .exe and .dll files. Windows can use these signatures to verify
       that the application comes from a trusted source. We also sign
       the Firefox installer executable with the Authenticode key.
-      </p>
-      <p>
       We then generate a set of MD5 and SHA1 checksums for all the
       builds, and generate detached GPG signatures for the checksum
       files as well as all the builds. These signatures are used by
       mirrors and other community members to validate their downloads.
+      </p>
+      <p>
+      For security purposes, we sign on a dedicated signing machine that is blocked off via firewall and VPN from outside connections and our keyphrases, passwords, and keystores are passed among Release Engineers only in secure channels, often in person even, to minimize the risk of exposure as much as possible in a team where 12 people can run releases.
       </p>
       <div class="figure" id="fig.ffreleng.signing">
         <img src="../images/ffreleng/signing.png" alt="Signing Firefox installers" />
@@ -780,7 +780,6 @@ arises.</li>
     </div>
     <div class="sect">
       <h2>Pushing to Public Mirrors and AUS</h2>
-      <!-- TODO  write about Bouncer? -->
       <p>
       Pushing this latest Firefox release public is then pretty
       straightforward. The Release Coordinator gives the go-ahead to have
@@ -846,7 +845,7 @@ arises.</li>
 			Mozilla's ability to deliver "new rapid release cadence"
 			releases, as well as "urgent security fixes" releases to Firefox
 			users. With this chapter, we've tried to give a quick overview
-			of the things that did, and did not, work for us. Hopefully,
+			of how things work right now. We are constantly improving and in a year could probably do this chapter all over again with a very different set of strategies and workflow. Hopefully,
 			people find this information useful. If you have
 			comments/feedback, or details on things you've done differently
 			that did/didn't work better for you, please contact us at
