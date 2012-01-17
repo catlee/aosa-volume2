@@ -68,13 +68,13 @@
 		experienced with our older part manual, part automated release
 		processes. In this chapter, we will explore and explain the
 		infrastructure decisions as well as scripts that comprise the
-		complete, and current, Firefox rapid release system.
+		complete Firefox rapid release system as of Firefox 10.
     </p>
     <p>
 		You'll follow the system from the perspective of a release-worthy
 		Mercurial changeset as it is turned into a release candidate - and
 		then a public release - available to over 400 million daily users
-		worldwide.  We'll start with builds &amp; code signing, then
+		worldwide.  We'll start with builds and code signing, then
 		customized partner and localization repacks, the QA process, and
 		how we generate updates for every supported version, platform and
 		localization. All of these steps must be completed before any
@@ -97,11 +97,11 @@
 		download (or update) to your computer or mobile device.
     </p>
     <div class="sect">
-      <h2>6.0 "Look N ways before you start a release"</h2>
+      <h2>"Look N ways before you start a release"</h2>
     <p>
-    This chapter describes the mechanics of how we generate release
+    This section describes the mechanics of how we generate release
     builds for the Firefox product. Most of this chapter details the
-		complexity once the release builds start, but there is also plenty
+		complexity that occurs once the release builds start, but there is also plenty
 		of complex cross-group communications to deal with before Release
 		Engineering even starts to generate release builds, so lets start
 		there.
@@ -155,7 +155,7 @@
 			tricky very quickly.  To reduce complexity, and the risk of
 			mistakes, Mozilla now has a full-time person, - someone
 			explicitly not in Release Engineering - track the readiness of
-			the code for a  "go to build"i decision.  Changing processes
+			the code for a "go to build" decision.  Changing processes
 			during a chemspill is risky, so in order to make sure everyone
 			is familiar with the process when minutes matter, we use this
 			same process for "chemspill" and "regular" releases.</li> </ol>
@@ -166,9 +166,9 @@
         <p>Figure&nbsp;6.0: Complete Release Timeline</p>
       </div>
     <div class="sect">
-      <h2>6.1 "Go to build"</h2>
+      <h2>"Go to build"</h2>
       <div class="figure" id="fig.ffreleng.go_to_build" class="inline">
-        <img src="../images/ffreleng/go_to_build.png" alt="Getting from code to "Go to build" />
+        <img src="../images/ffreleng/go_to_build.png" alt="Getting from code to 'Go to build'" />
         <p>Figure&nbsp;6.1: Getting from code to "Go to build"</p>
       </div>
 
@@ -267,10 +267,9 @@ Instead, we schedule this out properly in advance, so everything stays
 on schedule with people working normal hours. This keeps people fresh
 and better able to handle unscheduled urgent work if the need
 arises.</li>
-	<li>Some releases are "urgent", where minutes matter. We
-	call these "chemspills". These are typically to fix a published
+	<li>Some releases are urgent, where minutes matter. These are typically to fix a published
 	security exploit, or fix a newly-introduced-top-crash problem,
-	impacting a large percentage of our userbase. These need to be
+	impacting a large percentage of our userbase. These "chemspills" need to be
 	created as quickly as possible and are typically not pre-scheduled
 	releases.  </li>
 	<li>Some releases change from "routine" to "chemspill" or from
@@ -317,7 +316,7 @@ arises.</li>
 
     </div>
     <div class="sect">
-      <h2>6.2 Tagging, Building, and Source Tarballs</h2>
+      <h2>Tagging, Building, and Source Tarballs</h2>
       <div class="figure" id="fig.ffreleng.tagging">
         <img src="../images/ffreleng/tagging.png" alt="Automated tagging" />
         <p>Figure&nbsp;6.2: Automated tagging</p>
@@ -453,7 +452,7 @@ arises.</li>
         </p>
     </div>
     <div class="sect">
-      <h2>6.3 Localization Repacks and Partner Repacks</h2>
+      <h2>Localization Repacks and Partner Repacks</h2>
       <div class="figure" id="fig.ffreleng.repacks_l10n">
         <img src="../images/ffreleng/repacks_l10n.png" alt="Repacking Firefox for each localization" />
         <p>Figure&nbsp;6.3: Repacking Firefox for each localization</p>
@@ -520,7 +519,7 @@ arises.</li>
         </p>
     </div>
     <div class="sect">
-      <h2>6.4 Signing</h2>
+      <h2>Signing</h2>
       <p>
       In order for users to be sure that the copy of Firefox they have
       downloaded is indeed the one we just built, we apply a few
@@ -614,7 +613,7 @@ arises.</li>
       </p>
     </div>
     <div class="sect">
-      <h2>6.5 Updates</h2>
+      <h2>Updates</h2>
       <p>
 			Updates are created so users can update to the latest version of
 			Firefox quickly and easily using our built-in updater without
@@ -725,7 +724,7 @@ arises.</li>
     </div>
     
     <div class="sect">
-      <h2>6.6 Pushing to Internal Mirrors &amp; QA</h2>
+      <h2>Pushing to Internal Mirrors &amp; QA</h2>
       <p>Verifying that the release process is producing the expected
       deliverables is key for producing the right bits for our users. This
       is accomplished by QA's verification and sign offs process along the
@@ -780,7 +779,7 @@ arises.</li>
       </p>
     </div>
     <div class="sect">
-      <h2>6.7 Pushing to Public Mirrors and AUS</h2>
+      <h2>Pushing to Public Mirrors and AUS</h2>
       <!-- TODO  write about Bouncer? -->
       <p>
       Pushing this latest Firefox release public is then pretty
@@ -814,7 +813,7 @@ arises.</li>
       </p>
     </div>
   <div class="sect">
-      <h2>6.8 Working in the open</h2>
+      <h2>Working in the open</h2>
       <p>
 			At Mozilla we strive to do everything in the open. The Firefox
 			developers make all their code changes in the open. Similarly,
