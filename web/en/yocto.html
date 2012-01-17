@@ -3,11 +3,13 @@
 <HEAD>
 	<META HTTP-EQUIV="CONTENT-TYPE" CONTENT="text/html; charset=utf-8">
 	<TITLE>The Architecture of Open Source Applications, Volume 2: Yocto</TITLE>
-	<META NAME="GENERATOR" CONTENT="OpenOffice.org 3.2  (Unix)">
+	<META NAME="GENERATOR" CONTENT="OpenOffice.org 3.2  (Linux)">
 	<META NAME="CREATED" CONTENT="0;0">
-	<META NAME="CHANGEDBY" CONTENT="eflanagan ">
-	<META NAME="CHANGED" CONTENT="20111212;18114100">
+	<META NAME="CHANGEDBY" CONTENT="Elizabeth Flanagan">
+	<META NAME="CHANGED" CONTENT="20120117;11584400">
 	<META NAME="provenance" CONTENT="$Id$">
+	<META NAME="CHANGEDBY" CONTENT="Elizabeth Flanagan">
+	<META NAME="CHANGEDBY" CONTENT="eflanagan ">
 	<META NAME="CHANGEDBY" CONTENT="Elizabeth Flanagan">
 	<META NAME="CHANGEDBY" CONTENT="Elizabeth Flanagan">
 	<META NAME="CHANGEDBY" CONTENT="Elizabeth Flanagan">
@@ -119,27 +121,19 @@ metadata. Metadata can be loosely grouped into configuration files or
 package recipes. <SPAN STYLE="font-weight: normal">A recipe is a
 collection of</SPAN> <SPAN STYLE="font-weight: normal">non-executable
 metadata used by BitBake to set variables or define additional build
-time tasks. </SPAN><SPAN STYLE="font-weight: normal">A recipe
-contains fields </SPAN><SPAN STYLE="font-weight: normal">such as the
-recipe description, the recipe version, the license of the package
-and the upstream source repository are set. </SPAN><SPAN STYLE="font-weight: normal">It
-may also</SPAN><SPAN STYLE="font-weight: normal"> indicate that the
-build process utilizes auto</SPAN><SPAN STYLE="font-weight: normal">tools,
-make, distutils or any other build process, in which case, the basic
-functionality can be defined by classes it </SPAN><SPAN STYLE="font-weight: normal">inherit</SPAN><SPAN STYLE="font-weight: normal">s</SPAN><SPAN STYLE="font-weight: normal">
-</SPAN><SPAN STYLE="font-weight: normal">from the OE-Core layers
-class definitions in ./meta/classes.</SPAN><SPAN STYLE="font-weight: normal">
-Additional tasks </SPAN><SPAN STYLE="font-weight: normal">can also be
-</SPAN><SPAN STYLE="font-weight: normal">defined, </SPAN><SPAN STYLE="font-weight: normal">as
-well as task prerequisites.</SPAN><SPAN STYLE="font-weight: normal">
-BitBake </SPAN><SPAN STYLE="font-weight: normal">also</SPAN><SPAN STYLE="font-weight: normal">
-supports both _prepend and _append as a method of extending task
-functionality by injecting </SPAN><SPAN STYLE="font-weight: normal">code
-indicated by using </SPAN><SPAN STYLE="font-weight: normal">prepend
-</SPAN><SPAN STYLE="font-weight: normal">or </SPAN><SPAN STYLE="font-weight: normal">append
-</SPAN><SPAN STYLE="font-weight: normal">suffix </SPAN><SPAN STYLE="font-weight: normal">into
-the beginning or end of </SPAN><SPAN STYLE="font-weight: normal">a</SPAN><SPAN STYLE="font-weight: normal">
-task.</SPAN></P>
+time tasks. A recipe contains fields such as the recipe description,
+the recipe version, the license of the package and the upstream
+source repository are set. It may also</SPAN> <SPAN STYLE="font-weight: normal">indicate
+that the build process utilizes autotools, make, distutils or any
+other build process, in which case, the basic functionality can be
+defined by classes it inherits</SPAN> <SPAN STYLE="font-weight: normal">from
+the OE-Core layers class definitions in ./meta/classes.</SPAN>
+<SPAN STYLE="font-weight: normal">Additional tasks can also be
+defined, as well as task prerequisites.</SPAN> <SPAN STYLE="font-weight: normal">BitBake
+also</SPAN> <SPAN STYLE="font-weight: normal">supports both _prepend
+and _append as a method of extending task functionality by injecting
+code indicated by using prepend or append suffix into the beginning
+or end of a</SPAN> <SPAN STYLE="font-weight: normal">task.</SPAN></P>
 <P STYLE="margin-bottom: 0in"><BR>
 </P>
 <P STYLE="margin-bottom: 0in; font-weight: normal"><FONT FACE="Courier 10 Pitch"><FONT SIZE=3>DESCRIPTION
@@ -241,8 +235,8 @@ ${D}${bindir}/fgrep ${D}${base_bindir}/fgrep.${PN} </FONT></FONT>
 </P>
 <P STYLE="margin-bottom: 0in"><BR>
 </P>
-<P STYLE="margin-bottom: 0in"><FONT FACE="Liberation Serif, serif"><FONT SIZE=3><I><SPAN STYLE="font-weight: normal">Figure
-7: Contents of the BitBake recipe for grep</SPAN></I></FONT></FONT></P>
+<P STYLE="margin-bottom: 0in; font-weight: normal"><FONT FACE="Liberation Serif, serif"><FONT SIZE=3><I>Figure
+7: Contents of the BitBake recipe for grep</I></FONT></FONT></P>
 <P STYLE="margin-bottom: 0in"><BR>
 </P>
 <P STYLE="margin-bottom: 0in"><BR>
@@ -251,7 +245,7 @@ ${D}${bindir}/fgrep ${D}${base_bindir}/fgrep.${PN} </FONT></FONT>
 files </SPAN>can be broken down into two types. Those that configure
 BitBake and the overall build run, and those that configure the
 various layers Poky uses to create different configurations of a
-target image.  A layer is any grouping of metadata that provides some
+target image. A layer is any grouping of metadata that provides some
 sort of additional functionality. These can be BSP for new devices,
 additional image types or additional software outside of the core
 layers. In fact, the core Yocto metadata, meta-yocto, is itself a
@@ -321,13 +315,13 @@ build, BitBake's BBCooker class is started. The cooker manages the
 build task execution by 'baking' the 'recipes'. One of the first
 things the cooker does is attempt to load and parse configuration
 data. Remember, though, that BitBake is looking for two types of
-configuration data.  In order to tell the build system where it
-should find this configuration data (and in turn where to find recipe
+configuration data. In order to tell the build system where it should
+find this configuration data (and in turn where to find recipe
 metadata), the cooker's parseConfigurationFiles method is called.
 With few exceptions, the first configuration files that the cooker
 looks for is bblayers.conf, whose main purpose is to set up global
 build time variables, such as directory structure naming for various
-rootfs directories, the initial  LDFLAGS to be used during compile
+rootfs directories, the initial LDFLAGS to be used during compile
 time. Most end users will never touch this file as most anything
 needed to be changed here would be within a recipe context as opposed
 to build wide. As this file is parsed, BitBake also includes
@@ -375,7 +369,7 @@ dependency chain. This process provides an ordered and weighted task
 priority map. BitBake uses this map to determine what packages must
 be built in which order in order to most efficiently fulfill
 compilation dependencies. Tasks needed by the most other tasks are
-weighted higher and thus, run earlier during the build process.  The
+weighted higher and thus, run earlier during the build process. The
 task execution queue for our build is created.. BitBake also stores
 the parsed metadata summaries and if on subsequent runs, it
 determines that the metadata has changed, it can re-parse only what
@@ -657,28 +651,78 @@ return a complete runqueue object to the cooker. The cooker will
 begin to attempt to execute the runqueue, task by task. Depending
 upon image size and computing resources, Poky may take from a half
 hour to hours in order to generate a cross compilation toolchain, a
-package feed and the embedded Linux image specified.</P>
+package feed and the embedded Linux image specified. It is worth
+noting that from the time of executing 'bitbake &lt;image_name&gt;'
+from the commandline, the entire process up to right before the
+execution of the task execution queue has taken less than a few
+seconds.</P>
 <H2 CLASS="western">1.4 Conclusion</H2>
-<P>It is worth noting that from the time of executing 'bitbake
-&lt;image_name&gt;' from the commandline, the entire process up to
-right before the execution of the task execution queue has taken less
-than a few seconds. The optimizations to BitBake over the years have
-generally focused on feature enhancements and optimizations. Some of
-those include fetch enhancements, the addition of different user
-interfaces and IPC servers. Without BitBake to power the build
-systems behind the Yocto Project's Poky or OpenEmbedded, those of us
-dedicated to the embedded ecosystem would have a more difficult time,
-especially when it comes to hardware portability. 
+<P>In my discussions with community members and my own personal
+observations, I've identified a few areas where things should have
+perhaps been done differently as well as a few valuable lessons. It
+is important to note, that “arm chair quarterbacking” a decade
+long development effort is not meant as a criticism of those who've
+poured their time and effort into a wholly remarkable collection of
+software. As developers, the most difficult part of our job is
+predicting what we will need years down the road and how we can set
+up a frame work to enable that work now. Few can achieve that without
+some road bumps. 
+</P>
+<P>The first lesson I would point out is to make sure to develop a
+written, agreed upon standards document exists and that is well
+understood by the community. It should be designed for maximum
+flexibility and growth. One place where I've personally run into this
+issue is with my work in OE-Core's license manifest creation class,
+especially with how it parses the LICENSE variable. 
+</P>
+<P>As no clearly defined, documented standard existed for what
+LICENSE should contain, a review of the many recipes showed many
+variations with what LICENSE contained, everything from python
+abstract syntaxt tree parsable values to values that one would have
+little hope of gaining meaningful data from. There was a very loose
+convention that the community had still not firmly agreed upon. This
+wasn't the problem of the developer who wrote the recipe. It was a
+community failure. As little was actually done with the LICENSE
+variable prior to my work on license wrangling, outside of checking
+for it's existence, there was no particular concern about a standard
+for that variable. The community is coming to consensus on this one
+variable, however, much trouble could have been avoided had a project
+wide standard been developed early on. 
+</P>
+<P>The next lesson is a bit more general and speaks to an issue seen
+not only in Yocto and the various projects that are part of it. It is
+the one of the most important things developers can do to limit the
+amount of effort duplication, refactoring and churn their project
+encounters.</P>
+<P>If you think you've spent enough time on architectural design, you
+probably haven't. If you think you haven't spent enough time on
+architectural design, you definitely haven't. Spending more time on
+front end planning won't stop you from having to rip apart code,
+redesign some things or even do major architectural changes, but it
+will certainly reduce the amount of effort duplication needed in the
+long run. Designing your software to be as modular as possible
+knowing that you will end up revisiting areas for anything from minor
+tweaks to major rewrites will make it so that when you do run into
+these issues, code rewrites are less hair raising. 
+</P>
+<P>BitBake, OE-Core and Yocto are all fortunate in this regard as
+there was some amount of architectural planning done early. Could we
+have benefited from some deeper planning? Of course. Some obvious
+places where this would have helped is identifying the needs of end
+users with low memory systems. Had more thought been put into
+bitbake's datastore earlier, perhaps we could have predicted the
+problems associated with the datestore taking up too much memory and
+dealt with it earlier. The lesson here is that while it is nearly
+impossible to identify every pain point your project will run into
+during it's lifetime, taking the time to do serious front end
+planning will help reduce the effort needed later. 
 </P>
 <H2 CLASS="western">1.5 Acknowledgements</H2>
 <P>First, thank you goes to Chris Larson, Michael Lauer, and Holger
 Schurig and the many many people who have contributed to BitBake,
 OpenEmbedded, OE-Core and Yocto over the years. Thank you also goes
 to Richard Purdie for his letting me pick his brain, both on
-historical and technical aspects of OE and his constant
-encouragement, especially in some of the deeper dark magic of
-BitBake.</P>
-<P> 
-</P>
+historical and technical aspects of OE and his constant encouragement
+and guidance, especially with some of the dark magic of BitBake.</P>
 </BODY>
 </HTML>
