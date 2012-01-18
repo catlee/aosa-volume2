@@ -54,7 +54,7 @@ missing, or corrupted, or simply incomprehensible.
 
 The following sections assume a passing familiarity with using GDB
 from the command line; if you're new to GDB, give it a try, and peruse
-the manual.
+the manual.\cite{bib:gdb-manual}
 
 \end{aosasect1}
 
@@ -192,9 +192,10 @@ its own makefile fragment and header file.
 and might include things like the sizes of the host's integer types.
 Originally done as handwritten header files, it eventually occurred to
 people that they could be calculated by having \code{configure} run
-little test programs, using the same compiler that was going to be used
-to build the tool.  This is what \code{autoconf} is all about, and
-today nearly all GNU tools and many (if not most) Unix programs use
+little test programs, using the same compiler that was going to be
+used to build the tool.  This is what
+\code{autoconf}\cite{bib:autoconf} is all about, and today nearly all
+GNU tools and many (if not most) Unix programs use
 \code{autoconf}-generated configure scripts.
 
 * ``Target'' definitions are specific to the machine running the
@@ -302,7 +303,7 @@ The result of GDB's chip-specific stack analysis is recorded in a
 series of frame objects.  Originally GDB kept track of frames by using
 the literal value of a fixed frame pointer register.  This approach
 breaks down for inlined function calls and other kinds of compiler
-optimizations, and around 2003(?), GDBers introduced explicit frame
+optimizations, and starting in 2002, GDBers introduced explicit frame
 objects that recorded what had been figured out about each frame, and
 were linked together, mirroring the program's stack frames.
 
@@ -506,10 +507,11 @@ functions called from the macros.  While this helped, it did not help
 much with architectural variants (Arm vs Thumb, 32-bit vs 64-bit
 versions of MIPS or x86, etc), and worse, multiple-architecture
 designs were on the horizon, for which macros would not work at all.
-I proposed changing to an object-based design in 1995, and starting in
-1998 Cygnus Solutions funded Andrew Cagney to start the changeover.
-It took several years, and contributions from dozens of hackers to
-finish the job, affecting perhaps 80,000 lines of code in all.
+In 1995, I proposed solving this with an object-based design, and
+starting in 1998 Cygnus Solutions funded Andrew Cagney to start the
+changeover.  It took several years, and contributions from dozens of
+hackers to finish the job, affecting perhaps 80,000 lines of code in
+all.
 
 The introduced constructs are called \code{gdbarch} objects, and at
 this point may contain as many as 130 methods and variables defining a
@@ -570,7 +572,8 @@ instance, with the proliferation of Unix variants, there was no one
 person who understood all their fine points, nor did we have access to
 all of them for regression testing, so there was a strong incentive to
 modify the code in a way that exactly preserved behavior for existing
-ports.
+ports--and a goto skipping over part of the loop was an all-too-easy
+tactic.
 
 The single big loop was also a problem for any kind of asynchronous
 handling or debugging of threaded programs, in which the user wants to
@@ -750,8 +753,8 @@ other software to parse accurately:
              line="232"}
 \end{verbatim}
 
-The Eclipse development environment is the most notable client of the
-MI.
+The Eclipse\cite{bib:eclipse-home} development environment is the most
+notable client of the MI.
 
 \end{aosasect2}
 
