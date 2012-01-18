@@ -6,8 +6,9 @@
 	<META NAME="GENERATOR" CONTENT="OpenOffice.org 3.2  (Linux)">
 	<META NAME="CREATED" CONTENT="0;0">
 	<META NAME="CHANGEDBY" CONTENT="Elizabeth Flanagan">
-	<META NAME="CHANGED" CONTENT="20120117;11584400">
+	<META NAME="CHANGED" CONTENT="20120118;251200">
 	<META NAME="provenance" CONTENT="$Id$">
+	<META NAME="CHANGEDBY" CONTENT="Elizabeth Flanagan">
 	<META NAME="CHANGEDBY" CONTENT="Elizabeth Flanagan">
 	<META NAME="CHANGEDBY" CONTENT="eflanagan ">
 	<META NAME="CHANGEDBY" CONTENT="Elizabeth Flanagan">
@@ -250,14 +251,28 @@ sort of additional functionality. These can be BSP for new devices,
 additional image types or additional software outside of the core
 layers. In fact, the core Yocto metadata, meta-yocto, is itself a
 layer applied on top of the OE-Core metadata layer, meta which adds
-additional software and image types to the OE-Core layer. An example
-of how one would use layering is by creating a NAS device for the
-Intel n660 (Crownbay), utilizing x32, the new 32-bit native ABI for
-x86-64, with a custom software layer that adds a user interface.
-Given the task at hand, we could split this functionality out into
-layers; a BSP layer for Crownbay, a layer to enable x32, the Yocto
-Project's example NAS layer, called meta-baryon and a user interface
-layer of our own, which we will call meta-myproject.</P>
+additional software and image types to the OE-Core layer. 
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">An example of how one would use
+layering is by creating a NAS device for the Intel n660 (Crownbay),
+utilizing x32, the new 32-bit native ABI for x86-64, with a custom
+software layer that adds a user interface. 
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Given the task at hand, we could split
+this functionality out into layers. At the lowest level we would
+utilize a BSP layer for Crownbay that would enable Crownbay-specific
+hardware functionality, such as video drivers. As we want x32, we
+would use the experimental meta-x32 layer. The NAS functionality
+would be layered on top of this by adding the Yocto Project's example
+NAS layer, meta-baryon. And lastly, we'll use an imaginary layer
+called meta-myproject, to provide the software and configuration to
+create a graphical user interface to enable configuration of the NAS.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
 <P STYLE="margin-bottom: 0in"><IMG SRC="../images/yocto/aosa2.jpg" NAME="graphics2" ALIGN=LEFT WIDTH=559 HEIGHT=314 BORDER=0><BR CLEAR=LEFT><BR>
 </P>
 <P STYLE="margin-bottom: 0in"><FONT SIZE=3><I>Figure&nbsp;2.0:
@@ -673,21 +688,23 @@ written, agreed upon standards document exists and that is well
 understood by the community. It should be designed for maximum
 flexibility and growth. One place where I've personally run into this
 issue is with my work in OE-Core's license manifest creation class,
-especially with how it parses the LICENSE variable. 
+which utilizes the LICENSE variable of each recipe in order to create
+a license manifest. 
 </P>
-<P>As no clearly defined, documented standard existed for what
-LICENSE should contain, a review of the many recipes showed many
-variations with what LICENSE contained, everything from python
-abstract syntaxt tree parsable values to values that one would have
-little hope of gaining meaningful data from. There was a very loose
-convention that the community had still not firmly agreed upon. This
-wasn't the problem of the developer who wrote the recipe. It was a
-community failure. As little was actually done with the LICENSE
-variable prior to my work on license wrangling, outside of checking
-for it's existence, there was no particular concern about a standard
-for that variable. The community is coming to consensus on this one
-variable, however, much trouble could have been avoided had a project
-wide standard been developed early on. 
+<P>As no clearly defined or documented standard existed for what
+LICENSE should contain, a review of the many recipes available showed
+many variations. The various LICENSE strings contained everything
+from python abstract syntaxt tree parsable values to values that one
+would have little hope of gaining meaningful data from. There was a
+very loose convention that the community had still not firmly agreed
+upon. This wasn't the problem of the developer who wrote the recipe.
+It was a community failure to define a standard. 
+</P>
+<P>As little prior work was actually done with the LICENSE variable
+outside of checking for it's existence, there was no particular
+concern about a standard for that variable. Much trouble could have
+been avoided had a project wide agreed upon standard been developed
+early on. 
 </P>
 <P>The next lesson is a bit more general and speaks to an issue seen
 not only in Yocto and the various projects that are part of it. It is
@@ -697,25 +714,27 @@ encounters.</P>
 <P>If you think you've spent enough time on architectural design, you
 probably haven't. If you think you haven't spent enough time on
 architectural design, you definitely haven't. Spending more time on
-front end planning won't stop you from having to rip apart code,
-redesign some things or even do major architectural changes, but it
-will certainly reduce the amount of effort duplication needed in the
-long run. Designing your software to be as modular as possible
-knowing that you will end up revisiting areas for anything from minor
-tweaks to major rewrites will make it so that when you do run into
-these issues, code rewrites are less hair raising. 
+front end planning won't stop you from later having to rip apart code
+or even do major architectural changes, but it will certainly reduce
+the amount of effort duplication needed in the long run. Designing
+your software to be as modular as possible knowing that you will end
+up revisiting areas for anything from minor tweaks to major rewrites
+will make it so that when you do run into these issues, code rewrites
+are less hair raising. 
 </P>
-<P>BitBake, OE-Core and Yocto are all fortunate in this regard as
-there was some amount of architectural planning done early. Could we
-have benefited from some deeper planning? Of course. Some obvious
-places where this would have helped is identifying the needs of end
-users with low memory systems. Had more thought been put into
-bitbake's datastore earlier, perhaps we could have predicted the
-problems associated with the datestore taking up too much memory and
-dealt with it earlier. The lesson here is that while it is nearly
-impossible to identify every pain point your project will run into
-during it's lifetime, taking the time to do serious front end
-planning will help reduce the effort needed later. 
+<P>Some obvious places where this would have helped is identifying
+the needs of end users with low memory systems. Had more thought been
+put into bitbake's datastore earlier, perhaps we could have predicted
+the problems associated with the datestore taking up too much memory
+and dealt with it earlier. 
+</P>
+<P>The lesson here is that while it is nearly impossible to identify
+every pain point your project will run into during it's lifetime,
+taking the time to do serious front end planning will help reduce the
+effort needed later. BitBake, OE-Core and Yocto are all fortunate in
+this regard as there was a fair amount of architectural planning done
+early. This enabled us to be able to do major changes to the
+architecture without too much pain and suffering.  
 </P>
 <H2 CLASS="western">1.5 Acknowledgements</H2>
 <P>First, thank you goes to Chris Larson, Michael Lauer, and Holger
