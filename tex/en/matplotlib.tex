@@ -35,7 +35,7 @@ as a data management system.  Unsatisfied with the suitability of
 MATLAB for this task, Hunter began working on a new Python application
 built on top of the user interface toolkit GTK+, at the time the
 leading desktop windowing system for Linux.
-% TODO: TAB wrote: How does matplotlib handle data management better than Matlab?
+
 
 matplotlib was thus originally developed as a EEG/ECoG visualization
 tool for this GTK+ application, and this use case directed its
@@ -46,7 +46,9 @@ MATLAB design makes the simple task of loading a data file and
 plotting very straightforward, where a full object-oriented API would
 be too syntactically heavy.  So matplotlib also provides a stateful
 scripting interface for quick and easy generation of graphics similar
-to MATLAB's.
+to MATLAB's.  Because matplotlib is a library, users have access to
+all of the rich Python data structures such as lists, dictionaries,
+sets and more that are built into python.
 
 \aosafigure{../images/matplotlib/ecog.png}{The original matplotlib application: an ECoG viewer.}{fig.matplotlib.ecog}[scale=0.2]
 
@@ -141,7 +143,42 @@ uses the agg renderer, the hardcopy is identical to the screen
 display, so what-you-see is what-you-get across UIs, operating systems
 and PNG output.
 
-%% TODO: Discuss Events here
+The matplotlib Event framework maps underlying UI events like
+\textit{key-press-event} or \textit{mouse-motion-event} to the
+matplotlib classes KeyEvent or MouseEvent.  Users can connect to these
+events to callback functions and so interact with their figure and
+data, eg to \textit{pick} a data point or group of points, or
+manipulate some aspect of the figure or its constituents.  The
+following code sample illustrates some simple code to toggle all of
+the lines in an Axes window when the user presses 't'
+
+\begin{verbatim}
+import numpy as np
+import matplotlib.pyplot as plt
+
+def on_press(event):
+    if event.inaxes is None: return
+    for line in event.inaxes.lines:
+        if event.key=='t':
+            visible = line.get_visible()
+            line.set_visible(not visible)
+    event.inaxes.figure.canvas.draw()
+
+fig, ax = plt.subplots(1)
+
+fig.canvas.mpl_connect('key_press_event', on_press)
+
+ax.plot(np.random.rand(2, 20))
+
+plt.show()
+\end{verbatim}
+
+The abstraction of the underlying UI toolkit's event framework allows
+both matplotlib developers as well as end-users to write UI event
+handling code with ``write once run everywhere''.  For example, the
+interactive panning and zooming of matplotlib figures that works
+across all user interface toolkits is implemented in the matplotlib
+event framework.
 
 \end{aosasect2}
 
@@ -743,27 +780,22 @@ spend enough effort determining whether this was the right drawing
 API, and had to expend considerable effort subsequently after many
 backends were written around this API to extend the functionality
 around a simpler and more flexible drawing API.  We would have been
-well-served by adopting the PDF drawing specification, which itself
-was developed from decades of experience Adobe had with its PostScript
-specification, which would give us mostly out-of-the-box compatibility
-with PDF itself, the Quartz Core Graphics framework, and the Enthought
-Enable Kiva drawing kit.
-% TODO: TAB: Can you include at least a link to what this interface
-% would have looked like? Is it as simple as the Drawable interface
-% described above? My gut says that PDF wouldn't be any easier to
-% work with than GDK; I'd love to be proven wrong!
+well-served by adopting the PDF drawing specification \cite{bib:pdf},
+which itself was developed from decades of experience Adobe had with
+its PostScript specification, which would give us mostly
+out-of-the-box compatibility with PDF itself, the Quartz Core Graphics
+framework, and the Enthought Enable Kiva drawing kit \cite{bib:kiva}.
 
 One of the curses of Python is that it is such an easy and expressive
 language that developers often find it easier to re-invent and
 re-implement functionality that exists in other packages rather than
 work to integrate code from other packages.  matplotlib could have
 benefited in early development from expending more effort on
-integration with existing efforts and APIs rather than reinventing
-functionality.  Integration with existing functionality is, however, a
-double edge sword, as it can make builds and releases more complex and
-reduce flexibility in internal development.
-% TODO: TAB: Any examples of Python libraries that could have been leveraged?
-% What would you look for/look to avoid in a library-to-leverage?
+integration with existing efforts and APIs such as Enthought's Kiva
+and Enable toolkits which solve many similar problems, rather than
+reinventing functionality.  Integration with existing functionality
+is, however, a double edge sword, as it can make builds and releases
+more complex and reduce flexibility in internal development.
 
 \end{aosasect1}
 \end{aosachapter}
