@@ -78,7 +78,6 @@ of the original plan.
 
 \begin{aosasect1}{Block Diagram}
 
-% simplify/add zoomed versions
 \aosafigure{../images/gdb/gdb-structure.pdf}{Overall Structure of GDB}{fig.gdb.structure}
 
 At the largest scale, GDB can be said to have two sides to it:
@@ -475,10 +474,6 @@ address space.  So GDB has a ``target stack'' where the target vector
 for live processes is pushed on top of the executable's target vector
 when the process starts running, and is then popped when it exits.
 
-% waffling about figure, the current reality is not exactly a stack,
-% and not clear how to present graphically
-% \aosafigure{../images/gdb/target-stack.pdf}{GDB Target Stack}{fig.gdb.targetstack}
-
 In reality, the target stack turns out not to be quite as stack-like
 as one might think.  Target vectors are not really orthogonal to each
 other; if you have both an executable and a live process in the
@@ -521,7 +516,26 @@ this point may contain as many as 130 methods and variables defining a
 target architecture, although a simple target might only need a dozen
 or so of these.
 
-% add a before/after example from the sources
+To get a flavor of how the old and new ways compare, here is the
+declaration that x86 long doubles are 96 bits in size.  From
+\code{gdb/config/i386/tm-i386.h}, circa 2002:
+
+\begin{verbatim}
+#define TARGET_LONG_DOUBLE_BIT 96
+\end{verbatim}
+
+From \code{gdb/i386-tdep.c}, in 2012:
+
+\begin{verbatim}
+i386_gdbarch_init( [...] )
+{
+  [...]
+
+  set_gdbarch_long_double_bit (gdbarch, 96);
+
+  [...]
+}
+\end{verbatim}
 
 \end{aosasect2}
 
@@ -710,7 +724,31 @@ parameter names for component pieces.  In addition, MI commands can be
 prefixed with sequence identifiers that are echoed back in results,
 ensuring reported results are matched up with the right commands.
 
-% need MI example - output of x/16w?
+To see how the two forms compare, here is a normal step command
+and GDB's response:
+
+\begin{verbatim}
+(gdb) step
+
+buggy_function (arg1=45, arg2=92) at ex.c:232
+232  result = positive_variable * arg1 + arg2;
+\end{verbatim}
+
+With the MI, the input and output are more verbose, but easier for
+other software to parse accurately:
+
+\begin{verbatim}
+4321-exec-step
+
+4321^done,reason="end-stepping-range",
+      frame={addr="0x00000000004004be",
+             func="buggy_function",
+             args=[{name="arg1",value="45"},
+                   {name="arg2",value="92"}],
+             file="ex.c",
+             fullname="/home/sshebs/ex.c",
+             line="232"}
+\end{verbatim}
 
 The Eclipse development environment is the most notable client of the
 MI.
@@ -783,10 +821,6 @@ native debugging, and some embedded targets will have more failures.
 
 \begin{aosasect1}{Lessons Learned}
 
-% add examples tying into arch changes?
-% explain lessons learned from need to re-architect
-% ``could not have done perfect design at the outset - incremental is good''
-
 \begin{aosasect2}{Open Development Wins}
 
 GDB started out as an exemplar of the ``cathedral'' development
@@ -806,20 +840,54 @@ The open-source development process is intrinsically somewhat chaotic,
 as different individuals work on the code for awhile, then fall away,
 leaving others to continue on.
 
-However, it still makes sense to make a development plan and publish it.
-It helps guide full-time developers, it can be shown to potential funders,
-volunteers think about what they can do to advance it.
+However, it still makes sense to make a development plan and publish
+it.  It helps guide developers as they work on related tasks, it can
+be shown to potential funders, volunteers think about what they can do
+to advance it.
 
-But don't try to force dates or timeframes!  For that matter, don't
-cling to the plan itself if it has become outdated.  For a long time,
-GDB had a plan to restructure as a library \code{libgdb} with a
-well-defined API, that could be linked into other programs (in
-particular ones with GUIs), and the build process was even changed to
-build a \code{libgdb.a} as an intermediate step.  Although the idea
-came up periodically since then, the primacy of Eclipse and MI meant
-that the library's main rationale has been sidestepped, and as of
-January 2012 we have abandoned the library concept and are expunging
-the now-pointless bits of code.
+But don't try to force dates or timeframes!  Even if everyone is
+enthusiastic about a direction, it is unlikely that people can
+guarantee full-time effort for long enough to finish by a chosen date.
+
+For that matter, don't cling to the plan itself if it has become
+outdated.  For a long time, GDB had a plan to restructure as a library
+\code{libgdb} with a well-defined API, that could be linked into other
+programs (in particular ones with GUIs), and the build process was
+even changed to build a \code{libgdb.a} as an intermediate step.
+Although the idea came up periodically since then, the primacy of
+Eclipse and MI meant that the library's main rationale has been
+sidestepped, and as of January 2012 we have abandoned the library
+concept and are expunging the now-pointless bits of code.
+
+\end{aosasect2}
+
+\begin{aosasect2}{Things Would Be Great If We Were Infinitely Intelligent}
+
+After seeing some of the changes we did, you might be thinking--why
+didn't we do things right in the first place?  Well, we just weren't
+smart enough.
+
+Certainly we could have anticipated that GDB was going to be
+tremendously popular, and was going to be ported to dozens and dozens
+of architectures, both native and cross.  If we had known that, we
+could have started with the gdbarch objects, instead spending years
+upgrading old macros and global variables.  Ditto for the target
+vector!
+
+Certainly we could have anticipated GDB was going to be used with
+GUIs, after all in 1986 both the Mac and the X Window System had
+already been out for two years!  So instead of designing a traditional
+command interface, we could have set it up to handle events
+asynchronously.
+
+The real lesson though is that not that GDBers were dumb, but that we
+couldn't possibly have been smart enough to anticipate how GDB would
+need to evolve.  In 1986 it was not at all clear that the
+windows-and-mouse interface was going to become ubiquitous; if the
+first version of GDB was perfectly adapted for GUI use, we'd have
+looked like geniuses, but it would have been sheer luck.  Instead,
+by making GDB useful in a more limited scope, we built a user base
+that enabled more extensive development and reengineering later.
 
 \end{aosasect2}
 
@@ -854,7 +922,7 @@ of 1991 is a pointless complexity with the multi-gigabyte RAMs of
 
 GDB once supported the Gould supercomputer; when they turned off the
 last machine, around 2000, there really wasn't any point in keeping
-those bits around!  That episode was the genesis of an obsoletion
+those bits around.  That episode was the genesis of an obsoletion
 process for GDB, and most releases now include the retirement of
 some piece or another.
 
@@ -867,8 +935,5 @@ more reason to get started on them now!
 \end{aosasect2}
 
 \end{aosasect1}
-
-% do we want citations / references??
-% add \cite and .bib for main websites at least?
 
 \end{aosachapter}
