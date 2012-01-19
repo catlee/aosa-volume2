@@ -219,7 +219,7 @@ focused on three things:
 
 \begin{aosasect2}{Abstraction Layer Architecture}
 
-\aosafigure{../images/openmpi/open-mpi-layers.pdf}{Abstraction layer
+\aosafigure[300pt]{../images/openmpi/open-mpi-layers.pdf}{Abstraction layer
   architectural view of Open MPI showing its three main
   layers: OPAL, ORTE, and OMPI.}{fig.openmpi.layers}
 
@@ -239,7 +239,7 @@ Open MPI has three main abstraction layers, shown in
   affinity, high-precision timers, etc.
 
 \item \emph{Open MPI Run-Time Environment (ORTE)}\footnote{Pronounced
-    ``or-tay.''}: An MPI implementation must provide not only the
+    ``or-tay''.}: An MPI implementation must provide not only the
   required message-passing API, but also an accompanying run-time
   system to launch, monitor, and kill parallel jobs.  In Open MPI's
   case, a parallel job is comprised of one or more processes that may
@@ -597,6 +597,8 @@ struct mca_base_component_2_0_0_t {
 \end{verbatim}
 \end{aosabox}
 
+%% FIXME This is widowed from the list that follows at the moment. Revisit
+%% before going to print. -ARB Jan 19
 The base component struct is the core of the TCP BTL component; it
 contains the following function pointers:
 
@@ -743,7 +745,6 @@ receiving to and from its Ethernet device.
 %%%%%
 
 \paragraph{Tying it all together.}
-
 Figure~\ref{fig.openmpi.component.nesting} shows the nesting of the
 structures in the TCP BTL component, and how it generates one module
 for each of the three Ethernet devices.
@@ -759,7 +760,7 @@ user-level channel bonding.
 %
 In the above three-device example, a sender will split large messages
 into multiple fragments, and distribute them across all TCP BTL
-modules representing Ethernet devices that can be used to reach the
+modules, representing Ethernet devices that can be used to reach the
 peer to which the message is being sent (reachability is determined by
 TCP networks and netmasks, and some well-defined heuristics).
 
