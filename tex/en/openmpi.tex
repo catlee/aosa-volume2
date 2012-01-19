@@ -750,11 +750,11 @@ Composing BTL modules this way allows the upper layer MPI progression
 engine to both treat all network devices equally, and to perform
 user-level channel bonding.  
 %
-In the above three-device example, a sender will stripe large messages
-across all TCP BTL modules representing Ethernet devices that can be
-used to reach the peer to which the message is being sent
-(reachability is determined by TCP networks and netmasks, and some
-well-defined heuristics).
+In the above three-device example, a sender will split large messages
+into multiple fragments, and distribute them across all TCP BTL
+modules representing Ethernet devices that can be used to reach the
+peer to which the message is being sent (reachability is determined by
+TCP networks and netmasks, and some well-defined heuristics).
 
 \end{aosasect2}
 
