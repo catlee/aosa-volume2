@@ -247,7 +247,7 @@ Open MPI has three main abstraction layers, shown in
   act as a single, cohesive unit.
 
   In simple environments with little or no distributed computational
-  support, ORTE uses {\tt rsh} or {\tt ssh} to launch the individual
+  support, ORTE uses \code{rsh} or \code{ssh} to launch the individual
   processes in parallel jobs.  More advanced, HPC-dedicated
   environments typically have schedulers and resource managers for
   fairly sharing computational resources between many users.  Such
@@ -376,9 +376,9 @@ the Modular Component Architecture (MCA).
   a \emph{base} and one or more components.  This structure is
   replicated in each of the layers shown in
   \aosafigref{fig.openmpi.layers}.  The sample frameworks listed in
-  this figure are spread across all three layers: {\tt btl} and {\tt
-    coll} are in the OMPI layer, {\tt plm} is in the ORTE layer, and
-  {\tt timer} is in the OPAL layer.}{fig.openmpi.mca}
+  this figure are spread across all three layers: \code{btl} and {\tt
+    coll} are in the OMPI layer, \code{plm} is in the ORTE layer, and
+  \code{timer} is in the OPAL layer.}{fig.openmpi.mca}
 
 Finally, another major advantage of using frameworks and components is
 their inherent composability.  With over 40 frameworks in Open MPI
@@ -394,8 +394,8 @@ effectively tailored to their individual system.
 
 Each framework is fully self-contained in its own subdirectory in the
 Open MPI source code tree.  The name of the subdirectory is the same
-name as the framework; for example, the {\tt memory} framework is in
-the {\tt memory} directory.  
+name as the framework; for example, the \code{memory} framework is in
+the \code{memory} directory.  
 %
 Framework directories contain at least the following three items:
 
@@ -409,9 +409,9 @@ Framework directories contain at least the following three items:
   functions, structs for marshaling these function pointers, and any
   other necessary types, attribute fields, macros, declarations, etc.
 
-\item \emph{Base code}: The {\tt base} subdirectory contains the glue
+\item \emph{Base code}: The \code{base} subdirectory contains the glue
   code that provides the core functionality of the framework.  For
-  example, the {\tt memory} framework's base directory is {\tt
+  example, the \code{memory} framework's base directory is {\tt
     memory/base}.  The base is typically comprised of logistical grunt
   work such as finding and opening components at run-time, common
   utility functionality that may be utilized by multiple components,
@@ -420,7 +420,7 @@ Framework directories contain at least the following three items:
 \item \emph{Components}: All other subdirectories in the framework
   directory are assumed to be components.  Just like the framework,
   the names of the components are the same names as their
-  subdirectories (e.g., the {\tt memory/posix} subdirectory contains
+  subdirectories (e.g., the \code{memory/posix} subdirectory contains
   the POSIX component in the Memory framework).
 \end{aosaenumerate}
 
@@ -495,8 +495,8 @@ their one-and-only-one component to be selected at compile time (versus
 run time).  Statically linking one-of-many components allows direct
 invocation of its member functions (versus invocation via function
 pointer), which may be important in highly performance-sensitive
-functionality.  One example is the {\tt memcpy} framework, which
-provides platform-optimized {\tt memcpy()} implementations.
+functionality.  One example is the \code{memcpy} framework, which
+provides platform-optimized \code{memcpy()} implementations.
 
 Additionally, some frameworks provide functionality that may need to
 be utilized before Open MPI is fully initialized.  
@@ -506,10 +506,10 @@ registration models, which, in turn, require replacing the C library's
 default memory management routines.
 %
 Since memory management is intrinsic to an entire process, replacing
-the default scheme can only be done pre-{\tt main}.
+the default scheme can only be done pre-\code{main}.
 %
 Therefore, such components must be statically linked into Open MPI
-processes so that they can be available for pre-{\tt main} hooks, long
+processes so that they can be available for pre-\code{main} hooks, long
 before MPI has even been initialized.
 
 \end{aosasect2}
@@ -552,11 +552,11 @@ statically-allocated and initialized component struct.
 The struct must be named according to the template {\tt
   mca\_\-<framework>\_\-<component>\_\-component}.  For example, the
 TCP network driver component's struct in the BTL framework is named
-{\tt mca\_\-btl\_\-tcp\_\-component}.
+\code{mca\_\-btl\_\-tcp\_\-component}.
 
 Having templated component symbols both guarantees that there will be
 no name collisions between components, and allows the MCA core to find
-any arbitrary component struct via {\tt dlsym(2)} (or the appropriate
+any arbitrary component struct via \code{dlsym(2)} (or the appropriate
 equivalent in each supported operating system).
 
 The base component struct contains some logistical information, such
@@ -565,6 +565,10 @@ etc.  (See the ``Base Component Struct'' sidebar.)
 %
 This data is used for debugging purposes, inventory listing, and
 run-time compliance and compatibility checking.
+
+%% FIXME Author has all his code blocks in sidebars - it seems to work
+%% because he refers to them in the body text, but they are tending to
+%% cluster. Revisit this closer to ship date. -ARB
 
 \begin{aosabox}{Base Component Struct}
 \begin{verbatim}
@@ -601,7 +605,7 @@ contains the following function pointers:
   invoked on a component.  It allows a component to initialize itself,
   look around the system where it is running, and determine whether it
   wants to run.  If a component can always be run, it can provide a
-  {\tt NULL} open function pointer.
+  \code{NULL} open function pointer.
 
   The TCP BTL component \emph{open} function mainly initializes some
   data structures and ensures that invalid parameters were not set by
@@ -630,9 +634,12 @@ contains the following function pointers:
   register any relevant run-time, user-settable parameters.  Run-time
   parameters are discussed further below.
 
+% FIXME Latex is orphaning the next para under a sidebar, which is confusing.
+% If it's still happening closer to ship, try and fix. --ARB
+
   The TCP BTL component \emph{register} function creates a variety of
-  user-settable run-time parameters, such as allowing the
-  specification of which IP interface(s) to use.
+  user-settable run-time parameters, such as one which allows the
+  user to specify which IP interface(s) to use.
 \end{aosaitemize}
 
 The component structure can also be extended on a per-framework and/or
@@ -642,14 +649,14 @@ struct with the component base struct as the first member.
 This nesting allows frameworks to add their own attributes and
 function pointers.  
 %
-For example, frameworks that need a more specialized query function
+For example, a framework that needs a more specialized query function
 (as compared to the \emph{query} function provided on the basic
 component) can add a function pointer in its framework-specific
 component struct.
 
-The MPI {\tt btl} framework, which provides point-to-point MPI
+The MPI \code{btl} framework, which provides point-to-point MPI
 messaging functionality, uses this technique.  Its framework-specific
-struct is shown in the ``BTL Framework Component Struct'' code box.
+struct is shown in the ``BTL Framework Component Struct'' sidebar.
 
 \begin{aosabox}{BTL Framework Component Struct}
 \begin{verbatim}
@@ -667,21 +674,21 @@ struct mca_btl_base_component_2_0_0_t {
 \end{aosabox}
 
 As an example of the TCP BTL framework query functions, the TCP BTL
-component {\tt btl\_\-init} function does several things:
+component \code{btl\_\-init} function does several things:
 \begin{aosaitemize}
-\item Create a listening socket for each ``up'' IPv4 and IPv6 interface
-\item Create a module for each ``up'' IP interface
-\item Register the (IP address, port) tuple for each ``up'' IP
+\item Creates a listening socket for each ``up'' IPv4 and IPv6 interface.
+\item Creates a module for each ``up'' IP interface.
+\item Registers the tuple \code{(IP address, port)} for each ``up'' IP
   interface with a central repository so that other MPI processes know
-  how to contact it
+  how to contact it.
 \end{aosaitemize}
 
 Similarly, plugins can extend the framework-specific component struct
 with their own members.
 %
-The {\tt tcp} component in the {\tt btl} framework does this; it
-caches many data members in its component struct; see the ``TCP
-Component Struct (in the BTL Framework)'' code box.
+The \code{tcp} component in the \code{btl} framework does this; it
+caches many data members in its component struct. (See the ``TCP
+Component Struct (in the BTL Framework)'' sidebar.)
 
 \begin{aosabox}{TCP Component Struct (in the BTL Framework)}
 \begin{verbatim}
@@ -702,7 +709,7 @@ struct mca_btl_tcp_component_t {
 \end{aosabox}
 
 This struct-nesting technique is effectively a simple emulation of C++
-single inheritance: a pointer to an instance of a {\tt struct
+single inheritance: a pointer to an instance of a \code{struct
   mca\_\-btl\_\-tcp\_\-component\_\-t} can be cast to any of the
 three types such that it can be used by an abstraction layer than does
 not understand the ``derived'' types.
@@ -746,8 +753,8 @@ for each of the three Ethernet devices.
   The right side shows how the component generates one module struct
   for each ``up'' Ethernet interface.}{fig.openmpi.component.nesting}
 
-Composing BTL modules this way allows the upper layer MPI progression
-engine to both treat all network devices equally, and to perform
+Composing BTL modules this way allows the upper-layer MPI progression
+engine both to treat all network devices equally, and to perform
 user-level channel bonding.  
 %
 In the above three-device example, a sender will split large messages
@@ -769,15 +776,15 @@ Developers commonly make decisions when writing code, such as:
 \item How large of a buffer should I preallocate?
 \item How long should the timeout be?
 \item At what message size should I change network protocols?
-\item ...and so on
+\item {\ldots}and so on.
 \end{aosaitemize}
 
 Users tend to assume that the developers will answer such questions in
 a way that is generally suitable for most types of systems.
 %
 However, the HPC community is full of scientist and engineer power
-users who aggressively want to tweak their hardware and software
-stacks to eek out every possible compute cycle.
+users who want to aggressively tweak their hardware and software
+stacks to eke out every possible compute cycle.
 %
 Although these users typically do not want to tinker with the actual
 code of their MPI implementation, they \emph{do} want to tinker by
@@ -786,8 +793,8 @@ consumption patterns, or forcing specific network protocols in
 different circumstances.
 
 Therefore, the MCA parameter system was included when designing Open
-MPI---a flexible mechanism that allows users to change internal Open
-MPI parameter values at run-time.
+MPI; the system is a flexible mechanism that allows users to change internal Open
+MPI parameter values at run time.
 %
 Specifically, developers register string and integer MCA parameters
 throughout the Open MPI code base, along with an associated default
@@ -795,7 +802,7 @@ value and descriptive string defining what the parameter is and how it
 is used.
 %
 The general rule of thumb is that rather than hard-coding constants,
-developers use run-time settable MCA parameters, thereby allowing
+developers use run-time-settable MCA parameters, thereby allowing
 power users to tweak run-time behavior.
 
 There are a number of MCA parameters in the base code of the three
@@ -806,11 +813,11 @@ For example, the TCL BTL plugin has a parameter that specifies whether
 only TCPv4 interfaces, only TCPv6 interfaces, or both types of
 interfaces should be used.
 %
-Alternatively, another TCP BTL parameter can be utilized to specify
+Alternatively, another TCP BTL parameter can be set to specify
 exactly which Ethernet devices to use.
 
 Users can discover what parameters are available via a user-level
-command line tool ({\tt ompi\_\-info}).
+command line tool (\code{ompi\_\-info}).
 %
 Parameter values can be set in multiple ways: on the command line, via
 environment variables, via the Windows registry, or in system- or
@@ -848,8 +855,8 @@ lessons.
 
 \begin{aosasect2}{Performance}
 
-Message passing performance and resource utilization are the king
-and queen of HPC.
+Message-passing performance and resource utilization are the king
+and queen of high-performance computing.
 %
 Open MPI was specifically designed in such a way that it could operate
 at the very bleeding edge of high performance: incredibly low
@@ -863,8 +870,8 @@ differently: carefully choose abstractions that lend themselves to
 shallow, performant call stacks (versus deep, feature-rich API call
 stacks).
 
-That being said, we also had to accept that in some cases, abstraction
----not architecture---must be thrown out the window.  Case in point:
+That being said, we also had to accept that in some cases, abstraction---not 
+architecture---must be thrown out the window.  Case in point:
 Open MPI has hand-coded assembly for some of its most
 performance-critical operations, such as shared memory locking and
 atomic operations.
@@ -874,7 +881,7 @@ and~\ref{fig.openmpi.mca} show two different \emph{architectural} views
 of Open MPI.
 %
 They do not represent the run-time call stacks or calling invocation
-layering for of the high performance code sections.
+layering for the high performance code sections.
 
 %%%%%
 
@@ -886,8 +893,8 @@ necessary to have gross, complex code in the name of performance
 %
 However, it is \emph{always} preferable to spend time trying to figure
 out how to have good abstractions to discretize and hide complexity
-whenever possible.  A few weeks of design can literally save hundreds
-or thousands of man-hours of maintenance on tangled, subtle, spaghetti
+whenever possible.  A few weeks of design can save literally hundreds
+or thousands of developer-hours of maintenance on tangled, subtle, spaghetti
 code.
 
 \end{aosasect2}
@@ -900,7 +907,7 @@ We actively tried to avoid re-inventing code in Open MPI that someone
 else has already written (when such code is compatible with Open
 MPI's BSD licensing).
 %
-Specifically, we have no compunction against either directly re-using
+Specifically, we have no compunctions about either directly re-using
 or interfacing to someone else's code.
 
 There is no place for the ``not invented here'' religion when trying
@@ -950,19 +957,19 @@ with.
 %
 Optimize for the much more common case: repeated operation.
 
-For example, {\tt malloc()} can be slow, especially if pages need to
+For example, \code{malloc()} can be slow, especially if pages need to
 be allocated from the operating system.  So instead of allocating just
 enough bytes for a single incoming network message, allocate enough
 space for a \emph{bunch} of incoming messages, divide the result up
-into individual message buffers, and setup a freelist to maintain
+into individual message buffers, and set up a freelist to maintain
 them.  In this way, the \emph{first} request for a message buffer may
-be slow.  But \emph{successive} requests will be much faster because
+be slow, but \emph{successive} requests will be much faster because
 they will just be de-queues from a freelist.
 
 %%%%%
 
 \paragraph{Lesson learned:} Split common operations into (at least)
-two phases: setup and repeated action.  Not only with the code perform
+two phases: setup and repeated action.  Not only will the code perform
 better, it may be easier to maintain over time because the distinct
 actions are separated.
 
@@ -973,7 +980,7 @@ actions are separated.
 \begin{aosasect2}{Miscellaneous}
 
 There are too many more lessons learned to describe in detail here;
-the following is a few more lessons that can be summed up briefly:
+the following are a few more lessons that can be summed up briefly:
 
 \begin{aosaitemize}
 \item We were fortunate to draw upon 15+ years of HPC research and
@@ -1014,7 +1021,7 @@ learned from the Open MPI project, I think they would be as follows:
 
 \item Differences are good.  Developer disagreements are good.
   Embrace challenges to the status quo; do not get complacent.  A
-  plucky grad student saying ``hey, check this out...'' can lead to
+  plucky grad student saying ``Hey, check this out{\ldots}'' can lead to
   the basis of a whole new feature or a major evolution of the
   product.
 
