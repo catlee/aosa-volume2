@@ -61,20 +61,25 @@
     <!-- Introduction does not need a section div -->
     <p>
     The Mozilla Release Engineering team has made a lot of advances
-    recently in how our release automation works. What we have so far
-		is not perfect, but it's getting much closer to our goal of being
+    recently in how our release automation works. We have reduced the 
+    requirements for humans to run commands during signing, check disk space, 
+    send emails to stakeholders throughout the process, and many other steps 
+    that are small but stack up into quite an undertaking for a release engineer. 
+    With so many steps there are always more opportunities for human error so 
+    while what we have now
+		is not perfect, it's getting much closer to our goal of being
 		able to push a button and walk away, with minimal human
 		interventions, eliminating many of the headaches and do-overs we
 		experienced with our older part manual, part automated release
 		processes. In this chapter, we will explore and explain the
 		infrastructure decisions as well as scripts that comprise the
-		complete, and current, Firefox rapid release system.
+		complete Firefox rapid release system as of Firefox 10.
     </p>
     <p>
 		You'll follow the system from the perspective of a release-worthy
 		Mercurial changeset as it is turned into a release candidate - and
 		then a public release - available to over 400 million daily users
-		worldwide.  We'll start with builds &amp; code signing, then
+		worldwide.  We'll start with builds and code signing, then
 		customized partner and localization repacks, the QA process, and
 		how we generate updates for every supported version, platform and
 		localization. All of these steps must be completed before any
@@ -97,11 +102,12 @@
 		download (or update) to your computer or mobile device.
     </p>
     <div class="sect">
-      <h2>6.0 "Look N ways before you start a release"</h2>
+      <h2>"Look N ways before you start a release"</h2>
     <p>
-    This chapter describes the mechanics of how we generate release
+    This section describes the mechanics of how we generate release
     builds for the Firefox product. Most of this chapter details the
-		complexity once the release builds start, but there is also plenty
+		significant steps in a release process that occurs once the builds start, 
+		but there is also plenty
 		of complex cross-group communications to deal with before Release
 		Engineering even starts to generate release builds, so lets start
 		there.
@@ -155,7 +161,7 @@
 			tricky very quickly.  To reduce complexity, and the risk of
 			mistakes, Mozilla now has a full-time person, - someone
 			explicitly not in Release Engineering - track the readiness of
-			the code for a  "go to build"i decision.  Changing processes
+			the code for a "go to build" decision.  Changing processes
 			during a chemspill is risky, so in order to make sure everyone
 			is familiar with the process when minutes matter, we use this
 			same process for "chemspill" and "regular" releases.</li> </ol>
@@ -166,9 +172,9 @@
         <p>Figure&nbsp;6.0: Complete Release Timeline</p>
       </div>
     <div class="sect">
-      <h2>6.1 "Go to build"</h2>
+      <h2>"Go to build"</h2>
       <div class="figure" id="fig.ffreleng.go_to_build" class="inline">
-        <img src="../images/ffreleng/go_to_build.png" alt="Getting from code to "Go to build" />
+        <img src="../images/ffreleng/go_to_build.png" alt="Getting from code to 'Go to build'" />
         <p>Figure&nbsp;6.1: Getting from code to "Go to build"</p>
       </div>
 
@@ -267,10 +273,9 @@ Instead, we schedule this out properly in advance, so everything stays
 on schedule with people working normal hours. This keeps people fresh
 and better able to handle unscheduled urgent work if the need
 arises.</li>
-	<li>Some releases are "urgent", where minutes matter. We
-	call these "chemspills". These are typically to fix a published
+	<li>Some releases are urgent, where minutes matter. These are typically to fix a published
 	security exploit, or fix a newly-introduced-top-crash problem,
-	impacting a large percentage of our userbase. These need to be
+	impacting a large percentage of our userbase. These "chemspills" need to be
 	created as quickly as possible and are typically not pre-scheduled
 	releases.  </li>
 	<li>Some releases change from "routine" to "chemspill" or from
@@ -317,7 +322,7 @@ arises.</li>
 
     </div>
     <div class="sect">
-      <h2>6.2 Tagging, Building, and Source Tarballs</h2>
+      <h2>Tagging, Building, and Source Tarballs</h2>
       <div class="figure" id="fig.ffreleng.tagging">
         <img src="../images/ffreleng/tagging.png" alt="Automated tagging" />
         <p>Figure&nbsp;6.2: Automated tagging</p>
@@ -363,7 +368,10 @@ arises.</li>
         code that goes into the official builds, it also records the
         revisions of source and tools used on a per-release basis for
         future comparison of what changed between releases. For
-				Firefox releases, one example tag is FIREFOX_6_0_2_RELEASE.
+				Firefox releases, one example tag set is 
+				FIREFOX_10_0_RELEASE FIREFOX_10_0_BUILD1 FENNEC_10_0_RELEASE FENNEC_10_0_BUILD1. 
+				These tags allow us to keep a history of Firefox and Fennec (mobile Firefox) 
+				releases' version and build numbers in our release repos.
         </p>
         <p>
 				Once all the repositories are tagged, a series of dependent
@@ -376,13 +384,18 @@ arises.</li>
 				builds if we ever needed to (if our VCS failed somehow).
         </p>
         <p>
-        For the main Firefox source repository, the first thing we
-        actually do is to create a release branch (relbranch) based on
-        the signed-off revision given by the Release Coordinator.
-        This release branch is implemented as an in-repository named
-        branch whose parent changeset is the signed-off revision. The
-        release branch is used to make release-specific modifications
-        to the source code, such as bumping the version numbers, or
+        For the Firefox build's source, sometimes we
+        need to do a cut over from an earlier repo. For example 
+        with a beta release this means pulling in the signed off 
+        revision from Mozilla-Aurora (our more-stable-than-nightly repo) 
+        for Firefox 10.0b1. For a release it means pulling in the approved 
+        changes from Mozilla-Beta (typically the same code used for 10.0b6) 
+        to the Mozilla-Release repo. 
+        This release branch is then created in as a named
+        branch whose parent changeset is the signed-off revision from the 
+        'go' to build provided by the Release Coordinator. This
+        release branch can be used to make release-specific modifications
+        to the source code, such as bumping version numbers, or
         finalizing the set of locales that will be built. If a
         critical security vulnerability is discovered in the future
         that requires an immediate fix (a "chemspill" situation), a
@@ -438,9 +451,11 @@ arises.</li>
         </p>
         <p>
         Today our tagging is done in two parallel jobs: one for
-        desktop Firefox which takes around 20 minutes to complete,
+        desktop Firefox which takes around 20 minutes to complete as 
+        it includes tagging 80+ locale repos,
         and another for mobile Firefox which takes around 10 minutes
-        to complete. In the future we would like to streamline our release
+        to complete since we have less locales currently available for our 
+        mobile releases. In the future we would like to streamline our release
         automation process so that we tag <em>all</em> the various repositories
         in parallel. The initial builds can be started as soon as the
 				product code  and tools talos requirement repository is tagged
@@ -453,7 +468,7 @@ arises.</li>
         </p>
     </div>
     <div class="sect">
-      <h2>6.3 Localization Repacks and Partner Repacks</h2>
+      <h2>Localization Repacks and Partner Repacks</h2>
       <div class="figure" id="fig.ffreleng.repacks_l10n">
         <img src="../images/ffreleng/repacks_l10n.png" alt="Repacking Firefox for each localization" />
         <p>Figure&nbsp;6.3: Repacking Firefox for each localization</p>
@@ -520,11 +535,11 @@ arises.</li>
         </p>
     </div>
     <div class="sect">
-      <h2>6.4 Signing</h2>
+      <h2>Signing</h2>
       <p>
       In order for users to be sure that the copy of Firefox they have
       downloaded is indeed the one we just built, we apply a few
-      different types of digital signatures to the builds.
+      different types of digital signatures to the builds. 
       </p>
       <p>
       The first type of signing done is for our windows builds. We use
@@ -532,12 +547,17 @@ arises.</li>
       .exe and .dll files. Windows can use these signatures to verify
       that the application comes from a trusted source. We also sign
       the Firefox installer executable with the Authenticode key.
-      </p>
-      <p>
       We then generate a set of MD5 and SHA1 checksums for all the
       builds, and generate detached GPG signatures for the checksum
       files as well as all the builds. These signatures are used by
       mirrors and other community members to validate their downloads.
+      </p>
+      <p>
+      For security purposes, we sign on a dedicated signing machine that 
+      is blocked off via firewall and VPN from outside connections and our 
+      keyphrases, passwords, and keystores are passed among Release Engineers 
+      only in secure channels, often in person even, to minimize the risk of 
+      exposure as much as possible in a team where 12 people can run releases.
       </p>
       <div class="figure" id="fig.ffreleng.signing">
         <img src="../images/ffreleng/signing.png" alt="Signing Firefox installers" />
@@ -614,7 +634,7 @@ arises.</li>
       </p>
     </div>
     <div class="sect">
-      <h2>6.5 Updates</h2>
+      <h2>Updates</h2>
       <p>
 			Updates are created so users can update to the latest version of
 			Firefox quickly and easily using our built-in updater without
@@ -725,7 +745,7 @@ arises.</li>
     </div>
     
     <div class="sect">
-      <h2>6.6 Pushing to Internal Mirrors &amp; QA</h2>
+      <h2>Pushing to Internal Mirrors &amp; QA</h2>
       <p>Verifying that the release process is producing the expected
       deliverables is key for producing the right bits for our users. This
       is accomplished by QA's verification and sign offs process along the
@@ -780,8 +800,7 @@ arises.</li>
       </p>
     </div>
     <div class="sect">
-      <h2>6.7 Pushing to Public Mirrors and AUS</h2>
-      <!-- TODO  write about Bouncer? -->
+      <h2>Pushing to Public Mirrors and AUS</h2>
       <p>
       Pushing this latest Firefox release public is then pretty
       straightforward. The Release Coordinator gives the go-ahead to have
@@ -814,7 +833,7 @@ arises.</li>
       </p>
     </div>
   <div class="sect">
-      <h2>6.8 Working in the open</h2>
+      <h2>Working in the open</h2>
       <p>
 			At Mozilla we strive to do everything in the open. The Firefox
 			developers make all their code changes in the open. Similarly,
@@ -847,7 +866,9 @@ arises.</li>
 			Mozilla's ability to deliver "new rapid release cadence"
 			releases, as well as "urgent security fixes" releases to Firefox
 			users. With this chapter, we've tried to give a quick overview
-			of the things that did, and did not, work for us. Hopefully,
+			of how things work right now. We are constantly improving and 
+			in a year could probably do this chapter all over again with a 
+			very different set of strategies and workflow. Hopefully,
 			people find this information useful. If you have
 			comments/feedback, or details on things you've done differently
 			that did/didn't work better for you, please contact us at
