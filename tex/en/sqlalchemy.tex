@@ -975,7 +975,7 @@ mark constraints as ``deferred''.   But just as importantly, the ordering allows
 primary key identifiers, which on many platforms are only generated when an INSERT actually
 occurs, to be populated from a just-executed INSERT statement's result into the parameter
 list of a dependent row that's about to be inserted.   For deletes, the same ordering is used
-in reverse — dependent rows are deleted before those on which they depend,
+in reverse---dependent rows are deleted before those on which they depend,
 as these rows cannot be present without the referent of their foreign key being
 present.
 
