@@ -93,7 +93,7 @@ of any number of possible object abstraction layers that could be built upon
 the Core, and many developers and organizations build their applications on top
 of the Core directly.
 
-\aosafigure{../images/sqlalchemy/layers.png}{SQLAlchemy layer diagram}{fig.sqlalchemy.layers}
+\aosafigure{../images/sqlalchemy/layers.pdf}{SQLAlchemy layer diagram}{fig.sqlalchemy.layers}
 
 The Core/ORM separation has always been SQLAlchemy's most defining feature,
 and it has both pros and cons.   The explicit Core present in SQLAlchemy
@@ -225,7 +225,7 @@ combinations.
 \aosafigref{fig.sqlalchemy.engine} illustrates all of these objects and their relationship to each
 other as well as to the DBAPI components.
 
-\aosafigure{../images/sqlalchemy/engine.png}{Engine, Connection, ResultProxy API}{fig.sqlalchemy.engine}
+\aosafigure{../images/sqlalchemy/engine.pdf}{Engine, Connection, ResultProxy API}{fig.sqlalchemy.engine}
 
 \end{aosasect2}
 
@@ -254,7 +254,7 @@ and schema catalogs; the \code{PGDialect\_psycopg2}
 class then provides behaviors specific to the psycopg2 DBAPI, including
 unicode data handlers and server-side cursor behavior.
 
-\aosafigure{../images/sqlalchemy/dialect-simple.png}{Simple Dialect/ExecutionContext hierarchy}{fig.sqlalchemy.dialect}
+\aosafigure[275pt]{../images/sqlalchemy/dialect-simple.pdf}{Simple Dialect/ExecutionContext hierarchy}{fig.sqlalchemy.dialect}
 
 A variant on the above pattern presents itself when dealing with a DBAPI
 that supports multiple databases.   Examples of this include
@@ -266,7 +266,7 @@ is common to multiple back ends.  \aosafigref{fig.sqlalchemy.common} illustrates
 functionality of \code{sqlalchemy.connectors.pyodbc} shared among
 pyodbc-specific dialects for MySQL and Microsoft SQL Server.
 
-\aosafigure{../images/sqlalchemy/common-dbapi.png}{Common DBAPI behavior shared among dialect hierarchies}{fig.sqlalchemy.common}
+\aosafigure{../images/sqlalchemy/common-dbapi.pdf}{Common DBAPI behavior shared among dialect hierarchies}{fig.sqlalchemy.common}
 
 The \code{Dialect} and \code{ExecutionContext} objects provide a means
 to define every interaction with the database and DBAPI,
@@ -312,7 +312,7 @@ mostly from Martin Fowler's description of ``Metadata Mapping'' in
 \aosafigref{fig.sqlalchemy.schema} illustrates
 some key elements of the \code{sqlalchemy.schema} package.
 
-\aosafigure{../images/sqlalchemy/basic-schema.png}{Basic sqlalchemy.schema objects}{fig.sqlalchemy.schema}
+\aosafigure{../images/sqlalchemy/basic-schema.pdf}{Basic sqlalchemy.schema objects}{fig.sqlalchemy.schema}
 
 \code{Table} represents the name and other attributes of an actual table
 present in a target schema.  Its collection of \code{Column} objects
@@ -328,7 +328,7 @@ the \code{sqlalchemy.sql.expression} package, serving not just as schema-level
 constructs, but also as core syntactical units in the SQL expression language.
 This relationship is illustrated in \aosafigref{fig.sqlalchemy.crossover}.
 
-\aosafigure{../images/sqlalchemy/table-column-crossover.png}{The dual lives of Table and Column}{fig.sqlalchemy.crossover}
+\aosafigure{../images/sqlalchemy/table-column-crossover.pdf}{The dual lives of Table and Column}{fig.sqlalchemy.crossover}
 
 In \aosafigref{fig.sqlalchemy.crossover} we can see that \code{Table} and \code{Column} inherit from the SQL world as
 specific forms of ``things you can select from'', known as a \code{FromClause},
@@ -372,7 +372,7 @@ deriving it from a string.   The core type of node in this parse
 tree is called \code{ClauseElement}, and \aosafigref{fig.sqlalchemy.expression} illustrates the relationship
 of \code{ClauseElement} to some key classes.
 
-\aosafigure{../images/sqlalchemy/expression-hierarchy.png}{Basic expression hierarchy}{fig.sqlalchemy.expression}
+\aosafigure{../images/sqlalchemy/expression-hierarchy.pdf}{Basic expression hierarchy}{fig.sqlalchemy.expression}
 
 Through the use of constructor functions, methods, and overloaded Python
 operator functions, a structure for a statement like:
@@ -394,7 +394,7 @@ Note the representation of the literal value \code{'ed'} is contained
 within the \code{\_BindParam} construct, thus causing it to be rendered
 as a bound parameter marker in the SQL string using a question mark.
 
-\aosafigure{../images/sqlalchemy/example-expression.png}{Example expression tree}{fig.sqlalchemy.tree}
+\aosafigure{../images/sqlalchemy/example-expression.pdf}{Example expression tree}{fig.sqlalchemy.tree}
 
 From the tree diagram, one can see that a simple descending traversal through
 the nodes can quickly create a rendered SQL statement, as we'll see in greater
@@ -453,7 +453,7 @@ to define SQL language aspects specific to the target database.
 \aosafigref{fig.sqlalchemy.compiler} provides an overview of this class hierarchy with respect to the
 PostgreSQL dialect.
 
-\aosafigure{../images/sqlalchemy/compiler-hierarchy.png}{Compiler hierarchy, including PostgreSQL-specific implementation}{fig.sqlalchemy.compiler}
+\aosafigure[250pt]{../images/sqlalchemy/compiler-hierarchy.pdf}{Compiler hierarchy, including PostgreSQL-specific implementation}{fig.sqlalchemy.compiler}
 
 The \code{Compiled} subclasses define a series of \emph{visit} methods, each
 one referred to by a particular subclass of \code{ClauseElement}.  A hierarchy
@@ -465,7 +465,7 @@ aim for the production of a string SQL statement as well as a final
 collection of bound parameters with default values.   \aosafigref{fig.sqlalchemy.hierarchy} illustrates
 the process of visit methods resulting in textual units.
 
-\aosafigure{../images/sqlalchemy/statement-compilation.png}{Call hierarchy of a statement compilation}{fig.sqlalchemy.hierarchy}
+\aosafigure{../images/sqlalchemy/statement-compilation.pdf}{Call hierarchy of a statement compilation}{fig.sqlalchemy.hierarchy}
 
 A completed \code{Compiled} structure contains the full SQL string and
 collection of bound values.   These are coerced by an
@@ -612,7 +612,7 @@ mapper(User, user_table, properties={
 
 When the mapping is complete, the structure of objects related to the class is detailed in \aosafigref{fig.sqlalchemy.anatomy}.
 
-\aosafigure{../images/sqlalchemy/mapper-components.png}{Anatomy of a mapping}{fig.sqlalchemy.anatomy}
+\aosafigure{../images/sqlalchemy/mapper-components.pdf}{Anatomy of a mapping}{fig.sqlalchemy.anatomy}
 
 The figure illustrates a SQLAlchemy mapping defined as two separate layers
 of interaction between the user-defined class and the table metadata to which
@@ -715,7 +715,7 @@ scenario, illustrating their connection to a rendered SQL statement which occurs
 method of \code{Query}.  It also shows generation of \emph{row population} functions which receive result rows
 and populate individual object attributes, a process which occurs within the \code{instances} method of \code{Query}.
 
-\aosafigure{../images/sqlalchemy/query-loading.png}{Traversal of loader strategies including a joined eager load}{fig.sqlalchemy.loading}
+\aosafigure{../images/sqlalchemy/query-loading.pdf}{Traversal of loader strategies including a joined eager load}{fig.sqlalchemy.loading}
 
 SQLAlchemy's early approach to populating results used a traditional traversal
 of fixed object methods associated with each strategy to receive each row and
@@ -840,7 +840,7 @@ occur when using two database connections directly.
 
 \aosafigref{fig.sqlalchemy.session} illustrates a \code{Session} and the primary structures it deals with.
 
-\aosafigure{../images/sqlalchemy/session-overview.png}{Session overview}{fig.sqlalchemy.session}
+\aosafigure{../images/sqlalchemy/session-overview.pdf}{Session overview}{fig.sqlalchemy.session}
 
 The public-facing portions above are the \code{Session} itself and the collection of user objects,
 each of which is an instance of a mapped class.    Here we see that mapped objects keep
@@ -961,7 +961,7 @@ using a \emph{topological sort}.   A topological sort is a process that sorts it
 that is, only certain elements must precede others.  \aosafigref{fig.sqlalchemy.toposort} illustrates the
 behavior of the topological sort.
 
-\aosafigure{../images/sqlalchemy/topological-sort.png}{Topological sort}{fig.sqlalchemy.toposort}
+\aosafigure{../images/sqlalchemy/topological-sort.pdf}{Topological sort}{fig.sqlalchemy.toposort}
 
 The unit of work constructs a partial ordering based on those persistence commands which must precede others.   The
 commands are then topologically sorted and invoked in order.
@@ -990,7 +990,7 @@ a set of \code{User} objects, then a set of \code{Address} objects, where an
 intermediary step copies newly generated \code{User} primary key values into the
 \code{user\_id} foreign key column of each \code{Address} object.
 
-\aosafigure{../images/sqlalchemy/uow-mapper-buckets.png}{Organizing objects by mapper}{fig.sqlalchemy.organizing}
+\aosafigure[250pt]{../images/sqlalchemy/uow-mapper-buckets.pdf}{Organizing objects by mapper}{fig.sqlalchemy.organizing}
 
 In the per-mapper sorting situation, any number of \code{User} and \code{Address} objects can be flushed
 with no impact on the complexity of steps or how many ``dependencies'' must be considered.
@@ -1015,7 +1015,7 @@ per-mapper buckets.   \aosafigref{fig.sqlalchemy.cyclesteps} illustrates
 the bucket of \code{User} objects being broken up into individual per-object commands,
 resulting from the addition of a new \code{relationship} from \code{User} to itself called \code{contact}.
 
-\aosafigure{../images/sqlalchemy/uow-element-buckets.png}{Organizing reference cycles into individual steps}{fig.sqlalchemy.cyclesteps}
+\aosafigure[250pt]{../images/sqlalchemy/uow-element-buckets.pdf}{Organizing reference cycles into individual steps}{fig.sqlalchemy.cyclesteps}
 
 The rationale behind the bucket structure is that it allows batching of common
 statements as much as possible, both reducing the number of steps required in
