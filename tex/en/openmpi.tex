@@ -561,16 +561,11 @@ equivalent in each supported operating system).
 
 The base component struct contains some logistical information, such
 as the component's formal name, version, framework version adherence,
-etc.  (See the ``Base Component Struct'' sidebar.)
+etc.
 %
 This data is used for debugging purposes, inventory listing, and
 run-time compliance and compatibility checking.
 
-%% FIXME Author has all his code blocks in sidebars - it seems to work
-%% because he refers to them in the body text, but they are tending to
-%% cluster. Revisit this closer to ship date. -ARB
-
-\begin{aosabox}{Base Component Struct}
 \begin{verbatim}
 struct mca_base_component_2_0_0_t {
     /* Component struct version number */
@@ -595,7 +590,6 @@ struct mca_base_component_2_0_0_t {
         mca_register_component_params;
 };
 \end{verbatim}
-\end{aosabox}
 
 %% FIXME This is widowed from the list that follows at the moment. Revisit
 %% before going to print. -ARB Jan 19
@@ -657,10 +651,8 @@ component) can add a function pointer in its framework-specific
 component struct.
 
 The MPI \code{btl} framework, which provides point-to-point MPI
-messaging functionality, uses this technique.  Its framework-specific
-struct is shown in the ``BTL Framework Component Struct'' sidebar.
+messaging functionality, uses this technique.
 
-\begin{aosabox}{BTL Framework Component Struct}
 \begin{verbatim}
 struct mca_btl_base_component_2_0_0_t {
     /* Base component struct */
@@ -673,7 +665,6 @@ struct mca_btl_base_component_2_0_0_t {
     mca_btl_base_component_progress_fn_t btl_progress;
 };
 \end{verbatim}
-\end{aosabox}
 
 As an example of the TCP BTL framework query functions, the TCP BTL
 component \code{btl\_\-init} function does several things:
@@ -689,10 +680,8 @@ Similarly, plugins can extend the framework-specific component struct
 with their own members.
 %
 The \code{tcp} component in the \code{btl} framework does this; it
-caches many data members in its component struct. (See the ``TCP
-Component Struct (in the BTL Framework)'' sidebar.)
+caches many data members in its component struct.
 
-\begin{aosabox}{TCP Component Struct (in the BTL Framework)}
 \begin{verbatim}
 struct mca_btl_tcp_component_t {
     /* btl framework-specific component struct */ 
@@ -708,7 +697,6 @@ struct mca_btl_tcp_component_t {
     /* ...and many more not shown here */
 };
 \end{verbatim}
-\end{aosabox}
 
 This struct-nesting technique is effectively a simple emulation of C++
 single inheritance: a pointer to an instance of a \code{struct
