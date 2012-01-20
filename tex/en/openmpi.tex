@@ -39,7 +39,7 @@ connection occurring, no stream of bytes to interpret, and no network
 addresses exchanged.  MPI abstracts all of that away, not only to hide
 such complexity from the upper-level application, but also to make the
 application portable across different environments and underlying
-message-passing transports.  Specifically, a correct MPI application
+message passing transports.  Specifically, a correct MPI application
 is source-compatible across a wide variety of platforms and network
 types.
 
@@ -240,7 +240,7 @@ Open MPI has three main abstraction layers, shown in
 
 \item \emph{Open MPI Run-Time Environment (ORTE)}\footnote{Pronounced
     ``or-tay''.}: An MPI implementation must provide not only the
-  required message-passing API, but also an accompanying run-time
+  required message passing API, but also an accompanying run-time
   system to launch, monitor, and kill parallel jobs.  In Open MPI's
   case, a parallel job is comprised of one or more processes that may
   span multiple operating system instances, and are bound together to
@@ -258,7 +258,7 @@ Open MPI has three main abstraction layers, shown in
 
 \item \emph{Open MPI (OMPI)}: The MPI layer is the highest abstraction layer,
   and is the only one exposed to applications.  The MPI API is
-  implemented in this layer, as are all the message-passing semantics
+  implemented in this layer, as are all the message passing semantics
   defined by the MPI standard.
 
   Since portability is a primary requirement, the MPI layer supports a
