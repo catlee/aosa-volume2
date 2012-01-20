@@ -1,120 +1,139 @@
 \begin{aosachapter}{Git}{s:git}{Susan Potter}
 
-Work in progress\ldots
+\begin{aosasect1}{Git in a Nutshell}
 
-Git is an open source distributed Version Control System (dVCS) that was
-born out of the needs and frustrations of the Linux Kernel development
-community in 2005.
+Git enables the evolution of a digital body of work (often,
+but not limited to, code) with many collaborators
+using a peer-to-peer network of collaborating repositories. It
+supports distributed workflows to manage a body of work that is
+either eventually converging or temporarily diverging.
 
-Git enables the management of a digital body of work (often,
-but not limited to, code) across a peer-to-peer network of
-collaborating repositories. It supports distributed workflows to
-manage a body of work that is either eventually converging or
-diverging in nature. A feat not easily accomplished
-using a centralized Version Control System (VCS) such as CVS or
-Subversion, the two most popular open source centralized VCS
-projects as well as similar commercial products.
+This chapter will show how various aspects of Git work under the covers
+to enable this and how this differs from other VCSes.
+
+\end{aosasect1}
 
 \begin{aosasect1}{Git's Origin}
-To understand Git better it is helpful to understand the circumstances
-from which the Git project was started in the Linux Kernel community.
+To understand Git's design philosophy better it is helpful to understand the
+circumstances from which the Git project was started in the Linux Kernel
+community, which had initially been maintained via tarballs and patches for
+years initially.
 
-The Linux Kernel was first released in October 1991. It rapidly grew a
-community of core developers and contributors by the mid-to-late 1990s. Along
-side individuals adopting Linux there were organisations or teams of
-developers creating Linux distributions based on top of the Linux Kernel
-project by the close of the decade. These distributions would sometimes
-temporarily fork the official version of the kernel if patches relevant to
-their user base were not yet included in the Kernel project when releasing
-new versions of their distribution.
+The Linux kernel was unusual to most commercial software projects at that
+time due to the large number of committers and the high variance of
+contributors with respect to involvement and knowledge in the existing
+codebase. The core development community struggled to find a VCS that
+satisfied most of their needs. Initially the version control systems
+reviewed were open source projects themselves and they were from the linear
+history lineage such as SCCS, RCS, and CVS.
 
-By the late 1990s Torvalds and other core developers voiced concerns
-about managing patches from a large number of contributors for the
-Kernel codebase using any of the open source VCSes available to them at
-that time.
+Git is an open source project that was born out of the needs and
+frustrations of the Linux Kernel development community in 2005. At that time
+the Linux kernel codebase had been managed across two VCS systems (BitKeeper
+and CVS) by different core developers. BitKeeper offered a different
+view of VCS history lineage to the popular open source VCS projects at this
+time.
 
-Between late 1999 and early 2005 many of the core developers of the Linux
-Kernel opted to use BitKeeper, a proprietary distributed VCS made by
-BitMover Inc. This was a contraversial move by arguably the best known open
-source project at that time, a decision questioned by Richard Stallman, the
-GNU project founder. Several key Linux Kernel developers (including Alan Cox)
-refused to use BitKeeper, due to concerns over the proprietary Bitmover
-license. By 2002 BitMover provided a way for the Linux BitKeeper servers to
-interoperate with the Linux CVS server in a few ways. It offered a
-public release and free use of its servers to a shortlist of free and
-open source projects including the Linux Kernel. For a few years the
-Linux Kernel would be maintained across two VCS systems in this way.
+BitMover, the company that built BitKeeper, provided free licenses and VCS
+hosting services to some core developers on the Linux kernel until early 2005
+when it announced it would no longer provide free licenses or VCS hosting
+services as of mid-2005.
 
-This ended during the first half of 2005, when BitMover retracted its
-"Free Use" version for a number of key Linux Kernel developers and Git
-was born to fill the void.
-
-In April 2005, days after the BitMover announcement, Linus Torvalds began
+In April 2005, days after this BitMover announcement, Linus Torvalds began
 development in haste of what was to become Git as we know it today. He began
-by writing a collection of scripts to help him manage email patches
-to apply one after the other. The aim of this initial collection of scripts
-was to fail merges quickly so the maintainer could modify the codebase mid-
-patch stream and continue merging contributed patches once cleanly able to.
+by writing a collection of scripts to help him manage email patches to apply
+one after the other. The aim of this initial collection of scripts was to
+fail merges quickly so the maintainer could modify the codebase mid-patch
+stream and continue merging contributed patches once cleanly able to.
 
 Torvald's had one philosphical goal for Git - to embody the anti-CVS - plus
-three usability goals from the outset:
+three usability design goals from the outset:
 \begin{aosaitemize}
   \item support distributed workflows like those enabled by BitKeeper
   \item offer safeguards against content corruption
   \item offer high performance
 \end{aosaitemize}
 
-Despite BitKeeper influencing the original design of Git, it is implemented
-in fundamentally different ways and allows even more distributed and even
-local-only workflows, which weren't possible with BitKeeper.
+These design goals have been accomplished and maintained to a degree as I
+will attempt to show by dissecting Git's use of DAGs for content storage,
+reference pointers for heads, object model representatation, remote protocol
+and how it tracks the merging of trees.
 
-Around this time (c2005) three other open source distributed VCS projects
-were initiated, including Mercurial, which was a project covered in volume 1
-of this title series.
+Despite BitKeeper influencing the original design of Git, it is implemented
+in fundamentally different ways and allows even more distributed plus
+local-only workflows, which were not possible with BitKeeper, which requires
+a server.
+
+Around this time (circa 2005) three other open source distributed VCS projects
+were initiated, including Mercurial, which is a project covered in volume 1
+of this title series. All of these dCVS tools offer slightly different ways
+to enable distributed workflows, which centralized VCS systems before them
+were not capable of handling directly. \emph{Note: Subversion has an
+extension maintained by different developers to support server-to-server
+synchronization named SVK.}
+
+Open source DVCS projects today include Bazaar, Darcs, Fossil, Git,
+Mercurial, and Veracity.
 
 \end{aosasect1}
 
-\begin{aosasect1}{Version Control System (VCS) Landscape}
+\begin{aosasect1}{Version Control System (VCS) Design}
 
 Now is a good time to take a step back and look at the alternative VCS
 solutions to Git. Understanding these differences will allow us to explore
-the architectural choices made while developing Git and appreciating its
-design philosphy.
+the architectural choices faced while developing Git.
 
-As mentioned previously in this chapter, Git is a distributed VCS. What does
-this mean?
+A version control system usually has three core functional
+requirements, namely:
+\begin{aosaitemize}
+  \item storing content
+  \item tracking changes to the content (history including merge metadata)
+  \item distributing the content and history with collaborators
+\end{aosaitemize}
 
-On a fundamental level it means that a \emph{work} does not \emph{need} to
-have a centralized, all-knowing repository that will be the only source of
-truth for the \emph{work}. However, that doesn't prevent us for using it in
-this way if we so wish to do so. Though it still may not behave exactly like
-some of the centralized VCS solutions you might be familiar with already.
+\emph{Note: The third requirement above is not a functional requirement for
+all VCSs.}
 
-At the heart of every VCS tool is tracking the history of an evolving
-\emph{work}. The Revision Control System (RCS) was one of the first popular
-VCSes. It was based on tracking revisions of individual files taking care of
-storing, retrieving, logging, identifying, and merging revisions. It offered
-a number of improvements over the more primitive VCS it was based on,
-Source Code Control System (SCCS). It did this by providing an easier
-interface and improving performance of retrieving versions for its primary
-use case. The Concurrent Versions System (CVS) was built on top of RCS adding
-a client/server model, which made sharing changes of the work on a team more
-tenable than its predecessor. Subversion was CVS's successor, which added
-better support for renaming files/folders and also dropped first class
-support of trunking and tags, opting instead for an unenforced repository
-directory structure convention. Subversion continued CVS's centralized
-client/server approach.
+\begin{aosasect2}{Content Storage}
 
-This VCS product family only support linear histories. Where later
-versions supercede earlier versions. Git is not part of this family; there is
-no easy conceptual evolution from Subversion to Git in terms of tracking
-histories or content.
+The most common design choices for storing content in the VCS world are:
+\begin{aosaitemize}
+  \item delta based
+  \item directed acyclic graph (DAG)
+\end{aosaitemize}
 
-Instead Git enables full branching capability using directed acyclic
-graphs (DAG). The history of a file is linked all the way
+Git stores the content as a directed acyclic graph (DAG). Where a hierarchy
+mimicking the filesystem's directory structure is created with objects of
+different types (see 'Object Database' below).
+
+\end{aosasect2}
+\begin{aosasect2}{Commit and Merge Histories}
+
+On the history and change tracking front most VCS software uses one of
+the following approaches to solve this:
+\begin{aosaitemize}
+  \item linear history
+  \item directed acyclic graph (DAG) for history
+\end{aosaitemize}
+
+Again Git uses a DAG, this time to store its history. Each commit contains
+metadata about its ancestors. A commit in Git can have zero or many
+(theoretically unlimited) parent commits. For example, the first commit
+in a Git repository would have zero parents. The result of a three way merge
+would have three parents.
+
+Another primary difference between Git, Subversion and its linear history
+ancenstors, is its ability to directly support branching that will record
+most merge history cases.
+
+\aosafigure{../images/git/dag-example.png}{Example of a DAG representation
+  in Git}{fig.git.dag}
+
+Git enables full branching capability using directed acyclic
+graphs (DAG) to store content. The history of a file is linked all the way
 up its directory structure (via nodes representing directories) to the root
 directory, which is then linked to a commit node. This commit node in turn
-can have one or more parents (more on this later). This affords us two
+can have one or more parents. This affords Git two
 properties that allow us to reason about our history and content in
 more definite ways than the RCS family. Namely:
 \begin{aosaitemize}
@@ -127,31 +146,88 @@ more definite ways than the RCS family. Namely:
   RCS family of VCS approach) determine common ancestors.
 \end{aosaitemize}
 
-As you can see most DAGs represented in Git are the special case of rooted
-trees.
+\end{aosasect2}
+\begin{aosasect2}{Distribution}
 
-This diagram shows two dimensions of VCS variety. Namely distribution mode
-and storage mode.
+To tackle content distribution of a working copy to collaborators on a
+project VCS solutions have handled this in one of three ways:
+\begin{aosaitemize}
+  \item local-only: this would be for VCS solutions that do not make the
+    third functional requirement above
+  \item central server: where all changes to the repository must transact
+    via one specific repository for it to be recorded in history at all.
+  \item distributed model: where there will often be publically accessible
+    repositories for collaborators to "push" to but commits can be made
+    locally and pushed to these public nodes later. Allowing offline work.
+\end{aosaitemize}
 
-DIAGRAM HERE!!!
+\end{aosasect2}
 
-There are three primary distribution modes for VCSes: local, client/server
-and distributed (or peer-to-peer). Some VCSes can support all of these, some
-just one.
+To demonstrate the benefits and limitations of each major design choice
+for VCS functional needs, we will consider a Subversion and Git repository
+(on a server), content wise they are equivalent (the HEAD of the default
+branch in the Git repository has the equivalent content as the Subversion
+repository's latest revision on trunk). A developer, named Alex,
+has a local checkout of the Subversion repository and a local clone of the
+Git repository locally.
 
-On the other axis we can see two primary categories for storage modes:
-delta based and directed acyclic graph based.
+Let us say Alex makes a change to a 1MB file in the local Subversion
+checkout then commits the change. Locally the checkout of the file mimicks
+the latest change and local meta data is updated. In the centralized
+Subversion repository, during Alex's commit, a diff is generated between the
+previous snapshot of the files and the new changes and this delta is stored
+in the repository.
 
-As we can see Git is a VCS that can support local, client/server and
-peer-to-peer distribution modes and uses DAG based content storage.
+Contrast this with the way Git works.
+When Alex makes the same modification to the equivalent file in the local
+Git clone, the change will be recorded locally first then Alex can "push"
+the local pending commits to a public repository so the work can be shared
+more easily with other collaborators on the project. The content changes are
+stored identically for each Git repository that the commit exists in. Upon
+the local commit (the simplest case), the local Git repository will create a
+new object representing a file for the changed file (with all its content
+inside). For each directory above the changed file (plus the repository
+root directory) a new tree object is created with a new identifier. A DAG
+is created starting from the newly created root tree object pointing to
+blobs (reusing existing blob references where the files content has not
+changed in this commit) and referencing the newly created blob in place
+of that file's previous blob object in the previous tree hierarchy. At this
+point the commit is still just local to the current Git clone on Alex's
+local device. When Alex "pushes" the commit to a publically accessible
+Git repository this commit gets sent to that repository. After the public
+repository verifies the commit can apply to the branch the same objects
+are stored in the public repository as were originally created in the
+local Git repository.
+
+There are a lot more moving parts in the Git scenario, both under the
+covers and two user interactions with the tool as opposed to just one
+to share the commit with others. However, there are benefits to this
+model such as:
+\begin{aosaitemize}
+  \item providing the ability for the collaborators to work offline and
+    commit incrementally as they work offline
+  \item allowing the collaborator to determine when his/her work is
+    ready to share
+  \item offer the collaborator history access to the repository when
+    offline
+\end{aosaitemize}
+
+In the Subversion scenario the collaborator did not have to remember
+to push to the public remote repository when ready for others to
+view the changes made. When a small modification to a larger file is sent
+to the central repository in Subversion the delta stored is much more
+efficient than storing the complete file contents for each version.
+However, as we will see later there is a work around for this that Git
+uses in certain scenarios.
 
 \end{aosasect1}
 
-
 \begin{aosasect1}{The Toolkit}
 
-Today the Git ecosystem posesses many GUIs on a number of operating systems.
-These are mostly built on top of the Git core toolkit.
+Today the Git ecosystem posesses many command-line and UI tools on a number
+of operating systems (including Windows, which was originally barely
+supported). Most of these tools are mostly built on top of the Git core
+toolkit.
 
 Due to the way Git was originally written by Linus and its inception within
 the Linux community it was written with a toolkit design philosphy very much
@@ -167,22 +243,12 @@ communicating between repositories for collaboration.
 While the toolkit design has provided enough commands to offer fine grained
 access to functionality for many scripters, application developers
 complained about the lack of a linkable library for Git. Since the Git binary
-calls die(), it was not reentrant and GUIs, web interfaces or longer running
-services would have to fork/exec a call to the Git binary, which can be slow.
+calls \code{die()}, it is not reentrant and GUIs, web interfaces or longer
+running services would have to fork/exec a call to the Git binary, which can
+be slow.
 
-Shawn Pearce spearheaded an effort to create a linkable Git library with
-more permissive licensing that didn't inhibit use of the library. This was
-called libgit2. It didn't find much traction until a student named, Vincent
-Marti chose it for his Google Summer of Code project last year. Since then
-Vincent and GitHub have continued contributing to the libgit2 project and
-created Ruby bindings for it in a project called Rugged. More recently
-Python bindings around libgit2 have emerged in an open source project
-called pygit2. These three open source projects are maintained independently
-of the Git core project.
-
-As you can see today there is a wide array of ways to integrate with Git.
-From the plumbing portion of the toolkit, procelain layer and now the
-linkable library, libgit2 and its offshoots.
+Work is being done to improve the situation for application developers, see
+\emph{Current And Future Work} section for more information.
 \end{aosasect1}
 
 \begin{aosasect1}{The Repository, Index and Working Areas}
@@ -248,16 +314,20 @@ directories:
   working directory.
   \item \emph{Object Database}: the .git/objects directory is the default
   Git object database, which contains all content or pointers to local
-  content.
+  content. All objects are immutable once created.
   \item \emph{References}: the .git/refs directory is the default location
   for storing reference pointers for both local and remote branches, tags and
-  heads.
+  heads. A reference is a pointer to an object, usually of type \emph{tag} or
+  \emph{commit}. References are managed outside of the Object Database to
+  allow the references to change where they point to as the repository
+  evolves. Special cases of references may point to other references, e.g.
+  \code{HEAD}.
 \end{aosaitemize}
 
 This is the actual repository. The directory that contains the working set
 of files is the \emph{working directory}, which is typically the parent of
 the .git directory (or \emph{repository}). If you were creating a Git
-remote repository that wouldn't have a working directory you could
+remote repository that would not have a working directory you could
 initialize it using the \code{git init --bare} command. This would create
 just the pared down repository files at the root, instead of creating it
 as a subdirectory under the working tree.
@@ -272,17 +342,7 @@ specific changes in a file or set of files you can using \code{git add -p}.
 
 The \emph{Git index}, by default, is stored as a single file inside the
 repository directory. The paths to these three areas can be customized
-using the following environment variables:
-\begin{aosaitemize}
-  \item \code{GIT\_DIR}: sets the repository directory or the \emph{.git}
-  directory.
-  \item \code{GIT\_INDEX}: sets the path to the \emph{index}. This is often
-  referred to as the staging area as well.
-  \item \code{GIT\_WORK\_DIR}: sets the path to the \emph{working directory}
-  for the local Git repository. The work directory represents the "live"
-  state of the current head (or HEAD) of the Git repository. This is usually
-  a reference to the current branch.
-\end{aosaitemize}
+using environment variables.
 
 It is helpful to understand the interactions that take place between these
 three areas (the repository, index and working areas) during the execution
@@ -300,6 +360,46 @@ of a few core Git commands:
   index for staged files needs updating with the working directory's
   version. Nothing changes in the Git directory (or repository).}
 \end{aosaitemize}
+
+Let us explore what this means more concretely by inspecting the contents of
+files under the .git directory (or repository).
+
+\begin{aosaitemize}
+  \item \code{GIT\_DIR=\${PWD}/.git}
+  \item \code{cat \${GIT\_DIR}/HEAD}
+\begin{verbatim}
+ref: refs/heads/master
+\end{verbatim}
+  \item \code{MY\_CURRENT\_BRANCH=\$(cat .git/HEAD | sed 's/ref: //g')}
+  \item \code{cat \${GIT\_DIR}/\${MY\_CURRENT\_BRANCH}}
+\begin{verbatim}
+cat: .git/refs/heads/master: No such file or directory
+\end{verbatim}
+\end{aosaitemize}
+
+We get an error because, before making any commits to a Git repository at
+all, no branches exist, except the default branch in Git is \code{master},
+whether it exists yet or not.
+
+Now if we make a new commit then the master branch is created by default for
+this commit. Let us do this (continuing in the same shell, retaining
+history and context):
+
+\begin{aosaitemize}
+  \item \code{git commit -m "Initial empty commit" --allow-empty}
+  \item \code{git branch}
+\begin{verbatim}
+* master
+\end{verbatim}
+  \item \code{cat \${GIT\_DIR}/\${MY\_CURRENT\_BRANCH}}
+\begin{verbatim}
+3bce5b130b17b7ce2f98d17b2998e32b1bc29d68
+\end{verbatim}
+  \item \code{git cat-file -p \$(cat \${GIT\_DIR}/\${MY\_CURRENT\_BRANCH})}
+\end{aosaitemize}
+
+What we are starting to see here is the content representation inside Git's
+object database.
 
 Let us explore what this means more concretely by inspecting the contents of
 files under the .git directory (or repository).
@@ -380,41 +480,172 @@ most useful to enable Git's distributed model (the second goal of Git).
 The latter property enables some safegaurds against corruption (the third
 goal of Git above).
 
-It should be noted that despite the desirable properties of using DAG based
-storage for content tracking it is likely for many repositories that delta
-storage will be more space efficient. Git tackles this by "packing" objects
-in a compressed format using an pack index file to point to offsets to
-specific objects in the corresponding pack file.
-
-TODO: More to discuss here. Use plumbing commands like 'git show' and 'git
-cat-file' to demonstrate how the primitives work together and build on top of
-each other.
+Despite the desirable properties of using DAG based storage for content
+storage and merge histories, for many repositories delta storage will be
+more space efficient than using \emph{loose} DAG objects.
 
 \end{aosasect1}
 
-\begin{aosasect1}{Merging and Rebasing}
+\begin{aosasect1}{Storage and Compression Techniques}
 
-TODO: Step through a merge in diagrams and then contrast this to a rebase.
+Git tackles the storage space problem by "packing" objects in a compressed
+format using an index file to point to offsets to specific objects in the
+corresponding \emph{packed} file.
+
+\aosafigure{../images/git/packed-format.png}{Diagram of a pack file with
+  corresponding index file}{fig.git.pack}
+
+We can count the number of \emph{loose} (or unpacked) objects in the local
+Git repository using \code{git count-objects}. Now we can have Git pack
+\emph{loose} objects in the object database, remove loose objects already
+packed, and find redundant pack files with Git plumbing commands if desired.
+
+There are two versions of pack files as of this writing: version 1 and
+version 2. Version 1 being used in versions of Git before version 1.6 of Git
+and version 2 of the pack file format being used by default in version 1.6
+and above of Git.
+
+In version 1 of the pack file format in Git, only CRC checksums for
+the pack file and index file are stored in the index file. This means there
+is the possibility of undetectable corruption in the compressed data during
+the repacking phase without any further checks. Version 2 of the pack file
+format overcomes this problem by including the CRC checksums of each
+compressed object in the pack index file. Version 2 also allows packfiles
+larger than 4 Gb, which version 1 does not support. As a way to quickly
+detect pack file corruption the end of the pack file contains a 20-byte SHA1
+sum of the ordered list of all the SHAs in that file.
+
+The emphasis of the newer pack file format is to help fulfill Git second
+usability design goal of offering safegaurds against data corruption.
+
+For remote communication Git calculates the commits and content that needs
+to be sent over the wire to syncrhonize repositories (or just a branch) and
+generates the pack file format on the fly to send back using the desired
+protocol of the client (assuming the server supports it).
 
 \end{aosasect1}
 
-\begin{aosasect1}{Explaining Resets}
+\begin{aosasect1}{Merge Histories}
 
-TODO: Explain resets in terms of the repository, index and working areas.
+As mentioned previously Git differs fundamentally in merge history approach
+than the RCS family of VCSes. Subversion, for example, represents
+file or tree history has a linear progression. Whatever has a higher revision
+number will supercede anything before it. Branching is not supported directly,
+only through an unenforced directory structure within the repository.
+
+Let us first use an example to show how this can be problematic when
+maintaining multiple branches of a work. Then we will look at a scenario to
+show its limitations.
+
+When working on a "branch" in Subversion at the typical root
+\code{branches/branch-name}, we are working on directory subtree adjacent to
+the \code{trunk} (typically where the live or \emph{master} equivalent code
+resides within). Let us say this branch is to represent parallel development
+of the \code{trunk} tree.
+
+As an example,
+we might be rewriting a codebase to use a different database. Part of the
+way through our rewrite we wish to merge in upstream changes from another
+branch subtree (not trunk). We merge in these changes, manually if necessary,
+and proceed with our rewrite. Later that day we finish our database vendor
+migration code changes on our \code{branches/branch-name} branch and merge
+our changes into \code{trunk}. The problem with the way linear history VCSes
+like Subversion handle this is that there is no way to know that the
+changesets from the other branch are now contained within the trunk.
+
+DAG based merge history VCSes, like Git, handle this case reasonably well.
+Assuming the other branch does not contain commits that have not been merged
+into our database vendor migration branch (say \code{db-migration} in our
+Git repository), we can determine - from the commit object parent
+relationships - that a commit on the \code{db-migration} branch contained
+the \emph{tip} (or HEAD) of the other upstream branch. Note that a commit
+object can have zero or more (bounded by only the abilities of the merger)
+parents. Therefore the merge commit on the \code{db-migration} branch
+\emph{knows} it merged in the current HEAD of the current branch and the
+HEAD of the other upstream branch through the SHA hashes of the parents.
+The same is true of the merge commit in the \code{master} (the \code{trunk}
+equivalent in Git).
+
+\aosafigure{../images/git/merge-history.png}{Diagram showing merge history
+ lineage}{fig.git.merge}
+
+A question that is hard to answer definitively using DAG (and linear) based
+merge histories is which commits are contained within each branch. For
+example, in the above scenario we assumed we merged in to each branch all
+the changes from both branches. This may not be the case.
+
+For simpler cases Git has the ability to \emph{cherry pick} commits from
+other branches in to the current branch, assuming the commit can cleanly
+be applied to the branch.
 
 \end{aosasect1}
 
-\begin{aosasect1}{Distributed Workflows}
+\begin{aosasect1}{What's Next?}
 
-TODO: Describe some distributed workflows enabled by Git.
+As mentioned previously, Git core as we know it today is based on a toolkit
+design philosophy from the Unix world, which is very handy for scripting,
+but less useful for embedding inside or linking with longer running
+applications or services.
+
+To combat this Shawn Pearce spearheaded an effort to create a linkable Git
+library with more permissive licensing that did not inhibit use of the
+library. This was called libgit2. It did not find much traction until a
+student named, Vincent Marti chose it for his Google Summer of Code project
+last year. Since then Vincent and GitHub have continued contributing to the
+libgit2 project and created Ruby bindings for it in a project called Rugged.
+More recently Python bindings around libgit2 have emerged in an open source
+project called pygit2. These three open source projects are maintained
+independently of the Git core project.
+
+From this effort another related project that allows Git's object database
+to be persisted in a number of different key-value database backends has
+emerged such as Memcached, Redis, SQLite and MySQL (at time of writing).
+
+As you can see today there is a wide array of ways to use the Git format.
+The face of Git is no longer just the toolkit command line interface of
+the Git Core project, rather it is the repository format and protocol to
+share between repositories.
+
+As of writing, most of these projects have not reached a stable release
+according to their developers, so work in the area still needs to be done,
+but the future of Git appears bright.
 
 \end{aosasect1}
 
-\begin{aosasect1}{Future Work}
+\begin{aosasect1}{Lessons Learned}
 
-TODO/NOTES:
-Discuss the work being done now on using different object database backends
-for storage, from Redis, Memcached, SQLite and others.
+In software, every design decision is ultimately a trade-off. As a power
+user of Git for version control and someone who has developed software
+around the Git object database model I have a deep fondness of Git in its
+present form. Therefore, these lessons learned are more of a reflection
+of common recurring complaints about Git that due to design decisions and
+focus of the Git core developers.
+
+One of the most common complaints by developers and managers that evaluate
+Git for their project's version control needs has been the lack of IDE
+integration on par with other VCS tools. The toolkit design of Git has made
+this more challenging than integrating other modern VCS tools into IDE
+and related tools.
+
+Earlier in Git's history some of the commands were implemented as shell
+scripts. These shell script command
+implementations made Git less portable, especially to Windows. I am
+sure the Git core developers did not lose sleep over this fact, but it
+has impacted adoption of Git in larger organizations negatively due to
+portability issues that were prevalent in the early days of Git's
+development. Today another project named Git for Windows has been started
+by volunteers to ensure new versions of Git are ported to Windows in a
+timely manner.
+
+An indirect consequence of designing Git around a toolkit design
+with a lot of plumbing commands is that new users get lost quickly from
+getting lost in all the available subcommands to not being able to
+understand error messages because a low level plumbing task failed. This
+has made adopting Git harder for some developer teams.
+
+Even with these complaints about Git, I am excited about the possibilities
+of future development on the Git Core project plus all the related open
+source projects that have been launched from it.
 
 \end{aosasect1}
 

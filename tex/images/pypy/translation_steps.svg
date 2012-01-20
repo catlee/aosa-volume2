@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.0//EN" "http://www.w3.org/TR/2001/PR-SVG-20010719/DTD/svg10.dtd">
+<svg width="31cm" height="26cm" viewBox="99 58 605 511" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+  <g>
+    <rect style="fill: #ffffff" x="100" y="140" width="340" height="49"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x="100" y="140" width="340" height="49"/>
+    <text style="fill: #000000;text-anchor:middle;font-size:12.7998;font-family:sanserif;font-style:normal;font-weight:normal" x="270" y="168.4">
+      <tspan x="270" y="168.4">Annotator</tspan>
+    </text>
+  </g>
+  <g>
+    <rect style="fill: #ffffff" x="100" y="220" width="340" height="69"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x="100" y="220" width="340" height="69"/>
+    <text style="fill: #000000;text-anchor:middle;font-size:12.7998;font-family:sanserif;font-style:normal;font-weight:normal" x="270" y="258.4">
+      <tspan x="270" y="258.4">RTyper</tspan>
+    </text>
+  </g>
+  <g>
+    <rect style="fill: #ffffff" x="100" y="320" width="340" height="60"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x="100" y="320" width="340" height="60"/>
+    <text style="fill: #000000;text-anchor:middle;font-size:12.7998;font-family:sanserif;font-style:normal;font-weight:normal" x="270" y="353.9">
+      <tspan x="270" y="353.9">Backend Optimizations</tspan>
+    </text>
+  </g>
+  <g>
+    <rect style="fill: #ffffff" x="100" y="420" width="340" height="60"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x="100" y="420" width="340" height="60"/>
+    <text style="fill: #000000;text-anchor:middle;font-size:12.7998;font-family:sanserif;font-style:normal;font-weight:normal" x="270" y="453.9">
+      <tspan x="270" y="453.9">Garbage collector and exception transformation</tspan>
+    </text>
+  </g>
+  <g>
+    <rect style="fill: #ffffff" x="100" y="520" width="340" height="49"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x="100" y="520" width="340" height="49"/>
+    <text style="fill: #000000;text-anchor:middle;font-size:12.7998;font-family:sanserif;font-style:normal;font-weight:normal" x="270" y="548.4">
+      <tspan x="270" y="548.4">C source generation</tspan>
+    </text>
+  </g>
+  <g>
+    <line style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x1="270" y1="189" x2="270" y2="209.295"/>
+    <polygon style="fill: #000000" points="270,216.795 265,206.795 270,209.295 275,206.795 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="270,216.795 265,206.795 270,209.295 275,206.795 "/>
+  </g>
+  <g>
+    <line style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x1="270" y1="289.969" x2="270" y2="310.264"/>
+    <polygon style="fill: #000000" points="270,317.764 265,307.764 270,310.264 275,307.764 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="270,317.764 265,307.764 270,310.264 275,307.764 "/>
+  </g>
+  <g>
+    <line style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x1="270" y1="380.981" x2="270" y2="409.282"/>
+    <polygon style="fill: #000000" points="270,416.782 265,406.782 270,409.282 275,406.782 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="270,416.782 265,406.782 270,409.282 275,406.782 "/>
+  </g>
+  <g>
+    <line style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x1="270" y1="480.27" x2="270" y2="509.27"/>
+    <polygon style="fill: #000000" points="270,516.77 265,506.77 270,509.27 275,506.77 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="270,516.77 265,506.77 270,509.27 275,506.77 "/>
+  </g>
+  <g>
+    <rect style="fill: #ffffff" x="100" y="60" width="340" height="60"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x="100" y="60" width="340" height="60"/>
+    <text style="fill: #000000;text-anchor:middle;font-size:12.7998;font-family:sanserif;font-style:normal;font-weight:normal" x="270" y="93.9">
+      <tspan x="270" y="93.9">Flow object space</tspan>
+    </text>
+  </g>
+  <g>
+    <line style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x1="270" y1="120" x2="270" y2="129.276"/>
+    <polygon style="fill: #000000" points="270,136.776 265,126.776 270,129.276 275,126.776 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="270,136.776 265,126.776 270,129.276 275,126.776 "/>
+  </g>
+  <g>
+    <rect style="fill: #ffffff" x="500" y="60" width="203" height="60"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x="500" y="60" width="203" height="60"/>
+    <text style="fill: #000000;text-anchor:middle;font-size:12.7998;font-family:sanserif;font-style:normal;font-weight:normal" x="601.5" y="93.9">
+      <tspan x="601.5" y="93.9">Python bytecode interpreter</tspan>
+    </text>
+  </g>
+  <g>
+    <line style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x1="449.736" y1="90" x2="489.407" y2="90"/>
+    <polygon style="fill: #000000" points="442.236,90 452.236,85 449.736,90 452.236,95 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="442.236,90 452.236,85 449.736,90 452.236,95 "/>
+    <polygon style="fill: #000000" points="496.907,90 486.907,95 489.407,90 486.907,85 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="496.907,90 486.907,95 489.407,90 486.907,85 "/>
+  </g>
+</svg>

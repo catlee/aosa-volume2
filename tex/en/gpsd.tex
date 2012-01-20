@@ -3,18 +3,10 @@
 GPSD is a suite of tools for managing collections of GPSes and other
 sensors related to navigation and precision timekeeping, including
 marine AIS radios and digital compasses. The main program, a service
-daemon named \code{gpsd}, makes reports from all of these available as
-a JSON object stream on a well-known TCP/IP port; modular architecture
-and careful interface design makes it readily extensible to handle new
-sensor types. Other programs in the suite include both demonstration
-clients usable as code models and various diagnostic tools.
-
-\aosaquestion{We try to follow the old editorial advice ``Show, don't
-tell.''  Rather than telling us that your architcture is modular,
-that your interface design is careful, and that your system is
-readily extensible, \emph{show} us.  Alternatively, if you want to
-keep this claim here in the opening paragraph, tell us that you're
-\emph{going} to show us.}
+daemon named \code{gpsd}, makes reports from all of these available
+as a JSON object stream on a well-known TCP/IP port.  Other programs
+in the suite include both demonstration clients usable as code
+models and various diagnostic tools. 
 
 GPSD is widely deployed on laptops, smartphones, and autonomous
 vehicles including self-driving automobiles and robot submarines. It
@@ -30,23 +22,18 @@ more and the usual one-off patches from hundreds of others.
 
 GPSD has historically had an exceptionally low defect rate, as
 measured both by auditing tools such as splint, valgrind, and Coverity
-and by the incidence of bug reports on its tracker and elsewhere.
-This did not come about by accident; the project has been very
-aggressive about incorporating technology for automated testing, and
-that effort has paid off handsomely.
-
-\aosaquestion{A claim like ``exceptionally low defect rate'' needs
-substantiation, the earlier the better.  How are you measuring it,
-what are the numbers, and how do you know this is exceptionally low?}
+and by the incidence of bug reports on its tracker and
+elsewhere\footnote{Our first Coverity scan in 2007 revealed a defect
+incidence per KLOC about half that of the Linux kernel.}.  This did
+not come about by accident; the project has been very aggressive about
+incorporating technology for automated testing, and that effort has
+paid off handsomely.
 
 GPSD is sufficiently good at what it does that it has coopted or
 effectively wiped out all of its approximate predecessors and at least
 one direct attempt to compete with it.  In 2010 GPSD won the first
 Good Code Grant from the Alliance for Code Excellence.  By the time
 you finish this chapter you should understand why.
-
-\aosaquestion{``You should understand why'' will strike some readers
-as hubris---perhaps rephrase?}
 
 \begin{aosasect1}{Why GPSD Exists}
 
@@ -79,24 +66,19 @@ support new kinds of location-aware sensors---such as receivers for
 second-generation aircraft transponders---as protocol documentation
 and test devices become available.
 
-Functionally, the single most important themes in GPSD's design is
+To sum up, the single most important theme in GPSD's design is
 hiding all the device-dependent ugliness behind a simple client
 interface talking to a zero-configuration service.
-
-\aosaquestion{Feels like the sentence above is dangling---would it
-  work better as a lead-in to the next section?}
 
 \end{aosasect1}
 
 \begin{aosasect1}{The External View}
 
 The main program in the GPSD suite is the \code{gpsd} service daemon.
-It can collect the take from a set of attached sensor devices over
-RS232, USB, Bluetooth, TCP/IP, and UDP links. Reports are normally
-shipped to TCP/IP port 2947, but can also go out via a shared-memory
-or D-BUS interface.
-
-\aosaquestion{``collect the take'' in para above?}
+It can collect data from a set of attached sensor devices over RS232,
+USB, Bluetooth, TCP/IP, and UDP links. Reports are normally shipped to
+TCP/IP port 2947, but can also go out via a shared-memory or D-BUS
+interface.
 
 The GPSD distribution ships with client libraries for C, C++, and
 Python.  It includes sample clients in C, C++, Python, and PHP. A Perl
@@ -127,15 +109,11 @@ things.
 
 One of the most important lessons we think we have for future projects
 is that it is not enough for a software suite to be correct, it should
-also be able to \emph{demonstrate its own correctness}.  We have found that
-when this goal is pursued properly it is not a hair shirt but rather a
-pair of wings---the time we've take to write test harnesses and
-regression tests has paid for itself many times over in the freedom
-it gives us to modify code without fearing that we are wreaking
-subtle havoc on existing functionality.
-
-\aosaquestion{I think ``hair shirt'' vs. ``pair of wings'' is mixing
-metaphors: perhaps ``ball and chain'' vs. ``pair of wings''?}
+also be able to \emph{demonstrate its own correctness}.  We have found
+that the time we've take to write test harnesses and regression tests
+has paid for itself many times over in the freedom it gives us to
+modify code without fearing that we are wreaking subtle havoc on
+existing functionality.
 
 \end{aosasect1}
 
@@ -146,11 +124,9 @@ zero-configuration service\footnote{With one minor exception for
 Bluetooth devices with broken firmware.}.  It has no dotfile!  The
 daemon deduces the sensor types it's talking to by sniffing the
 incoming data.  For RS232 and USB devices \code{gpsd} even autobauds
-(i.e., automatically detects data rates), so it is not necessary for
-the daemon to know in advance the speed/parity/stopbits at which the
-sensor is shipping information.
-
-\aosaquestion{Please check that the ``i.e.'' above is correct.}
+(that is, automatically detects the serial line speed), so it is not
+necessary for the daemon to know in advance the speed/parity/stopbits
+at which the sensor is shipping information.
 
 When the host operating system has a hotplug capability, hotplug
 scripts can ship device-activation and deactivation messages to a
@@ -174,10 +150,6 @@ command-line options.  The trouble with this is that configuration
 which can be edited, \emph{must} be edited.  This implies adding setup
 hassle for end users, which is precisely what a well-designed service
 daemon should avoid.
-
-\aosaquestion{I think the paragraph above is redundant given the one
-before it and the one following, though I like the statement about
-what can be edited must be edited.}
 
 The GPSD developers are Unix hackers working from deep inside the
 Unix tradition, in which configurability and having lots of knobs
@@ -339,16 +311,12 @@ its type.  The driver's job is to mine data out of the packet payload
 into a per-device session structure and set some status bits telling
 the dispatcher layer what kind data it got.
 
-\aosaquestion{A picture or two 'round about here would help a lot.}
-
 One of those bits is an indication that the daemon has accumulated
 enough data to ship a report to its clients.  When this bit is raised
 after a data read from a sensor device, it means we've seen the end of
 a packet, the end of a packet group (which may be one or more
 packets), and the data in the device's session structure should be
 passed to one of the exporters.
-
-\aosaquestion{Should ``socket'' in the para below be in code font, or...?}
 
 The main exporter is the ``socket'' one; it generates a report object
 in JSON and ships it to all the clients watching the device. There's a
@@ -367,14 +335,16 @@ drivers know how to analyze packet payloads, but know nothing about
 either the packet-sniffer internals nor the exporters.  The exporters
 look only at the session data structure updated by the drivers.
 
-This sepatation of function has served GPSD very well. For example,
+This separation of function has served GPSD very well. For example,
 when we got a request in early 2010 to adapt the code to accept sensor
 data coming in as UDP packets, it was easy to implement that in a
 handful of lines of code without disturbing later stages in the data
 pipeline.
 
-\aosaquestion{The kind of example you give int he pararaph above is
-exactly what readers liked most about the first volume.}
+More generally, careful layering and modularization has made it
+relatively easy to add new sensor types.  We incorporate new drivers
+every six months or so; some have been written by people who are not
+core developers.
 
 \end{aosasect1}
 
@@ -386,18 +356,15 @@ her particular problem case that gradually leak more information
 between layers or stages that were originally designed for clean
 separation.
 
-\aosaquestion{Should I connect the previous paragraph and the next one
-with a ``For example''?}
-
-One that we're concerned about at time of writing is that some
-information about input source type (USB, RS232, pty, Bluetooth, TCP,
-UDP) seems to need to be passed up to the dispatcher layer, to tell it
-(for example) whether probe strings should be sent to an unidentified
-device. Such probes sometimes required to wake up RS232C sensors, but
-there are good reasons not to ship them to any more devices than we
-have to. Many GPSes and other sensor devices are designed on low
-budgets and in a hurry; some can be confused to the point of catatonia
-by unexpected control strings.
+For example, one that we're concerned about at time of writing is that
+some information about input source type (USB, RS232, pty, Bluetooth,
+TCP, UDP) seems to need to be passed up to the dispatcher layer, to
+tell it (for example) whether probe strings should be sent to an
+unidentified device. Such probes sometimes required to wake up RS232C
+sensors, but there are good reasons not to ship them to any more
+devices than we have to. Many GPSes and other sensor devices are
+designed on low budgets and in a hurry; some can be confused to the
+point of catatonia by unexpected control strings.
 
 For a similar reason, the daemomn has a \code{-b} option that prevents 
 it from attempting baud-rate changes  during the packet-sniffer
@@ -411,10 +378,8 @@ rules.  Much more usually, though, such exceptions are a bad thing.
 For example, we've had some patches contributed to make PPS time
 service work better that messed up the vertical layering, making it
 impossible for PPS to work properly with more than the one driver they
-were intended to help.
-
-\aosaquestion{Presumably you rejected these?  If so, what did you
-do about PPS time service?}
+were intended to help. We rejected these in favor of working harder
+at device-type-independent improvement.
 
 On one occasion some years ago, we had a request to support a GPS with
 the odd property that the checksums in its NMEA packets may be invalid
@@ -425,13 +390,12 @@ the packet-sniffer would hand garbage to the NMEA driver, or (b) add a
 command-line option to force the sensor type.
 
 The project lead (the author of this chapter) refused to do either.
-\aosaquestion{So what did you do if not either of the options above?}
 Giving up on NMEA packet validation was an obvious bad idea.  But a
 switch to force the sensor type would have been an invitation to get
 lazy about proper autoconfiguration, which would cause problems all
 the way up to GPSD's client applications andd their users.  The next
 step down that road paved with good intentions would surely have been
-a baud-rate switch.
+a baud-rate switch. Instead, we declined to support this broken device.
 
 One of the most important duties of a project's lead architect is to
 defend the architecture against expedient ``fixes'' that would break
@@ -578,24 +542,16 @@ cutting corners in quality assurance is acceptable.
 The GPSD project developers believe that the only acceptable policy is
 to design for zero defects. Software complexity being what it is, we
 have not quite achieved this---but for a project GPSD's size and age
-and complexity we come unusually close.
-
-\aosaquestion{Again, ``unusually'' requires comparative data---could
-you use ``very'' instead?}
+and complexity we come very close.
 
 Our strategy for doing this is a combination of architecture and
 coding policies that aim to exclude the possibility of defects in
-shipped code.
-
-\aosaquestion{The previous single-sentence paragraph feels like it
-ought to be combined with something else.}
-
-One important policy is this: the \code{gpsd} daemon never uses
-dynamic storage allocation---no \code{malloc} or \code{calloc}, and no
-calls to any functions or libraries that require it.  At a stroke
-this banishes the single most notorious defect attractor in C coding.
-We have no memory leaks and no double-malloc or double-free bugs, and
-we never will.
+shipped code.  One important policy is this: the \code{gpsd} daemon
+never uses dynamic storage allocation---no \code{malloc} or
+\code{calloc}, and no calls to any functions or libraries that require
+it.  At a stroke this banishes the single most notorious defect
+attractor in C coding.  We have no memory leaks and no double-malloc
+or double-free bugs, and we never will.
 
 We get away with this because all of the sensors we handle emit
 packets with relatively small fixed maximum lengths, and the daemon's
@@ -722,12 +678,9 @@ was in 2006, why \code{gpsd} now handles non-GPS sensors like magnetic
 compasses and Marine AIS receivers, and why we contemplate
 possibilities like ADS-B aircraft tracking.
 
-\aosaquestion{Some sort of editing glitch in the second sentence of
-the paragraph below: ``the high the''.}
-
 These are fair questions. We can approach an answer by looking at the
 actual complexity cost of adding a new device type.  For very good
-reasons, including relatively low data volumes and the high the
+reasons, including relatively low data volumes and the high
 electrical-noise levels historically associated with serial wires to
 sensors, almost all reporting protocols for GPSes and other
 navigation-related sensors look broadly similar: small packets with a
@@ -758,22 +711,16 @@ application developers get one relatively simple API and the benefit
 of our hard-won expertise at design and testing across an increasing
 range of sensor types.
 
-\aosaquestion{I think the first sentence in the paragraph below is
-redundant given everything else you're saying.}
-
-What distinguishes GPSD from a mere mission-creepy pile of features is
-not luck or black magic but careful application of known best
-practices in software engineering.  The payoff from these begins with
-a low defect rate in the present, and continues with the ability to
-support new features with little effort or expected impact on defect
-rates in the future.
-
-Perhaps the most important lesson we have for other open-source
-projects is this: reducing defect rates to near zero is difficult, but
-it's not impossible---not even for a project as widely and variously
-deployed as GPSD is.  Sound architecture, good coding practice, and a
-really determined focus on testing can achieve it---and the most
-important prerequisite is the discipline to pursue all three.
+The payoff from GPSD's careful application of good software
+engineering practices begins with a low defect rate in the present,
+and continues with the ability to support new features with little
+effort or expected impact on defect rates in the future.  Perhaps the
+most important lesson we have for other open-source projects is this:
+reducing defect rates to near zero is difficult, but it's not
+impossible---not even for a project as widely and variously deployed
+as GPSD is.  Sound architecture, good coding practice, and a really
+determined focus on testing can achieve it---and the most important
+prerequisite is the discipline to pursue all three.
 
 \end{aosasect1}
 

@@ -1,0 +1,558 @@
+{\rtf1\ansi\ansicpg1252\cocoartf1138\cocoasubrtf230
+{\fonttbl\f0\fswiss\fcharset0 ArialMT;\f1\froman\fcharset0 Times-Roman;\f2\fswiss\fcharset0 Helvetica;
+}
+{\colortbl;\red255\green255\blue255;\red0\green21\blue132;}
+{\*\listtable{\list\listtemplateid1\listhybrid{\listlevel\levelnfc0\levelnfcn0\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\*\levelmarker \{decimal\}.}{\leveltext\leveltemplateid1\'02\'00.;}{\levelnumbers\'01;}\fi-360\li720\lin720 }{\listname ;}\listid1}
+{\list\listtemplateid2\listhybrid{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\*\levelmarker \{disc\}}{\leveltext\leveltemplateid101\'01\uc0\u8226 ;}{\levelnumbers;}\fi-360\li720\lin720 }{\listname ;}\listid2}
+{\list\listtemplateid3\listhybrid{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\*\levelmarker \{disc\}}{\leveltext\leveltemplateid201\'01\uc0\u8226 ;}{\levelnumbers;}\fi-360\li720\lin720 }{\listname ;}\listid3}}
+{\*\listoverridetable{\listoverride\listid1\listoverridecount0\ls1}{\listoverride\listid2\listoverridecount0\ls2}{\listoverride\listid3\listoverridecount0\ls3}}
+\margl1440\margr1440\vieww28260\viewh16600\viewkind0
+\deftab720
+\pard\pardeftab720\sa280
+
+\f0\b\fs48 \cf0 Introduction
+\f1\fs36 \
+\pard\pardeftab720
+
+\f0\b0\fs30 \cf0 Puppet is an open source IT management tool written in Ruby, used for datacenter automation and server management at Google, Twitter, the New York Stock Exchange, and many others. \'a0It is primarily maintained by Puppet Labs, which also founded the project. \'a0Puppet can manage as few as 2 machines and as many as 50,000, on teams with one system administrator or hundreds.
+\f1\fs24 \
+\
+
+\f0\fs30 Puppet is a tool for configuring and maintaining your computers: \'a0In its simple configuration language, you explain to Puppet how you want your machines configured, and it changes them as needed to match your specification. \'a0As you change that specification over time -- such as with package updates, new users, or configuration updates -- Puppet will automatically update your machines to match. \'a0If they are already configured as desired, then Puppet does nothing.\
+\
+In general, Puppet does everything it can to use existing system features to do its work; e.g., on Red Hat it will yum for packages and init.d for services, but on OS X it will use dmg for packages and launchd for services.  One of the guiding goals in Puppet is to have the work it does make sense whether you are looking at Puppet code or the system itself, so following system standards is critical.\
+\
+Puppet comes from multiple traditions of other tools.  In the open source world, it is most influenced by Cfengine, which was the first open source general-purpose configuration tool, and ISconf, whose use of 'make' for all work inspired the focus on explicit dependencies throughout the system.  In the commercial world, Puppet is a response to BladeLogic and Opsware (both since acquired by larger companies), each of which was successful in the market when Puppet was begun but each of which was focused on selling to executives at large companies rather than building great tools directly for system administrators.  Puppet is meant to solve similar problems to these tools, but it is focused on a very different user.
+\f1\fs24 \
+\
+
+\f0\fs30 For a simple example of how to use Puppet, here is a snippet of code that will make sure the secure shell service (SSH) is installed and configured properly:
+\f1\fs24 \
+\
+
+\f0\fs30 	class ssh \{
+\f1\fs24 \
+
+\f0\fs30 		package \{ ssh: ensure => installed \}
+\f1\fs24 \
+
+\f0\fs30 		file \{ \'93/etc/ssh/sshd_config\'94:
+\f1\fs24 \
+\pard\pardeftab720\li1920\fi960
+
+\f0\fs30 \cf0 source => \'93ssh/sshd_config\'94,
+\f1\fs24 \
+
+\f0\fs30 ensure => present,
+\f1\fs24 \
+
+\f0\fs30 require => Package[ssh]
+\f1\fs24 \
+
+\f0\fs30 \}
+\f1\fs24 \
+\pard\pardeftab720\li1920
+
+\f0\fs30 \cf0 service \{ sshd:
+\f1\fs24 \
+
+\f0\fs30 	ensure => running,
+\f1\fs24 \
+
+\f0\fs30 	require => [File[\'93/etc/ssh/sshd_config\'94], Package[ssh]]
+\f1\fs24 \
+
+\f0\fs30 \}
+\f1\fs24 \
+\pard\pardeftab720
+
+\f0\fs30 \cf0 	\}
+\f1\fs24 \
+\
+
+\f0\fs30 This makes sure the package is installed, the file is in place, and the service is running. \'a0Note that we\'92ve specified dependencies between the resources, so that we always perform any work in the right order. \'a0\'a0This class could then be associated with any host to apply this configuration on it. \'a0Notice that the building blocks of a Puppet configuration are structured objects, in this case \'91package\'92, \'91file\'92, and \'91service\'92. \'a0We call these objects \'91resources\'92 in Puppet, and everything in a Puppet configuration comes down to these resources and the dependencies between them.
+\f1\fs24 \
+\
+
+\f0\fs30 A normal Puppet site will have tens or even hundreds of these code snippets, which we call \'91classes\'92; we store these classes on disk in files called \'91manifests\'92, and collect them in related groups called \'91modules\'92. For instance, you might have an \'91ssh\'92 module with this \'91ssh\'92 class plus any other related classes, along with modules for \'91mysql\'92, \'91apache\'92, and \'91sudo\'92.\
+\
+Most Puppet interactions are via the command line or long-running HTTP services, but there are graphical interfaces for some things, such as report processing.  Puppet Labs also produces commercial products around Puppet, which tend more toward graphical web-based interfaces.
+\f1\fs24 \
+\
+
+\f0\fs30 Puppet's first prototype was written in the summer of 2004, and it was turned into a full-time focus in February of 2005. \'a0It was initially designed and written by Luke Kanies, a sysadmin who had done a lot of experience writing small tools, but none writing tools greater than 10,000 lines of code. \'a0In essence, Luke learned to be a programmer while writing Puppet, and that shows in both positive and negative ways in its architecture.
+\f1\fs24 \
+\
+
+\f0\fs30 Puppet was first and foremost built to be a tool for sysadmins, to be something that made their lives easier and allowed them to work faster, more efficiently, and with fewer errors. \'a0The first key innovation meant to deliver on this was a set of primitives, which we call \'91resources\'92, that would both be portable across most operating systems and also abstract away implementation detail, allowing the user to focus on outcomes rather than how to achieve them. \'a0This set of primitives was implemented in Puppet's Resource Abstraction Layer.
+\f1\fs24 \
+\
+
+\f0\fs30 Puppet resources must be unique on a given host. \'a0You can only have one package named \'91ssh\'92, one service named \'91sshd\'92, and one file named \'91/etc/ssh/sshd_config\'92. \'a0This prevents different parts of your configurations from conflicting with each other, and you find out about those conflicts very early in the configuration process. \'a0We refer to these resources by their type and title; e.g., Package[ssh] and Service[sshd]. \'a0You have a package and a service with the same name, because they are different types, but not two packages or services.
+\f1\fs24 \
+\
+
+\f0\fs30 The second key innovation in Puppet provides the ability to directly specify dependencies between resources. \'a0Previous tools focused on the individual work to be done, rather than how the various bits of work were related, and Puppet was the first tool to explicitly say that dependencies were a first-class part of your configurations and must be modeled that way. \'a0It built a graph of resources and their dependencies as one of the core data types, and essentially everything in Puppet hangs off of this graph (which is called a Catalog, in Puppet parlance) and its vertices and edges.
+\f1\fs24 \
+\
+
+\f0\fs30 The last major component in Puppet is its configuration language. \'a0This language is declarative, and is meant to be more configuration data than full programming - it most resembles Nagios's configuration format, but is also heavily influenced by Cfengine and ruby.
+\f1\fs24 \
+\
+
+\f0\fs30 Beyond the functional components, Puppet has had two guiding principles throughout its development: \'a0It should be as simple as possible, always preferring usability even at the expense of capability, and it should be built as a framework first and application second, so that others could build their own applications on Puppet's internals as desired. \'a0It was understood that Puppet's framework needed a killer application to be adopted widely, but the framework was always the focus, not the application. \'a0Most people think of Puppet as being that application, rather than the framework behind it.
+\f1\fs24 \
+\
+
+\f0\fs30 When Puppet's prototype was first built, Luke was essentially a decent Perl programmer with a lot of shell experience and some C experience, mostly consisting of working in Cfengine. \'a0The odd bit is he had experience building parsers for simple languages, having built two as part of smaller tools and also having rewritten Cfengine's parser from scratch in an effort to make it more maintainable (this code was never submitted back, because of small incompatibilities).\
+
+\f1\fs24 \
+
+\f0\fs30 A dynamic language was easily decided on for Puppet's implementation, based on much higher developer productivity and time to market, but choosing the language proved difficult. \'a0Initial prototypes in Perl went nowhere, so other languages were sought for experimentation. \'a0Python was tried, but Luke found the language quite at odds with how he thought about the world. \'a0Based on what amounted to a rumor of utility heard from a friend, Luke tried Ruby, and in four hours had built a usable prototype. \'a0When Puppet became a full time effort in 2005, Ruby was a complete unknown, so the decision to stick with it was a big risk, but again, programmer productivity was deemed the primary driver in language choice. \'a0The major distinguishing feature in Ruby, at least as opposed to Perl, was how easy it was to build non-hierarchical class relationships, but it also mapped very well to Luke\'92s brain, which turned out to be critical.
+\f1\fs24 \
+\pard\pardeftab720\sa280
+
+\f0\b\fs48 \cf0 Architectural Overview
+\f1\fs36 \
+\pard\pardeftab720
+
+\f0\b0\fs30 \cf0 This chapter is primarily about the architecture of Puppet's implementation (that is, the code that we've used to make Puppet do the things it's supposed to do) but it's worth briefly discussing its application architecture (that is, how the parts communicate), so that the implementation makes some sense.
+\f1\fs24 \
+\
+
+\f0\fs30 Puppet has been built with two modes in mind: \'a0A client/server mode with a central server and agents running on separate hosts, or a serverless mode where a single process does all of the work. \'a0To ensure consistency between these modes, Puppet has always had network transparency internally, so that the two modes used the same code paths whether they went over the network or not. \'a0Each executable can configure local or remote service access as appropriate, but otherwise they behave identically. \'a0Note also that you can use the serverless mode in what amounts to a client/server configuration, by pulling all configuration files to each client and having it parse them directly. \'a0This section will focus on the client/server mode, because it\'92s more easily understood as separate components, but keep in mind that this is all true of the serverless mode, also.
+\f1\fs24 \
+\
+
+\f0\fs30 One of the defining choices in Puppet\'92s application architecture is that the clients should not get access to raw Puppet modules; instead, they get a configuration compiled just for them. \'a0This provides multiple benefits: \'a0First, you follow the principle of least privilege, in that each host only knows exactly what it needs to know (how it should be configured), but it does not know how any other servers are configured. \'a0Second, you can completely separate the rights needed to compile a configuration (which might include access to central data stores) from the need to apply that configuration. \'a0Third, you can run hosts in a disconnected mode, where they repeatedly apply a configuration with no contact to a central server, which means you remain in compliance even if the server is down or the client is disconnected (such as would be the case in a mobile installation, or when the clients are in a DMZ).
+\f1\fs24 \
+\
+
+\f0\fs30 Given this choice, the workflow becomes relatively straightforward:
+\f1\fs24 \
+\pard\tx220\tx720\pardeftab720\li720\fi-720
+\ls1\ilvl0
+\f0\fs30 \cf0 {\listtext	1.	}The Puppet agent process collects information about the host it is running on, which it passes to the server\
+{\listtext	2.	}The parser uses that system information and Puppet modules on local disk to compile a configuration for that particular host and returns it to the agent\
+{\listtext	3.	}The agent applies that configuration locally, thus affecting the local state of the host, and files the resulting report with the server\
+\pard\pardeftab720
+
+\f1\fs24 \cf0 \
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardeftab720\pardirnatural
+
+\f2 \cf0 {{\NeXTGraphic PL_dataflow_cmyk_noTitle.pdf \width15840 \height12240
+}¬}\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardeftab720\pardirnatural
+
+\f1\b\fs28 \cf0 \
+\pard\pardeftab720
+
+\f0\b0\fs30 \cf0 \
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardeftab720\pardirnatural
+
+\f2\fs24 \cf0 {{\NeXTGraphic Timing Diagram.pdf \width11660 \height7460
+}¬}\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardeftab720\pardirnatural
+
+\f0\fs30 \cf0 \
+\pard\pardeftab720
+\cf0 Thus, the agent has access to its own system information, its configuration, and each report it generates. \'a0The server has copies of all of this data, plus access to all of the Puppet modules, and any back-end databases and services that might be needed to compile the configuration.
+\f1\fs24 \
+\
+
+\f0\fs30 Beyond the components that go into this workflow, which we\'92ll address next, there are many data types that Puppet uses for internal communication. These data types are critical, because they\'92re how all communication is done, and they\'92re public types and any other tools can consume or produce.
+\f1\fs24 \
+\
+
+\f0\fs30 The most most important data types are:
+\f1\fs24 \
+\pard\tx220\tx720\pardeftab720\li720\fi-720
+\ls2\ilvl0
+\f0\fs30 \cf0 {\listtext	\'95	}Facts: System data collected on each machine and used to compile configurations\
+{\listtext	\'95	}Manifest: Files containing Puppet code, generally organized into collections called \'91modules\'92\
+{\listtext	\'95	}Catalog: A graph of a given host\'92s resources to be managed and the dependencies between them\
+{\listtext	\'95	}Report: The collection of all events generated during application of a given Catalog\
+\pard\pardeftab720
+
+\f1\fs24 \cf0 \
+\
+
+\f0\fs30 Beyond Facts, Manifests, Catalogs, and Reports, Puppet supports data types for files, certificates (which it uses for authentication), and others.
+\f1\fs24 \
+\pard\pardeftab720\sa280
+
+\f0\b\fs48 \cf0 Component Analysis
+\f1\fs36 \
+\pard\pardeftab720\sa280
+
+\f0\fs38 \cf0 Agent
+\f1\fs28 \
+\pard\pardeftab720
+
+\f0\b0\fs30 \cf0 The first component you encounter in a Puppet run is the agent process. \'a0This was traditionally a separate executable called \'91puppetd\'92, but in 2.6 we reduced down to one executable, so now this is invoked with \'91puppet agent\'92, akin to how \'91git\'92 works. \'a0The agent has little functionality of its own; it is primarily configuration and code that implements the client-side aspects of the above-described workflow.
+\f1\fs24 \
+\pard\pardeftab720\sa280
+
+\f0\b\fs38 \cf0 Facter
+\f1\fs28 \
+\pard\pardeftab720
+
+\b0\fs24 \cf0 \
+
+\f0\fs30 The first component after the agent is an external tool called Facter, which is a very simple tool used to discover information about the host it is running on. \'a0This is data like the operating system, IP address, and host name, but Facter is also easily extensible, so many organizations add their own plugins to discover custom data. \'a0The agent sends the data discovered by Facter to the server, at which point it takes over the workflow.
+\f1\fs24 \
+\pard\pardeftab720\sa280
+
+\f0\b\fs38 \cf0 External Node Classifier
+\f1\fs28 \
+\pard\pardeftab720
+
+\f0\b0\fs30 \cf0 On the server, the first component encountered is what we call the External Node Classifier, or ENC. \'a0The ENC accepts the host name and returns a simple data structure containing the high-level configuration for that host. \'a0The ENC is generally a separate service or application: either another open source project, such as Puppet Dashboard or Foreman, or integration with existing data stores, such as LDAP. \'a0The purpose of the ENC is to specify what functional classes a given host belongs to, and what parameters should be used to configure those classes. \'a0For example, a given host might be in the \'91debian\'92 and \'91webserver\'92 classes, and have the parameter \'91datacenter\'92 set to \'91atlanta\'92. \'a0
+\f1\fs24 \
+\
+
+\f0\fs30 Note that as of Puppet 2.7, the ENC is not a required component. \'a0You can instead directly specify node configurations in Puppet code. \'a0Support for an ENC was added about 2 years after Puppet was launched, because we realized that classifying hosts is fundamentally different than configuring them, and it made more sense to split these problems into separate tools than to extend the language to support both facilities. \'a0The ENC is always recommended, and at some point soon will become a required component (at which point Puppet will ship with a sufficiently useful one that that requirement will not be a burden).
+\f1\fs24 \
+\
+
+\f0\fs30 Once the server receives classification information from the ENC and system information from Facter (via the agent), it bundles all of the information into a \'91Node\'92 object and passes it on to the Compiler.
+\f1\fs24 \
+\pard\pardeftab720\sa280
+
+\f0\b\fs38 \cf0 Compiler
+\f1\fs28 \
+\pard\pardeftab720
+
+\f0\b0\fs30 \cf0 As mentioned above, Puppet has a custom language built for specifying system configurations.  This was done \
+\
+Puppet\'92s compiler is really three chunks: \'a0A YACC-style parser generator and a customer lexer; a group of classes used to create our Abstract Syntax Tree (AST); and the Compiler class that handles the interactions of all of these classes and also functions as the API to this part of the system.
+\f1\fs24 \
+\
+
+\f0\fs30 The most complicated thing about the compiler is the fact that most Puppet code is lazily loaded on first reference (to reduce both load times and irrelevant logging about missing but unneeded dependencies), which means there aren\'92t really explicit calls to load and parse the code. 
+\f1\fs24 \
+\
+
+\f0\fs30 Puppet\'92s parser uses a normal {\field{\*\fldinst{HYPERLINK "http://dinosaur.compilertools.net/"}}{\fldrslt \cf2 \ul \ulc2 Yacc}}-style parser generator (built using the open source {\field{\*\fldinst{HYPERLINK "https://github.com/tenderlove/racc"}}{\fldrslt \cf2 \ul \ulc2 Racc}} tool). Unfortunately, there were no open source lexer generators when Puppet was begun, so it uses a custom lexer.
+\f1\fs24 \
+\
+
+\f0\fs30 Because we use an AST in Puppet, every statement in the Puppet grammar evaluates to an instance of a Puppet AST class (e.g., Puppet::Parser::AST::Statement), rather than taking action directly, and these AST instances are collected into a tree as the grammar tree is reduced. \'a0This AST provides a performance benefit when a single server is compiling configurations for many different nodes, because we can parse once but compile many times. \'a0It also gives us the opportunity to perform some introspection of the AST, which provides us information and capability we wouldn\'92t have if parsing operated directly.
+\f1\fs24 \
+\
+
+\f0\fs30 Very few approachable AST examples were available hen Puppet was begun, so there has been a lot of evolution in it, and we\'92ve also arrived at what seems a relatively unique formulation. \'a0Rather than creating a single AST for the entire configuration, we create many small ASTs, keyed off of their name
+\f1\fs24 \
+\
+
+\f0\fs30  \'a0For instance, this code:
+\f1\fs24 \
+\pard\pardeftab720\li960
+
+\f0\fs30 \cf0 class ssh \{
+\f1\fs24 \
+
+\f0\fs30 	package \{ ssh: ensure => present \}
+\f1\fs24 \
+
+\f0\fs30 \}
+\f1\fs24 \
+\pard\pardeftab720
+
+\f0\fs30 \cf0 creates a new AST containing a single Puppet::Parser::AST::Resource instance, and stores that AST by the name \'91ssh\'92 in the hash of all classes for this particular environment. \'a0\'a0(I\'92ve left out detail about other constructs akin to classes, but it\'92s unnecessary for this discussion.)
+\f1\fs24 \
+\
+
+\f0\fs30 Given the AST and a Node object (from the ENC), the compiler takes the classes specified in the node object (if there are any), looks them up, and evaluates them. \'a0In the course of this evaluation, the compiler is building up a tree of variable scopes - every class gets its own scope, which is attached to the creating scope. \'a0This amounts to dynamic scoping in Puppet - if one class includes another class, then the included class can look up variables directly in the including class. This has always been a nightmare, and we have been on the path of getting rid of this capability.
+\f1\fs24 \
+\
+
+\f0\fs30 The Scope tree is temporary and is discarded once compiling is done, but the artifact of compiling is also built up gradually over the course of the compilation. \'a0We call this artifact a Catalog, but it is just a graph of resources and their relationships. \'a0Nothing of the variables, control structures, or function calls survive into the catalog; it\'92s plain data, and can be trivially converted to JSON, YAML, or just about anything else.
+\f1\fs24 \
+\
+
+\f0\fs30 During compilation, we create containment relationships - a class \'91contains\'92 all of the resources that come with that class (e.g., the \'91ssh\'92 package above is \'91contained by\'92 the \'91ssh\'92 class above). \'a0A class might contain a definition, which itself contains either yet more definitions or individual resources. \'a0A catalog tends to be a very horizontal, disconnected graph - many classes, each no more than a couple levels deep.
+\f1\fs24 \
+\
+
+\f0\fs30 One of the awkward aspects of this graph is that it also contains \'91dependency\'92 relationships, such as a service requiring a package (maybe because the package installation actually creates the service), but these dependency relationships are actually specified as parameter values on the resources, rather than as edges in the structure of the graph. \'a0Our graph class (called SimpleGraph, for historical reasons) does not support having both containment and dependency edges in the same graph, so we have to convert between them for various purposes.
+\f1\fs24 \
+\pard\pardeftab720\sa280
+
+\f0\b\fs38 \cf0 Transaction
+\f1\fs28 \
+\pard\pardeftab720
+
+\f0\b0\fs30 \cf0 Once the catalog is entirely constructed (assuming there is no failure), it is passed on to the Transaction. \'a0In a system with a separate client and server, the Transaction runs on the client.
+\f1\fs24 \
+\
+
+\f0\fs30 Puppet's transaction class provides the framework for actually affecting the system, whereas everything else we\'92ve discussed just builds up and passes around objects.  Unlike transactions in more common systems, such as databases, Puppet transactions do not have behaviors like atomicity.
+\f1\fs24 \
+\
+
+\f0\fs30 The transaction performs a relatively straightforward task: \'a0Walk the graph in the order specified by the various relationships, and make sure each resource is in sync. \'a0As mentioned above, it has to convert the graph from containment edges (e.g., Class[ssh] contains Package[ssh] and Service[sshd]) to dependency edges (e.g., Service[sshd] depends on Package[ssh]), and then it does a standard topological sort of the graph, selecting each resource in turn.
+\f1\fs24 \
+\
+
+\f0\fs30 For a given resource, we perform a simple three-step process: \'a0Retrieve the current state of that resource, compare it to the desired state, and make any changes necessary to fix any discrepancies. \'a0For instance, given this code:
+\f1\fs24 \
+\pard\pardeftab720\li960
+
+\f0\fs30 \cf0 file \{ \'93/etc/motd\'94:
+\f1\fs24 \
+
+\f0\fs30 	ensure => file,
+\f1\fs24 \
+
+\f0\fs30 	content => \'93Welcome to the machine\'94,
+\f1\fs24 \
+
+\f0\fs30 	mode => 644
+\f1\fs24 \
+
+\f0\fs30 \}
+\f1\fs24 \
+\pard\pardeftab720
+
+\f0\fs30 \cf0 the transaction checks the content and mode of \'91/etc/motd\'92, and if they don\'92t match the specified state, it will fix either or both of them. \'a0If \'91/etc/motd\'92 is somehow a directory, then it will back up all of the files in that directory, remove it, and replace it with a file that has the appropriate content and mode.
+\f1\fs24 \
+\
+
+\f0\fs30 This process of making changes is actually handled by a simple ResourceHarness class that defines the entire interface between Transaction and Resource. \'a0This reduces the number of connections between the classes, and makes it easier to make changes to either independently.
+\f1\fs24 \
+\pard\pardeftab720\sa280
+
+\f0\b\fs38 \cf0 Resource Abstraction Layer
+\f1\fs28 \
+\pard\pardeftab720
+
+\f0\b0\fs30 \cf0 The Transaction class is the heart of getting work done with Puppet, but all of the work is actually done by the Resource Abstraction Layer (RAL), which also happens to be the most interesting component in Puppet, architecturally speaking.
+\f1\fs24 \
+\
+
+\f0\fs30 The RAL was the first component created in Puppet, and other than the language it most clearly defines what the user can do. \'a0The job of the RAL is to define what it means to be a resource and how resources can get work done on the system, and Puppet\'92s language is specifically built to specify resources as modeled by the RAL. \'a0Because of this, it\'92s also the most important component in the system, and the hardest to change. \'a0There are plenty of things we would like to fix in the RAL, and we\'92ve made a lot of critical improvements to it over the years (the most crucial being the addition of Providers), but there is still a lot of work to do to the RAL in the long term.
+\f1\fs24 \
+\
+
+\f0\fs30 In the Compiler subsystem, we model resources and resource types with separate classes (named, conveniently, Puppet::Resource and Puppet::Resource::Type). \'a0Our goal is to have these classes also form the heart of the RAL, but for now these two behaviors (resource and type) are modeled within a single class, Puppet::Type. \'a0The class is named poorly because it significantly predates our use of the term Resource, and at the time we were directly serializing memory structures when communicating between hosts, so it was actually quite complicated to change class names.
+\f1\fs24 \
+\
+
+\f0\fs30 When Puppet::Type was first created, it seemed reasonable to put resource and resource type behaviors in the same class; after all, resources are just instances of resource types. \'a0Over time, however, it became clear that the relationship between a resource and its resource type aren\'92t modeled well in a traditional inheritance structure. \'a0Resource types define what parameters a resource can have, but not whether it accepts parameters (they all do), for instance. \'a0Thus, our base class of Puppet::Type has class-level behaviors that determine how resource types behave, and instance-level behaviors that determine how resource instances behave. \'a0It additionally has the responsibility of managing registration and retrieval of resource types - if you want the \'91user\'92 type, you call \'91Puppet::Type.type(:user)\'92.
+\f1\fs24 \
+\
+
+\f0\fs30 This mix of behaviors makes Puppet::Type quite difficult to maintain. \'a0The whole class is less than 2,000 lines of code, but working at three levels -- resource, resource type, and resource type manager -- makes it convoluted. \'a0This is obviously why it\'92s a major target for being refactored, but it's more plumbing than user-facing, so it's always been hard to justify effort here rather than directly in features.
+\f1\fs24 \
+\
+
+\f0\fs30 Beyond Puppet::Type, there are two major kinds of classes in the RAL, the most interesting of which are what we call Providers. \'a0When the RAL was first developed, each resource type mixed the definition of a parameter with code that knew how to manage it. \'a0For instance, we would define the \'91mode\'92 parameter, and then provide a method that could read the content of a file, and another method that could change the content:
+\f1\fs24 \
+\
+
+\f0\fs30 	Puppet::Type.newtype(:file) do
+\f1\fs24 \
+
+\f0\fs30 		...
+\f1\fs24 \
+\pard\pardeftab720\li1920
+
+\f0\fs30 \cf0 newproperty(:content) do
+\f1\fs24 \
+
+\f0\fs30 	def retrieve
+\f1\fs24 \
+
+\f0\fs30 		File.read(@resource[:name])
+\f1\fs24 \
+
+\f0\fs30 	end
+\f1\fs24 \
+
+\f0\fs30 	def sync
+\f1\fs24 \
+
+\f0\fs30 		File.open(@resource[:name], \'93w\'94) \{ |f| f.print @resource[:content] \}
+\f1\fs24 \
+
+\f0\fs30 	end
+\f1\fs24 \
+
+\f0\fs30 end
+\f1\fs24 \
+\pard\pardeftab720
+
+\f0\fs30 \cf0 	end
+\f1\fs24 \
+\
+
+\f0\fs30 This example is simplified considerably (e.g., we use checksums internally, rather than the full content strings), but you get the idea.
+\f1\fs24 \
+\
+
+\f0\fs30 This became impossible to manage as we needed to support multiple varieties of a given resource type. \'a0Puppet now supports more than 30 kinds of package management, and it would have been impossible to support all of those within a single Package resource type. \'a0Instead, we provide a clean interface between the definition of the resource type -- essentially, what the name of the resource type is and what properties it supports -- from how you manage that type of resource. \'a0Providers define getter and setter methods for all of a resource type\'92s properties, named in obvious ways. \'a0For example, this is how a provider of the above property would look:
+\f1\fs24 \
+\
+\pard\pardeftab720\li960
+
+\f0\fs30 \cf0 Puppet::Type.newtype(:file) do
+\f1\fs24 \
+
+\f0\fs30 	newproperty(:content)
+\f1\fs24 \
+
+\f0\fs30 end
+\f1\fs24 \
+
+\f0\fs30 Puppet::Type.type(:file).provide(:posix) do
+\f1\fs24 \
+
+\f0\fs30 	def content
+\f1\fs24 \
+
+\f0\fs30 		File.read(@resource[:name])
+\f1\fs24 \
+
+\f0\fs30 	end
+\f1\fs24 \
+
+\f0\fs30 	def content=(str)
+\f1\fs24 \
+
+\f0\fs30 		File.open(@resource[:name], \'93w\'94) \{ |f| f.print(str) \}
+\f1\fs24 \
+
+\f0\fs30 	end
+\f1\fs24 \
+
+\f0\fs30 end
+\f1\fs24 \
+\pard\pardeftab720
+\cf0 \
+
+\f0\fs30 This is a touch more code in the simplest cases, but is much easier to understand and maintain, especially as either the number of properties or number of providers increases.
+\f1\fs24 \
+\
+
+\f0\fs30 We said at the beginning of this section that the Transaction doesn\'92t actually affect the system directly, and it instead relies on the RAL for that. \'a0Now it\'92s clear that it\'92s the providers that do the actual work. \'a0In fact, in general the providers are the only part of Puppet that actually touch the system. \'a0The transaction asks for a file\'92s content, and the provider collects it; the transaction specifies a file\'92s content should be changed, and the provider changes it. \'a0Note, however, that the provider never decides to affect the system - the Transaction owns the decisions, and the provider does the work. \'a0This gives the Transaction complete control without requiring that it understand anything about files, users, or packages, and this separation is what enables Puppet to have a full simulation mode where we can largely guarantee the system won\'92t be affected.
+\f1\fs24 \
+\
+
+\f0\fs30 The second major class type in the RAL is responsible for the parameters themselves. \'a0We actually support three kinds of parameters: \'a0Metaparameters, which affect all resource types (e.g., whether you should run in simulation mode); parameters, which are values that aren\'92t reflected on disk (e.g., whether you should follow links in files); and properties, which model aspects of the resource that you can change on disk (e.g., a file\'92s content, or whether a service is running). \'a0The difference between properties and parameters is especially confusing to people, but if you just think of properties as having getter and setter methods in the providers, it\'92s relatively straightforward.
+\f1\fs24 \
+\pard\pardeftab720\sa280
+
+\f0\b\fs38 \cf0 Reporting
+\f1\fs28 \
+\pard\pardeftab720
+
+\f0\b0\fs30 \cf0 As the transaction walks the graph and uses the RAL to change the system\'92s configuration, it progressively builds a report. \'a0This report largely consists of the events generated by changes to the system. \'a0These events, in turn, are comprehensive reflections of what work was done: \'a0They retain a timestamp the resource changed, the previous value, the new value, any message generated, and whether the change succeeded or failed (or was in simulation mode).
+\f1\fs24 \
+\
+
+\f0\fs30 The events are wrapped in a ResourceStatus object that maps to each resource. \'a0Thus, for a given Transaction, you know all of the resources that are run, and you know any changes that happen, along with all of the metadata you might need about those changes.
+\f1\fs24 \
+\
+
+\f0\fs30 Once the transaction is complete, some basic metrics are calculated and stored in the report, and then it is sent off to the server (if configured). \'a0With the report sent, the configuration process is complete, and the agent goes back to sleep or the process just ends.
+\f1\fs24 \
+\pard\pardeftab720\sa280
+
+\f0\b\fs48 \cf0 Infrastructure
+\f1\fs36 \
+\pard\pardeftab720
+
+\f0\b0\fs30 \cf0 Now that we have a thorough understanding of what Puppet does and how it does it, it\'92s worth spending a little time on the pieces that don\'92t show up as capabilities but are still critical to getting the job done.
+\f1\fs24 \
+\pard\pardeftab720\sa280
+
+\f0\b\fs38 \cf0 Plugins
+\f1\fs28 \
+\pard\pardeftab720
+
+\f0\b0\fs30 \cf0 One of the great things about Puppet is that it is amazingly extensible. \'a0There are at least 12 different kinds of extensibility in Puppet, and most of these are meant to be usable by just about anyone. \'a0For example, you can create custom plugins for these areas:
+\f1\fs24 \
+\pard\tx220\tx720\pardeftab720\li720\fi-720
+\ls3\ilvl0
+\f0\fs30 \cf0 {\listtext	\'95	}Resource types and custom providers\
+{\listtext	\'95	}Report handlers, such as for storing reports in a custom database\
+{\listtext	\'95	}Indirector plugins for interacting with existing data stores\
+{\listtext	\'95	}Facts for discovering extra information about your hosts\
+\pard\pardeftab720
+
+\f1\fs24 \cf0 \
+\
+
+\f0\fs30 However, Puppet\'92s distributed nature means that agents need a way to retrieve and load new plugins. \'a0Thus, at the start of every Puppet run, the first thing we do is download all plugins that the server has available. \'a0This might include new resource types or providers, new facts, or even new report processors.
+\f1\fs24 \
+\
+
+\f0\fs30 This makes it possible to heavily upgrade Puppet agents without ever changing the core Puppet packages. This is especially useful for highly customized Puppet installations.
+\f1\fs24 \
+\pard\pardeftab720\sa280
+
+\f0\b\fs38 \cf0 Indirector
+\f1\fs28 \
+\pard\pardeftab720
+
+\f0\b0\fs30 \cf0 You\'92ve probably detected by now that we have a tradition of bad class names in Puppet, and according to most people, this one takes the cake. \'a0The Indirector is a relatively standard inversion of control framework with significant extensibility. \'a0Inversion of control systems allow you to separate development of functionality from how you control which functionality you use.  In Puppet's case, this allows us to have many plugins that provide very different functionality, such as reaching the compiler via HTTP or loading it in-process, and switch between them with a small configuration change rather than a code change.   In other words, Puppet's Indirector is basically an implementation of a service locator, as described on the Wikipedia page for 'inversion of control'.  All of the hand-offs from one class to another go through the Indirector, via a standard REST-like interface (e.g., we support find, search, save, and destroy as methods), and switch Puppet from serverless to client/server is largely a question of configuring the agent to use an http endpoint for retrieving catalogs, rather than using a compiler endpoint.
+\f1\fs24 \
+\
+
+\f0\fs30 Because it is an inversion of control framework, where configuration is stringently separated from the code paths, this class can also be difficult to understand, especially when you\'92re debugging why a given code path was used.
+\f1\fs24 \
+\pard\pardeftab720\sa280
+
+\f0\b\fs38 \cf0 Networking
+\f1\fs28 \
+\pard\pardeftab720
+
+\f0\b0\fs30 \cf0 Puppet\'92s prototype was written in the summer of 2004, when the big networking question was whether to use XMLRPC or SOAP. \'a0We chose XMLRPC, and it worked fine but had most of the problems everyone else had: \'a0It didn\'92t encourage standard interfaces between components, and it tended to get overcomplicated very quickly as a result. \'a0We also had significant memory problems, because the encoding needed for XMLRPC resulted in every object appearing at least twice in memory, which quickly gets expensive for large files.
+\f1\fs24 \
+\
+
+\f0\fs30 For our 0.25 release (begun in 2008), we began the process of switching all networking to a RESTful model, but we chose a much more complicated route than just changing out the networking. \'a0We developed the Indirector as the standard framework for inter-component communication, and built REST endpoints as just one option. \'a0It took two releases to fully support REST, and we have not quite finished converting to using JSON (instead of YAML) for all serialization.  We undertook switching to JSON for two major reasons:  First, YAML processing ruby is painfully slow, and pure-ruby processing of JSON is a lot faster.  Second, most of the web seems to be moving to JSON, and it tends to be implemented more portably than YAML.  Certainly in the case of Puppet, the first use of YAML was not portable across languages, and was often not portable across different versions of Puppet, because it was essentially serialization of internal Ruby objects.
+\f1\fs24 \
+\
+
+\f0\fs30 Our next major release of Puppet will finally remove all of the XMLRPC support.
+\f1\fs24 \
+\pard\pardeftab720\sa280
+
+\f0\b\fs48 \cf0 Lessons Learned
+\f1\fs36 \
+\pard\pardeftab720
+
+\f0\b0\fs30 \cf0 In terms of implementation, we\'92re proudest of the various kinds of separation that exist in Puppet: \'a0The language is completely separate from the RAL, the Transaction cannot directly touch the system, and the RAL can\'92t decide to do work on its own. \'a0This gives the application developer a lot of control over application workflow, along with a lot of access to information about what is happening and why.
+\f1\fs24 \
+\
+
+\f0\fs30 Puppet\'92s extensibility and configurability are also major assets, because anyone can build on top of Puppet quite easily without having to hack the core. \'a0We\'92ve always built our own capabilities on the same interfaces we recommend our users use.
+\f1\fs24 \
+\
+
+\f0\fs30 Puppet\'92s simplicity and ease of use have always been its major draw. \'a0It\'92s still too difficult to get running, but it\'92s miles easier than any of the other tools on the market. \'a0This simplicity comes with a lot of engineering costs, especially in the form of maintenance and extra design work, but it\'92s worth it to allow users to focus on their problems instead of the tool.
+\f1\fs24 \
+
+\f0\fs30 Puppet\'92s configurability is a real feature, but we took it a bit too far. \'a0There are too many ways you can wire Puppet together, and it\'92s too easy to build a workflow on top of Puppet that will make you miserable. \'a0One of our major near-term goals is to dramatically reduce the knobs you can turn in a Puppet configuration, so the user cannot so easily configure it poorly, and so we can more easily upgrade it over time without worrying about some obscure edge case.
+\f1\fs24 \
+\
+
+\f0\fs30 We also just generally changed too slowly. \'a0There are major refactors we\'92ve been wanting to do for years but have never quite tackled. \'a0This has meant a more stable system for our users in the short term, but also a more difficult to maintain system, and one that\'92s much harder to contribute to.
+\f1\fs24 \
+\
+
+\f0\fs30 Lastly, it took us too long to realize that our goals of simplicity were best expressed in the language of design. \'a0Once we adopted that, we acquired a much better framework for making decisions about adding or removing features, with a better means of communication the reasoning behind those decisions.
+\f1\fs24 \
+\pard\pardeftab720\sa280
+
+\f0\b\fs48 \cf0 Conclusion
+\f1\fs36 \
+\pard\pardeftab720
+
+\f0\b0\fs30 \cf0 Puppet is both a simple system and a complex one. \'a0It has many moving parts, but they\'92re wired together quite loosely, and each of them has changed pretty dramatically since its founding in 2005. \'a0It is a framework that can be used for all manner of configuration problems, but as an application it is simple and approachable.
+\f1\fs24 \
+\
+
+\f0\fs30 Our future opportunity rests on that framework becoming more solid and more simple, and that application staying approachable while it adds capability.
+\f1\fs24 \
+}

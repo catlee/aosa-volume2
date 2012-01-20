@@ -1,32 +1,32 @@
 An introduction to Moodle
 =========================
 
-Moodle is a web application used in educational settings. While I will try to give an overview of all aspects of how Moodle works, the three areas where I think Moodle's design is particularly interesting are:
+Moodle is a web application used in educational settings. While I will try to give an overview of all aspects of how Moodle works, I will focus on those areas where I think Moodle's design is particularly interesting:
 1. the way the application is divided into plugins;
-2. its permissions system, which controls which users can perform which actions in different parts of the system;
-3. the way output is generated, so that different themes (skins) can be used to give different appearances; and
-4. its database abstraction layer.
+2. the permission system, which controls which users can perform which actions in different parts of the system;
+3. the way output is generated, so that different themes (skins) can be used to give different appearances, and so that the interface can be localised; and
+4. the database abstraction layer.
 
 What is Moodle?
 ---------------
 
-Moodle (http://moodle.org/) provides a place online where students and teachers can come together to teach and learn. A Moodle site is divided into Courses. A course will have certain users enrolled in it in different roles, such as Student or Teacher. Each course will comprise a number of resource and activities. A resource might be a PDF file, or an page of HTML within Moodle, or a link to something else on the web. An activity might be a forum or a quiz or a wiki. Within the course, these resources and activities will be structured in some way. For example they may be grouped into logical topics, or into weeks on a calendar. [SCREEN-SHOT]
+Moodle (http://moodle.org/) provides a place online where students and teachers can come together to teach and learn. A Moodle site is divided into Courses. A course will have certain users enrolled in it in different roles, such as Student or Teacher. Each course will comprise a number of resource and activities. A resource might be a PDF file, a page of HTML within Moodle, or a link to something else on the web. An activity might be a forum, a quiz or a wiki. Within the course, these resources and activities will be structured in some way. For example they may be grouped into logical topics, or into weeks on a calendar. [Moodle course.tiff]
 
-Moodle can be used as a stand-alone application. If you wanted to start teaching courses in, say, software architecture, then you could download Moodle to your web hosting, install it, start creating courses and wait for the students to come and self-register. Alternatively, if you are a large institution, Moodle would be just one of the systems you run. You would probably also have [BLOCK DIAGRAM]
-* An authentication/identity provider (for example LDAP) to control user accounts across all your systems.
-* A student information system. That is, a database of all your students, which program of study they are one, and hence which courses they need to complete; and their transcript, that is a high level summary of the results of the courses they have completed. This would also deal with other administrative functions like tracking whether they have paid their fees.
-* A document repository (for example Alfresco). To store files, and track the workflow as users collaborate to create files.
-* An ePortfolio. This is a place where students can put assets and assemble them. This might be in order to build a CV (resume), or to assemble evidence that they have met the requirements of a work-based course.
+Moodle can be used as a stand-alone application. If you wanted to teach software architecture (for example) you could download Moodle to your web hosting, install it, start creating courses, and wait for students to come and self-register. Alternatively, if you are a large institution, Moodle would be just one of the systems you run. You would probably also have: [University systems.dia]
+* an authentication/identity provider (for example LDAP) to control user accounts across all your systems.
+* a student information system. That is, a database of all your students, which program of study they are one, and hence which courses they need to complete; and their transcript, that is a high level summary of the results of the courses they have completed. This would also deal with other administrative functions like tracking whether they have paid their fees.
+* a document repository (for example Alfresco). To store files, and track the workflow as users collaborate to create files.
+* an ePortfolio. This is a place where students can put assets and assemble them. This might be in order to build a CV (resume), or to assemble evidence that they have met the requirements of a work-based course.
+* reporting or analytics tools. To generate high level information about what is going on in your institution.
 
-So, Moodle is focussed on providing a space online where people can engage in teaching and learning, rather than any of the other systems that an educational organisation might need. Moodle provides a basic implementation of these other areas, so that it can be used as a stand-alone system, or it will integrate with other systems. This sort of thing is normally called a virtual learning environment (VLE), or learning or course management system (LMS or CMS).
+Moodle focusses on providing a space online where people can engage in teaching and learning, rather than any of the other systems that an educational organisation might need. Moodle provides a basic implementation of the other functionality, so that it can function as a stand-alone system, or will integrate with other systems. The role Moodle plays is normally called a virtual learning environment (VLE), or learning or course management system (LMS, CMS or even LCMS).
 
 Moodle is open source or free software (GPL). It is written in PHP. It will run on most common web servers, on common platforms. It requires a database, and will work with MySQL, PostgreSQL, MS SQL Server or Oracle.
-
 
 Where did Moodle come from?
 ---------------------------
 
-The Moodle project was started by Martin Dougiamas in 1999, while he was working at (FIND OUT). Version 1.0 was released in 2002, at which time PHP4.2 and MySQL 3.23 were the technologies available. That obviously limited the kind of architecture that was possible, and much has changed since then. The current release is the Moodle 2.2.x series. [NOT TRUE YET, WILL BE WHEN THE BOOK IS PUBLISHED].
+The Moodle project was started by Martin Dougiamas in 1999, while he was working at Curtin University, Australia. Version 1.0 was released in 2002, at which time PHP4.2 and MySQL 3.23 were the technologies available. That limited the kind of architecture that was possible initially, but much has changed since then. The current release is the Moodle 2.2.x series.
 
 
 An overview of how Moodle works
@@ -35,13 +35,13 @@ An overview of how Moodle works
 The three parts of Moodle
 -------------------------
 
-A Moodle install comprises three parts.
+A Moodle installation comprises three parts:
 
-The code, typically in a folder like /var/www/moodle or ~/htdocs/moodle. This should not be writable by the web server.
+1. The code, typically in a folder like /var/www/moodle or ~/htdocs/moodle. This should not be writable by the web server.
 
-The database, managed by one of the supported RDMSs. In fact, moodle adds a prefix to all the table names, so it can share a database with other applications, if desired.
+2. The database, managed by one of the supported RDMSs. In fact, moodle adds a prefix to all the table names, so it can share a database with other applications, if desired.
 
-The 'moodledata' folder. This is a folder where Moodle stores uploaded and generated files, and so needs to be writable by the web server. For security reasons, the should be outside the web root.
+3. The 'moodledata' folder. This is a folder where Moodle stores uploaded and generated files, and so needs to be writable by the web server. For security reasons, the should be outside the web root.
 
 These can all be on a single server. Alternatively, in a load-balanced set-up, there will be multiple copies of the code on each web-server, but just one shared copy of the database and moodledata, probably on other servers.
 
@@ -50,18 +50,18 @@ The configuration information about these three parts is stored in a file called
 Request dispatching
 -------------------
 
-Moodle is a web applications, so users interact with it using their web browser. From Moodle's point of view that means responding to HTTP requests. Therefore, an important aspect of Moodle's design is the URL namespace, and how URLs get dispatched to different scripts.
+Moodle is a web applications, so users interact with it using their web browser. From Moodle's point of view that means responding to HTTP requests. An important aspect of Moodle's design is, therefore, the URL namespace, and how URLs get dispatched to different scripts.
 
-Moodle uses the standard PHP approach to this. To view the main page for a course, the URL would be .../course/view.php?id=123, where 123 is the unique id of the course in the database. To view a forum discussion, the URL would be .../mod/forum/discuss.php?id=456789. That is, these particular scripts, course/view.php of mod/forum/discuss.php would handle the request. This is simple. To understand how Moodle handles a particular request, you look at the URL and start reading code there. 
+Moodle uses the standard PHP approach to this. To view the main page for a course, the URL would be .../course/view.php?id=123, where 123 is the unique id of the course in the database. To view a forum discussion, the URL would be something like .../mod/forum/discuss.php?id=456789. That is, these particular scripts, course/view.php or mod/forum/discuss.php would handle these requests. This is simple. To understand how Moodle handles a particular request, you look at the URL and start reading code there. 
 
-The alternative approach one could take is to have a single entry point .../index.php/[extra information to make the request unique], and the single script index.php would dispatch the requests in some way. This approach adds a layer of indirection, which is something software developers always like to do. The lack of this layer of indirection does not seem to hurt Moodle. (In the rare cases where you really want to rewrite the URL namespace, this can be done elsewhere in the software stack, for example by using mod_rewrite.)
+The alternative approach one could take is to have a single entry point .../index.php/[extra information to make the request unique]. The single script index.php would then dispatch the requests in some way. This approach adds a layer of indirection, which is something software developers always like to do. The lack of this layer of indirection does not seem to hurt Moodle. (In the rare cases where you really want to rewrite the URL namespace, this can be done elsewhere in the software stack, for example by using mod_rewrite.)
 
 Plugins
 -------
 
-Like many successful open source projects, Moodle is built up of many plugins, working together with the core of the system. This is a good approach because at allows people to change an enhance Moodle in defined ways. After all, the advantage of an open source system is that you can tailor it to your particular needs. Making extensive customisations to the code can, however, lead to big problems when the time comes to upgrade, even when using a good version control system. By allowing as many customisations and new features as possible to be implemented as self-contained plugins that interact with Moodle core through a defined API, we can make it easier for people to customise Moodle to their needs, and to share customisations, while still being able to upgrade the core Moodle system.
+Like many successful open source projects, Moodle is built out of many plugins, working together with the core of the system. This is a good approach because at allows people to change an enhance Moodle in defined ways. An important advantage of an open source system is that you can tailor it to your particular needs. Making extensive customisations to the code can, however, lead to big problems when the time comes to upgrade, even when using a good version control system. By allowing as many customisations and new features as possible to be implemented as self-contained plugins that interact with Moodle core through a defined API, it easier for people to customise Moodle to their needs, and to share customisations, while still being able to upgrade the core Moodle system.
 
-There are various ways in which a system can be built as a core surrounded by plugins. Moodle has a relatively fat core, and the plugins are strongly-typed. When I say a fat core, I mean that there is a lot of functionality in the core. This contrasts to the kind of architecture where just about everything, except for a small plugin-loader stub, is a plugin.
+There are various ways a system can be built as a core surrounded by plugins. Moodle has a relatively fat core, and the plugins are strongly-typed. When I say a fat core, I mean that there is a lot of functionality in the core. This contrasts to the kind of architecture where just about everything, except for a small plugin-loader stub, is a plugin.
 
 When I say plugins are strongly type, I mean that depending on which type of functionality you want to implement, you have to write a different type of plugin, and implement a different API. For example, an new Activity module plugin would be very different from a new Authentication plugin or a new Question type. At the last count there are about 35 different types of plugin. This contrasts with the kind of architecture where all plugins use basically the same API and then, perhaps, subscript the the subset of hooks or events they are interested in.
 
@@ -78,29 +78,30 @@ quiz (Quiz report)    | statistics  | quiz_statistics   | mod/quiz/report/statis
 
 The last example shows that each activity module is allowed to declare sub-plugin types. At the moment, of all the different types of plugin, only activity modules are allowed to do this.
 
-
 An example plugin
 -----------------
 
-We can cover a lot of details of the Moodle architecture by considering a specific example plugin. As is traditional, I have chosen to implement a plugin that displays 'Hello world'.
+I will explain a lot of details of the Moodle architecture by considering a specific example plugin. As is traditional, I have chosen to implement a plugin that displays 'Hello world'.
 
-This plugin does not really fit naturally into any of the standard Moodle plugin types. It is just a script, with no connection to anything else, so I will choose to implement it as a 'local' plugin. This is a catch-all plugin type for miscellaneous functionality that does not fit anywhere better. I will name my plugin greet, to give a Frankensyle name of 'local_greet', and a folder path of 'local/greet'.
+This plugin does not really fit naturally into any of the standard Moodle plugin types. It is just a script, with no connection to anything else, so I will choose to implement it as a 'local' plugin. This is a catch-all plugin type for miscellaneous functionality that does not fit anywhere better. I will name my plugin greet, to give a Frankensyle name of 'local_greet', and a folder path of 'local/greet'. The plugin code can be downloaded from https://github.com/timhunt/moodle-local_greet.
 
 Each plugin must contain a file called version.php which defines some basic meta-data about the plugin. This is used by the Moodle's plugin installer system to install and upgrade the plugin. 
 
 local/greet/version.php:
 
+<?php
 $plugin->component    = 'local_greet';
 $plugin->version      = 2011102900;
 $plugin->requires     = 2011102700;
 $plugin->maturity     = MATURITY_STABLE;
 
-At may seem redundant to include the component name, since this can be deduced from the path, but the installer uses this to verify that the plugin has been installed in the right place. The version is the version of this plugin. maturity is ALPHA/BETA/RC/STABLE. Requires is the minimum version of Moodle that this plugin is compatible with. If necessary, one can also document other plugins that this one depends on.
+It may seem redundant to include the component name, since this can be deduced from the path, but the installer uses this to verify that the plugin has been installed in the right place. The version field is the version of this plugin. maturity is ALPHA/BETA/RC/STABLE. Requires is the minimum version of Moodle that this plugin is compatible with. If necessary, one can also document other plugins that this one depends on.
 
 Now here is the main scrip for this simple plugin.
 
 local/greet/index.php:
 
+<?php
 require_once(dirname(__FILE__) . '/../../config.php');        // 1
 
 require_login();                                              // 2
@@ -116,68 +117,52 @@ add_to_log(SITEID, 'local_greet', 'begreeted',
         'local/greet/index.php?name=' . urlencode($name));    // 7
 
 $PAGE->set_context($context);                                 // 8
-$PAGE->set_url(new moodle_url('local/greet/index.php'),
-        array('name' => $name);                               // 9
+$PAGE->set_url(new moodle_url('/local/greet/index.php'),
+        array('name' => $name));                              // 9
 $PAGE->set_title(get_string('welcome', 'local_greet'));       // 10
 
-echo $OUPTUT->header();                                       // 11
-echo $OUPTUT->box(get_string('greet', 'local_greet',
+echo $OUTPUT->header();                                       // 11
+echo $OUTPUT->box(get_string('greet', 'local_greet',
         format_string($name)));                               // 12
 echo $OUTPUT->footer();                                       // 13
 
 // 1 Bootstrapping moodle
 -------------------------
 
-The single line of this script that does the most work is the first. config.php. I said above that this contains the details Moodle needs to connect to the database and find the moodledata folder. It ends, however, with the line require_once('lib/setup.php'). This
+The single line of this script that does the most work is the first. I said above that config.php contains the details Moodle needs to connect to the database and find the moodledata folder. It ends, however, with the line require_once('lib/setup.php'). This
 1. loads all the standard Moodle libraries using require_once;
 2. starts the session handling;
 3. connects to the database; and
-4. sets up a number of global variables, which we will meet later.
+4. sets up a number of global variables, which we shall meet later.
 
 // 2 Checking the user is logged in
 -----------------------------------
 
 This line causes Moodle to check that the current user is logged in, using whatever authentication plugin the administrator has configured. If not, the user will be redirected to log in, and this function will never return.
 
-If we were writing a script that was more integrated into Moodle, we would pass more arguments here, to say which course or activity this page is part of, and then require_login would also verify that the user is enrolled in, or otherwise allowed to access this course, and is allowed to see this activity. If not, and appropriate error would be displayed.
+If we were writing a script that was more integrated into Moodle, we would pass more arguments here, to say which course or activity this page is part of, and then require_login would also verify that the user is enrolled in, or otherwise allowed to access this course, and is allowed to see this activity. If not, an appropriate error would be displayed.
+
 
 Moodle's roles and permissions system
 =====================================
 
-The next two lines of code show how to check that the user has permission to do something. As you can see, from the developer's point of view, the API is very simple. Behind the scenes, however, there is a lot of flexibility which allows the administrator a lot of flexibility to control who can do what.
+The next two lines of code show how to check that the user has permission to do something. As you can see, from the developer's point of view, the API is very simple. Behind the scenes, however, there is a sophisticated access system which gives the administrator great flexibility to control who can do what.
 
 // 3 Getting the context
 ------------------------
 
-In Moodle, users can have different permissions in different places. For example, a user might be a Teacher in one course, and a Student in another, and so have different permissions in each place. These places are called contexts. Contexts in Moodle form a hierarchy rather like a folder hierarchy in a file-system. At the top level is the system context (and, since are script is not very well integrated into Moodle, we use that context).
+In Moodle, users can have different permissions in different places. For example, a user might be a Teacher in one course, and a Student in another, and so have different permissions in each place. These places are called contexts. Contexts in Moodle form a hierarchy rather like a folder hierarchy in a file-system. At the top level is the system context (and, since our script is not very well integrated into Moodle, we use that context).
 
-Within the system context are a number of contexts for the different categories that have been created to organise courses. These can be nested, with one category containing other categories. Category contexts can also contain Course contexts. Finally, each activity in a course will have its own Module context. (DIAGRAM)
+Within the system context are a number of contexts for the different categories that have been created to organise courses. These can be nested, with one category containing other categories. Category contexts can also contain Course contexts. Finally, each activity in a course will have its own Module context. 
 
-System
-   Humanities faculty
-      History department
-         History 101
-            …
-         Napoleon 202
-            Social forum
-            Resource: Napoleon biography
-            Forum: was Napoleon right?
-            Quiz: Napoleon facts
-            … 
-      Art department
-         Art 101
-         …
-      Introduction to the humanities
-   Science faculty
-      …
-   …
+[Contexts.dia]
 
 // 4 Checking the user has permission to use this script
 --------------------------------------------------------
 
 Now we have got the context - the relevant area of Moodle to check the permission in, we now need to decide which permission to check. Each particular area of functionality that a user may or may not have is called a Capability. Checking a capability provides more fine-grained access control than the basic checks performed by require_login. For our simple example plugin, we have one capability: 'local/greet:begreeted'. 
 
-The check is done using the require_capability function, which takes the capability name and the context. Like other require_… functions, it will not return if the user does not have the capability. It will display an error instead. In other places we might use the non-fatal has_capability function, which returns a boolean, for example to determine whether to display a link to this script inside another page.
+The check is done using the require_capability function, which takes the capability name and the context. Like other require_… functions, it will not return if the user does not have the capability. It will display an error instead. In other places we would use the non-fatal has_capability function, which returns a boolean. We might use that, for example, to determine whether to display a link to this script from another page.
 
 How does the administrator configure which user has which permission? Here is the calculation that has_capability performs (at least conceptually):
 1. Start from the current Context.
@@ -188,15 +173,16 @@ How does the administrator configure which user has which permission? Here is th
 Defining capabilities
 ---------------------
 
-As we can see in the example a plugin can define new capabilities, relating the the particular functionality it provides. This is done using a file called access.php. This is stored inside a db sub-folder in the plugin, which is where all the information required to install  or upgrade the plugin lives. Here is the access.php file for our plugin:
+As the example shows, a plugin can define new capabilities, relating to the particular functionality it provides. This is done using a file called access.php. This is stored inside a db sub-folder in the plugin, which is where all the information required to install or upgrade the plugin lives. Here is the access.php file for our plugin:
 
 local/greet/db/access.php
 
+<?php
 $capabilities = array('local/greet:begreeted' => array(
     'captype' => 'read',
     'contextlevel' => CONTEXT_SYSTEM,
     'archetypes' => array('guest' => CAP_ALLOW, 'user' => CAP_ALLOW)
-))
+));
 
 This gives some metadata about each capability which are used when constructing the permissions management user-interface. We also give default permissions for common types of role.
 
@@ -230,9 +216,10 @@ Finally we aggregate the permissions for all the roles the user has in this cont
 * Otherwise, if any role gives ALLOW for this capability, return true.
 * Otherwise return false.
 
-A use case for PROHIBIT is this: Suppose a user has been making abusive posts in a number of forums, and we want to stop them immediately. We can create a Naughty user role, which sets mod/forum:post and other such capabilities to PROHIBIT. We can then assign this role to the abusive user in the system context. That way, we can be sure that the user will not be able to post any more in any forum. (One would then  talk to the student, and having reached a satisfactory outcome, removing that role assignment so that they my use the system again.)
+A use case for PROHIBIT is this: Suppose a user has been making abusive posts in a number of forums, and we want to stop them immediately. We can create a Naughty user role, which sets mod/forum:post and other such capabilities to PROHIBIT. We can then assign this role to the abusive user in the system context. That way, we can be sure that the user will not be able to post any more in any forum. (One would then talk to the student, and having reached a satisfactory outcome, removing that role assignment so that they my use the system again.)
 
 So, Moodle's permissions system gives administrators a huge amount of flexibility. They can define whichever roles they like with different permissions for each capability; they can alter the role definitions in sub-contexts; and then they can assign different roles to users in different contexts.
+
 
 Back to our example script
 ==========================
@@ -248,7 +235,7 @@ The simple method is the one shown here. To get a single variable, we give the p
 
 There is also a similar required_param function, which gives a fatal error if an expected parameter is not found.
 
-The other way Moodle has to get data from the request is a fully-fledged forms library. This is a wrapper around the HTML QuickForm library from PEAR. (For non-PHP programmers, PEAR is PHP's equivalent of CPAN.) This seemed like a good choice when we selected it, but is now no longer maintained, so at some time in the future we will have to tackle moving to a new forms library, which many of us look forwards to, because QuickForm has several irritating design issues. However, for now it is adequate. Forms can be defined as a collection of fields of various types (e.g. text box, select drop-down, date-selector) with client- and server- side validation (including use of the same PARAM_… types). 
+The other way Moodle has to get data from the request is a fully-fledged forms library. This is a wrapper around the HTML QuickForm library from PEAR. (For non-PHP programmers, PEAR is PHP's equivalent of CPAN.) This seemed like a good choice when we selected it, but is now no longer maintained, so at some time in the future we will have to tackle moving to a new forms library, which many of us look forwards to, because QuickForm has several irritating design issues. For now, however, it is adequate. Forms can be defined as a collection of fields of various types (e.g. text box, select drop-down, date-selector) with client- and server- side validation (including use of the same PARAM_… types). 
 
 // 6 Global variables
 ---------------------
@@ -260,19 +247,20 @@ $SESSION - a wrapper around the PHP session.
 $COURSE - the course we are within.
 … - several others, some of which we will encounter later.
 
-You may well have read the words 'global variable' with horror. However, PHP processes a single request at a time, so these variables are not as global as all that. In fact, PHP global variables can be seen as an implementation of the Thread-scoped registry pattern (in the sense of Martin Fowler, Patterns of Enterprise Application Architecture) and this is the way in which Moodle uses them. It is very convenient in that it makes commonly used objects available thought the request without requiring them to be passed to every function and method. It is only infrequently abused.
+You may have read the words 'global variable' with horror. Note, however, that PHP processes a single request at a time. Therefore these variables are not as global as all that. In fact, PHP global variables can be seen as an implementation of the Thread-scoped registry pattern (in the sense of Martin Fowler, Patterns of Enterprise Application Architecture) and this is the way in which Moodle uses them. It is very convenient in that it makes commonly used objects available thought the request without requiring them to be passed to every function and method. It is only infrequently abused.
 
 // 6 again - Nothing is simple
 ------------------------------
 
 This line also serves to make a point about the problem domain. Nothing is ever simple. Here, we just want to display a user's name, but we can't simply echo $USER->firstname, ' ', $USER->lastname. The school may have policies about showing either of those parts, and different cultures have different conventions for which order to show names. Therefore, there are several configurations settings, and we have a function to assemble the full name according to the rules.
 
-Similarly with dates. Different users may be in different time-zones. Moodle stores all dates as Unix time-stamps, which are integers, and so work simply cross-DB. There is then a userdate() function to display the time-stamp to the user in the right time-zone.
+Similarly with dates. Different users may be in different time-zones. Moodle stores all dates as Unix time-stamps, which are integers, and so work simply cross-DB. There is then a userdate() function to display the time-stamp to the user using the appropriate time-zone and locale settings.
 
 // 7 Logging
 ------------
 
-All significant actions in Moodle are logged. Logs are written to a table the database. This is a trade-off. It makes sophisticated analysis quite easy, and indeed various reports base on the logs are included with Moodle. On the other hand, particularly on a large and busy site, it is a performance problem. The log table gets huge, which makes backing up the database more difficult, and makes queries on the log table slow. Also, there can be write contention on the log table. There are various ways this can be mitigated, such as batching writes, and archiving or deleting old records to remove them from the main database.
+All significant actions in Moodle are logged. Logs are written to a table the database. This is a trade-off. It makes sophisticated analysis quite easy, and indeed various reports base on the logs are included with Moodle. On a large and busy site, however, it is a performance problem. The log table gets huge, which makes backing up the database more difficult, and makes queries on the log table slow. There can also be write contention on the log table. These problems can be mitigated in various ways, for example by batching writes, or archiving or deleting old records to remove them from the main database.
+
 
 Generating output
 =================
@@ -282,7 +270,7 @@ Output is mainly handled via two global objects.
 // 8 The $PAGE global
 ---------------------
 
-$PAGE stores information about the page we are going to output, that will be needed when the time comes to generate the HTML. In this script, we need to explicitly specify what the current context is. (In other situations, this might have been set automatically by require_login.) We also need to set the URL for this page. This may seem redundant. The rationale for requiring it is that you might get to a particular page using any number of different URLs, but the URL passed to set_url is supposed to be the canonical URL for this page. A good permalink, if you like. We also specify the page title, which will end up in the head element of the HTML.
+$PAGE stores information about the page we are going to output, that will be needed when the time comes to generate the HTML. In this script, we need to explicitly specify the current context. (In other situations, this might have been set automatically by require_login.) We also need to set the URL for this page. This may seem redundant. The rationale for requiring it is that you might get to a particular page using any number of different URLs, but the URL passed to set_url should be the canonical URL for this page - a good permalink, if you like. We also specify the page title, which will end up in the head element of the HTML.
 
 // 9 Moodle URL
 ---------------
@@ -292,15 +280,16 @@ I just wanted to flag this nice little helper class we have. Note, as a sign of 
 // 10 Internationalisation
 --------------------------
 
-Moodle uses its own system to allow the interface to be translated into any language. There may now be good PHP internationalisation  libraries, but in 2002 when it was first implemented (http://git.moodle.org/gw?p=moodle.git;a=commitdiff;h=1180c6dc56dba2b3938119584044c69c8de62725) there was not one available that was good enough. The system is based around the get_string function. Strings are identified by a key and the plugin Frankenstyle name. As can be seen on line 12, it is possible to interpolate values into the string. (Multiple values are handled using PHP arrays or objects.)
+Moodle uses its own system to allow the interface to be translated into any language. There may now be good PHP internationalisation libraries, but in 2002 when it was first implemented (http://git.moodle.org/gw?p=moodle.git;a=commitdiff;h=1180c6dc56dba2b3938119584044c69c8de62725) there was not one available that was adequate. The system is based around the get_string function. Strings are identified by a key and the plugin Frankenstyle name. As can be seen on line 12, it is possible to interpolate values into the string. (Multiple values are handled using PHP arrays or objects.)
 
 The strings are looked up in language files that are just plain PHP arrays. Here is the language file for our plugin:
 
 local/greet/lang/en/local_greet.php
 
+<?php
 $string['greet:begreeted'] = 'Be greeted by the hello world example';
 $string['welcome'] = 'Welcome';
-$string['greet'] = 'Hello {$a}';
+$string['greet'] = 'Hello, {$a}!';
 $string['pluginname'] = 'Hello world example';
 
 Note that, as well as the two string used in our script, we also have to define a string to give a name to our capability, and we have to define a string 'pluginname' which is the name of our plugin as it appears in the user interface.
@@ -309,35 +298,35 @@ The different languages are identified by the two-letter country code (en here).
 
 Again, the simple get_string API for plugin developers hides a lot of complexity, including working out the current language (which may depend on the current user's preferences, or the settings for the particular course they are currently in), and then searching through all the language packs and parent language packs to find the string.
 
-Producing the language pack files, and co-ordinating the translation effort is managed at http://lang.moodle.org/, which is moodle with a custom plugin (local_amos, http://docs.moodle.org/21/en/AMOS). It uses both git and the database as a back-end to store the language files with full version history.
+Producing the language pack files, and co-ordinating the translation effort is managed at http://lang.moodle.org/, which is moodle with a custom plugin (local_amos, http://docs.moodle.org/22/en/AMOS). It uses both git and the database as a back-end to store the language files with full version history.
 
 // 11 Starting output
 ---------------------
 
-Now we get to another innocuous looking line that does much more than it seems. The point is that before we can do any output, we have to work out which theme (skin) to use to generate the display. The theme may depend on a combination which context we are in, and the user's preferences. However, $PAGE->context was only set on line 8. In order to solve the problem, we use some PHP magic so that the first time a method on $OUTPUT is called, it re-initialises itself based on the information in $PAGE, and only then generates the output.
+This is another innocuous-looking line that does much more than it seems. The point is that before any output can be done, the applicable theme (skin) to use must be worked out. The theme may depend on a combination which context we are in and the user's preferences. $PAGE->context was, however, only set on line 8. In order to solve the problem, some PHP magic is used so that the first time a method on $OUTPUT is called, it re-initialises itself based on the information in $PAGE, and only then generates the output.
 
-Another thing that needs to be done is that every page in Moodle may contain 'blocks'. These are extra configurable bits of content that are included in the page. (They are a type of plugin.) Again, the exact collation of blocks to display depends in a flexible way that the administrator can control, on the page context and some other aspects of the page identity. Therefore, another part of preparing for output is a call to $PAGE->blocks->load_blocks().
+Another thing that needs to be done is that every page in Moodle may contain 'blocks'. These are extra configurable bits of content that are included in the page. (They are a type of plugin.) Again, the exact collation of blocks to display depends in a flexible way (that the administrator can control) on the page context and some other aspects of the page identity. Therefore, another part of preparing for output is a call to $PAGE->blocks->load_blocks().
 
-Once all the necessary information has been worked out, we call the theme (a type of plugin that controls the overall look of the page) and get it to generate the overall page layout. This includes whatever standard header and footer is desired, and also involves including the display of each block. In the middle of the layout there will be a div where the specific content for this page goes. The HTML of this layout is generated, and then split in half after the start of the main content div. The first half is returned, and the rest is stored to be returned by $OUTPUT->footer().
+Once all the necessary information has been worked out, the theme plugin (that controls the overall look of the page) is called to generate the overall page layout, including whatever standard header and footer is desired. This call is also responsible for adding the output from the blocks at the appropriate place in the HTML. In the middle of the layout there will be a div where the specific content for this page goes. The HTML of this layout is generated, and then split in half after the start of the main content div. The first half is returned, and the rest is stored to be returned by $OUTPUT->footer().
 
 // 12 Outputting the body of the page
 -------------------------------------
  
-Now we output the body of the page. Here we simply display the translated greeting, including the appropriate name, in a box. The core renderer $OUTPUT provides many convenience methods like this to describe the required output in quite high-level terms. Different themes can control what HTML is actually output to make the box.
+This line outputs the body of the page. Here we simply display the greeting in a box. The greeting is again a localised string, this time with a value substituted into a placeholder. The core renderer $OUTPUT provides many convenience methods like box() to describe the required output in quite high-level terms. Different themes can control what HTML is actually output to make the box.
 
-TODO explain format_string.
+The content that originally came from the user ($name) is output though the format_string function. This is the other part of providing XSS protection. It also enables the user of text filters (another plugin type). An example filter would be the LaTeX filter, which replaces input like $$x + 1$$ with an image of the equation. I will mention, but not explain, that there are actually three different functions (s(), format_string() and format_text()) depending on the particular type of content being output.
 
 // 13 finishing output
 ----------------------
 
-Finally, we have to output the footer of the page. This example does not show it, but Moodle tracks all the JavaScript that is required by the page, and outputs all the necessary script tags in the footer. This is standard good practice. It allows users to see the page without waiting for all the JavaScript to load. This is done using calls like $PAGE->requires->js('/local/greet/cooleffect.js').
+Finally, we have to output the footer of the page. This example does not show it, but Moodle tracks all the JavaScript that is required by the page, and outputs all the necessary script tags in the footer. This is standard good practice. It allows users to see the page without waiting for all the JavaScript to load. A developer would include JavaScript using API calls like $PAGE->requires->js('/local/greet/cooleffect.js').
 
 Should we be mixing logic and output
 ------------------------------------
 
-Obviously, putting the output code directly in index.php, even if at a high level of abstraction, limits the flexibility that themes have to control the output. However, this is another sign of the age of the Moodle code-base. The $OUTPUT global was introduced in 2010 as a stepping stone on the way from the old code, where the output and controller code was in the same file, to a design where all the view code was properly separated, and overridable. This also explains the rather ugly way that the entire page layout is generated, then split in half, so that any output from the script itself can be placed between the header and the footer.
+Obviously, putting the output code directly in index.php, even if at a high level of abstraction, limits the flexibility that themes have to control the output. This is another sign of the age of the Moodle code-base. The $OUTPUT global was introduced in 2010 as a stepping stone on the way from the old code, where the output and controller code was in the same file, to a design where all the view code was properly separated. This also explains the rather ugly way that the entire page layout is generated, then split in half, so that any output from the script itself can be placed between the header and the footer. Once the view code has been separated out of the script, into what Moodle calls a renderer, the theme can then choose to completely (or partially) override the view code for a given script.
 
-With a small refactoring, we can go the final step and move all the output code out of our index.php. We could change the end of index.php (lines 11 to 13) to
+With a small refactoring, we can go the final step and move all the output code out of our index.php and into a renderer. We could change the end of index.php (lines 11 to 13) to
 
 $output = $PAGE->get_renderer('local_greet');
 echo $output->greeting_page($name);
@@ -346,6 +335,7 @@ and then make a new file
 
 local/greet/renderer.php:
 
+<?php
 class local_greet_renderer extends plugin_renderer_base {
     public function greeting_page($name) {
         $output = '';
@@ -356,29 +346,80 @@ class local_greet_renderer extends plugin_renderer_base {
     }
 }
 
-The point is, the theme can subclass this renderer, and override greeting_page to generate any output it likes. $PAGE->get_renderer() will then return the appropriate subclass for the current theme. Thus, the output (view) code is fully separated from the controller code in index.php, and we have been able to refactor from typical legacy Moodle code to a clean MVC architecture.
+If the theme wished to completely change this output, it would define a subclass of this renderer that overrides the greeting_page method. $PAGE->get_renderer() determines the appropriate renderer class to instantiate depending on the current theme. Thus, the output (view) code is fully separated from the controller code in index.php, and we have been able to refactor from typical legacy Moodle code to a clean MVC architecture.
+
 
 Database abstraction
 ====================
 
-TODO
+The hello world script was sufficiently simple that it did not need to access the database, although several of the Moodle library calls used did do database queries. Now I will quickly talk about the Moodle database layer.
+
+Moodle used to use the ADOdb library of as the basis of its database abstraction layer, but there were issues for us, and the extra layer of library code had a noticeable impact on performance, so in Moodle 2.0 we switched to our own abstraction layer, which is a thin wrapper around the various PHP database libraries.
+
+The moodle_database class
+-------------------------
+
+The heart of the library is the moodle_database class. This defines the interface provided by the $DB global variable, which gives access to the database connection. A typical usage might be
+
+$course = $DB->get_record('course', array('id' => $courseid));
+
+That translates into the SQL
+
+SELECT * FROM mdl_course WHERE id = $courseid;
+
+and returns the data as a plain PHP object with public fields, so you could access $course->id, $course->fullname, etc.
+
+Simple methods like this deal with basic queries, and simple updates and inserts. Sometimes it is necessary to do more complex SQL, for example to run reports. In that case, there are methods to execute arbitrary SQL
+
+$courseswithactivitycounts = $DB->get_records_sql(
+        'SELECT c.id, ' . $DB->sql_concat('shortname', "''", 'fullname') . ' AS coursename,
+                COUNT(1) AS activitycount
+         FROM {course} c
+         JOIN {course_modules} cm ON cm.course = c.id
+         WHERE c.category = :categoryid
+         GROUP BY c.id, c.shortname, c.fullname ORDER BY c.shortname, c.fullname',
+        array('categoryid' => $category));
+
+Some things to note there:
+1. The table names are wrapped in {} so that the library can find them and prepend the table name prefix.
+2. The library uses placeholders to insert values into the SQL. In some cases this can use the facilities of the underlying database driver. In other cases the we have to insert the values ourselves. Our library can support either named placeholders (as above) or anonymous ones, using ? as the placeholder.
+3. In order that the SQL works on all our supported databases you have to use the right subset of standard SQL. For example, you can see that I have used the AS keyword for column aliases, but not for table aliases. Both of those things are necessary.
+4. Even so, there are some things where no subset of standard SQL will work on all our supported databases, for example, every database has a different way to concatenate strings. In these cases, we have compatibility function to generate the correct SQL.
+
+Defining the database structure
+-------------------------------
+
+Another area where database management systems differ a lot is in the SQL syntax required to define tables. To get round this problem, each Moodle plugin (and Moodle core) defines the required database tables in an XML format, and the Moodle install system parses that, and uses the information to create the right tables and indexes in the database. There is a developer tool called XMLDB built into Moodle to help create and edit these install files.
+
+If the database structure needs to change between two releases of Moodle (or of a plugin), then the developer is responsible for writing code (using an additional database object that provides DML methods) to update the database structure, while preserving all the users' data. Thus, Moodle will always self-update from one release to the next, simplifying the maintenance task for administrators.
+
+One contentious point, stemming from the fact that Moodle started out using MySQL 3, is that the Moodle database does not use foreign keys. This allows some buggy behaviour to remain undetected even though modern databases would be capable of detecting the problem. The difficulty is that people have been running Moodle sites without foreign keys for years, so there is almost certainly inconsistent data present, and so adding the keys now would be impossible, without a very difficult clean-up job. Even so, since the XMLDB system was added to Moodle 1.7 (in 2006!), the install.xml files have contained the definitions of the foreign keys that should exist, and we are still hoping, one day, to do all the work necessary to allow us to create them during the install process.
 
 
-Summary
-=======
+What I have not covered
+=======================
 
-I hope this gives you and overview of how Moodle works.
-
-I have had to be selective in what I covered. I have not even mentioned many interesting types of plugin. For example there are text filters that can process user-entered content before it is output, for example to convert equations to images, or to highlight words in the course glossary. I have not talked at all about how authentication, enrolment and grade plugins allow Moodle to interoperate with student information systems, and I have not been able to cover the interesting content-addressed way that Moodle stores uploaded files.
-
-However, I hope I have explained Moodle's plugin, permissions and output systems, and database abstraction layers. These are part that are probably most interesting when comparing to other web applications.
+I hope I have given you a good overview of how Moodle works. Due to lack of space I have had to omit several interesting topics, including how authentication, enrolment and grade plugins allow Moodle to interoperate with student information systems, and the interesting content-addressed way that Moodle stores uploaded files. Details of these, and other aspects of Moodle's design can be found in the developer documentation: http://docs.moodle.org/dev/.
 
 
-THINGS I NEED TO REVIEW:
+Lessons learned
+===============
 
-1. Consistent Tense, Person, etc.
-2. Check the code actually runs without errors and put it on github.
-3. Draw the diagrams.
-4. Overall structure.
+One interesting aspect of working on Moodle is that it came out of a research project. Moodle enables (but does not enforce) a social constructivist pedagogy (http://docs.moodle.org/en/Pedagogy). That is, we learn best by actually creating something, and we learn from each other as a community. What made Martin Dougiamas's PhD question interesting is that he was not asking whether this was an effective model for education, but rather he was asking whether that is an effective model for running an open source project. That is, can we view the Moodle project as an attempt to learn how to build and use a VLE, and an attempt to learn that by actually building an using Moodle as a community where teacher, developers, administrators and students all teach and learn from each other. I find this a very good model for how to think about the process of doing software development.
 
-Word count: 5014 (according to Open Office).
+Perhaps the most important consequence of this is that you should not be afraid to start by implementing the simplest thing at first. To give an example, at first Moodle had a few hard-coded roles like Teacher, Student, Administrator. That was enough for many years. Eventually, it proved too inflexible, and so the Roles system was introduced. When it came time to design the roles system, there was a lot of experience in the community about how people were using Moodle, and a lot of little feature requests that showed what people needed from a more flexible access control system. This all helped design the Roles system to be as simple as possible, but as complex as necessary. In fact, the first version of the roles system ended up slightly too complex, and it was subsequently simplified a little.
+
+Now, if you take the view that programming is a problem solving exercise, then you might think that Moodle got the design wrong the first time, and later had to waste time correcting it. I suggest that is an unhelpful viewpoint. At the time Moodle started, no-one knew enough to design the roles system we have now. If you take the learning viewpoint, then the various stages Moodle went through were necessary and inevitable.
+
+For this to work, it must be possible to change almost any aspect of a system's architecture. I think Moodle shows that this is possible. It does take a certain amount of effort, but it can be done when necessary, and from the user's point of view it is just a gradual evolution.
+
+
+
+
+
+NOTES:
+
+The diagrams are pretty sucky. They need to be redrawn the same, but better.
+Moodle course.tiff / .png is a screen-grab of http://dev.moodle.org/course/view.php?id=2 - which you should be able to get into, if you what to alter the aspect ratio, or what is shown.
+
+Word count: 6179

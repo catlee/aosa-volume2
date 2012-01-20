@@ -7,7 +7,7 @@
 The Insight Toolkit ITK\footnote{\url{http://www.itk.org}} is a library for
 image analysis that was developed by the initiative, and mainly with the
 funding, of the US National Library of
-Medicine\footnote{\url{http://www.nlm.nih.gov}}. ITK can be tought of as a
+Medicine\footnote{\url{http://www.nlm.nih.gov}}. ITK can be thought of as a
 usable encyclopedia of image analysis algorithms, in particular for image
 filtering, image segmentation and image registration. The library was developed
 by a consortium involving universities, commercial companies, and many
@@ -19,41 +19,14 @@ next decade.
 
 \begin{aosasect1}{Architectural Features}
 
-Software is written by people for people. We are persuaded of the truth of Conway's Law,
-an adage named after computer programmer Melvin Conway, who in 1968 stated:
-
-\begin{center}
-\begin{quotation}
-\emph{
-``Organizations which design systems\\
-are constrained to produce designs\\
-which are copies of the communication\\
-structures of these organizations.''
-}
-\end{quotation}
-\end{center}
-
-Taken one step further, \emph{Conway's Law} can be extended to say that the
-design of the system also reflects the structure of the community that uses the
-software and the nature of the work they do with it. At least in the case of
-ITK this holds true. In short: \emph{Form follows Function}.
-
-\aosafigure{../images/itk/SoftwareAndCommunitySynergy.pdf}{Synergy between Software and Community}{fig.itk.synergy}
-
-This situation is really the consequence that software and community are not
-independent. Instead, they shape one another in a continuous synergistic
-relationship. The software gets to be modified until it satisfies the needs of
-the community, and those modifications are performed by using community
-coordination and communication mechanisms that leave their mark in the
-continuously changing software product. The software in its turn, also changes
-the community dynamics, by empowering them to undertake certain challenges, and
-in some cases by not doing enough to simplify the tasks of attacking some other
-problems. This is particularly true for the case of software libraries whose
-community turns out to be composed of developers and researchers.
-
-To better understand the nature of ITK's architecture is therefore very useful
-to get a sense of what kind of problems the ITK community is usually addressing
-and how they tend to go about them.
+Software toolkits have a very synergistic relationship with their communities.
+They shape one another in a continuous iterative cycle.  The software gets to
+be modified until it satisfies the needs of the community, while the community
+behaviors themselves are adapted based on what the software empowers or
+restricts them to do. In order to better understand the nature of ITK's
+architecture, it is therefore very useful to get a sense of what kind of
+problems the ITK community is usually addressing and how they tend to go about
+them.
 
 \begin{aosasect2}{The Nature of the Beast}
 
@@ -101,45 +74,35 @@ edge detection filter used to identify the borders of anatomical structures.
 \end{figure}
 
 For each one of these tasks, the image analysis community has developed a
-variety of algorighms, and continue developing new ones. Why do they continue
-doing this? you may ask, and the answer is that image processing is a
-combination of science, engineering, art, and ``cooking'' skills. Claiming that
-there is an algorithmic combination that is the ``right'' answer to an image
-processing task, is as mislead as claiming that there is such a thing as the
-``right'' type of chocolate dessert for a dinner. Instead of pursuing
+variety of algorithms, and continue developing new ones. \emph{``Why do they
+continue doing this?''} you may ask, and the answer is that image processing is
+a combination of science, engineering, art, and ``cooking'' skills. Claiming
+that there is an algorithmic combination that is the ``right'' answer to an
+image processing task, is as mislead as claiming that there is such a thing as
+the ``right'' type of chocolate dessert for a dinner. Instead of pursuing
 perfection, the community strives for producing a rich enough set of tools that
-ensures that there will be no shortage of options to try, when it comes the
-time to face a given image processing challenge.
-
-This state of affairs, of course comes at a price. The cost is that the image
-analyzer is confronted with the difficulty of choosing among tens of different
-tools that could be used in different combinations to achieve similar results.
-To make things more interesting, each one of those algorithmic choices comes
-with numeric and boolean parameters that can be tuned to regulate the behavior
-of the filters. For example, that median filter illustrated in the center of
-Figure~\ref{fig.itk.brim} has two numeric parameters, and that edge detection
-filter illustrated in the right of the same figure has five numeric parameters.
-The existance of those tunable parameters makes even more difficult to ever
-claim that method ``A'' is better than method ``B''; since we could only say
-that for a given application and a given set of input images, the method ``A''
-with a particular set of parameters, seems to produce better results than
-method ``B'' with a particular set of parameters.  And of course, here
-``better'' is judged by a mixture of subjective and objective measures of
-quality.
+ensures that there will be no shortage of options to try when it comes the
+time to face a given image processing challenge. This state of affairs, of
+course, comes at a price. The cost is that the image analyzer is confronted with
+the difficulty of choosing among tens of different tools that could be used in
+different combinations to achieve similar results.
 
 The image analysis community is also closely integrated with the research
 community. It is common to find specific research groups that become attached
 to the algorithmic families they have developed. This custom of ``branding'',
-and up to some level ``marketing'' leads to a situation where the best that the
-software can do for the community is to offer them a very complete set of
+and up to some level ``marketing'', leads to a situation where the best that the
+software toolkit can do for the community is to offer a very complete set of
 algorithmic implementations that they can try, and then mix and match to create
-a recipe that satisfy their needs. These are some of the reasons why ITK was
-designed and implemented as a large collection of somewhat independent tools,
-many of which can be used to solve similar problems. The toolkit was also
-conceived as a resource that will grow and renew itself continously, as new
-algorithms and better implementations become available superseeding exiting
-ones, as well as new tools are developed in response to the emerging needs of
-new medical imaging technologies.
+a recipe that satisfies their needs.
+
+These are some of the reasons why ITK was designed and implemented as a large
+collection of somewhat independent tools, many of which can be used to solve
+similar problems. In this context, a certain level of ``redundancy'' is not
+seen as a problem but as a valuable feature. The toolkit was also conceived as
+a resource that will grow and renew itself continuously, as new algorithms and
+better implementations become available superseding exiting ones, as well as
+new tools are developed in response to the emerging needs of new medical
+imaging technologies.
 
 Armed with this quick overview of the nature of activities that make the daily
 routine of the image analyzers who compose the ITK community, we can now dive
@@ -201,7 +164,7 @@ list dependencies between this module and other modules.
 
 \end{aosaenumerate}
 
-This hierarchichal structure is illustrated in
+This hierarchical structure is illustrated in
 Figure~\ref{fig.itk.modulehierarchy}.
 
 \aosafigure{../images/itk/IllustrationOfModularStructure.pdf}{Hierarchical Structure of Groups, Modules and Classes}{fig.itk.modulehierarchy}
@@ -215,8 +178,8 @@ bytes, is presented in Figure~\ref{fig.itk.modulesize}.
 \aosafigure{../images/itk/moduleSizePlotNoThirdParty.pdf}{Distribution of Module Size in Bytes without Third Party Libraries}{fig.itk.modulesizenothirdparty}
 
 The modularization in ITK applies as well to a set of third party libraries
-that are not directly part of the tookit, but that the toolkit depend upon, and
-that are distributed along with the rest of the code for the convinience of
+that are not directly part of the toolkit, but that the toolkit depend upon, and
+that are distributed along with the rest of the code for the convenience of
 users. Particular examples of these third party libraries are the image file
 format libraries: HDF5, PNG, TIFF, JPEG and openjpeg among others. When these
 libraries are excluded from the analysis of module size, the distribution
@@ -236,7 +199,7 @@ The modular architecture of ITK enables and facilitates:
 
 Again, we can recognize in these items the fact that the structure of the
 toolkit reflects the organization of the community and in some cases the
-processes that have been adopted for the continous growth and quality control
+processes that have been adopted for the continuous growth and quality control
 of the software.
 
 \begin{aosasect2}{Data Pipeline}
@@ -272,7 +235,7 @@ time that one of the numeric parameters is modified, the data pipeline marks
 its output as ``dirty'' and knows that this particular filter, and all the
 downstream ones that use its output, should be executed again. This feature of
 the pipeline facilitates the exploration of the parameter space while
-maintainting to a minimum the amount of processing power that have to be
+maintaining to a minimum the amount of processing power that have to be
 invested at every instance of an experiment.
 
 Two main types of objects were designed to hold the basic structure of the
@@ -280,9 +243,9 @@ pipeline.  They are the \code{DataObject} and the \code{ProcessObject}. The
 \code{DataObject} is the abstraction of classes that carry data. For example,
 images and geometrical meshes. The \code{ProcessObject} provides an abstraction
 for the image filters and mesh filters that process such data.
-\code{ProcessObjects} take \code{DataObjects} and perform some type of
-algorithmic transformation on them, such as the ones illustrated
-in Figure~\ref{fig.itk.brim}.
+\code{ProcessObjects} take \code{DataObjects} as input and perform some type of
+algorithmic transformation on them, such as the ones illustrated in
+Figure~\ref{fig.itk.brim}.
 
 \aosafigure{../images/itk/ProcessObjectDataObject.pdf}{Relationship between ProcessObjects and DataObjects}{fig.itk.processobjectdataobject}
 
@@ -308,10 +271,10 @@ hierarchy of the pipeline Objects in ITK. In particular the relationship
 between the basic \code{Object}, \code{ProcessObject}, \code{DataObject}, and
 some of the classes in the filter family and the data family. In this
 abstraction, any object that is expected to be passed as input to a filter, or
-be produced as output by a filter, must derive from the \code{DataObject}. All
+to be produced as output by a filter, must derive from the \code{DataObject}. All
 filters that produce and consume data are expected to derive from the
 \code{ProcessObject}. The data negotiations required to move data through the
-pipeline are implemented part in the \code{ProcessObject} and part in the
+pipeline are implemented, part in the \code{ProcessObject} and part in the
 \code{DataObject}.
 
 \aosafigure{../images/itk/ProcessObjectDataObjectHierarchy.pdf}{Hierarchy of ProcessObjects and DataObjects}{fig.itk.processobjectdataobjecthierarchy}
@@ -320,92 +283,22 @@ pipeline are implemented part in the \code{ProcessObject} and part in the
 
 \begin{aosasect2}{Factories}
 
-One of the fundamental design requirements of ITK was to have support for
-multiple platforms. This requirement emerged from the desire of maximizing the
-impact of the toolkit. By supporting many platforms it became easier to ensure
-that a larger community will benefit from the effort invested in developing the
-toolkit. There are however, fundamental differences among the many hardware and
-software platforms that make very difficult to create a single implementation
-of software that could run in all those platforms, without sacrificing the good
-fitness of a solution to each one of the individual platforms. The design
-pattern of ``Factories'' is one of the most effective ways of addressing this
-challenge.
+One of the fundamental design requirements of ITK is to provide support for
+multiple platforms. This requirement emerges from the desire to maximize the
+impact of the toolkit by making it usable to a broad community regardless of
+their platform of choice. ITK adopted the \emph{Factory} design pattern to
+address the challenge of supporting fundamental differences among the many
+hardware and software platforms, without sacrificing the good fitness of a
+solution to each one of the individual platforms.
 
-Three main elements are involved in the Factory pattern:
-
-\begin{aosaitemize}
-\item Factory registry
-\item Family of factories
-\item Alternative implementations of a service class
-\end{aosaitemize}
-
-\aosafigure{../images/itk/FactoriesDesignPattern.pdf}{Factory Design Pattern}{fig.itk.factorydesignpattern}
-
-To illustrate the use of Factories, let's consider the example of numerical
-methods that can be better implemented with libraries that are only available
-in some platforms. To be more specific, let's consider the case of Fast Fourier
-Transforms (FFT). ITK bases its FFT functionalities on the implementation
-provided by the third party library VXL, and alternatively on the FFTW library.
-This second one is a lot faster, but happens to be available only in Linux
-platforms\footnote{To be more precise: FFTW is ``easily'' and ``readily''
-available in Linux. The library, however can be built in other platforms with
-some investment of effort. The point is still valid for the example that we are
-trying to illustrate here.}. With the Factory pattern it is possible to write a
-FFT image filter class that, at construction time, will invoke the creation of
-a VXL-based or a FFTW-based implementation, depending on the platform in which
-we are running the code.
-
-For this Factory pattern to work, there must be a ``Factory registry'' where we
-keep a list of all available Factories. The registry has an API through which
-it is possible to request the list of Factories able to construct an object
-suitable for computing FFT. The registered factories are capable of
-constructing an instance of a Service class, in this case the filter that
-computes the FFT. Each one of the platform-dependent implementations of the
-service class have the same API, and therefore can be used interchangeably.  We
-could then have a VXL-based FFT filter, and a FFTW-based FFT filter as two
-alternative implementations of the service class that computes FFTs. For each
-one of these two implementations of the service class, we will have their
-corresponding Factories. That is, one VXL-related Factory that knows how to
-instantiate the VXL-based FFT filter, and a FFTW-related Factory that knows how
-to instantiate a FFTW-based filter. By selecting which Factories are registered and which ones are not, at any
-given time, we can control what specific variation of the service class will be
-instantiated in a particular platform.
-
-In ITK the Factory registry is implemented in the \code{ObjectFactoryBase}.
-This class maintains an internal list of all the factories that have been
-registered and that are available for instantiating other service classes. This
-pattern is illustrated in Figure~\ref{fig.itk.factorydesignpattern}, where
-multiple Factory classes are registered in the list of the
-\code{ObjectFactoryBase}, and each one knows how to instantiate a service
-class, in this case, one of the filters X, Y or Z.
-
-The request for instantiating a given service class is made by passing a string
-to the ObjectFactoryBase, asking it to find a Factory that claims to be capable
-of instantiating such type of class. If such Factory is found then it gets the
-request for instantiating the service class, and the freshly created object is
-returned to the originator of the request. Since the instantiation of the
-service class respect a common API, the recipient of the class does not have to
-be aware of the fact that it actually got a specialized version of the
-requested object. In C++ Object Oriented terms, the delivered class is a
-specialized class deriving from the base class that the originator of the
-request was asking for.
-
-One of the most appealing aspects of the Factory implementation in ITK is that
-the registration of Factories can be done at run time. It can actually be done
-by a process as simple as placing dynamic libraries in specific directories.
-This provides a natural mechanism for implementing a Plugin Architecture in a
-clean and transparent way. The \code{ObjectFactoryBase} does this in its method
-\code{LoadDynamicFactories}, where it recruits the help of the
-\code{DynamicLoader} class to search for dynamic libraries in the directories
-listed in the environment variable \code{ITK\_AUTOLOAD\_PATH}.
-
-The dynamic library has to provide an implementation of the \code{itkLoad()}
-C-function that, when called, returns a pointer to a Factory object. The
-returned Factory pointer is registered in the list of available Factories, and
-becomes available for the next round in which the creation of a service class
-is requested. This plugin mechanism is quite flexible and facilitates the
-development of extensible image analysis applications, that satisfy the
-requirements of providing an ever-growing set of image analysis capabilites.
+The Factory Pattern in ITK uses class names as keys to a registry of class
+constructors. The registration of Factories happens at run time, and can be
+done by simply placing dynamic libraries in specific directories that ITK
+applications search at start up time. This last feature provides a natural
+mechanism for implementing a Plugin Architecture in a clean and transparent
+way. The outcome is to facilitate the development of extensible image analysis
+applications, satisfying the requirements of providing an ever-growing set of
+image analysis capabilities.
 
 \end{aosasect2}
 
@@ -413,15 +306,13 @@ requirements of providing an ever-growing set of image analysis capabilites.
 
 The image analysis community has developed a very large set of file formats to
 store image data. Many of these file formats are designed and implemented with
-specific uses in mind, and therefore are fine-tunned to specific types of
+specific uses in mind, and therefore are fine-tuned to specific types of
 images. As a consequence, on a regular basis, new image file formats are
 conceived and promoted across the community. Aware of this situation, the ITK
-developement team designed an IO Architecture suitable for unlimited
-extensibility, in which it became easy to add support for more and more file
+development team designed an IO Architecture suitable for unlimited
+extensibility, in which it is easy to add support for more and more file
 formats on a regular basis.
 
-
-%\aosafigure{../images/itk/BlockFunctionalDiagram.pdf}{IO Factories Dependencies}{fig.itk.io.factoriesblock}
 \aosafigure{../images/itk/ImageIOFactoriesDesignPattern.pdf}{IO Factories Dependencies}{fig.itk.io.factoriesregistry}
 
 These IO extensible architecture is built upon the Factories mechanism
@@ -429,10 +320,10 @@ described in the previous section. The main difference is that in the IO case,
 the IO Factories are registered in a specialized registry that is managed by
 the \code{ImageIOFactory} base class, shown on the upper left corner of
 Figure~\ref{fig.itk.io.factoriesregistry}. The actual functionality of reading
-and writing data from image file formats is implemented in a family of classes
-called \code{ImageIO} classes, shown on the right side of
+and writing data from image file formats is implemented in a family of
+\code{ImageIO} classes, shown on the right side of
 Figure~\ref{fig.itk.io.factoriesregistry}. These service classes are intended
-to be instantiated on deman when the user request to read or write an image.
+to be instantiated on demand when the user request to read or write an image.
 The services classes are not exposed to the application code. Instead,
 application are expected to interact with the facade classes:
 
@@ -455,29 +346,6 @@ or
 \item \code{writer->Update();}
 \end{aosaitemize}
 
-In both cases, the \code{ImageFileWriter} and \code{ImageFileWriter} will
-invoke the \code{CreateImageIO()} function in the \code{ImageIOFactory} and
-will ask it to identify Factories capable of instantiating service classes that
-know how to read and write that particular file format.
-
-As illustrated in Figure~\ref{fig.itk.io.factoriesregistry}, the
-\code{ImageIOFactory} holds a list of pointers to all the registered IO
-Factories. Each one of those Factories is able to respond to the calls:
-
-\begin{aosaitemize}
-\item \code{CanRead( filename )}
-\item \code{CanWrite( filename )}
-\end{aosaitemize}
-
-When the \code{ImageIOFactory} is asked to find a Factory capable of
-instantiating an ImageIO object that can read or write an image with such
-\code{filename}, it searches sequentially in its list of registered factories,
-asking at every step whether the current Factory item \code{CanRead()} or
-\code{CanWrite()} that filename. The first Factory that responds affirmatively
-get the assignment of instantiating the corresponding ImageIO object and pass
-it to the Reader or Writer in order to provide the services of reading or
-writing the image in disk.
-
 The self-contained nature of every IO Factory and ImageIO service classes is
 also reflected in the modularization. Typically, an ImageIO class depends on a
 specialized library that is dedicated to managing a specific file format. That
@@ -485,8 +353,8 @@ is the case for PNG, JPEG, TIFF and DICOM, for example. In those cases, the
 third party library is managed as a self-contained module, and the specialized
 ImageIO code that interfaces ITK to that third party library is also put in a
 Module by itself. In this way, specific applications may disable many
-fileformats that are not relevant for their domain, and can focus on offering
-only those fileformats that are useful for the anticipated scenarios of this
+file formats that are not relevant for their domain, and can focus on offering
+only those file formats that are useful for the anticipated scenarios of this
 application.
 
 Just as with standard Factories, the IO Factories can also be loaded at
@@ -497,7 +365,8 @@ factories has been one of the most successful features in the Architectural
 design of ITK. It has made possible to easily manage a challenging situation
 without placing a burden in the code nor obscuring its implementation. More
 recently, the same IO architecture has been adapted to manage the process of
-reading and writing files containing spatial transformations.
+reading and writing files containing spatial transformations represented by the
+\code{Transform} class family.
 
 \end{aosasect2}
 
@@ -511,8 +380,56 @@ community. It is still the case that the dataset will not fit in the typical
 desktop computers that we use today. Therefore, one of the requirements for
 developing the Insight Toolkit was to enable the streaming of image data
 through the Data Pipeline. More specifically, to be able to process large
-images by pushing sub-blocks of the image throught the data pipeline, and then
+images by pushing sub-blocks of the image throughout the data pipeline, and then
 assembling the resulting blocks on the output side of the pipeline.
+
+Streaming, unfortunately, can not be apply to all types of algorithms. Specific
+cases that are not suitable for streaming are:
+
+\begin{itemize}
+\item Iterative algorithms that, to compute a pixel value at every iteration,
+require to use as input the pixel values of its neighbors. This is the case of
+most PDE-solving-based algorithms, such as anisotropic diffusion, demons
+deformable registration, and dense level sets, for example.
+\item Algorithms that requires the full set of input pixel values in order to
+compute the value of one of the output pixels. Fourier transform and Infinite
+Impulse Response (IIR) filters, such as the Recursive Gaussian filter, are
+examples of this class.
+\item Region propagation or front propagation algorithms in which the
+modification of pixels also happens in an iterative way but for which the
+location of the regions or fronts can not be systematically partitioned in
+blocks in a predictable way. Region growing segmentation, sparse level sets,
+some implementations of mathematical morphology operations and some forms of
+watersheds are typical examples here.
+\item Image registration algorithms, given that they require to have access to
+the full input image data for computing metric values at every iteration of
+their optimization cycles.
+\end{itemize}
+
+Fortunately, on the other hand, the data pipeline structure of ITK enables
+support for streaming in a variety of transformation filters by taking
+advantage of the fact that all filters create their own output, and therefore
+they do not overwrite the memory of the input image. This comes at the price of
+memory consumption, since the pipeline has to allocate both the input and
+output images in memory simultaneously. Filters such as flipping, axes
+permutation, and geometric resampling fall in this category. In these cases,
+the data pipeline manages the matching of input regions to output regions by
+requiring every filter to provide a method called
+\code{GenerateInputRequestedRegion()} that takes as argument a rectangular
+output region. This method computes the rectangular input region that will be
+needed by this filter to compute that specific rectangular output region. This
+continuous negotiation in the data pipeline makes possible to find for every
+output block the corresponding section of input image that is required for
+computation.
+
+To be more precise here, we must say therefore that ITK supports
+Streaming\ldots but only in the algorithms that are \emph{``streamable''} in
+nature. That said, in the spirit of being progressive regarding the remaining
+algorithms, we should qualify this statement by not claiming that ``it is
+impossible to stream such algorithms'', but rather say that ``our typical
+approach to streaming is not suitable for these algorithms'' at this point, and
+that hopefully new techniques will be devised by the community in the future to
+address these cases.
 \end{aosasect2}
 
 \end{aosasect1}
@@ -520,10 +437,38 @@ assembling the resulting blocks on the output side of the pipeline.
 \begin{aosasect1}{Lessons Learned}
 
 \begin{aosasect2}{Reusability}
+The principle of reusability can also be read as ``avoidance of redundancy''.
+In the case of ITK, this has been achieved by a three-prone approach.
+
+\begin{itemize}
+\item First, the adoption of Object Oriented Programming, and in particular the
+proper creation of class hierarchies where common functionalities are
+factorized in base classes.
+\item Second, the adoption of Generic Programming, implemented via the heavy
+use of C++ templates, factorizing behaviors that are identified as patterns.
+\item Third, a generous use of C++ macros has also permitted to reuse standard
+snippets of code that are needed in a myriad of places across the toolkit.
+\end{itemize}
+
+As a concrete example, the widespread use of explicitly naming types via the C++
+``typedefs'', has proved to be particularly important. This practice plays two
+roles. In one hand it provides a human-readable informative name describing the
+nature of the type and its purpose. On the other hand, it ensures that the type
+is used consistently across the toolkit. As an example, during the refactoring
+of the toolkit for its 4.0 version, a massive effort was invested in collecting
+the cases where C++ integer types such as \code{int}, \code{unsigned int},
+\code{long} and \code{unsigned long}, were used all across the toolkit and to
+replace them with types named after the proper concept that the associated
+variables were representing. This was the most costly part of the process of
+ensuring that the toolkit was able to take advantage of 64bits types for
+managing images larger than 4Gigabytes in all platforms. A task that was of the
+utmost importance for promoting the use of ITK in the fields of Microscopy and
+Remote sensing, where image of tens of Gigabytes in size are of common
+occurrence.
 \end{aosasect2}
 
 \begin{aosasect2}{Maintainability}
-The architecture satisfies the constraints that minimize maintenace cost.
+The architecture satisfies the constraints that minimize maintenance cost.
 \begin{aosaitemize}
 \item Modularity (at the class level)
 \item Many small files
@@ -531,60 +476,160 @@ The architecture satisfies the constraints that minimize maintenace cost.
 \item Repeated patterns
 \end{aosaitemize}
 \end{aosasect2}
+
 As the developers got involved in regular maintenance activities, they
-got exposed to the ``common failures'' of certain details. The things
-that raised common questions in the mailing lists, the details that
-new developers tend to miss and that led them to introduce buggy code.
-After dealing with such issues, developers learned to write code that
-is ``good for maintenance''. Some of this traits apply to both coding
-style and the actual organization of the code.
+got exposed to the ``common failures'' of certain details, in particular:
+
+\begin{itemize}
+\item Assumptions that some filters make regarding specific pixel types for
+their input or output images, but that are not enforced via types nor concept
+checking, and that may as well be missing to be specified in the documentation.
+\item Missing to write for readability. This is one of the most common
+challenges for any software whose new algorithm implementations originate in
+the research community. It is common in that environment to write code that
+``just works'', and to forget that the purpose of code is not just to be
+executed at run time, but that it must be easily readable by the next
+developer. Typical good rules of ``clean code'' writing tend to be ignored when
+researchers are excited about getting their new shiny algorithm to work. For
+example, small functions that do one thing and one thing only (the single
+responsibility principle and the principle of least surprise), proper naming of
+variables and functions.
+\item Lack of attention to failure cases and error management. It is common to
+focus on the ``nice cases'' of data processing and to fail to provide code for
+managing all the cases that can go wrong. Helas, adopters of the toolkit
+quickly run into such cases once they start developing and deploying
+applications in the real world.
+\item Insufficient testing. It requires a lot of discipline to follow the
+practice of test driven development. Specially the notion of writing the tests
+first, and only implement functionalities as you test them. It is almost always
+the case that bugs in the code are hiding behind the cases that were skipped
+while implementing the testing code.
+\end{itemize}
+
+Thanks to the communication practices of Open Source communities, many of these
+items end up being exposed through questions that are commonly asked in the
+mailing lists, or that are directly reported as bugs by users  in the issue
+tracker. After dealing with many of such issues, developers learn to write code
+that is ``good for maintenance''. Some of these traits apply to both coding
+style and the actual organization of the code. It is our view that a developer
+only reaches mastery after passing some time (at least a year) doing maintenance
+and getting exposed to ``all the things that can go wrong''.
 
 \begin{aosasect2}{The Invisible Hand}
-The software should look like writted by a single person. The best
-developers are the ones that write code that can be taken over by
-anybody else, should they be taken down by the ``Provervial Bus'' when
-crossing a street. We have grown to recognize that any trace of
-``personal touch'' is an indication of a defect introduced in the
-software.
+The software should look like written by a single person. The best developers
+are the ones that write code that can be taken over by anybody else, should
+they be taken down by the ``Proverbial Bus'' when crossing a street. We have
+grown to recognize that any trace of ``personal touch'' is an indication of a
+defect introduced in the software.
+
+In order to enforce and promote code style uniformity, the following tools have
+proved to be very effective:
+
+\begin{itemize}
+\item KWStyle\footnote{\url{http://public.kitware.com/KWStyle}}: for automatic
+style checking. This is a simplified C++ parser that checks coding style and
+flags any violations.
+\item Gerrit\footnote{\url{http://code.google.com/p/gerrit}}: for regular code
+reviews. This tools serves two purposes: In one hand, it prevents immature
+code from entering the code base, by distilling its errors, deficiencies and
+imperfections during iterative review cycles where other developers contribute
+to improve the code. On the other hand, the tool also provide a virtual
+training camp in which new developers get to learn from more experienced
+developers (read ``experienced'' as: \emph{those who have made all the
+mistakes, and know where the bodies are buried\ldots}) on how to improve the
+code and avoid known problems that have been observed during maintenance
+cycles.
+\item Git hooks: that enforce the use of the KWStyle and Gerrit and that also
+perform some checks of their own. For example, ITK uses Git hooks that prevent
+commits of code with tabs, and with trailing blank spaces.
+\end{itemize}
+
+The team has also explored the use of
+``Uncrustify''\footnote{\url{http://uncrustify.sourceforge.net}} as a tool for
+enforcing a consistent style. It is worth emphasizing that uniformity of style
+is not a simple matter of aesthetic appeal. It is really a matter of economics,
+since it is well known that the subsequent cost of maintenance of the code is
+about 13 times the cost of the initial development, and that about 80\% of that
+maintenance cost is the time that developers dedicate to reading someone else's
+code, trying to figure out what it was supposed to do. Uniform style does
+wonders for reducing the time that it takes for developers to immerse
+themselves into a newly open file and get to understand the code before they
+introduce any modifications in it. By the same token, it also reduces the
+chances that subsequent developers will misinterpret the code and that their
+modifications end up introducing new bugs when they were honestly trying to fix
+old bugs.
+
+The key for making these tools effective is to make sure that they are:
+\begin{itemize}
+\item Available to all developers, hence our preference for Open Source tools.
+\item Run on a regular basis. In the case of ITK, these tools have been
+integrated in the Nightly and Continuous Dashboard builds managed by
+CDash\footnote{\url{http://www.cdash.org/CDash/index.php?project=Insight}}.
+\item Run as close as possible to the point where the code is being written,
+since in this way, deviations can be fixed immediately, and developers train
+themselves by learning what kind of practices break style rules.
+\end{itemize}
+
 \end{aosasect2}
 
 \begin{aosasect2}{Refactoring}
-ITK Started in the year 2000 and grew continuously until the year
-2011. The development team had the truly unique opportunity to embark
-in a refactoring effort under the funding of the National Library of
-Medicine. This is not a minor feat. Once you have been working on a
-piece of software for over a decade, and you are offered the
-opportunity to clean it up: What would you change ?.
+ITK Started in the year 2000 and grew continuously until the year 2011. The
+development team had the truly unique opportunity to embark in a refactoring
+effort under the funding of the National Library of Medicine. This is not a
+minor feat. Once you have been working on a piece of software for over a
+decade, and you are offered the opportunity to clean it up: What would you
+change ?.
+
+This opportunity for widespread refactoring is very rare. For the previous ten
+years of the Toolkit, we relied on the daily effort of performing small local
+refactorings by cleaning up specific corners of the toolkit as we run into
+them.  This continuous process of clean up and improvement takes advantage of
+the massive collaboration of open source communities, and it is safely enabled
+by the testing infrastructure driven by CDash, that exercises on a regular
+basis about 84\% of the code in the toolkit. Note that in contrast, the average
+code coverage of the software industry is estimated to be only 50\%.
 \end{aosasect2}
 
 \begin{aosasect2}{Reproducibility}
 
-One of the early lessons learned in ITK was that the many papers
-published in the field were not as easy to implement as we were led to
-believe. The computational field tend to over-celebrate algorithms and
-to dismiss the practical work of writing software as ``just an
-implementation detail''. That dismissive attitude is quite damaging to
-the field, since diminshes the importance of the first-hand experience
-with the code and its proper use. The outcome is that most published papers
-are not reproducible, and that when researchers and students attempt to use
-such techniques, they end up spending a lot of time in the process and deliver
-variations of the original work. It is actually quite difficult in practice
-to verify if an implementation matches what was described in a paper.
+One of the early lessons learned in ITK was that the many papers published in
+the field were not as easy to implement as we were led to believe.  The
+computational field tend to over-celebrate algorithms and to dismiss the
+practical work of writing software as \emph{``just an implementation detail''}.
 
-ITK disrupted, for the good, that environment and restored a culture of DYI (Do
-It Yourself), in a field that has grown accoustomed to theoretical reasoning,
-and that had learned to dismiss experimental work. The new culture brought by
-ITK is a practical and pragmatic one in which the virtues of the software are
-judged by its practical results and not by the appearance of complexity that is
-celebrated in scientific publications. Helas, it turns out that in practice,
-the most effective processing methods are those that would appear to be too
-simple to be accepted for a scientific paper.
+That dismissive attitude is quite damaging to the field, since it diminishes the
+importance of the first-hand experience with the code and its proper use. The
+outcome is that most published papers are simply not reproducible, and that
+when researchers and students attempt to use such techniques, they end up
+spending a lot of time in the process and deliver \emph{variations} of the
+original work. It is actually quite difficult in practice to verify if an
+implementation matches what was described in a paper.
 
-The culture of Reproducibilty is a continuation of the philosophy of Test
-Driven Developement, and systematically results in better software. Higher
+ITK disrupted, for the good, that environment and restored a culture of DYI
+(\emph{Do It Yourself}), in a field that has grown accustomed to theoretical
+reasoning, and that had learned to dismiss experimental work. The new culture
+brought by ITK is a practical and pragmatic one in which the virtues of the
+software are judged by its practical results and not by the appearance of
+complexity that is celebrated in some scientific publications. Helas, it turns
+out that in practice, the most effective processing methods are those that
+would appear to be too simple to be accepted for a scientific paper.
+
+The culture of Reproducibility is a continuation of the philosophy of Test
+Driven Development, and systematically results in better software. Higher
 clarity, readability, robustness and focus.
 
-The Insight Journal...
+In order to fill the gap of lack reproducible publications, the ITK community
+created the Insight Journal\footnote{\url{http://www.insight-journal.org}}.
+This is an Open Access, fully online publication, in which contributions are
+required to include code, data, parameters, and tests in order to enable the
+verification of reproducibility. Articles are published online in less than 24
+hours after submission. Then, they are made available for peer-review by any
+member of the community. Readers get full access to all the materials
+accompanying the article, namely: source code, data, parameters, and testing
+scripts. The Journal have provided a prolific space for sharing new code
+contributions, and from there, make their way into the code base. The Journal
+recently received its 500th Article and continues to be a used as the official
+entry gate for new code to be added to the ITK toolkit.
 \end{aosasect2}
 
 \end{aosasect1}

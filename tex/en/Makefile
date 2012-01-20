@@ -4,7 +4,6 @@ BIBTEX = bibtex
 CHAPTERS = \
   frontmatter \
 	intro \
-	diaspora \
 	distsys \
 	erlang \
 	ffreleng \
@@ -13,10 +12,8 @@ CHAPTERS = \
 	ghc \
 	git \
 	gpsd \
-	inkscape \
 	ironlang \
 	itk \
-	lnxdist \
 	mailman \
 	matplotlib \
 	mediawiki \
@@ -25,12 +22,9 @@ CHAPTERS = \
 	openmpi \
 	oscar \
 	osm \
-	parrot \
 	pjs \
-	postgresql \
 	puppet \
 	pypy \
-	scummvm \
 	sqlalchemy \
 	twisted \
 	yesod \
@@ -47,9 +41,13 @@ aosa2.pdf : aosa2.tex aosa2.bib ${SRC}
 	${BIBTEX} aosa2
 	${LATEX} aosa2
 	${LATEX} aosa2
+	${LATEX} aosa2
 
 questions:
 	@(for i in *.tex; do echo `fgrep aosaquestion $$i | wc -l` $$i; done) | sort -n -r
 
 clean:
+	@rm -f aosa2.pdf *.aux *.bak *.bbl *.blg *.log *.toc *~
+
+cleanish:
 	@rm -f *.aux *.bak *.bbl *.blg *.log *.toc *~

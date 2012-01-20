@@ -1,25 +1,25 @@
 A brief history
 ===============
 
-GNU Mailman is free software for managing mailing lists.  Almost everybody who
-writes or uses free and open source software has probably encountered a
+`GNU Mailman`_ is free software for managing mailing lists.  Almost everybody
+who writes or uses free and open source software has probably encountered a
 mailing list.  Mailing lists can be discussion-based or announcement-based,
 with all kinds of variations in between.  Sometimes mailing lists are
-gatewayed to newsgroups on Usenet or Gmane.  Mailing lists typically have
+gatewayed to newsgroups on Usenet or `Gmane`_.  Mailing lists typically have
 archives which contain the historical record of all the messages that have
 been posted to the mailing list.
 
 GNU Mailman has been around since the early '90s, when John Viega wrote the
 first version to connect fans with a band he was friends with in college: the
 Dave Matthews Band.  By the mid-90's, the center of the Python universe had
-moved from CWI in the Netherlands to CNRI in Reston Virginia USA, and we were
-running its mailing list using Majordomo.  Of course, it just wouldn't do for
-the Python world to be running a Perl-based mailing list, and besides, it was
-too difficult to make the changes we needed to Majordomo.  Ken Manheimer was
-instrumental in resurrecting an early version of Mailman from John's failed
-hard drive.  Many excellent developers have contributed to Mailman since then,
-and today, Mark Sapiro is maintaining the stable 2.1 branch, while Barry
-Warsaw concentrates on the new 3.0 version.
+moved from `CWI`_ in the Netherlands to `CNRI`_ in Reston Virginia USA, and we
+were running its mailing list using Majordomo.  Of course, it just wouldn't do
+for the Python world to be running a Perl-based mailing list, and besides, it
+was too difficult to make the changes we needed to Majordomo.  Ken Manheimer
+was instrumental in resurrecting an early version of Mailman from John's
+failed hard drive.  Many excellent developers have contributed to Mailman
+since then, and today, Mark Sapiro is maintaining the stable 2.1 branch, while
+Barry Warsaw concentrates on the new 3.0 version.
 
 Many of the original architectural decisions John made have lived on in the
 code right up until the Mailman 3 branch, and in fact can still be seen in the
@@ -34,11 +34,12 @@ to Mailman's ongoing success:
  * No message should ever get lost
  * No message should ever be delivered twice
 
-In Mailman 2.0 we re-design the message handling system, to ensure that these
-two principles would always be of prime importance.  This part of the system
-has been stable for at least a decade now, and is one of the key reasons that
-Mailman is as ubiquitous as it is today.  Despite modernizing this subsystem
-in Mailman 3, the design and implementation remains largely unchanged.
+In Mailman 2.0 we re-designed the message handling system, to ensure that
+these two principles would always be of prime importance.  This part of the
+system has been stable for at least a decade now, and is one of the key
+reasons that Mailman is as ubiquitous as it is today.  Despite modernizing
+this subsystem in Mailman 3, the design and implementation remains largely
+unchanged.
 
 
 The anatomy of a message
@@ -61,20 +62,33 @@ ASCII English, or just about any language and character set in existence.  The
 basic structure of an email message has been borrowed over and over again for
 other protocols, such as NNTP and HTTP, yet each is slightly different.  Work
 on Mailman has spawned several libraries just to deal with the vagaries of
-this format (often called *RFC822* for the founding IETF standard), and
-development is ongoing even today to fix and improve the email package in the
-Python standard library so that it is more standards-compliant and robust.
+this format (often called *RFC822* for the founding `1982 IETF standard`_),
+and development is ongoing even today to fix and improve the email package in
+the Python standard library so that it is more standards-compliant and robust.
 
 Email messages can act as containers for other types of data, as defined in
 the various MIME standards.  A container *message part* can encode an image,
 some audio, or just about any type of binary or text data.  In mail reader
-applications, these are known as *attachments*.
+applications, these are known as *attachments*.  Figure 1 shows the structure
+of a complex MIME message.  The blue boxes are the container parts, the yellow
+boxes are base 64 encoded binary data, and the red box is a plain text
+message.
+
+.. figure:: MIME.png
+
+   Figure 1.  A MIME `multipart/mixed` message containing text, images and an
+   audio file.
 
 Container parts can also be arbitrarily nested; these are called *multiparts*
 and can in fact get quite deep.  But all email messages regardless of their
 complexity can be modeled as a tree, with a single message object at its root.
 Within Mailman, we often refer to this as the *message object tree*, and we
-pass this tree around by reference to the root message object.
+pass this tree around by reference to the root message object.  Figure 2 shows
+the object tree of the above multipart message.
+
+.. figure:: tree.png
+
+   Figure 2.  Message object tree of a complex MIME email message.
 
 Mailman will almost always modify the original message in some way.
 Sometimes, the transformations can be fairly benign, such as adding or
@@ -89,11 +103,13 @@ Mailman generally parses the *on the wire* bytes representation of a message
 just once, when it first comes into the system.  From then on, it deals only
 with the message object tree until it's ready to send it back out to the
 outgoing mail server.  It's at that point that Mailman flattens the tree back
-into a bytes representation.  Along the way, Mailman pickles the message
+into a bytes representation.  Along the way, Mailman `pickles`_ the message
 object tree for quick storage to, and reconstruction from, the file system.
-*Pickles* are a Python technology for serializing any Python object, including
-all its subobjects, and it's perfectly suited to optimizing the handling of
-email message object trees.
+*Pickles* are a Python technology for serializing any Python object to a byte
+stream, including all its subobjects, and it's perfectly suited to optimizing
+the handling of email message object trees. *Unpickling* is deserializing this
+byte stream back into a live object.  By storing these byte streams in a file,
+Python programs gain low cost persistence.
 
 
 The mailing list
@@ -114,7 +130,7 @@ most of the operations in Mailman are mailing list-centric, such as:
  * Users post new messages to a specific mailing list.
 
 and so on.  Almost every operation in Mailman takes a mailing list as an
-argument, it's that fundamental.  Mailing list objects have undergone a
+argument - it's that fundamental.  Mailing list objects have undergone a
 radical redesign in Mailman 3 to make them more efficient and to expand their
 flexibility.
 
@@ -134,11 +150,7 @@ provided the methods necessary to support the auto-responder feature.
 This structure was even more useful when it came to the question of
 persistence.  *Persistence* is the storage and retrieval of program state in
 order to preserve it between stops and starts.  Another of John's early design
-decisions was to use Python *pickles* for storing``MailList`` state
-persistence.  *Pickling* is a Python technology for serializing an object's
-state to a byte stream, and *unpickling* is deserializing this byte stream
-back into a live object.  By storing these byte streams in a file, Python
-programs gain low cost persistence.
+decisions was to use Python pickles for storing``MailList`` state persistence.
 
 In Mailman 2, the ``MailList`` object's state is stored in a file called
 ``config.pck``, which is just the pickled representation of the ``MailList``
@@ -185,7 +197,7 @@ system, since membership information was kept in the ``config.pck`` file too.
 
 Another problem was that each ``config.pck`` file lived in a directory named
 after the mailing list, but Mailman was originally designed without
-consideration of virtual domains.  This lead to a very unfortunate problem
+consideration for virtual domains.  This lead to a very unfortunate problem
 where two mailing lists could not have the same name in different domains.
 For example, if you owned both the ``example.com`` and ``example.org``
 domains, and you wanted them to act independently and allow for a different
@@ -215,18 +227,18 @@ More on that later.  When a runner does manage the files in a directory, it is
 called a *queue runner*.
 
 Mailman is religiously single threaded, even though there is significant
-parallelism to exploit.  For example, Mailman can accep messages from the mail
-server at the same time it's sending messages out to recipients, or processing
-bounces, or archiving a message.  Parallelism in Mailman is achieved through
-the use of multiple processes, in the form of these runners.  For example,
-there is an *incoming* queue runner with the sole job of accepting (or
-rejecting) messages from the upstream mail server.  There is an outgoing queue
-runner with the sole job of communicating with the upstream mail server over
-SMTP in order to send messages out to the final recipients.  There's an
-archiver queue runner, a bounce processing queue runner, a queue runner for
-forwarding messages to an NNTP server, a runner for composing digests, and
-several others.  Runners which don't manage a queue include an LMTP runner and
-a REST HTTP runner.
+parallelism to exploit.  For example, Mailman can accept messages from the
+mail server at the same time it's sending messages out to recipients, or
+processing bounces, or archiving a message.  Parallelism in Mailman is
+achieved through the use of multiple processes, in the form of these runners.
+For example, there is an *incoming* queue runner with the sole job of
+accepting (or rejecting) messages from the upstream mail server.  There is an
+outgoing queue runner with the sole job of communicating with the upstream
+mail server over SMTP in order to send messages out to the final recipients.
+There's an archiver queue runner, a bounce processing queue runner, a queue
+runner for forwarding messages to an NNTP server, a runner for composing
+digests, and several others.  Runners which don't manage a queue include an
+LMTP server and a REST HTTP server.
 
 Each queue runner is responsible for a single directory, i.e. its *queue*.
 While the typical Mailman system can perform perfectly well with a single
@@ -314,8 +326,7 @@ message object tree, creates an initial metadata dictionary and enqueues this
 into a processing queue directory.
 
 Mailman also has a runner that listens on another port and processes REST
-requests over HTTP.  More on this later, but this process doesn't actually
-handle queue files at all.
+requests over HTTP.  This process doesn't handle queue files at all.
 
 A typical running Mailman system might have 8 or 10 processes, and they all
 need to be stopped and started appropriately and conveniently.  They can also
@@ -398,9 +409,9 @@ received, until the time it's sent out to the list's membership.  In Mailman
 handlers were put together into a *pipeline*.  So, when a message came into
 the system, Mailman would first determine which pipeline would be used to
 process it, and then each handler in the pipeline would be called in turn.
-Some handlers would do moderation functions (i.e. "is this person allowed to
+Some handlers would do moderation functions (e.g. "is this person allowed to
 post to the mailing list?"), others would do modification functions
-(i.e. "which headers should I remove and add?"), and others would copy the
+(e.g. "which headers should I remove and add?"), and others would copy the
 message to other queues.  A few examples of the latter are:
 
  * A message accepted for posting would be copied to the *archiver* queue at
@@ -435,35 +446,65 @@ The incoming queue runner processes each message sequentially through a
 *chain* consisting of any number of *links*.  There is a built-in chain that
 most mailing lists use, but even this is configurable.
 
-Each link in the chain contains three pieces of information: a rule name, an
-action, and a parameter for the action.  *Rules* are simple pieces of code
-which gets passed the typical three parameters: the mailing list, the message
-object, and the metadata dictionary.  Rules are not supposed to modify the
-message; they just make a binary decision and return a boolean, answering the
-question "did the rule match or not"?  There are rules for recognizing
-pre-approved postings, for catching mail loops, and for recognizing various
-conditions which allow or disallow a posting.  It's important to note that the
-rule itself does not dispose of a disallowed posting, it just indicates
-whether the condition to disallow it matched or not.  Each rule that matches
-gets added to a list in the metadata dictionary, and each rule that misses
-gets added to a different list.  That way, later on, Mailman will know exactly
-which rules matched and which ones missed.
+Figure 3 illustrates the default set of chains in the Mailman system.  Each
+link in the chain is illustrated by a rounded rectangle.  The built-in chain
+is where the initial rules of moderation are applied to the incoming message,
+and in this chain, each link is associated with a *rule*.  Rules are simply
+pieces of code that get passed the three typical parameters: the mailing list,
+the message object tree, and the metadata dictionary.  Rules are not supposed
+to modify the message; they just make a binary decision and return a boolean
+answering the question "did the rule match or not?".  Rules can also record
+information in the metadata dictionary.
 
-The central chain-processing loop then calls each link's rule in turn, and if
-the rule matches, it executes the link's action.  Most defer action until
-later, which has the effect of grouping the moderation rules together, so that
-every cause for discarding a message can be recorded.  Actions can also *jump*
-to another chain, and there are chains which discard, reject (i.e. bounce back
-to the original author), and accept messages, as well as hold them for manual
-moderation.  Thus accepting a message is implemented in the chain as a jump to
-the standard *accept* chain.
+In the figure, green arrows indicates message flow when the rule matches,
+while red arrows indicate message flow when the rule does not match.  The
+outcome of each rule is recorded in the metadata dictionary so that later on,
+Mailman will know (and be able to report) exactly which rules matched and
+which ones missed.
 
-A special action called *detour* can also be taken.  A detour suspends the
-processing of the current chain, pushing its state on a stack, and jumping to
-a new chain.  When that new chain is exhausted, the old chain is popped off
-the stack and resumed at the next link.  Detours are used for example, to
-process a message through dynamically created chains, such as those that match
-header values based on database or configuration file entries.
+.. figure:: chains.png
+
+   Figure 3.  Simplified view of default chains with their links.
+
+It's important to note that the rules themselves do not dispatch based on
+outcome.  In the built-in chain, each link is associated with an *action*
+which is performed when the rule matches.  So for example, when the "loop"
+rule matches (meaning, the mailing list has seen this message before), the
+message is immediate handed off to the "discard" chain, which throws the
+message away after some bookkeeping.  If the "loop" rule does not match, the
+next link in the chain will process the message.
+
+In the figure, the links associated with "administrivia", "max-size", and
+"truth" rules have no binary decision.  In case of the first two, this is
+because their action is *deferred*, so they simply record the match outcome
+and processing continues to the next link.  The "any" rule then matches if any
+previous rule matches.  This way, Mailman can report on all the reasons why a
+message is not allowed to be posted, instead of just the first reason.  There
+are several more such rules not illustrated here for simplicity.
+
+The "truth" rule is a bit different.  It's always associated with the last
+link in the chain, and it always matches.  With the combination of the
+penultimate "any" rule sweeping aside all previously matching messages, the
+last link then knows that any message making it through thus far is allowed to
+be posted to the mailing list, so it unconditionally moves the message to the
+"accept" chain.
+
+There are a few other details of chain processing not described here, but the
+architecture is very flexible and extensible so that just about any type of
+message processing can be implemented, and sites can customize and extend
+rules, links, and chains.
+
+What happens to the message when it hits the "accept" chain?  The message,
+which is now deemed appropriate for the mailing list, is sent off to the
+*pipeline* queue for some modifications before it is delivered to the end
+recipients.  This process is described in more detail in the following
+section.
+
+The "hold" chain puts the message into a special bucket for the human
+moderator to review.  The "moderation" chain does a little additional
+processing to decide whether the message should be accepted, held for
+moderator approval, discarded, or rejected.  Not illustrated is the "reject"
+chain, which is used to bounce messages back to the original sender.
 
 
 Handlers and pipelines
@@ -481,21 +522,33 @@ cases.  Handlers have a similar interface as rules, accepting a mailing list,
 message object, and metadata dictionary.  However unlike rules, handlers can
 and do modify the message.
 
+Figure 4 illustrates the default pipeline and set of handlers (some handlers
+are omitted for simplicity).
+
+.. figure:: pipeline.png
+
+   Figure 4.  Pipeline queue handlers.
+
 For example, a posted message needs to have a ``Precedence:`` header added
 which tells other automated software that this message came from a mailing
 list.  This header is a defacto standard to prevent vacation programs from
 responding back to the mailing list.  Adding this header (among other header
-modifications) is done by the ``cook-headers`` handler.  Unlike with rules,
-handler order generally doesn't matter, although enqueuing copies of the
-message to the outgoing, archiver, digest, and NNTP queue runners also happens
-via handlers, so these usually appear at the end of the pipeline.
+modifications) is done by the "add headers" handler.  Unlike with rules,
+handler order generally doesn't matter, and messages always flow through all
+handlers in the pipeline.
+
+Some handlers send copies of the message to other queues.  As shown in the
+figure, there is a handler that makes a copy of the message for folks who want
+to receive digests.  Copies are also sent to the archive queue for eventual
+delivery to the mailing list archives.  Finally, the message is copied to the
+outgoing queue for final delivery to the mailing list's members.
 
 
 VERP
 ====
 
-*VERP* stands for *Variable Envelope Return Path*, and it is a well-known
-technique that mailing lists can use to unambiguously determine bouncing
+*VERP* stands for *Variable Envelope Return Path*, and it is a `well-known
+technique`_ that mailing lists can use to unambiguously determine bouncing
 recipient addresses.  When an address on a mailing list is no longer active,
 the recipient's mail server will send a notification back to the sender.  In
 the case of a mailing list, you want this bounce to go back to the mailing
@@ -506,7 +559,7 @@ list gets the bounce, it can do something useful, such as disable the bouncing
 address or remove it from the list's membership.
 
 There are two general problems with this.  First, even though there is a
-standard format for these bounces (called *delivery status notifications*)
+standard format for `these bounces`_ (called *delivery status notifications*)
 many mail servers out there do not conform to it.  Instead, the body of their
 bounce messages can contain just about any amount of
 difficult-to-machine-parse gobbledygook, which makes automated parsing
@@ -524,8 +577,8 @@ sent the message only knows the member as anne@example.com, so the bounce
 flagging me@example.net will not contain a subscribed address, and Mailman
 will ignore it.
 
-Along comes VERP, which exploits a requirement of the fundamental SMTP
-protocol to provide unambiguous bounce detection, by returning such bounce
+Along comes VERP, which exploits a requirement of the fundamental `SMTP
+protocol`_ to provide unambiguous bounce detection, by returning such bounce
 messages to the *envelope sender*.  This is not the ``From:`` field in the
 message body, but in fact the ``MAIL FROM`` value set during the SMTP dialog.
 This is preserved along the delivery route, and the ultimate receiving mail
@@ -588,9 +641,9 @@ There were a number of technologies at the time that would allow this, and in
 fact Mailman's integration with Launchpad is based on XMLRPC.  But XMLRPC has
 a number of problems that make it a less than ideal protocol.
 
-Mailman 3 has adopted the Representation State Transfer (REST) model for
+Mailman 3 has adopted the `Representation State Transfer`_ (REST) model for
 external administrative control.  REST is based on HTTP, and Mailman's default
-object representation is JSON.  These protocols are ubiquitous and
+object representation is `JSON`_.  These protocols are ubiquitous and
 well-supported in a large variety of programming languages and environments,
 making it fairly easy to integrate Mailman with third party systems.  REST was
 the perfect fit for Mailman 3, and now much of its functionality is exposed
@@ -716,3 +769,17 @@ Project wiki            : http://wiki.list.org
 Developer mailing list  : mailman-developers@python.org
 Users mailing list      : mailman-users@python.org
 Freenode IRC channel    : #mailman
+
+
+.. _`GNU Mailman`: http://www.list.org
+.. _`Gmane`: http://gmane.org/
+.. _`CWI`: http://www.cwi.nl/
+.. _`CNRI`: http://www.cnri.reston.va.us/
+.. _`1982 IETF standard`: http://www.faqs.org/rfcs/rfc822.html
+.. _`pickles`: http://docs.python.org/library/pickle.html
+.. _`well-known technique`: http://cr.yp.to/proto/verp.txt
+.. _`these bounces`: http://www.faqs.org/rfcs/rfc5337.html
+.. _`SMTP protocol`: http://www.faqs.org/rfcs/rfc5321.html
+.. _`Representational State Transfer`:
+   http://en.wikipedia.org/wiki/Representational_state_transfer
+.. _`JSON`: http://en.wikipedia.org/wiki/Json

@@ -1,6 +1,1919 @@
 \begin{aosachapter}{OpenStreetMap}{s:osm}{Harry Wood}
 
-Your chapter goes here---please look at /volume1/tex/en/wesnoth.tex for 
-formatting ideas.
+OpenStreetMap (OpenStreetMap.org) is a project to create a free map of
+the world. It's an open source project, but more fundamentally it's an
+open data project. All of the maps, and the raw geodata making up the
+maps, are released with an open license. Behind this data, a community
+of many thousands of people contribute through a process of wiki-style
+collaboration. It can quite accurately be described as the Wikipedia
+of maps.
+
+In this chapter we shall explore how OpenStreetMap's architecture has
+come together, as a number of open source components at the core, and
+beyond that, an extensive ecosystem of software and services offering
+boundless possibilities for maps and geodata. We'll see some design
+decisions which allow OpenStreetMap to appeal to map contributors
+while catering for a full spectrum of map use cases including new and
+unexpected functions.
+
+\begin{aosasect1}{How It All Started}
+
+The OpenStreetMap project was founded by Steve Coast some time in
+2004. It took a little while to get off the ground, so perhaps it is
+more accurate to say that it was being founded between 2004 and 2006.
+
+At this time the culture of open source ``hacking'' and ``bedroom
+coding'' was in full swing on the web, with a wave of innovation which
+continues to gather pace to this day. Free open source software was
+providing the building blocks, and a culture of content sharing and
+open content licensing was being established on the web. Technologies
+like RSS promoted sharing, and Wikipedia had proved that people could
+come together on the internet and collaborate to create wonderful free
+open content resources. But there were a few things missing in the
+mid-2000's, which we are already taking for granted today:
+
+We didn't really have ``smartphones''. Mobile devices were clearly
+gaining features and coming down in price, for example phones were
+starting to come with a camera as standard. Arguably technologies like
+J2ME were setting the stage for a wave of bedroom coders to go mobile,
+but it was early days for all of this. However satnavs were about to
+go mainstream. Gadget freaks were seeing maps on GPS enabled devices,
+or just having fun recording GPS traces with simple data logger
+devices which were becoming quite affordable.
+
+What about maps on the web? Various providers were offering web maps
+through rather clunky interfaces, but Google Maps did not arrive until
+2005! These days it's hard to picture a web without them.
+
+\begin{aosasect2}{Old School GIS}
+
+There is another class of geo technology which preceded Google Maps,
+OpenStreetMap, and even the web itself. Large enterprises such as
+utility companies had been working with geo-data and powerful GIS
+(Geographical Information Systems) for decades, not to mention the
+military, and of course the organisations that work with geo-data to
+create maps in the first place. Although this has been, and still is,
+the realm of expensively licensed ``enterprise'' software, there is a
+trajectory towards adopting open source, and open standards, and moves
+to bring maps and geo data onto the web. A standard called WMS (Web
+Map Service) specifies a server system for flexible rendering of map
+images for the web. Open Source implementation of this standard
+continues to improve, but back in 2004 it was rather limited and the
+resulting displays left something to be desired.
+
+In 2004 there was an appetite for better mapping technology on the
+web. Satisfying this presented problems, but developers seeking to
+solve them were presented with another barrier...
+
+\end{aosasect2}
+
+\begin{aosasect2}{Geo-data Is Rarely Free}
+
+Maps are mostly created by mapping agencies. In some countries the
+agency is a government organisation, in others it is within the
+private sector, or sometimes within some hybrid of the two. In any
+case these agencies undertake a fairly labor-intensive task of
+surveying the world to create and update their maps (gathering
+geo-data into their database). It's expensive. Most mapping agencies
+recoup this cost by charging money to organisations who wish to use
+the resulting data.
+
+Enterprise GIS users, such as utility companies, are accustomed to
+paying not just for their software, but also for a license to use
+geo-data. Likewise a publishing company producing a map of a city on a
+hotel leaflet will pay to get a license for this use of the map. You
+have probably spotted copyright restrictions shown on printed
+maps. This indicates which mapping agency is the original source of
+the data. Of course this also indicates that you're not allowed to
+copy! Such restrictions extend onto other publicly viewable maps, and
+also onto the web. You'll see similar copyright notices (and terms of
+use) placed alongside web map displays. Mapping agencies will require
+and enforce these restrictions to guard their data, and their
+revenues.
+
+There is another less legal, more technical way for map providers to
+guard their data: Providing a map view as ``raster'' data, but keeping
+the raw ``vector'' data locked away behind closed doors. We will
+revisit this important distinction between vector and raster at
+various points in this chapter.
+
+The OpenStreetMap project started in the UK. Here web developers were
+particularly frustrated with the closed ``all rights reserved''
+restrictions applied to map data. The Ordnance Survey, a
+quasi-governmental organisation, has a proud tradition of producing
+wonderful maps of Great Britain for over a century, but has struggled
+to move with the times when it comes to supplying maps to
+developers. They have enjoyed a monopoly such that any map image of
+the UK is likely to be either Ordnance Survey licensed, or in breach
+of their copyright! Their application of copyright law has been
+particularly strict, with ``derived-data'' rights asserted on data
+points positioned using their maps. Their monopoly is assured as local
+councils are forced to pay for Ordnance Survey data, while at the same
+time supplying them with much of their updates, in a kind of exclusive
+data merry-go-round.
+
+Similar situations prevail in many countries of the world. The United
+States is often held as an exception. A lot of US federal geo-data is
+released to the public domain, but there are still barriers to access
+for a lot of state-level datasets, difficulties in reconciling
+formats, and often disappointing levels of data quality when the data
+is finally visualised. The whole world needs more open geodata! This
+was true in 2004 and is still true today.
+
+The appetite for open geodata is the motivation for
+OpenStreetMap. We'll see how a whole range of geo-data services have
+been built around OpenStreetMap on several levels, but fundamentally
+OpenStreetMap is, and always has been, about providing raw geodata.
+
+\end{aosasect2}
+
+\begin{aosasect2}{A neo-geo revolution}
+
+Google Maps appeared on the scene while OpenStreetMap was still
+embryonic. The now familiar ``slippy map'' interface was pioneered by
+Google in 2005, shortly followed by the Google Maps API for embedding
+maps on your own website, placing pins on the maps and creating ``mash
+ups''. There's no denying this was a game changer for geo-data on the
+web. Google Maps triggered a ``neo-geo'' revolution, partly because of
+this new fluid AJAX ``slippy map'' technology, partly because they
+used their corporate muscle to license expensive data and then present
+it for free (as in \$0), but mainly because they opened it up with an
+API. Developers who had been struggling to get hold of geo data to
+unleash their map-based ideas, could suddenly start to
+experiment. What's more, developers who hadn't even realised what they
+had been missing started dropping maps onto their websites, because it
+was easy. The excitement around new geo-technologies has been growing
+ever since, fuelled by a move onto mobile devices with the arrival of
+GPS enabled smartphones on the mass-market.
+
+It was in this combined atmosphere of frustration with mapping
+agencies and closed datasets, and enormous excitement around the
+possibilities for geo technology on web and mobile, that the
+OpenStreetMap project was born.
+
+\end{aosasect2}
+
+\end{aosasect1}
+
+\begin{aosasect1}{An Open Source Google Maps?}
+
+Google enjoys huge market dominance, but there are other players
+offering map related services and APIs on the web. For example bing,
+Yahoo!, and MapQuest have directly competing offerings. So
+OpenStreetMap is an open source competitor to google maps. Right?
+Wrong! Or at least that is certainly not the whole story!
+OpenStreetMap is different in several fundamental ways.
+
+This is a good time to point out that OpenStreetMap is not a
+company. There is a not-for-profit organisation called ``The
+OpenStreetMap Foundation'' which lends a little structure to
+proceedings, but in general OpenStreetmap is a loose-knit internet
+community. Nobody works for OpenStreetmap or for the foundation at the
+moment. We are all volunteers and enthusiasts. It's not registered as
+a charity, yet. But with its mission to free the world's geo-data,
+OpenStreetmap should certainly be regarded as a good cause. Commercial
+use of the data is permitted. This allows OpenStreetMap to occupy a
+very interesting place in the geodata industry. It means commercial
+companies can stand to benefit from the success of the project, but
+there is no monopoly on this. The open data is available to all, on a
+level playing field. The community is also quite careful to reject any
+controlling influence a commercial company might have upon the
+project, and the share-alike license ensures that the data will always
+be free.
+
+There are other more fundamental differences between Google Maps and
+OpenStreetMap. It's time to delve into the architecture where
+eventually we'll reveal these differences, but let's start by looking
+at an area where the offerings are fairly similar.
+
+\begin{aosasect2}{Embedding a slippy map}
+
+The basic thing every web developer is attempting to do with maps
+(ever since google made it possible) is to embed a ``slippy map'' on
+their own website. You can certainly do that with OpenStreetMap in a
+very similar way to google maps. There are two parts to an embedded
+slippy map: Firstly a chunk of Javascript code loads into the web
+browser with the logic to create a map display. Secondly a ``tile
+server'' provides square images (``tiles'') which the Javascript
+fetches and assembles side-by-side to display a map.
+
+FIXME: diagram
+
+The ability to zoom and pan around the map in a slippy slidey dynamic
+interface is provided by this Javascript logic. As the user does this,
+new tiles are fetched from the tile server. This type of dynamic
+interface is sometimes referred to as AJAX (``Asynchronous JavaScript
+and XML''), because user interactions trigger new requests to the
+server. The requests are asynchronous in so far as they do not
+interrupt user interactions while we wait for a tile image to be
+fetched. But in this case we are requesting images rather than XML, so
+the ``X'' in AJAX does not apply.
+
+Of course a slippy map library will hide all of this complexity under
+the bonnet, so that the web developer need only call some simple
+generic functions to invoke the map display and then do things like
+adding overlays with markers, lines and polygons etc. With Google Maps
+a web developer need not even be aware that their javascript is
+connecting to a tile server. Everything is hidden behind the curtain
+of the ``Google Maps API''.
+
+Here's the first thing for web developers to know about OpenStreetMap:
+There is no official OpenStreetMap javascript library for displaying
+the maps (Note: If you search for the ``OpenStreetMap API'' you will
+come across the API for editing software, which is something quite
+different, described later). OpenStreetMap has a tile server, but for
+your slippy map Javascript you need to go elsewhere. This means you
+can cherry pick whichever Javascript library you like best. This is
+typical of the OpenStreetMap architecture. While Google (and others)
+will offer a slick packaged all-in-one map software stack, we have
+tended to shy away from centralised OpenStreetMap branded official
+offerings wherever possible. Instead the OpenStreetmap architecture is
+very flexible and hot-swappable at various levels. This invites
+developers to provide competing offerings, and helps to encourage a
+vibrant developer community.
+
+So there are a number of map display libraries and approaches to
+choose from. Here we will focus on ``OpenLayers'', which has long been
+a favourite for embedding OpenStreetMap tiles. Leaflet.js, and
+Polymaps are relative newcomers which are also well worth a look. But
+why confine ourselves to Javascript? There are options using flash,
+java applets or silverlight to display a slippy map.
+
+Before we look at the details of OpenLayers, there's one final option
+to be aware of. You can in fact use the Google Maps Javascript to
+display OpenStreetMap tiles. This looks a little odd, and tends to be
+a less popular option because google requires the display of the
+google logo and 'terms of use' link. And OpenStreetMap require an
+attribution link, so we end up with both. However it may be of
+interest to any web developers who already have a website built using
+some complex logic based on Google Maps. You can swap in OpenStreetMap
+as the tile provider, with no change to the rest of your code. You
+might also like to experiment with offering OpenStreetMap as an
+alternative layer available to users in the picker.
+
+A list of options is available on the wiki page:
+http://wiki.openstreetmap.org/wiki/Deploying\_your\_own\_Slippy\_Map
+
+\end{aosasect2}
+
+\begin{aosasect2}{OpenLayers}
+
+OpenLayers (http://openlayers.org) is the slippy map javascript
+library which you can see in use on the OpenStreetMap.org
+homepage. Perhaps that's why it tends to be the choice most web
+developers will go for when embedding OpenStreetMap on their own
+site. OpenLayers offers comparable features to the Google Maps
+API. Many of the API methods are directly equivalent, but not all.
+
+Here is an example showing how you would invoke OpenLayers to show a
+map centred on a specified latitude and longitude, with marker added
+at the same location:
+
+\begin{verbatim}
+<script src="http://www.openlayers.org/api/OpenLayers.js"></script>
+<div id="mapdiv" style="width:400px; height:300px"></div>
+
+<script>
+    map = new OpenLayers.Map("mapdiv");
+    map.addLayer(new OpenLayers.Layer.OSM());
+    var lonLat = new OpenLayers.LonLat( -0.1279688, 51.5077286 )
+          .transform(
+            new OpenLayers.Projection("EPSG:4326"), // transform from WGS 1984
+            map.getProjectionObject()               // to Spherical Mercator Projection
+          );
+    var zoom=16;
+    var markers = new OpenLayers.Layer.Markers("Markers");
+    map.addLayer(markers);
+
+    markers.addMarker(new OpenLayers.Marker(lonLat));
+
+    map.setCenter (lonLat, zoom);
+</script>
+\end{verbatim}
+
+The first <script> tag will instruct the browser to load in the
+OpenLayers library. We then need a <div>. Here's where the map will
+ appear. We set a width and height (alternatively any other CSS layout
+ would work, to arrange our map on the HTML page the way we want
+ it). Then we have a block of javascript code in another <script>
+ tag. Here's where we call various methods of the OpenLayers API. We
+ tell it which div should be filled with a map, in this case the div
+ with the id ``mapdiv''. In OpenLayers everything is made up of
+ layers, so the map itself is a layer of tiles coming from
+ OpenStreetMap. OpenLayers is very flexible, supporting all kinds of
+ settings to bring in different types of maps including connecting to
+ a WMS for example. Happily all the settings we need for OpenStreetMap
+ tiles are specified in a pre-made class called
+ 'OpenLayers.Layer.OSM'. Tile images will be fetched from
+ tile.openstreetmap.org, and the credit text (required by the
+ OpenStreetmap license) will be displayed automatically. Next we
+ define a LonLat object. We're supplying a regular WGS84 lattitude and
+ longitude pair ( -0.1279688 ,51.5077286 ). This needs to undergo a
+ transform (the following four lines) to get the projection right. We
+ then go on to use this lonlat object. We define a markers layer, and
+ add a new marker object to it. Finally we re-use the same LonLat
+ object to set the centre location for the map view.
+
+That example gives you a very quick flavour for coding with
+OpenLayers, but of course there's plenty of scope for getting more
+advanced: Handling click events, showing bubble pop-ups, drawing lines
+and polygons on the map, displaying a KML overlay, and so on. You can
+find out how to do all these things by looking at the examples on the
+OpenLayers website and the OpenStreetMap documentation wiki.
+
+With OpenLayers you have the option to host the javascript file
+yourself. The first line with the <script> tag in the above example,
+tells the browser to download the file from openlayers.org, but you
+may prefer to place this file alongside the other resources on your
+website. There are pros and cons of either approach. Pointing at
+openlayers.org will mean your maps will all be broken if
+openlayers.org has some downtime (it has happened for short periods in
+the past). This particular URL represents the latest stable version of
+the library, which means the code is potentially changing. Hopefully
+this will introduce improvements over time. Some of these are quite
+subtle things which you might not think of, such as improved
+compatibility with certain types of mobile browser. But there's a
+possibility it may also introduce bugs. Hosting your own copy of
+OpenLayers offers more stability, but means you have the hassle of
+deciding if/when to update.
+
+Here are some more tips and gotchas related to OpenLayers:
+
+\begin{aosaitemize}
+
+\item As with any javascript development work, you'll need to check
+  the browser 'error console' to see what's going wrong if your map
+  doesn't appear, and sometimes you will need to resort to trial and
+  error (comment out bits of your code) to track down the issue.
+
+\item In the error console you may find error messages are originating
+  inside OpenLayers (even though it is probably a problem in your
+  code) These error messages can have unhelpful single letter variable
+  names and the line numbers take you to very long lines of compacted
+  Javascript. To make more sense of this, try developing against the
+  'multi file' version of OpenLayers (available in the download zip).
+
+\item If you forget to transform projections, or do it wrong, it's
+  fairly common to wind up with a map centred in the ocean off the
+  west coast of Africa (at the zero,zero coordinates). Check you are
+  calling the transform function correctly.
+
+\item It's also fairly common to get latitude and longitude the wrong
+  way round, resulting in markers somewhere on the other side of the
+  globe. If you can't see your markers, zoom right out to do a quick
+  check!
+
+\item You can add various OpenLayers 'controls' to your map
+  display. To change the way controls are positioned you use CSS
+  rules. So for example the OpenStreetmap credit text is an
+  'attribution' control. You position the text 3 pixels off the bottom
+  with this CSS: div.olControlAttribution {bottom: 3px;}
+
+\item If you add a 'permalink' control, your calls to map.setCenter
+  may prevent it from working. Before calling that, you need to test
+  if the map has already been placed as follows: if (!map.getCenter())
+  map.setCenter(lonLat, zoom).
+
+\item The above example shows the use of
+  'OpenLayers.Layer.Markers'. Another type of layer
+  'OpenLayers.Layer.Vector', is more generalised, not just for
+  vectors. You can add all sorts of 'features'. You can configure a
+  feature to use a graphic just like a marker, to achieve the same
+  look. That amounts to the same thing, but then vector layers give
+  you more functionality.
+
+\item For data driven web map displays you can use php or other web
+  scripting languages to generate javascript. Code generating code can
+  get messy quite quickly though! An AJAX fetch of data may be
+  preferable, but if you are going to generate javascript, confine
+  yourself to generating an array definition, which can then be
+  processed in the javascript logic lower down.
+
+\end{aosaitemize}
+
+We've gone over some coding details for OpenLayers, because this feels
+close to the expectations that developers may have if they have worked
+with Google Maps. There's one more point to make about OpenLayers in
+relation to the high level architecture. You can point it at different
+tile servers. To see OpenStreetMap we configured OpenLayers to fetch
+tiles from tile.openstreetmap.org, but we can also see OpenStreetMap
+with tiles from other OpenStreetMap powered tile servers. What does
+this mean? In a later section on ``rendering'', all will be revealed,
+but for a sneak preview, feast your eyes on openwhatevermap.org! This
+OpenLayers slippy map is fetching tiles from many different
+OpenStreetmap powered tile servers all at once.
+
+\end{aosasect2}
+
+\end{aosasect1}
+
+\begin{aosasect1}{Database}
+
+We've started our tour of the OpenStreetMap architecture with an area
+of high level map usage, but it's time to delve into the very centre
+of OpenStreetMap. The most ``core'' component of all is a database of
+all the underlying data which describes and makes-up the map. The
+coordinates of every bend in every road, and various other constructs
+needed to represent a map. This is ``vector'' formatted data, rather
+than ``raster'' images of maps. This distinction is an important
+one. Later on we'll see how the vector data is converted to raster map
+images through a process called ``rendering'' to result in view of the
+map, but at this stage it's like the ``source code'' of the map, the
+ingredients of the cake.
+
+OpenStreetMap uses a conventional relational database. Originally this
+was MySQL, but for various reasons was switched to PostgreSQL
+http://blog.cleverelephant.ca/2009/04/openstreetmap-moves-to-postgresql.html
+You may be surprised to learn that we do not use ``PostGIS''
+extensions for this database. PostGIS is a set of functions and
+datatypes which can be added to a PostgreSQL database to give it
+built-in location awareness and powerful geoprocessing
+capabilities. For the core OpenStreetMap database we don't need it.
+
+In fact there are several other quite well established technologies
+and industry standards for storing, distributing and manipulating
+vector geodata. Formats like shapefiles and protocols like WMS and WFS
+have been used and supported by geographic information systems (GIS)
+for many years. When Steve Coast designed this core of OpenStreetMap
+he tore up the GIS manual and went for something a bit different. He
+wanted to design the simplest representation of map data which could
+possibly work. This needed to cater, not so much to advanced GIS
+users, but to the new breed of neo-geo web developers and bedroom
+coders who value simplicity above all else. He had these people in
+mind as end users, but also as the people who would join in as
+developers of OpenStreetMap, helping to create editing software which
+would work with this data-model.
+
+\begin{aosasect2}{Nodes and Ways}
+
+With simplicity in mind, the data-model of OpenStreetMap consists of
+just three element types: 'Nodes', 'ways' and 'relations'. In fact the
+majority of the data is simply nodes and ways. We'll come back to
+relations a bit later.
+
+\begin{aosaitemize}
+
+\item A node is a geographical point with latitude and longitude. A
+  node can stand alone at a particular point and represent something
+  like a cafe, or it may form part of way.
+
+\item A way is line running between several nodes. A way has at least
+  two nodes, a start and an end node, but maybe more. Linear features
+  such as a street or a river would be represented as a way.  A way
+  might also loop around to join back on itself to (maybe) form an
+  area, and so features such as buildings or a forest would also be
+  represented as a way.
+
+\end{aosaitemize}
+
+So picture a lot of nodes sprinkled across a map, cross-linked with a
+spider-web of ways (several ways can criss-cross and share the same
+node). Now we don't quite have a map yet...
+
+\end{aosasect2}
+
+\begin{aosasect2}{Tags}
+
+To describe what the nodes and ways actually represent we attach
+'tags' to them. A tag is a key=value pair. So for example a quiet road
+with houses on it would be represented by a way, with a tag
+``highway=residential'' on it. A pub would be represented as a single
+standalone node with the tag ``amenity=pub'' on it. Roads and pubs
+also have names. So our pub node would have second tag ``name=Hare \&
+Hound''. An element can have any number of tags, although the keys
+must all be different. Tags can be used to represent all sorts of
+other details. Does the pub have seats outside? Add an
+``outdoor\_seating=yes'' tag. And don't forget ``toilets=yes''! But
+these extra tags are optional.
+
+\end{aosasect2}
+
+\begin{aosasect2}{Any Tags You Like}
+
+This leads us onto an early design decision which has shaped
+OpenStreetMap massively. Actually it's a kind of anti-decision. A
+decision not to take a decision! We're flexible about
+including/leaving out tags. Not only that, but the tags themselves
+(keys and values) are all freeform editable text fields. People can
+invent their own tagging schemes to record the information they are
+most interested in. There is no ontology. No list of ``allowed'' tags.
+
+This radical level of flexibility has allowed OpenStreetMap to succeed
+where other similar projects have failed. To create a collaborative
+mapping system which inspires passion from contributors all around the
+world is not an easy thing to do. There's a delicate balance of
+considerations weighing up the desires of data contributors with the
+needs of data users. Why, you may ask, would these things be opposed?
+Why would anyone contribute without having the interests of data users
+in mind? The contributors and end users are not opposed as such, but
+there's a very wide variety of uses and potential uses for map
+data. Also mappers have a lot of different motivations beyond data
+use. Some mappers contribute data with a kind of passionate
+obsessiveness which borders on the irrational. To harness this energy
+OpenStreetMap does not impose the straight-jacket of an ontology. In
+the early development of the project, the decision to not take a
+decision, to avoid attempting to agree upon a set of map feature
+types, allowed the community to grow freely, without tearing itself
+apart with divisive debates before it even got started.
+
+This complete flexibility of tags may sound like a recipe for chaos
+and anarchy, and indeed a certain amount of chaos and anarchy pervades
+the OpenStreetMap mapping process. But the community comes together to
+try and reach agreement on tags. Without any agreed tags, the
+OpenStreetMap data would not be useable at all.
+
+Sometimes this happens on the OpenStreetMap wiki
+(wiki.openstreetmap.org), where tags are proposed, discussed and
+documented. Try searching on this website for any feature of the real
+world which you might be interested in mapping, and you're quite
+likely to find a mention either within tag documentation, or on a
+proposal or discussion page. From one tag to another, there are always
+varying degrees of agreement and acceptance across the
+community. Correspondingly, some parts of the wiki may have attracted
+less agreement for one reason or another, and may have information
+running contrary to the what is widely accepted by the community. This
+is particularly likely on pages with ``proposal'' in the title. The
+OpenStreetMap wiki is used to reach agreement and document those
+agreements, but it is never intended to ``lay down the law'' on how
+mappers must use tags.
+
+We can get a more raw sense of what tags the contributors are using,
+by consulting another website called ``TagInfo''. This gives us the
+count of how many times a particular key or key=value pair has been
+used in the actual map database. This is aligned philosophically with
+the idea that tags should come from mappers directly, from their
+desire to represent features of the real world. We can treat it as a
+``folksonomy'' in which tags are validated and legitimised as they get
+used and adopted by more people.
+
+Tags can be wonderfully rich with information, but for consumers and
+users of OpenStreetMap data this flexible tag soup can be
+troublesome. For example, a direct transfer of tag keys into columns
+of database table or attributes of shapefile may yield more columns
+than you were expecting. If you need an ontology, you will need to
+define mappings which will result in some slimming down of the rich
+and varied set of tags you get from OSM. Tag flexibility is a
+necessary factor allowing OpenStreetMap to succeed, but it comes at a
+price.
+
+\end{aosasect2}
+
+\begin{aosasect2}{Relations}
+
+Nodes and ways are low level element types, onto which tags can be
+added. There is a third low level element type: 'Relations'. A
+relation is a little more complex, but used much less often. Relations
+describe the manner in which elements relate to each other in various
+special circumstances. For example, a bus route can be represented as
+a relation containing (relating) the ways of all the streets on the
+route. Another example is a no-left-turn restriction, relating one
+road to another in this manner. Just as with nodes and ways, a
+relation has tags giving more information about what it is
+representing.
+
+\end{aosasect2}
+
+\begin{aosasect2}{Wiki-style editing history}
+
+OpenStreetMap is an editable map system following a ``wiki''-like
+approach. It's well known that Wikipedia allows anyone and everyone to
+edit pages (try it! It's true!). But the only way this level of
+openness can be possible, is by offering a set of special wiki
+features to all users. Chief among these are the ability to view a
+history of edits and the ability to retrieve a prior revision and
+revert another user's edit. Together these features provide a kind of
+``soft security''. Where conventional web security would require
+logins and permissions, the wiki way is to put the tools in the hands
+of all users to monitor and revert bad edits. Wikipedia shows that
+this works. You can learn more about the MediaWiki software powering
+wikipedia in Chapter X of this book. FIXME: link mediawiki chapter?
+
+OpenStreetMap follows exactly the same principle. A history of edits
+is available for each element. An edit to the map data consists of
+adding, deleting, or modifying a node, way, or relation. This is quite
+a fine granularity of edit tracking, and of course the elements are
+heavily interlinked in a fairly complex manner. This presents quite a
+challenge for OpenStreetMap developers designing features to view the
+history and retrieve older revisions. Certainly it is something quite
+different from a conventional text-based wiki.
+
+In an attempt to make the system more wiki-like, the concept of
+``changesets'' was introduced. A changeset is a grouping of these
+fine-grained edits. It is a set of edits made by one particular user
+over a limited, relatively short timespan. It might, for example,
+represent five minutes spent using the editing software to work on the
+map. And importantly a changeset has a comment attached. A short
+textual explanation from the user about the changes. By grouping edits
+in this way, OpenStreetMap developers could easily create a users
+'edits' display. The 'history' tab is also a simple listing of
+changesets in a particular area, but this is based on a crude matching
+of overlapping bounding-boxes, and so doesn't work as well as we would
+like.
+
+Certainly there are still improvements to be made to the wiki features
+of OpenStreetMap. Changesets delivered some improvements, but the
+process of reverting a bad edit is still rather complex and prone to
+data conflict problems. One thing to be aware of when considering this
+problem, is that changesets are a relatively loose grouping of
+edits. They do not strictly imply an atomic database transaction. A
+changeset can span over several hours and modify the same element
+several times over that period. Worse still, there can be edits
+belonging to other changesets (other users) also modifying that same
+element over the same time period. In practice it is quite rare for
+changesets to be interleaved in such a complex way, but it means that
+changeset groupings are not as useful as a developer might expect at
+first glance.
+
+\end{aosasect2}
+
+\begin{aosasect2}{Database tables}
+
+The data-model concepts of nodes, ways, relations and tags, are all
+represented directly as tables of the database. Simple! But the
+editing history adds a whole extra dimension to the OpenStreetMap
+database. We have a table called 'current\_nodes' which stores the
+latest revision of every node (the latest revision being the most
+useful one for many operations). We then have much larger table just
+called 'nodes', which has every past revision of every node. Each past
+revision is also referencing the changeset which is it part of.  As
+well as 'current\_nodes' and 'nodes' we have 'current\_node\_tags' and
+'node\_tags'. These tables store the tags (keys and values) applied to
+the nodes, and the past revisions thereof. So in total there are four
+different database tables related to nodes. The same again for ways,
+except that ways also need to reference two or more nodes, so we have
+another table 'current\_way\_nodes' for these references, and then
+'way\_nodes' for the past revisions of the references. So in total
+there are six different tables related ways. For relations there are
+also six different tables, since they have tags, and then references
+known as 'members'.
+
+Taken together, the nodes, ways, relations, tags their linkages and
+their history of past revisions are stored in 16 different database
+tables:
+
+FIXME: lay out in columns
+
+\begin{tabular}{lll}
+current\_nodes       & current\_ways       & current\_relations \\
+nodes                & ways                & relations \\
+current\_node\_tags  & current\_way\_tags  & current\_relation\_tags \\
+node\_tags           & way\_tags           & relation\_tags \\
+                     & current\_way\_nodes & current\_relation\_members \\
+                     & way\_nodes          & relation\_members
+\end{tabular}
+
+In designing the database structure, the storage of a wiki-style
+history of edits has a sort of multiplying effect upon the complexity
+of everything, so it's a good thing the underlying elements are quite
+simple.
+
+Other database tables include:
+
+\begin{aosaitemize}
+
+\item changesets (and changeset tags) - The changesets are a grouping
+  of edits. Records in all the above tables will reference (``belong
+  to'') a particular changeset.
+
+\item users - All the registered OpenStreetMap users who can all make
+  edits (they have zero or more changesets)
+
+\item gps\_points and gpx\_files - This is a very separate part of the
+  database for storing raw traces from GPS units
+
+\item messages, diary\_entries, and diary comments - For these
+  communication channels built into the site
+
+\end{aosaitemize}
+
+We have described the database tables which are present on the
+OpenStreetMap core database server. This need not concern a user
+contributing to the map, or even a developer using OpenStreetMap
+data. In fact the only the people who really need to know about this
+are the developers who are working on improving the OpenStreetMap core
+codebase, or perhaps, conceivably, developers deploying the
+OpenStreetMap codebase separately for some purpose. The majority of
+developers consuming OpenStreetMap data will do so the via planet
+downloads or other services, such as tile servers sprouting from
+them. All of this will be described in due course. But first, what do
+we mean by the ``OpenStreetMap core codebase''?
+
+\end{aosasect2}
+
+\end{aosasect1}
+
+\begin{aosasect1}{Ruby on Rails}
+
+Built on top of the database at the core of OpenStreetMap, there is a
+Ruby on Rails app. This is the codebase for both the OpenStreetMap.org
+website and the editing API.
+
+The Ruby on Rails framework was quite new when Steve Coast wrote the
+first lines of code for OpenStreetMap. The website and API could just
+as well have been written in an older more well established technology
+such as Python, PHP, or J2EE. The choice to use ruby on rails may have
+simply been a matter of Steve Coast's personal preference, but it has
+served OpenStreetMap well. We have benefitted from some of its
+technical features (listed above), but also just from the fact that it
+is so new. Like it or not, ruby on rails attracts developers who are
+ready to take a fresh approach. They are not scared to brush aside
+what has gone before. This way of thinking characterises the design
+and development of OpenStreetMap. Perhaps if OpenStreetMap had been
+written as java servlets it would have attracted a different kind of
+developer and ended up looking quite different. Perhaps it would have
+attracted more developers. Perhaps it would have integrated better
+with pre-existing GIS software or adopted standards more. But as it is
+OpenStreetMap at its core is something quite new and quite different.
+
+\begin{aosasect2}{The Editing API}
+
+Of key importance within the OpenStreetMap architecture is the editing
+API, allowing editing software (used by all the OpenStreetMap
+contributors) to make changes to the nodes, ways, relations and
+tags. This is the channel through which edits and whole changesets are
+submitted to the OpenStreetMap database. API operations include a
+simple ``map'' call, which returns a bounding box of map data
+(everything within a small rectangular area). But it's a read/write
+API, with operations to make additions and changes to map data too. A
+full history of every change is stored. It's up to the API code to
+ensure that this happens and that every edit can be retrieved and if
+necessary reverted, wiki style.
+
+FIXME: sidebar The editing API is usually referred to simply as ``The
+API''. This is potentially confusing to outside developers who may be
+expecting to consume data in a particular way through ``the API''. In
+fact this API intended to serve the OpenStreetMap editing
+software. There are other touch points within the architecture and
+wider ecosystem, which better serve the needs of data consumers.
+
+The API is part of the ruby on rails app, and is implemented following
+the idioms of this framework, and of RESTful API design. Nodes, ways
+and relations are accessible as objects which are in a particular
+state. To retrieve an XML representation of the state of an object,
+you issue a HTTP GET request to a URL pointing to this object. Compare
+this with SOAP (the rather inappropriately named Simple Object Access
+Protocol), where you would need code to construct a request
+payload. With REST, often the parameters in the URL are all you
+need. Point your browser at a URL like this:
+http://www.openstreetmap.org/api/0.6/way/123557148 and you've just
+made an API call!
+
+A RESTful API makes use of the HTTP protocol where possible. For
+example if you request a node or way which doesn't exist it returns a
+simple 404 Not Found response, rather than conveying the same error in
+a complex XML envelope. An API like OpenStreetMap's will need create,
+read, update, and delete operations (CRUD), and the RESTful way is to
+support these via the different HTTP request modes. To update the
+state of an element you do a HTTP PUT request. To delete a element you
+do a HTTP DELETE request. On a practical level this can be quite
+problematic as it turns out. It seems PUT and DELETE are still rather
+exotic forms of HTTP request, not fully supported within some
+programming languages, but there are ways of working around this.
+
+Since the early days of the project it was seen as quite important
+that the editing API was simple to help developers more easily create
+new editor software. The node, way, and tag structures pervade through
+the API and into the interfaces of the editing software, helping to
+present a representation of maps which is easy to understand and easy
+to contribute to.
+
+\end{aosasect2}
+
+\begin{aosasect2}{The OpenStreetMap website}
+
+The same rails app also powers the OpenStreetMap.org website. The part
+of the website which gets all the attention, is of course the front
+page, where we show the map using OpenLayers, which we will come on to
+later. Likewise we will later describe the editor software on the edit
+tab. For the moment let's just say that the background HTML behind all
+of these pages, is coming from the ruby on rails
+application. OpenStreetMap.org is not a massive website, but there are
+various other parts to it beyond the front page.
+
+\begin{aosaitemize}
+
+\item Sign-up and login screens for user accounts, and a setting
+  screen where you can change your password etc.
+
+\item User profile pages such as http://www.openstreetmap.org/user/Harry%20Wood
+
+\item Diary pages (a kind of blogging system), and inbox and outbox
+  displays for messages.
+
+\item A list of GPS traces and the facility to upload them.
+
+\item A list of edits made by a user.
+
+\item Nodes, Ways, Relations, and Changesets all have their own
+  'browse' page, e.g.,
+  http://www.openstreetmap.org/browse/node/670638042
+
+\end{aosaitemize}
+
+All of these HTML displays are generated by the OpenStreetMap rails
+app. A lot of them are structured around data objects, which is what
+ruby on rails is good at.
+
+\end{aosasect2}
+
+\begin{aosasect2}{Running (and developing) the rails app}
+
+It's quite easy to get this core OpenStreetMap codebase up and running
+on your own development environment. Do a search for 'Rails' on the
+OpenStreetMap wiki for all of the instructions. Linux-based systems
+are better supported, so unless you're a very determined windows
+developer, you may be better off using a linux virtual machine. The
+outline procedure is as follows (pretty similar to any rails app) :
+
+\begin{aosaitemize}
+
+\item Install the Postgres database and ruby.
+
+\item Install the rubygems system and ruby on rails.
+
+\item Install a few other needed packages.
+
+\item Get the OpenStreetMap rails app by cloning the git repository.
+
+\item Install the needed gems.
+
+\item In the config directory put suitable database settings in
+  'database.yml'.
+
+\item Run 'rake db:create' if you didn't create the database already.
+
+\item Run 'rake db:migrate' to run the rails migrations. This sets up
+  the database schema.
+
+\item Run the rails app in the webrick server and visit
+  http://localhost:3000/.
+
+\end{aosaitemize}
+
+All being well, you'll end up with an empty shell of the OpenStreetMap
+website and API. The database of geodata will initially be completely
+empty. Don't be confused by the map display which will be displaying
+lovely looking maps from tile.openstreetmap.org You have no data! You
+can play around with adding some by registering a user account and
+using an OpenStreetMap editor, just as you would if you were the very
+first person to do any mapping on OpenStreetMap.org . The display of
+the map on the homepage will not update to reflect any of your data
+edits unless you set up your own renderer. If you ignore this and
+imagine the map bit is working there's some scope for smart developers
+to help out with improvements to the OpenStreetMap website and API.
+
+\end{aosasect2}
+
+\end{aosasect1}
+
+\begin{aosasect1}{Editor software, and how to edit}
+
+The OpenStreetMap project gathers data through a process of mass
+collaboration, with hundreds of thousands of users logging in and
+contributing using the OpenStreetMap editors. Here we will take a look
+at two of them: ``Potlatch'' and ``JOSM''. This book is all about
+architecture, so for the purposes of understanding the way
+OpenStreetMap is put together, we shall give some technical details of
+this software. However it is often said that you can never truly
+understand OpenStreetMap without having a go at editing, so let's also
+look at how you actually go about using these editors to contribute to
+the map. Even if you are only interested in using data taken from
+OpenStreetMap, nothing can teach you about OpenStreetMap as
+effectively as having a go at editing. Don't be shy! Sign up for an
+OpenStreetMap account if you didn't already. It's time to make your
+first edit.
+
+\begin{aosasect2}{Your first edit}
+
+If you've never edited before, the first thing to do is decide where
+to edit. You can edit anywhere in the world, but generally the best
+place to do it is near where you live or where you work. Here you are
+most likely to know some particularly valuable details to
+add. OpenStreetMap allows you to input all sorts of data. Remember the
+flexible tagging system we described earlier. This means that it's
+actually more or less impossible to have an area which is
+``finished''. Even if a map looks complete it is probably missing some
+of the following for example: Restaurants, cafes, shops, pedestrian
+crossings, or even house addresses. There aren't many places in the
+world where all of this detail is in OpenStreetMap already!
+
+It is a common misconception that you need to have a GPS device to
+contribute to OpenStreetMap. The project started out trying to create
+maps solely using GPS, and there is still some emphasis on this
+(mainly because gadget geeks love to find mapping techniques which put
+their devices to good use for the project), but these days we have
+agreements with Yahoo! and more recently Bing, to use their aerial
+imagery. Bing has good high-resolution imagery coverage of the U.S.,
+most of Europe, and various other parts of the world. If you live in a
+part of the world without bing imagery, then learning the GPS approach
+to mapping will be more important, but even then we can accept the
+contribution of a corner shop placed purely based on its relative
+position to the rest of the map (at the corner of two streets) Easy!
+If you're worried about accuracy, don't be. We follow a wiki
+approach. Things get more accurate as more users add to and correct
+the map.
+
+So think about what you want to add in your neighbourhood based on
+your own valuable local knowledge. But if you really can't think of
+anything, then here are some ideas for other ``armchair mapping''
+challenges you might like to undertake in other parts of the world:
+
+\begin{aosaitemize}
+
+\item Throughout the United States we are going through a process of
+  data cleaning, and if you do a spot check on a random area of roads
+  (the more random the better), and open them in the editor, you may
+  find (only in some areas) that the roads are badly misaligned
+  compared to the aerial imagery. Help straighten them out!
+
+\item There are many large cities in India and China (particularly
+  those off the tourist trails) where there are missing streets. We
+  can sit in our armchair and draw in streets from the aerial
+  imagery. This can be more fun because you're adding brand new data.
+
+\item Lastly, if you really want to hide your editing away from the
+  rest of the world, zoom into the coastline in Siberia or
+  Alaska. There's only low resolution imagery here, but you can refine
+  the coastline data in these areas where it has been automatically
+  generated.
+
+\end{aosaitemize}
+
+Remember that this ``armchair mapping'' is generally not as valuable
+to the project as real local knowledge and on-the-ground
+surveying. It's also not as fun as mapping an area you know, but if
+you do like this style of mapping you could also check out the
+Humanitarian OpenStreetMap Team, which sometimes asks the community to
+join in with remote mapping projects to help in disaster response or
+Developing World Development.
+
+Lots of ideas and lots of mapping to do! Have you picked a spot? Let's
+get started.
+
+\end{aosasect2}
+
+\begin{aosasect2}{The 'edit' tab: Potlatch}
+
+The OpenStreetMap.org front page has tabs along the top. The first two
+let you ``view'' the map, and then ``edit'' the map. The ``edit'' tab
+is actually configurable, allowing users to launch an editor of their
+choice, but by default it launches a flash editor called
+``Potlatch''. This software is in it's second major version, also
+referred to as ``Potlatch 2'' or just ``P2'' for short. When you move
+from view to edit tab potlatch will load in an area of map data
+corresponding to the map you were viewing. It's a good idea to try to
+avoid it loading in too much data all at once, so you should zoom
+right in to the highest zoom level before flipping to the edit tab
+(particularly if you're viewing a complex city map), and while you are
+editing avoid zooming out too far.
+
+The first thing to know about editing is that you can always
+undo. Press Ctrl+Z to undo one or more steps. To throw away all your
+changes just don't save! If you navigate away from this web page,
+e.g. back to the view tab, all your changes will be forgotten (after a
+confirmation). So relax - It's quite difficult to accidentally mess
+things up.
+
+Potlatch has a main editing area and then a panel on the left which
+shows a bunch of icons. Hover the mouse over them to see what they
+are. These can be simply dragged onto the map, where they will be
+created as a node with some tags set automatically. Yellow
+highlighting indicates that the node is selected and on the left you
+are prompted for further (optional) tags to fill in. For a more raw
+view of tags (a table showing the name and value pairs), click
+'advanced' at the bottom. Here you can enter your own tags. As
+described earlier you can seek inspiration from the tag documentation
+on wiki.openstreetmap.org or the stats on taginfo.openstreetmap.org If
+you want to start with a fresh node and add your own tags rather than
+dragging a particular icon onto the map, you can do this by double
+clicking in the editing area. This creates a green node which
+initially has no tags.
+
+To draw a way, click once in an open space and then continue clicking
+to keep drawing more points along the way. When connecting to an
+existing way (e.g. adding a side-road off a road which is already on
+the map), then you have to hold the shift key while clicking. To
+delete nodes or ways, select them and press the 'delete' key. You can
+always press Ctrl+Z to undo one or more steps.
+
+There are various resources around the web (blog posts, tutorials,
+video tutorials, etc) to explain the basics of editing using
+Potlatch. Some of these are linked off
+wiki.openstreetmap.org/Potlatch, but actually the set of built-in help
+pages will give a great overview. Just click the 'help' button in the
+editor.
+
+\end{aosasect2}
+
+\begin{aosasect2}{Potlatch behind the scenes}
+
+Potlatch is a ``flash'' application which is something many open
+source purists recoil at. If you're one of these people, maybe you
+should skip ahead to the section about JOSM. But maybe flash is just a
+little misunderstood. The actual language Potlatch 2 is written in is
+called ActionScript3.0. Potlatch also uses ``Flex'' libraries. You
+would need the compiler part of the FlexSDK to compile and develop
+Potlatch code. These things are all open source technologies from
+Adobe. Unfortunately Adobe confuse things on their website, steering
+people towards their close-sourced paid-for toolkits
+(FlashBuilder/FlexBuilder IDEs, and the extended FlexSDK), but these
+things are not needed for Potlatch 2 development. The only
+closed-source component that remains is the Flash Player itself. This
+needs to be installed on the user's machine to run the editor in the
+browser (and most web users have this installed). There are open
+source alternatives, gnash and lightspark, but sadly these do not
+manage to run Potlatch correctly (yet). As far as development goes
+though, and contrary to what many people imagine about flash, Potlatch
+2 is open source all the way.
+
+The flash editor is a very important part of the OpenStreetMap
+website. But Potlatch 2 can also be deployed onto any other website
+and it is highly customisable. This means you can give your website
+users the ability to edit OpenStreetMap data on your site and theme
+the editor to match a particular mapping topic. The customisations are
+made within configuration files (and icon graphics) found in the
+'resources' directory. Without the need to recompile code, you can
+customise potlatch in several ways:
+
+\begin{aosaitemize}
+
+\item Display the map inside the editor with a different style
+  i.e. colours, line-widths icons etc. The file 'stylesheets.xml'
+  points to a set of MapCSS files to be made available to users under
+  the 'Map Style' drop-down (``MapCSS'' stylesheets and the
+  ``Halcyon'' rendering system are described again in the later
+  section on rendering).
+
+\item Expose different tags under the 'simple' display i.e. different
+  types of node features to be dragged onto the map, different options
+  presented in the drop-downs and different resulting tags in the
+  database. Change these within map\_features.xml
+
+\item Different available backgrounds. The default bing aerial imagery
+  and other available backgrounds, which are useful for tracing new
+  data from, can be configured with custom raster data sources.
+
+\item Preloaded vector layers. Potlatch can load in vector data and
+  give users the option to ``import'' data one element at a time, in
+  some sense verifying that it is suitable to add to OpenStreetMap.
+
+\end{aosaitemize}
+
+So far only a handful of web developers have experimented with running
+a customised version of Potlatch 2. A good example can be seen at
+openecomaps.co.uk, a site dedicated to mapping of eco-living and
+renewable energy resources.
+
+Of course, beyond these customisable features, the code of the editor
+itself (ActionScript) is open source and under development. So far
+Richard Fairhurst and Andy Allan have led the majority of Potlatch
+development. But there is a need for smart developers to muck in and
+help them out. Improvements to Potlatch are pushed out to the live
+website, to an an active user-base of several thousand, and perhaps
+more importantly, can help improve the first impression many more new
+users have of OpenStreetMap.
+
+\end{aosasect2}
+
+\begin{aosasect2}{JOSM editor}
+
+JOSM, the Java OpenStreetMap editor, is the second most popular choice
+for editing OpenStreetMap. The vast majority OpenStreetMap
+contributors use Potlatch, because it's on the website and it is
+touted as the best editor for beginners. In some ways this unfairly
+characterises JOSM as being bad for beginners. In fact JOSM offers a
+pretty good user experience provided you're not put off by the black
+background engineering feel to the display. But there's a lot of other
+differences. Different keyboard shortcuts and other instinct driven UI
+aspects, make it difficult to swap between the two editors.
+
+More fundamentally than that, JOSM is a desktop application. It uses
+java, and is contained in a single jar file. With a normal java
+installation you can just download the file and double-click to run
+it. JOSM starts with a grey screen showing some update messages. This
+means there's no data loaded in yet. You must explicitly instruct the
+editor to download a rectangular area of data. This is a key
+difference compared with Potlatch. It means that, once you have some
+data, you can pan around and zoom fluidly without triggering new
+requests to the server.
+
+In JOSM panning is accomplished by dragging with the right mouse
+button and zooming is best achieved with a mouse scroll-wheel. This
+applies to the main data view, but before that when you click the
+'download' toolbar button, you can zoom and pan in the same way on the
+map display for picking an area. Be sure to zoom right in enough to
+avoid downloading too much data all at once. The rectangular area of
+data you have downloaded is indicated with a black background, while
+elsewhere you see yellow hashing (zoom out a little to see it). It's
+easy enough to start small and then extend the patch you have
+downloaded later on. Pull in the bing aerial imagery by selecting it
+on the 'imagery' menu.
+
+To edit data remember the three modes: Select, Add and Delete, and
+their keyboard shortcuts S, A and D. Generally you'll flip back to
+'Select' mode a lot of the time. Click to select elements and see/edit
+the tags shown in the ``properties/memberships'' panel on the
+right. In 'add' mode you can click to draw a new way, or double-click
+to draw a standalone node, but don't forget to flip back to select
+mode when you're done.
+
+There's lots of mistakes you can make and ways of tangling up the
+data, but you can always undo every step, or even decide to throw away
+all your changes, by simply closing JOSM without uploading. You'll
+find a guide to JOSM editing on the OpenStreetMap wiki:
+http://wiki.openstreetmap.org/wiki/JOSM/Guide taking you through
+similar basics and a few more details, but limited to just three
+pages.
+
+The guide also describes other features such as working with GPS
+tracks and offline editing. Because JOSM is an desktop application,
+you can use GPS tracks (as a source for entering data) from your local
+disk, without needing to upload them. You can even use JOSM to edit a
+local .osm file, which means the editor can be used while offline.
+
+\end{aosasect2}
+
+\begin{aosasect2}{.osm files}
+
+Files with a .osm extension crop up in various places. You can think
+of them as the native file format of OpenStreetMap. It is the same XML
+map representation as used by the API. A simple XML encoding of the
+nodes, ways, relations and tags of the map data. Here is an example of
+a .osm file representing a very small patch of map:
+
+\begin{verbatim}
+<?xml version='1.0' encoding='UTF-8'?>
+<osm version='0.6' generator='JOSM'>
+  <bounds minlat='53.56888' minlon='-1.7892051' maxlat='53.5691858' maxlon='-1.7887008' origin='CGImap 0.0.2' />
+  <node id='192058328' version='2' changeset='6750534' lat='53.5691832' lon='-1.7887867'>
+    <tag k='amenity' v='pub' />
+    <tag k='name' v='Elephant &amp; Castle' />
+  </node>
+  <node id='322011176' version='2' changeset='6750534' lat='53.5691047' lon='-1.7884769' />
+  <node id='950809930' version='1' changeset='6052728' lat='53.5684965' lon='-1.789187' />
+  <node id='950809931' version='1' changeset='6052728' lat='53.5687004' lon='-1.7889295' />
+  <node id='950809932' version='2' changeset='6750534' lat='53.5689495' lon='-1.7887518' />
+  <way id='81591453'  version='1' changeset='6052728'>
+    <nd ref='950809930' />
+    <nd ref='950809931' />
+    <nd ref='950809932' />
+    <nd ref='322011176' />
+    <tag k='highway' v='residential' />
+    <tag k='name' v='New Fold' />
+    <tag k='source' v='OS OpenData StreetView' />
+  </way>
+</osm>
+\end{verbatim}
+
+We see here the data for a pub named ``Elephant \& Castle''
+(represented as a single node) and a road called ``New Fold''. The
+road is relatively short, with four nodes as part of the way. The
+'visible', 'user', and 'userid' attributes have been removed here for
+simplicity. This example also doesn't include a relation. Relations
+have many references to other elements, but you can see even here that
+a way has references to nodes (ids in 'ref' attributes)
+
+JOSM can saves data to a .osm file, indeed it provides the easiest way
+to choose an area, download it and save it to this format, and the
+easiest way to open a .osm file and view its contents, provided that
+the file is not too large (but .osm files can be very large)
+
+JOSM can also use the .osm format in a slightly extended form, to
+represent not just nodes,ways,relations and tags, but also
+\emph{changes} to these elements. The idea is that these modifications
+have not yet been applied to the central database. An ``action''
+attribute may be present, with the value ``modify'' or ``delete''. For
+new elements which are to be created, JOSM temporarily assigns the
+element a negative id. As well as denoting that the element is to be
+created, the negative id is needed and must be unique in order to
+appear in references e.g. if a new way is created referring to new
+nodes. At the time of uploading, JOSM will then resolve these,
+receiving back a real (positive) id number for the objects as it runs
+the create operations. Negative ids are used internally within JOSM,
+and also within ,osm files where these changes are being represented
+prior to upload.
+
+\end{aosasect2}
+
+\begin{aosasect2}{JOSM behind the scenes}
+
+If the internals of JOSM sound interesting, perhaps it's time to take
+a look at the code. The J in JOSM stands for Java. If you work with
+this language then JOSM development could be a good way to get
+involved in OpenStreetMap. The core code of JOSM is kept in a
+subversion repository separate from the main OpenStreetMap repo. You
+can browse the source code and the bug tracker at
+josm.openstreetmap.de, a german website. Historically development of
+JOSM has been driven by a few dedicated germans. Immanuel Scholz
+created the fully functional editor, along with sophisticated undo
+handling, at a remarkably early stage in the project's history, before
+OpenStreetMap even displayed a map on the web. He is rather an unsung
+hero of the project's early development. Since then another german,
+Dirk Stoecker, has taken the lead role in its development, but these
+days it is a very collaborative open source development effort.
+
+Easier than developing the core of JOSM, is the process of creating a
+JOSM ``plug-in''. There is a simple Plugin class which you should
+extend, which provides some callback functions. This may give you a
+clue about adding a feature, but in general a lot of modifications are
+achieved by static reference to a the 'Main' class. Some areas of JOSM
+are being refactored to follow a more standard encapsulation
+approach. If you want to create a new menu option, make a call such as
+this in your plugin class constructor:
+
+\begin{verbatim}
+MainMenu.add(Main.main.menu.toolsMenu, new MyToolsMenuAction());
+\end{verbatim}
+
+Where MyToolsMenuAction then needs to be defined as class extending JosmAction:
+
+\begin{verbatim}
+    private class MyToolsMenuAction extends JosmAction {
+\end{verbatim}
+
+Clearly we can't go into all the details of how to interface with the
+JOSM code here. A good way to kick-start plugin development is to find
+a plugin which does something similar to what you would like to
+achieve and copy their source code (all open source). Perhaps
+confusingly, the source code for most plugins are kept in the main
+OpenStreetMap subversion repo (not the JOSM repo). In fact there are
+some automated mechanisms on this directory of the repository, which
+will allow all users to see your plugin available for download into
+their copy of JOSM (appears when you click 'Download List'). To
+achieve this you have to carefully follow the instructions working
+from the directory template provided and use ant to build the 'dist'
+directory with your plugin will be packaged up with the right manifest
+entries.
+
+Obviously making a plugin lets you create something which may be
+useful to users who try it, but which doesn't tread on any toes. It's
+a good proving ground for you and your ideas, however we can always
+use more competent java developers improving the core of JOSM.
+
+\end{aosasect2}
+
+\begin{aosasect2}{Other editors. Simpler editors}
+
+All editors read and write to the core database via the API. The idea
+of providing such an API is to allow new open source projects to
+taking OpenStreetMap editing in new directions (at least from a user
+interface point of view), and offering the community of map
+contributors a choice of software.
+
+Developing a new OpenStreetMap editor is not the easiest project to
+undertake. Users should be logged in and the editor application should
+get authorisation from them via the OAuth mechanism. Additional
+requests are needed to create a changeset before any edits can be
+submitted. ``Data uploads'' are actually a stream of changes to
+elements, all of which need to be tracked by the software, and issues
+like conflict resolution present added complications.
+
+But beyond these technical challenges, there's a need to create
+editors which are simpler for the user. Software for adding to or
+modifying a map will involve the user entering a vector-based editing
+environment. There's no escaping this. The user is plunged into an
+graphical world of complex interlinked lines and shapes. This is what
+has always happened with GIS software. OpenStreetMap editors are no
+different. For users the challenge of learning how it works is
+exciting, and the reward, a new found skill to contribute to the free
+map of the world, is deeply exhilarating and highly addictive. But
+clearly getting users to this stage is a big challenge of software
+design. The OpenStreetMap experience lives or dies by the ease of use
+of the software. All too often it dies. Many users are put off by the
+complexity and don't spend the time needed to figure out how to add
+something to the map. The principles of mass collaboration require
+that large numbers of users learn and join in with the editing
+process, so these are important challenges to overcome.
+
+Also pushing towards simplicity are various attempts to take
+OpenStreetMap editing onto mobile devices. Clearly this has the
+advantage of allowing data input at the point of data gathering, but
+the challenge of offering a simplified stripped down user interface is
+more acute than ever. ``MapZen POI Collector'' is an example of an app
+available for iPhone and Android which works well on these devices
+because it presents a simplified UI by allowing only editing of points
+of interest data (you can edit node features, but not ways). Even
+further down the scale of simplicity are apps like wheelmap, which
+allows the user to contribute wheelchair accessibility data. A very
+focussed topic area, making the app very simple, but still providing
+OpenStreetMap editing functionality on a mobile device. There are many
+more possibilities and ideas for apps along these lines, just waiting
+for talented mobile developers to build them!
+
+\end{aosasect2}
+
+\end{aosasect1}
+
+\begin{aosasect1}{Planet downloads}
+
+All of the raw vector data from OpenStreetMap is available to download
+all at once. planet.openstreetmap.org is an area of the site where you
+can literally download our map of the whole planet (as it is mapped so
+far). This is important as a statement of fundamental openness. It
+helps dispel fears and suspicions people may have. Some supposedly
+``open'' data gathering projects will try to sneakily create
+``lock-in'' by only letting data trickle out via an API (if at
+all). Not so with OpenStreetMap. You really can access \emph{all} of
+the data openly.
+
+Planet downloads are also hugely important from an architectural
+perspective. We've explored the OpenStreetMap API which allows a small
+area of the map to be downloaded, but this is primarily for use by
+editing software. Most uses of OpenStreetMap data are built on top of
+the planet downloads either directly, or further down the line as part
+of a tree of data services which have the planet download service at
+their root.
+
+The planet download, sometimes called the ``planet dump'', is a single
+file called 'planet-latest.osm.bz2'. It's a .osm file (XML format
+described earlier), but with bzip compression applied. The file is
+updated weekly to contain the latest changes from the
+community. Mostly these are additions to the map, so the size of the
+file is a little bit larger each week. At time of writing the file is
+pushing towards 20 Gigabytes in size. That's a lot of compressed XML!
+It's generally not sensible to have this uncompressed on your
+disk. Instead the recommendation is to decompress the data on-the-fly
+while streaming it into some other process (for whatever use you have
+in mind). This works well, but even so, the planet file is a very
+large download and a very large amount of data to work with once you
+have downloaded it.
+
+\begin{aosasect2}{Extracts and Diffs}
+
+If you're not asking for the world, maybe you'd prefer just a country
+or a city! The obvious way to reduce planet downloads down to a more
+manageable size is to not work with the whole planet. ``Extracts'' are
+provided for each country of the world. This is an example of
+OpenStreetMap following a highly decentralised approach. The country
+extracts don't need to be provided by OpenStreetMap servers and so
+they are not. Instead you will find these at download.geofabrik.de and
+various other third party servers. A relatively new addition is the
+metro extracts service, providing extracts of map data for individual
+cities.
+
+The ``diff'' downloads are another facility which reduces the need for
+downloading massive files all the time. Once you have the planet file
+on your server, you can keep it up to date by downloading a diff file,
+so called because it contains just the differences from one week to
+the next. Diff files are also available on an hourly and minutely
+basis, meaning you can sync your server with changes from the
+community every minute of the day. Note that the original planet files
+is only updated once per week, so diff files offer a greater frequency
+of update.
+
+\end{aosasect2}
+
+\begin{aosasect2}{Osmosis}
+
+Osmosis is a command line tool offering various filtering
+capabilities. It's particularly good for manipulating these large .osm
+formatted files and in fact the extract services described above are
+mostly powered by osmosis. For example, you can create your own
+extract of an area of interest with a bounding box filter command as
+follows:
+
+\begin{verbatim}
+bzcat planet-latest.osm.bz2 | osmosis\
+  --read-xml file=-\
+  --bounding-box top=35.3 left=-85.5 bottom=34.8 right=-85 \
+  --write-xml file=- | bzip2 > extracted.osm.bz2
+\end{verbatim}
+
+Osmosis commands tend to be quite long and the ordering of parameters
+is important. The above command says:
+
+\begin{aosaitemize}
+
+\item bzcat to unzip 'planet-latest.osm-bz2' and pipe the output to
+  osmosis
+
+\item use osmosis to read from the piped input stream (file='-')
+
+\item do a ``bounding-box'' filter on the elements. We're extracting a
+  rectangular area of map data covering just the city of Chattanooga
+  (and some surroundings)
+
+\item write xml to the standard output stream
+
+\item bzip2 to compress the output stream to a bz2 file
+
+\end{aosaitemize}
+
+Here we've written the command across several lines with slashes at
+the end of each line (watch out for whitespace after the slash!) and
+we've used the long-hand name for each of the tasks.
+
+Various other kinds of filtering operations are possible. You can
+extract a polygon shaped area of data, rather than just rectangles, by
+supplying a polygon file (this is how country extracts are
+generated). You can do basic tag filtering, e.g. only return elements
+with the amenity=cafe tag. And you can combine filter types, listing
+these ``tasks'' within the command in the order they should be
+applied.
+
+As well as filtering, the read and write ``tasks'' at the beginning
+and end of an osmosis command can work with some different formats. In
+fact you can use osmosis itself to do the decompressing and
+compressing to bzip format, but (on Unix systems at least) it works
+more quickly and reliably using the piping method shown in the example
+above. Other file format support is more useful though, for example
+PBF is clever format achieving better compression and faster writing
+speeds for OpenStreetMap data. Geofabrik also offer their country
+extract downloads in this format. Osmosis allows reading and writing
+to an ``.osm.pbf'' file. It can also be used to read and write to
+Postgres, PostGIS, and MySQL databases following various schemas.
+
+Finally osmosis is used for creating and consuming diffs. You can
+create a diff file (a file following the ``OsmChange'' documented
+format) comparing two input .osm files, but more commonly people use
+osmosis to consume diffs. The minutely and hourly ``replication''
+diffs are designed to be used to replicate all changes reliably on
+another server, ensuring that changes are played through in the same
+order without overlaps. This achieved by tracking database transaction
+IDs, and happily it all happens automatically, including playing
+catch-up if your script didn't run for a few minutes. For details on
+how to set up replication in osmosis, see the documentation at:
+http://wiki.openstreetmap.org/wiki/Planet.osm/diffs
+
+This ability to synchronise data changes on your own server, keeping
+your copy of the data up-to-date every minute, means there's very
+little we can do with our central OpenStreetMap server that you cannot
+do on your own server.
+
+\end{aosasect2}
+
+\begin{aosasect2}{Conversions}
+
+Conversions can be carried out using scripts and tools run by anyone,
+but some conversions are offered up as download services. This can go
+hand in hand with the kind of data syncing and extracting operations
+we've talked about above.
+
+We've mentioned some conversions which osmosis supports, particularly
+going from from and to PBF, but this is really just another format
+invented by and used by the OpenStreetMap community. Some data
+conversions can transform OpenStreetMap data into a format which
+reaches far more widely. This is where the OpenStreetMap tornado
+touches down and starts having an impact, by offering free map data to
+a whole class of users who would normally have to buy it or license it
+at great expense. There are many examples of file formats which can be
+generated from OpenStreetMap data, but two which have been
+particularly popular are Garmin maps and shapefiles:
+
+Garmin are major manufacturer of satnavs and GPS units for
+hikers. Some of their satnav models are locked down using more cryptic
+file formats, but other models (particularly the very popular
+``eTrex'' range of handheld garmin units) allow you to load maps onto
+a SD card in IMG format. This format has been reverse-engineered, so
+that putting a chunk of OpenStreetMap data onto the device is a matter
+of running a conversion process. A command line java tool called
+``Mkgmap'' allows you to do this, if you want to figure out the
+process of making style configurations, and picking out the
+OpenStreetMap tags you'd like to show. But to save this hassle others
+have done the conversion for you! There are various download services
+offering up free map data for garmin units. Wiki documentation and
+links to these downloads, can be found form here:
+http://wiki.openstreetmap.org/wiki/OSM\_Map\_On\_Garmin Sadly device
+manufacturers don't tend to be very open about their file
+formats. This particular garmin format has been opened up, not through
+any encouragement from Garmin themselves. Meanwhile many manufacturers
+actively discourage this kind of thing, by encrypting their map data
+files, because they all make a lot of money from selling data. Many
+GPS device types are described on the OpenStreetMap wiki, mainly in
+terms of how to use them for gathering data, but where there are data
+conversion possibilities, these are described on there.
+
+ESRI shapefiles are a popular format for vector map data, used by the
+GIS industry, within ESRI products, but also as an open specification
+supported more widely by other tools such as the open source QGIS. A
+shapefile is actually a complicated looking array of several different
+files, but the important bits are really quite straightforward. There
+are even some similarities to OpenStreetMap's simple data
+format. Instead of nodes and ways, a shapefile has points and
+polylines. Now the temptation is to say that OpenStreetMap tags are
+very similar to shapefile attributes, but herein lies a bit of a
+stumbling block. Shapefiles have a tabular set of attributes and
+although this is flexible (like adding columns to a spreadsheet), it's
+a finite set of fields which is describing our points and
+polylines. There's an ontology for the data. As explained in the above
+section ``Any tags you like'', OpenStreetMap has more of a
+``folksonomy'' than an ``ontology''. The consequence of this is that a
+direct conversion of OpenStreetMap data to shapefile format is quite
+feasible, but can result in a surprising number of columns in the
+attributes table. For more satisfactory results the a mapping would
+need be applied to the tags, to tame them into something more like the
+ontology that which this particular use demands. This requires prior
+knowledge of the use case at hand. Nonetheless straightforward
+conversions may still be of some use, and Cloudmade and Geofabrik are
+both offering up downloads of entire countries in shapefile
+format. The most common conversion approach is to run osm2pgsql to
+populate a PostGIS database, followed by pgsql2shp (a function of
+PostGIS).
+
+\end{aosasect2}
+
+\end{aosasect1}
+
+\begin{aosasect1}{Rendering}
+
+You might say that rendering is just another type of data
+conversion. It means taking the raw map data (nodes, ways. relations
+and tags) and outputting a visual map. But what is a map if you can't
+view it?! Rendering is hugely important and one of the most powerful
+and exciting aspects of OpenStreetMap.
+
+Running your own renderer gives you complete cartographic control. Map
+styles can be designed to change the colours of features, the widths
+of lines, and size of text, and any other customisation you can
+imagine in the generated output at a pixel by pixel level. What's
+more, a renderer can be configured to create a map with a particular
+topic focus by highlighting certain tags which may not even be shown
+on default renderings. The OpenStreetMap.org homepage has a default
+rendering style and a number of other examples accessible by clicking
+the layers icon in the top-right. OpenStreetMap people have created
+maps rendered in a wondrous variety of colour schemes and focussing on
+particular topic areas, all by configuring styles in rendering
+software. Sites like OpenCycleMap.org provide great examples of
+this. Note that cycle routes are glowing blue, not because of a
+javascript overlay, but because these customisations are baked into
+the pixels of the map in a carefully designed manner.
+
+Usually rendering means going from vector to raster format
+A.K.A. bitmap images. In relation to ``slippy map'' javascript
+interfaces described earlier, we want to render ``tiles'' to be
+delivered to the user's web browser. In this case a renderer feeds
+into or forms part of a ``tile server''.
+
+\begin{aosasect2}{Mapnik}
+
+The default map view on OpenStreetMap.org is created using rendering
+software called ``Mapnik''. This layer is also titled ``Mapnik'' on
+the layer picker, but don't be confused. Mapnik is the name of the
+rendering software, capable of rendering many different styles and
+creating different tile servers. We run mapnik backed onto a PostGIS
+database which is synced via minutely diffs. This along with an apache
+server with 'mod\_tile' all sits on a single quite powerful server. The
+PostGIS database is not the same database which powers the
+OpenStreetMap API. A tool called osm2pgsql is used to bring the data
+into PostGIS (a lossy conversion) every minute using the minutely
+diffs described earlier.
+
+Mapnik is a high performance C++ tool for rendering. Mapnik itself is
+extremely flexible, with compatibility and support for a wide range of
+input sources, data formats, and output projections. The default
+OpenStreetMap configuration of mapnik is rather less flexible. It
+assumes a PostGIS database source, populated in a very particular
+manner by the osm2pgsql tool.
+
+\end{aosasect2}
+
+\begin{aosasect2}{Mapnik OSM basic set-up}
+
+Broadly speaking the steps to get set up with mapnik initially are as
+follows:
+
+\begin{aosaitemize}
+
+\item Install PostGIS
+
+\item Install Mapnik
+
+\item Get the OpenStreetMap config files and scripts
+
+\item Run osm2pgsql to populate your PostGIS database
+
+\item run generate\_image.py script
+
+\end{aosaitemize}
+
+It's easy to confuse the second and third steps, since historically
+the config files were always placed in a directory called
+``mapnik''. These days you may find the latest version of these files
+in on github: https://github.com/openstreetmap/mapnik-stylesheets
+Installation of Mapnik itself is quite straightforward, particularly
+if you can use a package, but check which version of Mapnik is
+currently required by the latest OpenStreetMap stylesheets.
+
+Having done all the installation, the first major bit of data
+processing, is to run osm2pgsql to load the PostGIS database. While
+you're getting going you should try these things out on a small area
+(an extract rather than the full planet) to avoid waiting around for a
+long time, but remember that a full planet will eat a lot more disk
+space when you come to do it. A command such as this will load an
+extract file into the database:
+
+\begin{verbatim}
+./osm2pgsql -S default.style --slim -d gis -C 2048 ./extract.osm.bz2
+\end{verbatim}
+
+This assumes you have used osmosis or downloaded an extract of a
+smaller area. You can also pass a parameter ``--bbox
+-0.5,51.25,0.5,51.75'' to only load the bounding box around London for
+example. You'll probably see ``table does not exist, skipping''
+messages. These are normal. The config file 'default.style' contains
+some OpenStreetMap specific tag/element handling. This means that
+achieving some different rendering effects can require modifications
+here to prep different data to be made available to Mapnik.
+
+Before you can run Mapnik you need to run generate\_xml.py This applies
+your database connection settings to the Mapnik config files. There's
+various instructions to follow for placing world-boundaries and other
+files in the right place. Then finally you're good to go with a test
+image. Running mapnik with 'generate\_image.py' will let you check
+things have gone well so far. Edit this script and modify the line
+which sets the 'bounds' to give a bounding box of your
+choice. Obviously it should be a part of the world which you have
+loaded into your database.
+
+\end{aosasect2}
+
+\begin{aosasect2}{Mapnik XML}
+
+The main rendering config (used by Mapnik) is a set of xml
+files. osm.xml is the big one, but some details of specific layers are
+split out into other XML files in the 'inc' subdirectory. It's a
+rather gigantic xml file. You'll recognise some familiar OpenStreetMap
+tags appearing in the ``filter'' specifications. It handles a lot of
+different tags, but the reason the file is so massive is mainly due to
+some rather onerous duplication. It defines style rules for every road
+type, and every bridge/tunnel variation of these, and then repeats for
+every zoom level. A lot of permutations written out in full. Towards
+the bottom of osm.xml the style rules come to an end and you'll see a
+number of 'layer' tags (from \&layer-shapefiles; onwards). Here you can
+some SQL fragments used to retrieve the data for the various layers
+from PostGIS. The style config is tightly coupled with the PostGIS
+database laid out by osm2pgsql.
+
+The default map style used on OpenStreetMap.org follows this
+long-winded map.xml approach and so to render in this style, or with
+minor modifications, you would need to get to grips with all of
+that. But there are a number of technologies offering simplified style
+configuration. ``Cascadenik'' lets you write out your map style in
+something similar to CSS (Cascading Stylesheets) used in web
+development. The rule definitions ``cascade'', so you can think of the
+map as having a hierarchy of feature types that need to share some
+visual properties but not others. ``Carto'' is a newer alternative
+pursuing similar goals to cascadenik, but this is also used as part of
+system called ``TileMill'' offering a visual design environment for
+Mapnik styles. Both Carto and Cascadenik are actually pre-processors,
+generating the standard big XML config files to feed to Mapnik in the
+background. In fact these generated files can easily end up being even
+more long winded than a hand crafted one and this can cause a
+performance hit. But currently the main reason for working with big
+Mapnik XML directly is simply that this is what OpenStreetMap default
+style is available as.
+
+Performance of the renderer is not really an issue if you're just make
+a one-off image, but what about running tile servers?
+
+\end{aosasect2}
+
+\begin{aosasect2}{Mapnik tile servers}
+
+You can quickly progress from using generate\_image.py onto using
+generate\_tiles.py Simply edit the script to specify your bounding box
+and some other parameters such as zoom levels and run it to fill a
+directory full of little square images! These can then be viewed as a
+slippy map using OpenLayers or one of the other slippy map display
+methods described in the earlier section.
+
+You could use generate\_tiles.py over quite a large area, but the more
+tiles you generate the longer it will take, so covering a large area
+up to a high zoom level may not be feasible.
+
+Mapnik really comes into its own when used for high performance tile
+rendering. You can show maps of the whole world down to zoom level 18,
+as on the OpenStreetMap front page, but running on your own server. To
+achieve this, you might be tempted to generate all the tiles up front
+and keep them on disk. OpenStreetMap viewing stats show that fewer
+than 1\% of all possible zoom level 18 tiles are ever actually viewed
+and this is on a heavily used tile server. Most of the surface of the
+earth is not interesting enough for people to ever zoom in on it!
+
+We also have data updates to contend with and you should too. As a
+general principle for any services built in on OpenStreetMap, if you
+don't have a way of feeding in updates from the OpenStreetMap
+community, then you're missing a trick! When users complain that your
+map is incorrect or incomplete (and all maps are) then you can tell
+them to add the data to OpenStreetMap. This sets up a virtuous circle,
+benefitting you directly, particularly if users add data types that
+you are directly highlighting.
+
+The better approach then, is to render tiles on the fly, and this
+really takes advantage of Mapnik's high performance. We do need to
+have some caching strategies in place (keeping \emph{some} tiles on
+disk) particularly if we want to serve thousands of request per second
+as we do on the OpenStreetMap main tile server. To take care of these
+things, OpenStreetMap developers created ``mod\_tile'', a highly
+optimised apache module and a ``renderd'' daemon process which manages
+a dynamic combination of caching and on-the-fly rendering. Requests to
+the mapnik renderer are made in areas covering 1024x1024 pixels images
+(a square of 4x4 normal map tiles called a ``metatile''). These
+requests are queued up and prioritised. Metatiles are stored in cache,
+but dropped later if nobody subsequently request them.
+
+osm2pgsql can be used to feed in diffs on minutely basis into the
+back-end PostGIS database. It is also then possible to detect which
+metatiles require re-rendering as a result of the database changes,
+and label these as dirty.
+
+The combination of Mapnik with mod\_tile, osm2pgsql and minutely diffs
+has been used not just on OpenStreetMap's main tile server, but many
+other tile servers run by third parties, including Mapquest open and
+OpenCycleMap. There is nothing special about the tile server run by
+OpenStreetMap itself, and the proliferation of different tile servers
+showing the map data in different styles, is very much encouraged.
+
+\end{aosasect2}
+
+\begin{aosasect2}{Other renderers}
+
+Besides Mapnik there are many other rendering tools with greater and
+lesser capabilities, usually inventing (or re-inventing) their own
+stylesheet configuration formats. You'll find a list on the
+OpenStreetMap wiki: http://wiki.openstreetmap.org/wiki/Rendering
+
+Osmarender is a tool composed mostly of XSLTs which define a transform
+from the .osm XML format into SVG. Useful for one off renderings to
+this format (Mapnik can also render to SVG but tends to output rather
+too many objects).
+
+When it comes to high performance tile servers, Mapnik seems to be the
+only game in town. Osmarender is very slow and CPU intensive by
+comparison, but despite this, developers did figure out a way of
+creating a worldwide updated tile set (available as a layer on the
+OpenStreetMap homepage). This is achieved with a distributed rendering
+project called ``tiles@home'' (named along the same lines as
+seti@home). This is fun, but a bit impractical. Generally the output
+from osmarender is inferior to Mapnik, but it's nice to see very
+different technology tackling the rendering challenge.
+
+``Halcyon'' is a vector display library built in flash and used within
+Potlatch. It uses a style definition format called ``MapCSS'' (another
+CSS-like format) which has also been incorporated in a display option
+within JOSM and has been adopted by Kothic, a renderer in Python. This
+has been ported to Kothic.js a JavaScript and HTML5 canvas renderer
+running entirely in your browser (without plugins, but requiring an
+up-to-date browser).
+
+Some technologies blur the distinction between vector displays and
+raster, but generally you can tell when a map is displayed with
+pre-rendered bitmap tiles. These can have more high-fidelity graphics
+with anti-aliasing etc, while vector displays, if they are kept
+simple, can be written to screen rapidly enough to permit fluid
+zooming and rotating. Both raster and vector displays can operate
+offline on mobile devices and this is an increasingly popular use of
+OpenStreetMap. Vector displays offer a huge advantage in this area,
+since vector data can be very compact compared with storing tile
+images. It is quite feasible to store whole countries in vector
+format. We are sure to see an increase in mobile apps offering
+efficient offline vector displays in the coming years. With
+OpenStreetMap, developers are free to innovate in these areas with
+access to the raw data.
+
+\end{aosasect2}
+
+\end{aosasect1}
+
+\begin{aosasect1}{Geodata beyond maps}
+
+We've talked about beautiful flexible thematic map rendering, and this
+is often seen as the end goal, but for the more imaginative software
+developer, access to raw geo-data unleashes a whole host of
+possibilities beyond the obvious display of maps. We've seen how
+planet downloads offer the ultimate access to all of the data and how
+tools like osmosis let us use it. Download services for extracts and
+shapefiles form part of a middle-tier hosted by third-parties, but
+servicing the needs of developers and downstream users. In this same
+family are services like ``XAPI'' and ``nominatim''.
+
+\begin{aosasect2}{XAPI querying}
+
+XAPI stands for ``eXtended API''. It offers bounding box queries of
+OpenStreetMap data, returning .osm formatted XML much like the ``map''
+call of the main API, but with support for more flexible querying
+using predicates within the URL. For example, to retrieve all of the
+libraries in the UK (a tag filter and a bounding box filter), put this
+on the end your URL:
+
+\begin{verbatim}
+*[amenity=library][bbox=-13.71,47.75,3.69,61.35]
+\end{verbatim}
+
+XAPI is open source, and operated by a couple of different
+people/organisations you can use XAPI provided by MapQuest, for
+example, with the base URL:
+
+\begin{verbatim}
+http://open.mapquestapi.com/xapi/api/0.6/
+\end{verbatim}
+
+Other services are listed on the wiki, as well as links to UIXAPI, a
+ web user interface for building
+ queries.http://wiki.openstreetmap.org/wiki/Xapi
+
+\end{aosasect2}
+
+\begin{aosasect2}{Nominatim Search}
+
+Nominatim is the name of the software which powers the search box on
+the OpenStreetMap homepage. Search services, or ``geocoding'' and
+``reverse-geocoding'' to give them their more technical name, are
+provided by a number of third-parties. CloudMade have offered
+OpenStreetMap powered search for some time, but nominatim is the name
+of an open source search system built on PostGIS, for which the main
+installation is operated by MapQuest. Nominatim represents a
+middle-tier service for other developers to make calls to, with simple
+query URLs return location results for search keywords (geocoding), or
+the name of a place matching a given lattitude/longitude
+(reverse-geocoding). See the wiki page for examples of these:
+http://wiki.openstreetmap.org/wiki/Nominatim
+
+Nominatim is open source, and can be installed by anyone. The
+``Nominatim Pre-Indexed Data Service'' lets you skip some of the more
+slow index building steps; however, installation is still technical
+and resource-intensive.
+
+\end{aosasect2}
+
+\begin{aosasect2}{Routing}
+
+The process of calculating a route from one point to another across a
+map is a classic software engineering challenge. The typical output is
+the wiggly line to show on the map and/or turn-by-turn directions to
+follow. CloudMade have provided a fast routing service (with API)
+using OpenStreetMap for some time now, but the code is not
+released. There are, however, a number of open source options. ``Open
+Source Routing Machine'' (project-osrm.org) is a server-based system
+which works well. You can also do routing on devices, which typically
+requires very different optimisation choices, and you'll find many
+OpenStreetMap powered apps offer routing among their features.
+
+\end{aosasect2}
+
+\end{aosasect1}
+
+\begin{aosasect1}{Conclusions}
+
+In the previous sections we've seen various services and offerings
+available to developers, to help build exciting new map powered
+apps. Ultimately developers may value the planet downloads above all
+else. This is the root source of geo-data from OpenStreetMap. We've
+seen how tools like osmosis allow us to sync with diffs and manipulate
+this data on our own servers, and this in turn is used by all
+middle-tier services.
+
+If OpenStreetMap was organised enough to articulate a ``policy'' on
+all of this, it would be to encourage proliferation of the data and
+out-sourcing of services to third parties wherever possible. While the
+result can seem confusing, and perhaps not as well-packaged as the
+offerings of corporate map providers, this approach gives an entry
+point to developers at every level of the tree, presenting a wealth of
+exciting opportunities and foundations to be built upon. We hope that
+this chapter will help you navigate this maze. To find out more about
+any of the technologies mentioned, a search on the OpenStreetMap wiki
+is a good place to start.
+
+The decentralised and decoupled approach extends to writing of changes
+to the database, all of which take place through the OpenStreetMap
+API. Editing software is at the front-line, with many thousands of
+people using (and trying to use) these applications to
+contribute. Simplicity of the editors is aided by simplicity of the
+underlying data structures. Early architectural choices, and the
+design of a simple structure of nodes, ways, relations and tags, has
+allowed OpenStreetMap to gain serious momentum by turning the
+complexity of geographical information systems into something that
+little bit more approachable.
+
+\begin{aosasect2}{A geodata revolution}
+
+Geo industry experts are predicting continued growth and adoption of
+geo technologies not just in the places you would expect, supplying
+our demand for a map, but more pervasive integration of
+``geo-awareness'' into applications and systems across all sectors. In
+future apps will quietly look up information about where we are, where
+we have been and what is in the world around us, to inform better
+decision logic. Smartphones will get smarter, telling us where to go
+and how to get where we want to go more easily, and maybe how to meet
+our friends along the way. There's an exciting future ahead, but we
+need access to map data to make it happen.
+
+And we need free and open access to map data to ensure that this
+industry isn't monopolised by the industry giants. Small companies and
+bedroom coders can unleash their talent in this space only if they
+have the raw data, which up until now has costed big money. The
+industry giants will continue to innovate too, with exciting offerings
+which also feed off developer and end-user adoption, but which are
+built on locked down closed data. OpenStreetMap is the engine of a
+geodata revolution. As more developers adopt OpenStreetMap and find
+exciting new uses, more end-users are presented with the map. And as
+more developers work on improving usability and innovate around
+simplicity of the editors, more people will contribute to help make
+OpenStreetMap not just the best free map, but the best map of the
+world.
+
+\end{aosasect2}
+
+\end{aosasect1}
 
 \end{aosachapter}

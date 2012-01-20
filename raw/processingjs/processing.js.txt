@@ -19,6 +19,36 @@ HOW DOES IT WORK?
 
     {{ two block comparison: "A Processing sketch and its Processing.js conversion"}}
     @@@
+      void setup() {
+        size(200,200);
+        noCursor();
+        noStroke();
+        smooth(); }
+
+      void draw() {
+        fill(255,10);
+        rect(-1,-1,width+1,height+1);
+        float f = frameCount*PI/frameRate;
+        float d = 10+abs(60*sin(f));
+        fill(0,100,0,50);
+        ellipse(mouseX, mouseY, d,d); }
+    @@@
+      function($p) {
+          function setup() {
+              $p.size(200, 200);
+              $p.noCursor();
+              $p.noStroke();
+              $p.smooth(); }
+          $p.setup = setup;
+
+          function draw() {
+              $p.fill(255, 10);
+              $p.rect(-1, -1, $p.width + 1, $p.height + 1);
+              var f = $p.frameCount * $p.PI / $p.__frameRate;
+              var d = 10 + $p.abs(60 * $p.sin(f));
+              $p.fill(0, 100, 0, 50);
+              $p.ellipse($p.mouseX, $p.mouseY, d, d); }
+          $p.draw = draw; }
     @@@
     {{ two block comparison: "A Processing sketch and its Processing.js conversion"}}
 
@@ -42,10 +72,20 @@ HOW DOES IT WORK?
       For some things, we decided to force synchronous waiting. Loading a file with strings, for instance, uses a synchronous XMLHTTPRequest, and will halt execution of the page until the data is available. For other things, we had to get creative. Loading images, for instance, uses the browser's buily-in mechanism for loading images - we build a new Image() in JavaScript, set its "src" attribute to the image URL, and the browser does the rest, notifying us that the image is ready through the onload event . This doesn't even rely on an XMLHTTPRequest, but simply exploits the browser's capabilities.
 
       To make matters easier when you already know which images you are loading, we added preload directives so that the sketch does not start execution until preloading is complete. A user can indicate any number of images to preload via a comment block at the start of the sketch, and Processing.js then track outstanding image loading. The onload event for an image tells us that it  is done transferring and is considered ready to be rendered (rather than simply having been downloaded but not decoded as pixel array in memory yet), after which we can populate the corresponding Processing "PImage" object with the correct values - width, height, pixel data, etc. and clear the image from the list. Once the list is empty, the sketch gets executed, and images used during its lifetime will not require waiting for.
-      
+
       {{preload directives example}}
       @@@
+        /* @pjs preload="./worldmap.jpg"; */
 
+        PImage img;
+
+        void setup() {
+          size(640,480);
+          noLoop();
+          img = loadImage("worldmap.jpg"); }
+
+        void draw() {
+          image(img,0,0); }
       @@@
       {{preload directives example}}
 
@@ -60,7 +100,7 @@ HOW DOES IT WORK?
     JAVA IS CLASS-BASED OBJECT ORIENTED, WITH SEPARATE VARIABLE AND METHOD SPACES. JAVASCRIPT IS NOT.
 
       JavaScript uses prototype objects, and the inheritance model that comes with it. This means all objects are essentially key/value pairs where each key is a string, and values are either primitives, arrays, objects, or functions. On the inheritance side, prototypes can extend other prototypes, but there is no real concept of "superclass" and "subclass". In order to make "proper" Java-style Object Oriented code work, we had to implement classical inheritance for JavaScript in Processing.js, without making it super slow (we think we succeeded in that respect). We also had to come up with a way to prevent variable names and function names from stepping on each other. Because of the key/value nature of JavaScript objects, defining a variable called "line", followed by a function like "line(x1,y1, x2,y2)" will leave you with an object that uses "whatever was declared last for a key". JavaScript first sets object.line = "some value" for you, and then sets object.line = function(x1,y1,x2,y2) { ...}, overriding what you thought was your variable "line".
-            
+
       It would have slowed down the library a lot to create separate administration for variables and methods/functions, so again the documentation explains that it's a bad idea to use variables and functions with the same name. If everyone wrote "proper" code, this wouldn't be much of a problem, as you want to name variables and functions based on what they're for, or what they do, but the real world does things differently. Sometimes your code won't work, and it's because we decided that your code breaking due to a naming conflict is preferable to your code always working, but always being slow. A second reason for not implementing variable and function separation was that this could break JavaScript code used inside Processing sketches. Closures and the scope chain for JavaScript rely on the key/value nature of objects, so driving a wedge in that by writing our own administration would have also severely impacted performance in terms of JIT compilation and minification.
 
     JAVA ALLOWS METHOD OVERLOADING. JAVASCRIPT DOES NOT.
@@ -105,7 +145,7 @@ HOW DOES IT WORK?
         angle += PI/frameRate;
         while(angle>2*PI) { angle-=2*PI; }
         jQuery('#log').text(angle); // JavaScript (error in native Processing)
-        cs.rotate(angle);           // legal JavaScript and Processing!
+        cs.rotate(angle);           // legal JavaScript as well as Processing
         stroke(random(255));
         point(cs.x, cs.y); }
     @@@
@@ -153,9 +193,9 @@ THE CODE COMPONENTS
     For PShapeSVG, we implemented our own SVG-to-canvas-instructions code. Since Processing does not implement full SVG support, the code we saved by not relying on an external SVG library means that we can account for every line of code relating to SVG imports. It only parses what it has to, and doesn't waste space with dead code.
 
     - XMLElement, an XML document object.
-    
+
     For XMLElement, too, we implemented our own code, relying on the browser to first load the XML element into a Node-based structure, then traveling the node structure to build a leaner object. Again, this means we don't have any dead code sitting in Processing.js, taking up space and potentially causing bugs because a patch accidentally makes use of a function that shouldn't be there.
-    
+
     - PMatrix2D and PMatrix3D, used for matrix operations in 2D and 3D mode
     - PImage, represents an image resource
 
@@ -202,14 +242,28 @@ BUILDING PROCESSING.JS
 
     Before any code is accepted and merged into our stable development branch, the modified Processing.js library is validated against an ever-growing battery of unit tests. Especially big fixes and performance tests are prone to pass their own unit test, but may end up breaking parts that worked fine before the rewrite. Having tests for every function in the API, as well as internal functions, means that as Processing.js grows, we don't accidentally break compatibility with previous versions. Barring destructive API changes, if none of the tests failed before a code contribution or modification, none of the tests are allowed to fail with the new code in.
 
-    {{ unit test code?}}
+    {{ example of a unit test: verifying inline object creation }}
     @@@
+      interface I {
+        int getX();
+        void test(); }
+
+      I i = new I() {
+        int x = 5;
+        public int getX() {
+          return x; }
+        public void test() {
+          x++; }};
+
+      i.test();
+
+      _checkEqual(i.getX(), 6);
+      _checkEqual(i instanceof I, true);
+      _checkEqual(i instanceof Object, true);
     @@@
-    {{ unit test code?:}}
+    {{ example of a unit test: verifying inline object creation }}
 
     In addition to regular code unit tests, we also have visual reference tests. As Processing.js is a port of a visual programming language, some tests cannot be performed using just unit tests. Testing to see whether an ellipse gets drawn on the correct pixels, or whether a single-pixel-wide vertical line is drawn crisp or smoothed cannot be determined without a visual reference. Because all big browsers implement the canvas element and Canvas2D API with subtle differences, these things can only be tested by running code in a browser and verifying that the resulting sketch looks the same as what native Processing generates. To make life easier for developers, we use an automated test suite for this, where new test cases are run through Processing, generating "what it should look like" data to be used for pixel comparison. This data is then stored as a comment inside the sketch that generated it, forming a test, and these tests are then run by Processing.js on a visual reference test page which executes each test and performs pixel comparisons between "what it should look like" and "what it looks like". If the pixels are off, the test fails, and the user is presented with three images; one showing what it should look like, one showing how Processing.js rendered it, and one showing the difference between the two, marking problem areas as red pixels, and correct areas as white. Much like unit tests, these tests must pass before any code contribution can be accepted.
-
-  {{ref test illustration - ref test page screenshot}}
 
   MAKE IT FAST
 
@@ -230,6 +284,12 @@ BUILDING PROCESSING.JS
     In order to make sure these things aren't lost, we have documentation online for people who start using Processing.js with a Processing background, and people who start using Processing.js with a JavaScript background, covering the differences between what is expected, and what actually happens. Certain things just deserve special mention, because no matter how much work we put into Processing.js, there are certain things we cannot add without sacrificing usability. A good architecture doesn't just cover the way things are, it also covers why: without that, you'll just end up having the same discussions about what the code looks like and whether it shouldn't be different, every time the team changes.
 
 
-CONCLUSION
+LESSONS LEARNED
 
-  Processing.js has seen a long track of development, with many contributors, and even though it can trace it roots all the way back to John Resig's first stab at porting Processing to the web, most of the original code has been replaced, sometimes several times over since 2007. Not just John's code, but many other contributions that made sense at the time when Processing.js was still trying to get near functional parity with native Processing have been replaced by better or faster code. That said, we couldn't have gotten Processing.js to where it is today without the help of everyone who has helped build out the library over the years. We want to acknowledge the contributions of everyone who has helped keep Processing.js alive, either in a small way or by sticking with the project over multiple releases. In no particular order of importance, John Resig, Alistair MacDonald, David Humphrey, Corban Brook, Anna Sobiepanek, Andor Salga, Daniel Hodgin, Scott Downe, Yuri Delendik, Mike Kamermans, Chris Lonnen, Mickael Medel, Matthew Lam, Jon Buckley, Dominic Baranski, Elijah Grey, Thomas Saunders, Abel Allison, Andrew Grimo, Donghui Liu, Edward Sin, Alex Londono, Robert O'Rourke, Thanh Dao, Zhibin Huang, John Turner, Tom Brown, Minoo Ziaei, Ricard Marxer, Matt Postill, Tiago Moreira, Jonathan Brodsky, and Roger Sodre were all instrumental in realising this project, and with continued contributions from some, and new contributions by others, we intend to keep improving Processing.js until parity has been achieved. To put it in the words of Shaun McWhinnie (@himself) in one of his tweets: "Sat down to *learn* processing.js last night, then found out it can parse my existing pde sketches #jobdone". If your Processing code "just works", we've done our job. And when it doesn't, do drop by and let us know what still needs fixing. There's no better motivation for an open source project development team than people saying they want to use it.
+The most important lesson we learned while writing Processing.js is that when porting a language, what matters is that the result is correct, not whether or not the code used in your port is similar to the original. Even though Java and JavaScript are fairly similar, syntax wise, and modifying Java code to legal JavaScript code is fairly easy, it often pays off to look at what JavaScript can natively do and exploit that to get the same functional result. Taking advantage of the lack of typing by recycling variables, using certain built in functions that are fast in JavaScript but slow in Java, or avoiding patterns that are fast in Java but slow in JavaScript means your code may look radically different, but has the exact same effect. You often hear people say not to reinvent the wheel, but that only applies to working with a single programming language. When you're porting, reinvent as many wheels as you need to get fast.
+
+Another important lesson is to return early, return often, and branch as little as possible. An if/then statement followed by a return can be made (sometimes drastically) faster by using an if-return/return construction instead, using the return statement as conditional shortcut. While it's conceptually pretty to aggregate your entire function state before calling the ultimate return statement for that function, it also means your code path may traverse code that is entirely unrelated to what you will be returning. Don't waste cycles, return when you have all the information you need.
+
+A third lesson concerns testing your code. In Processing.js we had the benefit of starting with very good documentation outlining how Processing was "supposed" to work, and a large set of test cases, most of which started out as "known fail". This allowed us to do two thing: 1) write code against tests, and 2) create tests before writing code. The usual process of writing code, followed by creating test cases for that code, actually creates biased tests. Rather than testing whether or not your code does what it should do, according to the specification, you are only testing whether your code is bug-free. In Processing.js, we instead start by creating test cases based on what the functional requirements for some function or set of functions is, based on the documentation for it. With these unbiased tests, we can then write code that is functionally complete, rather than simply bug free but possibly deficient.
+
+The last lesson is also the most general one: apply the rules of agile development to individual fixes, too. No one benefits from you retreating into dev mode and not being heard from for three days straight, while you write the perfect solution. Rather, get your solutions to the point where they work, and not even necessarily for all test cases, then ask for feedback. Working alone, with a test suite for catching errors, is no guarantee for good or complete code. No amount of automated testing is going to point out that you forgot to write tests for certain edge cases, or that there is a better algorithm than the one you picked, or that you could have reordered your statements to make the code better suited for JIT compilation. Treat fixes like releases: present fixes early, update often, and work feedback into your improvements.

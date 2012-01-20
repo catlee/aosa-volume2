@@ -1,0 +1,843 @@
+\begin{aosachapter}{matplotlib}{s:matplotlib}{John Hunter and Michael Droettboom}
+
+matplotlib is a Python-based plotting library widely used in the
+scientific Python computing community with full support for 2D
+graphics and limited support for 3D.  The library targets a broad
+range of use cases.  It can embed graphics in the user interface
+toolkit of your choice, and currently supports interactive graphics on
+all major desktop operating systems in the Gtk+, Qt, Tk, FLTK,
+wxWidgets and Cocoa toolkits.  It can be called interactively from the
+the interactive python shell to produce graphics with simple,
+procedural commands much like Mathematica\texttrademark,
+IDL\texttrademark\ or Matlab\texttrademark.  And it can be embedded in
+a headless webserver to provide hardcopy in both raster based formats
+like Portable Network Graphics (PNG) as well as vector formats like
+Postscript, Portable Document Format (PDF) and Scalable Vector
+Graphics (SVG) that look great on paper.
+
+\begin{aosasect1}{The Dongle Problem}
+
+matplotlib's origin dates to an attempt by one of us (John Hunter) to
+free himself and his fellow epilepsy researchers from a proprietary
+software package for doing Electrocorticography (ECOG) analysis.  The
+laboratory in which he worked had only one license to the software,
+and the various graduate students, medical students, postdocs, interns
+and investigators took turns sharing the hardware key dongle.
+Matlab\texttrademark\ is widely used in the biomedical community for
+data analysis and visualization, so Hunter set out, with some success,
+to replace the proprietary software with a Matlab based version that
+could be utilized and extended by multiple investigators.  Matlab,
+however, naturally views the world as an array of floating point
+numbers, and the complexities of real-world hospital records for
+epilepsy surgery patients with multiple data modalities (CT, MRI,
+ECOG, EEG) warehoused on different servers pushed Matlab to its limits
+as a data management system.  Unsatisfied with the suitability of
+% TAB: How does matplotlib handle data management better than Matlab?
+Matlab for this task, Hunter began anew on a Python application built
+on top of the user interface toolkit Gtk+, at the time the leading
+desktop windowing system for Linux.
+
+matplotlib was thus originally developed as a EEG/ECOG visualization
+tool for this Gtk+ application, and this use case informed its
+original architecture.  matplotlib was originally designed to serve a
+second purpose as well: as a replacement for interactive command
+driven graphics generation, something that Matlab does very well.
+When you just want to load a data file and plot a histogram, a full
+object-oriented API is usually a bit too syntactically heavy and does
+not suit many bench scientists familiar with the commercial tools that
+provide an easy scripting interface.  So matplotlib also provides a
+stateful scripting interface for quick and easy generation of
+graphics.  Since this is something Matlab \emph{does} do quite well,
+matplotlib implements much of its scripting interface.
+% TAB: As in: "matplotlib provides a scripting interface largely
+% (syntactically?) compatible with Matlab."? Or some other way of merging
+% the last two sentences to be more direct and explicit.
+
+\aosafigure{../images/matplotlib/ecog.png}{The original matplotlib application: an ECOG viewer}{fig.matplotlib.ecog}[scale=0.2]
+\end{aosasect1}
+
+\begin{aosasect1}{Overview of matplotlib architecture}
+
+
+The top level matplotlib object that contains and manages all of the
+elements in a given graphic is called the Figure.  One of the core
+architectural tasks matplotlib must solve is implementing a framework
+for representing and manipulating the Figure that is segregated from
+the act of rendering the Figure to a user interface window or
+hardcopy.  This enables us to build increasingly sophisticated
+features and logic into the Figures, while keeping the ``backends'', or
+output devices, relatively simple.  Because matplotlib encapsulates
+not just the drawing interfaces to allow rendering to multiple
+devices, but also the basic event handling and windowing of most
+popular user interface toolkits, users can create fairly rich
+interactive graphics and toolkits incorporating mouse and keyboard
+input that can be plugged without modification into the six user
+interface toolkits we support across the major desktop operating
+systems.
+
+The architecture to accomplish this is logically separated into three
+layers, which can be viewed as a stack.  Each layer which sits above a
+lower layer knows how to talk to the layer below it, but the lower
+layer is not aware of the layers above it.  The three layers from
+bottom to top are: backend, artist and scripting.
+
+% Minor point -- this starts talking about the top-level object, the
+% Figure, then goes right to the bottom, the backend, and then back
+% up.  Maybe it should be ordered strictly from top to bottom? Not
+% sure that improves things. - MGD
+
+\begin{aosasect2}{Backend layer}
+
+At the bottom of the stack is the \emph{backend} layer, which provides
+concrete implementations of the abstract interface classes:
+\begin{aosaitemize}
+\item \textbf{FigureCanvas} which encapsulates the concept of
+  a surface to draw onto (e.g. ``the paper'')
+
+\item \textbf{Renderer} which does the drawing (e.g. ``the paintbrush'')
+
+\item \textbf{Event} which handles user inputs such as keyboard and
+  mouse events.
+\end{aosaitemize}
+For a user interface toolkit such as Qt, the Canvas has a concrete
+% TAB: FigureCanvas?
+implementation which knows how to insert itself into a native Qt
+window (\code{QtGui.QMainWindow}), knows how to transfer the
+matplotlib Renderer commands onto the canvas (\code{QtGui.QPainter}),
+and knows how to translate native Qt events into the matplotlib Event
+framework and signal the callback dispatcher to generate the events so
+upstream listeners can handle them.  The abstract base classes reside
+in \code{matplotlib.backend\_bases} and all of the derived classes
+live in dedicated modules like
+\code{matplotlib.backends.backend\_qt4agg}.  For a pure image backend
+dedicated to producing hardcopy output like PDF, PNG, SVG, or PS, the
+% TAB: Do we need all 4 as examples? Maybe one each of raster/vector?
+FigureCanvas implementation might simply set up a file-like object
+into which the default headers, fonts, and macro functions are
+defined, as well as the individual objects (lines, text, rectangles,
+etc) that the Renderer creates.
+
+The job of the Renderer is to provide a low-level drawing interface
+for putting ink onto the canvas.  As mentioned above, the original
+matplotlib application was an ECOG viewer in a Gtk+ application, and
+much of the original design was inspired by the GDK/Gtk+ API available
+at that time.  The original Renderer API was motivated by the GDK
+% TAB: maybe "inspired" instead of "motivated"?
+Drawable interface, which implements such primitive methods as
+\code{draw\_point}, \code{draw\_line}, \code{draw\_rectangle},
+\code{draw\_image}, \code{draw\_polygon}, and \code{draw\_glyphs}.  Each
+additional backend we implemented -- the earliest were the Postscript
+backend and the GD backend -- implemented the GDK Drawable API and
+translated these into native backend dependent drawing commands.  As
+we discuss below, this unnecessarily complicated the implementation of
+new backends with a large proliferation of methods, and this API has
+subsequently been dramatically simplified, with the result that
+porting matplotlib to a new user interface toolkit or file
+specification is comparatively simple.
+
+One of the design decisions that has worked quite well for matplotlib
+is the support for a core pixel based renderer using the C++ template
+library Anti-Grain Geometry or ``agg'' \cite{bib:agg}.  This is a
+high-performance library for rendering anti-aliased 2D graphics which
+produces attractive images.  matplotlib provides support for inserting
+pixel buffers rendered by the agg backend into each user interface
+toolkit we support, so one can get pixel exact graphics across UIs and
+operating systems.  Because the PNG output matplotlib produces also
+uses the agg renderer, the hardcopy is identical to the screen
+display, so what-you-see is what-you-get across UIs, operating systems
+and PNG output.
+
+\end{aosasect2}
+
+\begin{aosasect2}{Artist layer}
+
+The Artist hierarchy is the middle layer of the matplotlib stack, and
+is the place where much of the heavy lifting happens.  Continuing with
+the analogy that the FigureCanvas from the backend is the paper, the
+Artist is the object that knows how to take the Renderer (the
+paintbrush) and put ink on the canvas.  Everything you see in a
+matplotlib Figure is an Artist instance: the title, the lines, the
+tick labels, the images, and so on all correspond to individual Artist
+instances (see Figure \cite{fig.matplotlib.artists_tree}).  The base
+class is \code{matplotlib.artist.Artist} and contains attributes every
+Artist shares: the transformation which translates the artist
+coordinate system to the canvas coordinate system (discussed in more
+detail below), the visibility, the clip box which defines the region
+the artist can paint into, the label, and the interface to handle user
+interaction such as ``picking'', i.e. detecting when a mouse click
+happens over the artist.
+
+\aosafigure{../images/matplotlib/artists_figure.pdf}{}{fig.matplotlib.artists_figure}
+
+\aosafigure{../images/matplotlib/artists_tree.pdf}{The heirarchy of Artist instances used to draw the Figure \cite{fig.matplotlib.artists_figure}}{fig.matplotlib.artists_tree}
+
+The coupling between the Artist hierarchy and the backend happens in
+the draw method.  For example, in the mockup class below where we
+create ``SomeArtist'' which derives from the base class Artist, the
+essential method that SomeArtist must implement is \code{draw} which
+is passed a renderer from the backend.  The Artist doesn't know what
+kind of backend the renderer is going to draw onto, PDF, SVG, Gtk+
+DrawingArea, etc., but it does know the Renderer API and will call the
+appropriate method (\code{draw\_text}, \code{draw\_path}).  Since the
+Renderer has a pointer to its canvas and knows how to paint onto it,
+the draw method transfers the abstract representation of the Artist to
+colors in a pixel buffer, or paths in an SVG file, etc\dots{}.
+
+\begin{verbatim}
+class SomeArtist(Artist):
+    'an example Artist that implements the draw method'
+
+    def draw(self, renderer):
+        'call the approriate renderer methods to paint self onto canvas'
+        if not self.get_visible():  return
+
+        # create some objects and use renderer to draw self here
+        renderer.draw_path(graphics_context, path, transform)
+
+\end{verbatim}
+% TAB: http://www.python.org/dev/peps/pep-0257/ suggests
+% triple-doublequote for all docstrings, i.e. """the docstring"""
+% Not sure what the matpotlib standard is, but a quick glance shows
+% both 'single line' and """single and multiple line""" docstrings.
+% I think example code like this ought to conform to the community-accepted
+% standards, as it's not even inline with the actual source code (where
+% consistency is prefered over general convention).
+
+There are two types of Artists in the hierarchy. \emph{Primitive}
+artists represent the kinds of objects you see in a plot:
+\code{Line2D}, \code{Rectangle}, \code{Circle}, \code{Text}.
+\emph{Composite} artists are collections of Artists such as the
+\code{Axis}, \code{Tick}, \code{Axes}, and \code{Figure}.  Each
+composite artist may contain other composite artists as well as
+primitive artists, e.g. the Figure contains one or more composite Axes
+and the background of the Figure is a primitive Rectangle.
+
+The most important composite artist is the Axes, which is where most
+of the matplotlib API plotting methods are defined.  Not only does the
+% TAB: singular "the Axes" sounds funny,
+% but I'm not sure it can be improved.
+Axes contain most of the graphical elements that make up the
+background of the plot -- the ticks, the axis lines, the grid, the
+patch of color which is the plot background -- it contains numerous
+helper methods that create primitive artists and add them to the Axes
+instance.  For example, the table below shows a small sampling of Axes
+methods that create plot objects and store them in the Axes instance.
+
+\begin{table}[t]\scriptsize\centering
+\begin{tabular}[c] { | l | l | l | }
+\hline
+\textbf{method}                     & \textbf{creates}                                                  & \textbf{stored in}            \\
+\hline
+\code{Axes.imshow}         &  one or more \code{matplotlib.image.AxesImage}s          & \code{Axes.images}   \\
+\code{Axes.hist}           &  many \code{matplotlib.patch.Rectangle}s                 & \code{Axes.patches}  \\
+\code{Axes.plot}           &  one or more \code{matplotlib.lines.Line2D}s             & \code{Axes.lines}\\
+\hline
+
+\end{tabular}
+\caption{Sampling of \code{Axes} methods and the \code{Artist} instances they create}
+\label{tbl.matplotlib.axmethods}
+\end{table}
+
+
+\end{aosasect2}
+
+Here is a simple python script illustrating the architecture above
+which defines the backend, connects a Figure to it, uses the array
+library numpy to create 10,000 normally distributed random numbers,
+and plots a histogram of these.
+
+\begin{verbatim}
+# import the FigureCanvas from the backend of your choice
+# and attach the Figure artist to it
+from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
+from matplotlib.figure import Figure
+fig = Figure()
+canvas = FigureCanvas(fig)
+
+# import the numpy library to generate the random numbers
+import numpy as np
+x = np.random.randn(10000)
+
+# now use a figure method to create an Axes artist; the Axes artist is
+# added automatically to the figure container fig.axes
+ax = fig.add_subplot(111)
+
+# call the Axes method hist to generate the histogram; hist creates a
+# sequence of Rectangle artists for each histogram bar and adds them
+# to the Axes container
+ax.hist(x, 100)
+
+# decorate the figure with a title and save it
+ax.set_title(r'Normal distribution with $\mu=0,\ \sigma=1$')
+fig.savefig('matplotlib_histogram.png')
+\end{verbatim}
+% TAB: We pass the Figure to the FigureCanvas, but never refer
+% to the canvas again. Is this worth explaining? (does the FigureCanvas
+% talk to/set itself as the canvas for the Figure to use behind the
+% scenes? Why not just pass the canvas to the Figure directly?)
+% TAB: It's not clear what the 111 argument to add_subplot means.
+% http://matplotlib.sourceforge.net/api/figure_api.html#matplotlib.figure.Figure.add_subplo
+% doesn't actually describe it either.
+% Same goes for the 100 argument to hist, except that
+% http://matplotlib.sourceforge.net/api/axes_api.html#matplotlib.axes.Axes.hist
+% clearly describes what it means. :)
+
+\begin{aosasect2}{Scripting layer (pyplot)}
+
+This API script above works great, especially for programmers, and is
+% TAB: "is great" or "works (very?) well". "Works great" isn't. ;)
+usually the appropriate programming paradigm when writing a web
+application server, a UI application, or perhaps a production quality
+% TAB: "production quality" for what?
+script.  For everyday purposes, particularly for interactive
+exploratory work by bench scientists who are not professional
+programmers, it is a bit syntactically heavy.  Most special purpose
+languages for data analysis and visualization provide a lighter
+scripting interface to simplify common tasks, and matplotlib does so
+as well in its \code{matplotlib.pyplot} interface.  The same code
+above, using pyplot, reads
+
+\begin{verbatim}
+import matplotlib.pyplot as plt
+import numpy as np
+
+x = np.random.randn(10000)
+plt.hist(x, 100)
+plt.title(r'Normal distribution with $\mu=0,\ \sigma=1$')
+plt.savefig('matplotlib_histogram.png')
+plt.show()
+\end{verbatim}
+
+\aosafigure{../images/matplotlib/histogram_demo.pdf}{A histogram created using pyplot}{fig.matplotlib.hist}[scale=0.3]
+
+
+pyplot is a stateful interface that handles much of the boilerplate
+for creating figures and axes and connecting them to the backend of
+your choice, and maintains a module level internal data structures
+representing the current figure and axes to which to direct plotting
+commands.
+
+Let's dissect the important lines in the script to see how this
+internal state is managed.
+
+\begin{aosaitemize}
+
+  \item \code{import matplotlib.pyplot as plt}: When the pyplot module
+    is loaded, it parses a local configuration file in which the user
+    states, among many other things, their preference for a default
+    backend.  This might be a user interface backend like ``QtAgg'',
+    in which case the script above will import the GUI framework and
+    launch a Qt window with the plot embedded, or it might be a pure
+    image backend like ``Agg'' in which case the script will generate
+    the hard-copy output and exit.
+
+  \item \code{plt.hist(x, 100)}: This is the first plotting command
+    in the script.  pyplot will check its internal data structures to
+    see if there is a current Figure instance.  If so, it will extract
+    the current Axes and direct plotting to the \code{Axes.hist} API
+    call.  In this case, there is none, so it will create a Figure and
+    Axes, set these as current, and direct the plotting to
+    \code{Axes.hist}.
+
+  \item \verb+plt.title(r'Normal distribution with $\mu=0,\ \sigma=1$')+:
+    As above, pyplot will look to see if there
+    is a current Figure and Axes.  Finding that there is, it will not
+    create new instances but will direct the call to the existing Axes
+    instance method \code{Axes.set\_title}
+
+  \item \code{plt.show()}: This will force the Figure to render, and
+    if the user has indicated a default GUI backend in their
+    configuration file, will start the GUI mainloop and raise any
+    figures created to the screen.
+
+\end{aosaitemize}
+% TAB: Somewhat odd that the example sets a PNG filename, but
+% the item list talks about QtAgg. It might be more helpful if
+% the two agree? Even with a comment in the source saying that
+% the "savefig() call is optional, depending on the backend".
+% Is there a way to choose the backend outside of the config
+% file? Maybe that's not interesting for this discussion. :)
+
+A somewhat stripped down and simplified version of matplotlib's core
+line plotting function \code{matplotlib.pyplot.plot} is shown below to
+illustrate the core functionality (all other pyplot scripting
+interface functions follow the same design).
+
+% TAB: I was confused at first because of "matplotlib's core line
+% plotting function". This is pyplot's plotting function: a wrapper
+% over the core one. Somehow I thought the example below was skipping
+% a lot of layers of abstraction. Saying that the pyplot implementations
+% are just wrappers around the actual plotting functions is probably
+% enough. The code example is fine, just needs a clear context set first.
+
+\begin{verbatim}
+
+@autogen_docstring(Axes.plot)
+def plot(*args, **kwargs):
+    ax = gca()
+
+    ret = ax.plot(*args, **kwargs)
+    draw_if_interactive()
+
+    return ret
+
+\end{verbatim}
+
+The python decorator \code{@autogen\_docstring(Axes.plot)} extracts
+the documentation string from the corresponding API method and
+attaches a properly formatted version to the \code{pyplot.plot}
+method; we have a dedicated module \code{matplotlib.docstring} to
+handle this doc string magic.  The \code{*args} and \code{**kwargs} in
+the documentation signature are special conventions in python to mean:
+all the arguments and keyword arguments that are passed to the method.
+This allows us to forward them on to the corresponding API method.
+The call \code{ax = gca()} invokes the stateful machinery to ``get
+% TAB: What's the scope of the statefulness? Per Python instance?
+% Per pyplot instance?
+current Axes'', and will create the Figure and Axes if necessary.  The
+call to \code{ret = ax.plot(*args, **kwargs)} forwards the function
+call and its arguments to the appropriate Axes method, and stores the
+return value to be returned later.  Thus the pyplot interface is a
+% TAB: Is it worth talking about exception handling here, too?
+% What should draw_if_interactive do if plot() raised something?
+fairly thin wrapper around the core Artist API which tries to avoid as
+much code duplication as possible by exposing the API function, call
+signature and docstring in the scripting interface with a minimal
+amount of boilerplate code.
+
+\end{aosasect2}
+
+
+\end{aosasect1}
+
+
+\begin{aosasect1}{Backend refactoring}
+
+% Do we want to move this section to the backend layer section above? - MGD
+
+Over time, the drawing API of the output backends grew a large number
+of methods, including:
+
+\begin{verbatim}
+draw_arc, draw_image, draw_line_collection, draw_line, draw_lines, draw_point,
+draw_quad_mesh, draw_polygon_collection, draw_polygon, draw_rectangle,
+draw_regpoly_collection
+\end{verbatim}
+
+Unfortunately, having more backend methods meant it took much longer
+to write a new backend, and as new features were added to the core,
+updating the existing backends took considerable work.  Since each of
+the backends was implemented by a single developer who was expert in a
+particular output file format, it sometimes took a long time for a new
+feature to arrive in all of the backends, causing confusion for the
+user about which features were available where.
+
+For matplotlib 0.98, the backends were refactored to require only the
+minimum necessary functionality in the backends themselves, with
+everything else moved into the core.  The number of required methods
+in the backend API was reduced considerably, to only:
+
+\begin{aosaitemize}
+
+  \item \code{draw\_path}: Draw compound polygons, made up of line and
+    B\'ezier segments
+
+  \item \code{draw\_image}: Draw raster images
+
+  \item \code{draw\_text}: Draw text with the given font properties
+
+  \item \code{get\_text\_width\_height\_descent}: Given a string of
+    text, return its metrics
+
+\end{aosaitemize}
+
+It is possible to implement all of the drawing necessary for a new
+backend using only these methods.\footnote{We could also go one step
+  further and draw text using \code{draw\_path}, removing the need for
+  the \code{draw\_text} method, but the current implementation doesn't
+  do this.}  This is useful for getting a new backend up-and-running
+% TAB: but a backend could choose to implement draw_text, yes? It would
+% be silly to not let a PDF contain actual text.
+more easily.  However, in some cases, a backend may want to override
+the behavior of the core in order to create more efficient output.
+For example, when drawing markers, it is more space-efficient to write
+the marker's shape only once to the file, and then repeat it as a
+``stamp'' everywhere it is used.  In that case, the backend can
+implement a \code{draw\_markers} method.  If it is implemented, the
+% TAB: like this. :)
+backend writes out the marker shape once and then writes out a much
+shorter command to reuse it in a number of locations.  If it is not
+implemented, the core simply draws the marker multiple times using
+multiple calls to \code{draw\_path}.
+
+The full list of optional backend API methods is:
+% TAB: The full list of required and optional backend methods is a lot
+% shorter than the old list. How does that work?
+
+\begin{aosaitemize}
+
+  \item \code{draw\_markers}: Draw a set of markers
+
+  \item \code{draw\_path\_collection}: Draw a collection of paths
+
+  \item \code{draw\_quad\_mesh}: Draw a quadrilateral mesh
+
+\end{aosaitemize}
+
+\end{aosasect1}
+
+\begin{aosasect1}{Transforms}
+
+% Do we want to move this section to the artist layer section above? -
+% MGD
+
+matplotlib spends a lot of time transforming coordinates from one
+system to another.  These coordinate systems include:
+
+\begin{aosaitemize}
+\item \textbf{data:} the original raw data values
+
+\item \textbf{axes:} the space defined by a particular axes rectangle
+
+\item \textbf{figure:} the space containing the entire figure
+
+\item \textbf{display:} the physical coordinates used in the output
+  (e.g. points in Postscript, pixels in PNG)
+\end{aosaitemize}
+
+Every Artist has a transformation node that knows how to transform
+from one coordinate system to another.  These transformation nodes are
+connected together in a directed graph, where each node is dependent
+on its parent.  By following the edges to the root of the graph,
+coordinates in data space can be transformed all the way to
+coordinates in the final output file.  Most transformations are
+invertable, as well.  This makes it possible to click on an element of
+the plot and return its coordinate in data space.  The transform graph
+sets up dependencies between transformation nodes: when a parent
+node's transformation changes, such as when a figure window is
+resized, its children are all invalidated since any artists using
+those nodes must be recomputed.  This invalidation approach prevents
+unnecessary recomputations of all of the artists in the figure and
+contributes to better interactive performance.
+% TAB: This reads like: "We don't have to invalidate everything. For
+% example, we can invalidate everything, and avoid unnecessary
+% computations." I'm pretty sure that's not what was meant. :)
+% Maybe use a different example than resizing a whole window?
+
+Transform nodes may be either simple affine transformations (scale,
+translation, rotation and skew) or non-affine transformations.
+% TAB: Maybe a quick 1-sentence definition of "affine transformation"?
+% Feels like it's getting defined in terms of itself here.
+Two-dimensional affine transformations are represented using a $3
+\times 3$ affine transformation matrix.  2D dimensional coordinates
+% TAB: "2D dimensional" is redundant. "2D coordinates" or "2
+% dimensional coordinates".
+can then easily be transformed by simply multiplying them by the
+transformation matrix.  Affine transformations also have the useful
+property that they can be composed together using matrix
+multiplication.  This means that to perform a series of affine
+transformations, the transformation matrices can first be multiplied
+together only once, and the resulting matrix can be used to transform
+coordinates.  matplotlib's transformation framework automatically
+composes (freezes) affine transformation matrices together before
+transforming coordinates to reduce the amount of computation.  Having
+fast affine transformations is important, because it makes interactive
+panning and zooming in a GUI window much more performant.
+
+The non-affine transformations in matplotlib are defined using Python
+functions, so they are truly arbitrary.  Within the matplotlib core,
+non-affine transformations are used for logarithmic scaling, polar
+plots and geographical projections (Figure
+\ref{fig.matplotlib.nonaffine}).  These non-affine transformations can
+be freely mixed with affine ones in the transformation graph.
+matplotlib will automatically simplify the affine portion and only
+fall back to the arbitrary functions for the non-affine portion.
+
+\aosafigure{../images/matplotlib/nonaffine_transforms.pdf}{The same data, plotted with three different non-affine transformations: logarithmic, polar and lambert.}{fig.matplotlib.nonaffine}
+
+From these simple pieces, matplotlib can do some pretty advanced
+things.  A blended transformation is a special transformation node
+that uses one transformation for the $x$ axis and another for the $y$
+axis.  This is of course only possible if the given transformations
+are ``separable'', meaning the $x$ and $y$ coordinates are
+independent.  This is used, for example, to plot logarithmic plots
+% TAB: How do blended transformations mix with affine transforms?
+% Or are they strictly non-affine?
+where either or both of the $x$ and $y$ axes may have a logarithmic
+scale.  Having a blended transformation node allows of the available
+scales to be combined in arbitrary ways.  Another thing the transform
+% TAB: "allows of the available" doesn't make sense.
+graph allows is the sharing of axes.  It is possible to ``link'' the
+limits of one plot to another and ensure that when one is panned or
+zoomed, the other is updated to match.  In this case, the same
+% TAB: Would doing so stick a non-affine transform in the middle of
+% other affine ones? Is that a performance problem in practice, or is
+% it helpful enough to have a single affine/nonaffine/affine sandwich?
+transform node is simply shared between two axes, which may even be on
+two different figures.  Figure \ref{fig.matplotlib.transformtree}
+shows an example transformation graph with some of these advanced
+features at work.  axes1 has a logarithmic $x$ axis.  axes1 and axes2
+share the same $y$ axis.
+
+\aosafigure{../images/matplotlib/transform_tree.pdf}{An example transformation graph.}{fig.matplotlib.transformtree}
+
+\end{aosasect1}
+
+\begin{aosasect1}{The polyline pipeline}
+
+When plotting line plots, there are a number of steps that are
+performed to get from the raw data to the line drawn on screen.  In an
+earlier version of matplotlib, all of these steps were tangled
+together.  These have since been refactored so they are discrete steps
+in a ``path conversion'' pipeline.  This allows each backend to choose
+which parts of the pipeline to perform, since some are only useful in
+certain contexts.
+
+\begin{aosaenumerate}
+
+\item \textbf{Transformation:} The coordinates are transformed from data
+  coordinates to figure coordinates.  If this is a purely affine
+  transformation, as described above, this is as simple as a matrix
+  multiplication.  If this involves arbitrary transformations,
+  transformation functions are called to transform the coordinates
+  into figure space.
+
+\item \textbf{Handle missing data:} The data array may have portions
+  where the data is missing or invalid.  The user may indicate this
+  either by setting those values to NaN, or using Numpy masked arrays.
+  Vector output formats, such as PDF, do not have a concept of missing
+  data when plotting a polyline, so this step of the pipeline must
+  skip over the missing data segments using MOVETO commands.
+% TAB: How would a raster format handle it?
+
+\item \textbf{Clipping:} Points outside of the boundaries of the
+  figure can increase the file size with invisible points, and, more
+  importantly, very large or very small coordinate values can cause
+  overflow errors in the rendering of the output file, resulting in
+  completely garbled output.  This step of the pipeline clips the
+% TAB: Run-on sentence?
+  polyline as it exits and enter the edges of the figure to prevent
+  both of these problems.
+% TAB: Does it clip above and below as well? What about a polar plot?
+
+\item \textbf{Snapping:} Perfectly vertical and horizontal lines can
+  look fuzzy due to antialiasing when their centers are not aligned to
+  the center of a pixel (see Figure
+  \ref{fig.matplotlib.pixelsnapping}).  The snapping step of the
+  pipeline first determines whether the entire polyline is made up of
+  horizontal and vertical segments (such as an axis-aligned
+  rectangle), and if so, rounds each resulting vertex to the nearest
+  pixel center.  This step is only used for raster backends, since
+  vector backends should continue to have exact data points.  Some
+  renderers of vector file formats, such as Adobe Acrobat, perform
+  pixel snapping when viewed on screen.
+
+\item \textbf{Simplification:} When plotting really dense plots, many
+  of the points on the line may not actually be visible.  Including
+  these points in the plot increases file size, and may even hit
+  limits on the number of points allowed in the file format.
+  Therefore, any points that lie exactly on the line between their two
+  neighboring points are removed (see Figure
+  \ref{fig.matplotlib.pathsimplification}).
+% TAB: Are exactly colinear points that common? How is colinearity
+% calculated with floats? Is there a threshold? If so, how might it
+% vary with the scale of the figure?
+
+\end{aosaenumerate}
+
+\aosafigure{../images/matplotlib/pixel_snapping.pdf}{A close-up view
+  of the effect of pixel snapping.  On the left, without pixel
+  snapping; on the right, with pixel
+  snapping.}{fig.matplotlib.pixelsnapping}
+
+\aosafigure{../images/matplotlib/path_simplification.pdf}{The figure
+  on the right is a close-up of the figure on the left.  The circled
+  vertex is automatically removed by the path simplification
+  algorithm, since it lies exactly on the line between its neighboring
+  vertices, and therefore is
+  redundant.}{fig.matplotlib.pathsimplification}
+% TAB: I'm guessing that if the plot includes glyphs at each data point
+% those glyphs are not elided. Are they drawn separately from the line?
+% Is that what draw_markers is for?
+
+\end{aosasect1}
+
+\begin{aosasect1}{Math text}
+
+Since the users of matplotlib are often scientists, it is useful to
+put richly-formatted math expressions directly on the plot.  Perhaps
+the most widely-used syntax for math expressions is from Donald
+Knuth's \TeX\ typesetting system.  It's a way to turn input in a
+plain-text language like this \verb+\sqrt{\frac{\delta x}{\delta y}}+
+into a properly formatted math expression like this
+$\sqrt{\frac{\delta x}{\delta y}}$.
+
+matplotlib provides two ways to render math expressions.  The first,
+usetex, uses a full copy of \TeX\ on the user's machine to render the
+math expression.  \TeX\ outputs the location of the characters and
+lines in the expression in its native DVI (device independent) format.
+matplotlib then parses the DVI file and converts it to a set of
+drawing commands that one of its output backends then renders directly
+into the plot.  This approach handles a great deal of obscure math
+syntax, however, it requires that the user have a full and working
+installation of \TeX.  Therefore, matplotlib also includes its own
+internal math rendering engine, called mathtext.
+
+mathtext is a direct port of the most important subset of the
+\TeX\ math-rendering engine, glued onto a much simpler parser written
+using the pyparsing \cite{bib:pyparsing} parsing framework.  This port
+was written based on the published copy of the \TeX\ source code
+\cite{bib:texprogram}.  The simple parser builds up a tree of boxes
+and glue (in \TeX\ nomenclature), that are then layed out by the
+layout engine.  This makes for a nice, lightweight way to render most
+math expressions.
+% TAB: How was the subset chosen?
+
+\end{aosasect1}
+
+\begin{aosasect1}{Regression testing}
+
+  Historically, matplotlib has not had a large number of low-level
+  unit tests.  Occasionally, if a serious bug was reported, a script
+  to reproduce it would be added to a directory of such files in the
+  source tree.  The lack of automated tests created all of the usual
+  problems, most importantly regressions in features that previously
+  worked.  (We probably don't need to sell you on the idea that
+  automated testing is a good thing.)  Of course, with so much code
+  and so many configuration options and interchangable pieces
+  (e.g. the backends), it is arguable that low-level unit tests alone
+  would never be enough: instead we've followed the belief that it is
+  most cost-effective to test all of the pieces working together in
+  concert.
+
+To this end, as a first effort, a script was written that generated a
+number of plots exercising various features of matplotlib,
+particularly those that were hard to get right.  This made it a little
+easier to detect when a new change caused inadvertent breakage, but
+the correctness of the images still needed to be verified by hand.
+Since this required a lot of manual effort, it wasn't done very often.
+
+As a second pass, this general approach was automated.  The current
+matplotlib testing script generates a number of plots, but instead of
+requiring manual intervention, those plots are automatically compared
+to baseline images.  All of the tests are run inside of the nose
+testing framework, which makes it very easy to generate a report of
+which tests failed.
+
+Complicating matters is that the image comparison can not be exact.
+% TAB: "cannot"
+Subtle changes in versions of the Freetype font-rendering library can
+make the output of text slightly different across different machines.
+% TAB: Hello sub-pixel antialiasing?
+These differences are not enough to be considered ``wrong'', but are
+enough to throw off any exact bit-for-bit comparison.  Instead, the
+testing framework computes the histogram of both images, and
+calculates the root-mean-square of their difference.  If that
+difference is greater than a given threshold, the images are
+considered too different and the comparison test fails.  When tests
+fail, difference images are generated which show where on the plot a
+change has occurred (see Figure \ref{fig.matplotlib.regression}).  The
+developer can then decide whether the failure is due to an intentional
+change, and update the baseline image to match the new image, or
+decide the image is in fact incorrect and track down and fix the bug
+that caused the change.
+
+\aosafigure{../images/matplotlib/regression.pdf}{A regression test
+  image comparison.  From left to right: a) The expected image, b) the
+  result of broken legend placement, c) the difference between the two
+  images.}{fig.matplotlib.regression}
+
+Since different backends can contribute different bugs, the testing
+framework tests multiple backends for each plot: PNG, PDF and SVG.
+For the vector formats, we don't compare the vector information
+directly, since there are multiple ways to represent something that
+has the same end result when rasterized.  The vector backends should
+be free to change the specifics of their output to increase efficiency
+etc. without causing all of the tests to fail.  Therefore, for vector
+backends, the testing framework first renders the file to a raster
+using an external tool (ghostscript for PDF and Inkscape for SVG) and
+then uses those rasters for comparison.
+
+Using this approach, we were able to bootstrap a reasonably effective
+testing framework from scratch more easily than if we had gone on to
+write many low-level unit tests.  Still, it is not perfect.  The code
+coverage of the tests is not very complete.  It takes a long time to
+run all of the tests.\footnote{Around 15 minutes on a 2.33 GHz Intel
+  Core 2 E6550.}  We have a buildbot instance running for a while
+% TAB: "buildbot instance running for a while" doesn't quite parse.
+so developers do not always have to run the tests on their own
+machines.  Therefore, some regressions do still fall through the
+cracks, but overall the quality of the releases has improved
+considerably since the testing framework was implemented.
+
+\end{aosasect1}
+
+\begin{aosasect1}{Lessons learned}
+
+One of the important lessons from the development of matplotlib is, as
+Le Corbusier said, ``Good architects borrow''.  The early authors of
+matplotlib were largely scientists, self-taught programmers trying to
+get their work done, not formally trained computer scientists.  Thus
+we did not get the internal design right on the first try.  The
+decision to implement a user-facing scripting layer largely compatible
+with the Matlab\texttrademark API benefited the project in three
+significant ways: it provided a time-tested interface to create and
+customize graphics, it made for an easy transition to matplotlib from
+the large base of Matlab users, and most importantly for us in the
+context of matplotlib architecture, it freed developers to refactor
+the internal object oriented API several times with a minimal impact
+to most users because the scripting interface was unchanged.  While we
+have had API users (as opposed to scripting users) from the outset,
+and most matplotlib developers are API users, most of these are power
+users able to adapt to API changes, and the scripting users can write
+code once and pretty much assume it is stable for all subsequent
+releases.
+% TAB: Run-on sentence?
+
+For the internal drawing API, while we did borrow from GDK, we did not
+spend enough effort determining whether this was the right drawing
+API, and had to expend considerable effort subsequently after many
+backends were written around this API to extend the functionality
+around a simpler and more flexible drawing API.  We would have been
+well-served by adopting the PDF drawing specification, which itself
+was developed from decades of experience Adobe had with its Postscript
+specification, which would give us mostly out of the box compatibility
+with PDF itself, the Quartz Core Graphics framework, and the Enthought
+Enable Kiva drawing kit.
+% TAB: Can you include at least a link to what this interface
+% would have looked like? Is it as simple as the Drawable interface
+% described above? My gut says that PDF wouldn't be any easier to
+% work with than GDK; I'd love to be proven wrong!
+
+One of the curses of Python is that it is such an easy and expressive
+language that developers often find it easier to re-invent and
+re-implement functionality that exists in other packages rather than
+work to integrate code from other packages.  Matplotlib could have
+benefited in early development from expending more effort on
+integration with existing efforts and APIs rather than reinventing
+functionality.  Integration with existing functionality is, however, a
+double edge sword, as it can make builds and releases more complex and
+reduce flexibility in internal development.
+% TAB: Any examples of Python libraries that could have been leveraged?
+% What would you look for/look to avoid in a library-to-leverage?
+
+\end{aosasect1}
+\end{aosachapter}
+
+
+% TAB: Honestly, formally trained Computer Scientists aren't necesarily
+% good at designing software. That's more Engineering than Science.
+% Except that the field is still so young, so it's more like Art.
+% My experience as a professional software developer is that the most
+% important characteristic of a successful software architecture is
+% flexibility, i.e. the ability to change along the axes required of it.
+% (yes, it's a bit circular; we learn as we go along, and hope our
+% instincts get better with experience)
+% Borrowing from a successful thing is an awesome way to import
+% at least some experience. :)
+% Providing the Matlab-like scripting layer gave you great
+% flexibility to change the underlying architecture while not
+% interrupting those who would be least comfortable with the change.
+% Technology isn't usually the hardest part of tech: people and the
+% social aspects are.
+% (I should go write a blog post now...)  ;)

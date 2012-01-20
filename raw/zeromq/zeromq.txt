@@ -1,3 +1,11 @@
+<!-- CM: Overall comments:
+- I'm uneasy about some of the hard lines drawn, such as "make libraries instead of applications", or "don't use global variables in libraries". It's hard to believe that it's really so simple.
+- But I do like having the "lesson learned" at the end of each section.
+- Overall, felt well-structured and very lucid. I was able to follow the chapter with my scant background in networks.
+-->
+
+<!-- MS: Well, that are my opinions. People are free to disagree with me, but there's little I can do about the text. -->
+
 + Introduction
 
 ØMQ is a messaging system, or a "message-oriented middleware" if you will. It's used in environments as diverse as financial services, game development, embedded ssytems, academic research and aerospace.
@@ -14,13 +22,13 @@ During the third year the focus was mainly on the usability and on the flattenin
 
 Hopefully, this chapter will give an insight into how the three goals above translated into the internal architecture of ØMQ and provide some tips for those who are struggling with the same problems.
 
-Since then ØMQ project have outgrown its codebase. There is an initiative to standardise the wire protocols it uses. There is an experimental implementation of ØMQ-like messaging system inside Linux kernel etc.
+Since its third year ØMQ project have outgrown its codebase. There is an initiative to standardise the wire protocols it uses. There is an experimental implementation of ØMQ-like messaging system inside Linux kernel etc.
 
 These topics are not covered in this book. However, you can check online resources [[footnote]]http://www.250bpm.com/concepts[[/footnote]][[footnote]]http://groups.google.com/group/sp-discuss-group[[/footnote]][[footnote]]http://www.250bpm.com/hits[[/footnote]] for further details.
 
 + Application vs. Library
 
-ØMQ is a library, not a messaging server. It took us several years working on AMQP protocol, writing a reference implementation for it and participating in several large-scale projects heavily based on messaging technology to realise that there's something wrong with the classic client/server model of smart messaging server (broker) and dumb messaging clients.
+ØMQ is a library, not a messaging server. It took us several years working on AMQP protocol, a finacial industry's attempt to standardise the wire protocol for business messaging, writing a reference implementation for it and participating in several large-scale projects heavily based on messaging technology to realise that there's something wrong with the classic client/server model of smart messaging server (broker) and dumb messaging clients.
 
 Our primary concern at the time was with the performance: If there's a server in the middle, each message has to pass the network twice (from the sender to the broker and from the broker to the receiver) inducing a penalty in terms of both latency and throughput. Moreover, if all the messages are passed through the broker, at some point it's bound to become the bottleneck.
 
@@ -38,13 +46,11 @@ The lesson learned is that when starting a new project, you should opt for the l
 
 + Global State
 
-Global variables don't play well with libraries. Library may be loaded several times to the process (see picture below) but even then there's only a single set of global variables.
+Global variables don't play well with libraries. Library may be loaded several times to the process (see picture below) but even then there's only a single set of global variables. The picture below shows ØMQ library being used from two different and independent libraries. The application then uses both of those libraries:
 
 [[=image aosa1.png]]
 
-When such a situation occurs, both instances of the library access same variables resulting in race conditions, strange failures and undefined behaviour.
-
-Think of a function that initialises the library: It's called twice, once from libA, second time from libB. The second call encounters the library in the initialised state. Duplicate initialisation is likely to lead to resource leaks. Thus we need a global flag to signalise the condition. However, both initialisation calls can access the flag at the same time. Consequently, we have to place it into a critical section. The problems span on and on. Every piece of global data is a source of possible contention between two instances of the library.
+When such a situation occurs, both instances of ØMQ access same variables resulting in race conditions, strange failures and undefined behaviour.
 
 To prevent this problem ØMQ library has no global variables. Instead, user of the library is responsible for creating the global state explicitly. Object containing the global state is called "context". While from the users perspective context looks more or less like a pool of worker threads, from ØMQ's perspective it's just an object to store any global state that we happen to need. When you look at the picture above, libA would have its own context and libB would have its own as well. There would be no way for one of them to break or subvert the other one.
 
@@ -66,15 +72,15 @@ Imagine A sending messages to B. Here's the sequence diagram:
 
 [[=image aosa8.png]]
 
-The overall time of the test is 6 seconds. There are 5 messages passed.
-
-The throughput is 0.83 msgs/sec (6/5) and the latency is 1.2 sec (5/6), right?
+The overall time of the test is 6 seconds. There are 5 messages passed. The throughput is 0.83 msgs/sec (6/5) and the latency is 1.2 sec (5/6), right?
 
 Have a look at the diagram again. It takes a different time for each message to get from A to B: 2 sec, 2.5 sec, 3 sec, 3.5 sec, 4 sec. The average is 3 seconds, which is pretty far away from our original estimate of 1.2 second.
 
+This example clearly shows the misconeceptions people are intuitively inclined to make about performance metrics.
+
 Now have a look at the throughput. The overall time of test is 6 seconds. However, at A it takes just 2 seconds to send all the messages. From A's perspective the throughput is 2.5 msgs/sec (5/2). At B it takes 4 seconds to receive all messages. So, from B's perspective the throughput is 1.25 msgs/sec (5/4). None of these numbers matches our original estimate of 1.2 msgs/sec.
 
-To make the long story short: Latency and throughput are two different metrics. Latency can be measured only between two different points in the system. There's no such thing as latency at point A. Each message has its own latency. You can average the latencies of multiple messages, however, there's no such thing as latency of a stream of messages. Throughput, on the other hand, can be measured only at a single point of the system. There's a throughput at the sender, there's a throughput at the receiver, there's a throughput at any intermediate point between the two, however, there's no such thing as overall throughput of the whole system. Throughput make sense only for a set of messages. There's no such thing as throughput of a single message.
+To make the long story short, latency and throughput are two different metrics. That much is obvious. The important thing is to understand the difference between the two and their mutual relationship: Latency can be measured only between two different points in the system. There's no such thing as latency at point A. Each message has its own latency. You can average the latencies of multiple messages, however, there's no such thing as latency of a stream of messages. Throughput, on the other hand, can be measured only at a single point of the system. There's a throughput at the sender, there's a throughput at the receiver, there's a throughput at any intermediate point between the two, however, there's no such thing as overall throughput of the whole system. Throughput make sense only for a set of messages. There's no such thing as throughput of a single message.
 
 As for the relationship between throughput and latency it turns out there really is a relationship, however, the formula involves integrals and we won't discuss it here. For more information check literature on queueing theory[[footnote]]http://en.wikipedia.org/wiki/Queueing_theory[[/footnote]].
 
@@ -290,4 +296,5 @@ Lesson learned: When solving a complex and multi-faceted problem it may turn out
 
 + Conclusion
 
-This text doesn't cover the architecture of ØMQ in full. It deliberately omits issues like the protocol design or integration with the OS kernel. Instead it focuses on problems that are interesting from software architecture point of view and we hope that designers and programmers in open source community will find it useful.
+As our world becomes populated with lots of small computers connected via Internet, the mobile phones, the RFID readers, tablets and laptops, GPS devices etc. the problem of distributed computing ceases to be a domain of academic science and becomes a common everyday problem for every developer to tackle. The solutions, unfortunately, are mostly domain-specific hacks. This article summarises our experience with building a large-scale distributed system in a systemic manner. It focuses on problems that are interesting from software architecture point of view and we hope that designers and programmers in open source community will find it useful.
+
