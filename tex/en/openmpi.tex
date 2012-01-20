@@ -757,12 +757,28 @@ for each of the three Ethernet devices.
 Composing BTL modules this way allows the upper-layer MPI progression
 engine both to treat all network devices equally, and to perform
 user-level channel bonding.  
+
+For example, consider sending a large message across the three-device
+configuration described above.  Assume that each of the three Ethernet
+devices can be used to reach the intended receiver (reachability is
+determined by TCP networks and netmasks, and some well-defined
+heuristics).
 %
-In the above three-device example, a sender will split large messages
-into multiple fragments, and distribute them across all TCP BTL
-modules, representing Ethernet devices that can be used to reach the
-peer to which the message is being sent (reachability is determined by
-TCP networks and netmasks, and some well-defined heuristics).
+In this case, the sender will split the large message into multiple
+fragments.  Each fragment will be assigned---in a round-robin
+fashion---to one of the TCP BTL modules (each module will therefore be
+assigned roughly one third of the fragments).
+%
+Each module then sends its fragments over its corresponding Ethernet
+device.
+
+This may seem like a complex scheme, but it is surprisingly
+effective.  
+%
+By pipelining the sends of a large message across the multiple TCP BTL
+modules, typical HPC environments (e.g., where each Ethernet device is
+on a separate PCI bus) can sustain nearly maximum bandwith speeds
+across multiple Ethernet devices.
 
 \end{aosasect2}
 
