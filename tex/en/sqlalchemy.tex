@@ -93,7 +93,7 @@ of any number of possible object abstraction layers that could be built upon
 the Core, and many developers and organizations build their applications on top
 of the Core directly.
 
-\aosafigure{../images/sqlalchemy/layers.pdf}{SQLAlchemy layer diagram}{fig.sqlalchemy.layers}
+\aosafigure[325pt]{../images/sqlalchemy/layers.pdf}{SQLAlchemy layer diagram}{fig.sqlalchemy.layers}
 
 The Core/ORM separation has always been SQLAlchemy's most defining feature,
 and it has both pros and cons.   The explicit Core present in SQLAlchemy
@@ -151,7 +151,7 @@ specific DBAPI implementations as well as the underlying database engines.
 
 The interface described by the DBAPI is extremely simple. Its core components
 are the DBAPI module itself, the connection object, and the cursor
-object — a ``cursor'' in database parlance represents the context of a
+object---a ``cursor'' in database parlance represents the context of a
 particular statement and its associated results.  A simple interaction with these
 objects to connect and retrieve data from a database is as follows:
 
@@ -222,10 +222,10 @@ point of execution throughout the lifespan of the \code{ResultProxy}. It
 may also be available as a specific subclass for some DBAPI/database
 combinations.
 
-\aosafigref{fig.sqlalchemy.engine} illustrates all of these objects and their relationship to each
+\aosafigref{fig.sqlalchemy.engine} illustrates all of these objects and their relationships to each
 other as well as to the DBAPI components.
 
-\aosafigure{../images/sqlalchemy/engine.pdf}{Engine, Connection, ResultProxy API}{fig.sqlalchemy.engine}
+\aosafigure[350pt]{../images/sqlalchemy/engine.pdf}{Engine, Connection, ResultProxy API}{fig.sqlalchemy.engine}
 
 \end{aosasect2}
 
@@ -299,8 +299,8 @@ the structure of the database independently of a user's model class
 definition.  The rationale behind the division of schema definition from object
 relational mapping is that the relational schema can be designed
 unambiguously in terms of the relational database, including platform-specific
-details if necessary, without being muddled by object-relational concepts -
-these remain a separate concern. Being independent of the ORM component also
+details if necessary, without being muddled by object-relational concepts---these 
+remain a separate concern. Being independent of the ORM component also
 means the schema description system is just as useful for any other kind of
 object-relational system which may be built on the Core.
 
@@ -328,7 +328,7 @@ the \code{sqlalchemy.sql.expression} package, serving not just as schema-level
 constructs, but also as core syntactical units in the SQL expression language.
 This relationship is illustrated in \aosafigref{fig.sqlalchemy.crossover}.
 
-\aosafigure{../images/sqlalchemy/table-column-crossover.pdf}{The dual lives of Table and Column}{fig.sqlalchemy.crossover}
+\aosafigure[400pt]{../images/sqlalchemy/table-column-crossover.pdf}{The dual lives of Table and Column}{fig.sqlalchemy.crossover}
 
 In \aosafigref{fig.sqlalchemy.crossover} we can see that \code{Table} and \code{Column} inherit from the SQL world as
 specific forms of ``things you can select from'', known as a \code{FromClause},
@@ -394,7 +394,7 @@ Note the representation of the literal value \code{'ed'} is contained
 within the \code{\_BindParam} construct, thus causing it to be rendered
 as a bound parameter marker in the SQL string using a question mark.
 
-\aosafigure{../images/sqlalchemy/example-expression.pdf}{Example expression tree}{fig.sqlalchemy.tree}
+\aosafigure[350pt]{../images/sqlalchemy/example-expression.pdf}{Example expression tree}{fig.sqlalchemy.tree}
 
 From the tree diagram, one can see that a simple descending traversal through
 the nodes can quickly create a rendered SQL statement, as we'll see in greater
@@ -402,7 +402,12 @@ detail in the section on statement compilation.
 
 \end{aosasect2}
 
+\newpage
+
 \begin{aosasect2}{Python Operator Approach}
+
+%% The following line is widowed from the code below it, so am adding
+%% a page break before this sect2 -- ARB Jan 20
 
 In SQLAlchemy, an expression like this:
 
@@ -410,7 +415,7 @@ In SQLAlchemy, an expression like this:
 column('a') == 2
 \end{verbatim}
 
-produces neither \code{True} nor \code{False}, but instead a SQL expression
+\noindent produces neither \code{True} nor \code{False}, but instead a SQL expression
 construct. The key to this is to overload operators using the Python special
 operator functions: e.g., methods like \code{\_\_eq\_\_}, \code{\_\_ne\_\_},
 \code{\_\_le\_\_}, \code{\_\_lt\_\_}, \code{\_\_add\_\_}, \code{\_\_mul\_\_}. Column-oriented
@@ -430,7 +435,7 @@ _BinaryExpression(
 )
 \end{verbatim}
 
-The \code{eq} construct is actually a function originating from the Python
+\noindent The \code{eq} construct is actually a function originating from the Python
 \code{operator} built-in.  Representing operators as an object (i.e.,
 \code{operator.eq}) rather than a string (i.e., \code{=}) allows the string
 representation to be defined at statement compilation time, when database
@@ -453,7 +458,7 @@ to define SQL language aspects specific to the target database.
 \aosafigref{fig.sqlalchemy.compiler} provides an overview of this class hierarchy with respect to the
 PostgreSQL dialect.
 
-\aosafigure[250pt]{../images/sqlalchemy/compiler-hierarchy.pdf}{Compiler hierarchy, including PostgreSQL-specific implementation}{fig.sqlalchemy.compiler}
+\aosafigure[275pt]{../images/sqlalchemy/compiler-hierarchy.pdf}{Compiler hierarchy, including PostgreSQL-specific implementation}{fig.sqlalchemy.compiler}
 
 The \code{Compiled} subclasses define a series of \emph{visit} methods, each
 one referred to by a particular subclass of \code{ClauseElement}.  A hierarchy
@@ -500,6 +505,8 @@ individually-defined entities which are joined together via a function called
 \code{mapper}. Once \code{mapper} has been applied to a user-defined class, the
 class takes on new attributes that correspond to columns in the table:
 
+\newpage %% to un-widow the first line - ARB Jan 20
+
 \begin{verbatim}
 class User(object):
     pass
@@ -510,7 +517,7 @@ mapper(User, user_table)
 User.id
 \end{verbatim}
 
-\code{mapper} can also affix other kinds of attributes to the class, including
+\noindent \code{mapper} can also affix other kinds of attributes to the class, including
 attributes which correspond to references to other kinds of objects, as well
 as arbitrary SQL expressions.  The process of affixing arbitrary attributes to
 a class is known in the Python world as ``monkeypatching''; however, since we are
@@ -612,7 +619,7 @@ mapper(User, user_table, properties={
 
 When the mapping is complete, the structure of objects related to the class is detailed in \aosafigref{fig.sqlalchemy.anatomy}.
 
-\aosafigure{../images/sqlalchemy/mapper-components.pdf}{Anatomy of a mapping}{fig.sqlalchemy.anatomy}
+\aosafigure[400pt]{../images/sqlalchemy/mapper-components.pdf}{Anatomy of a mapping}{fig.sqlalchemy.anatomy}
 
 The figure illustrates a SQLAlchemy mapping defined as two separate layers
 of interaction between the user-defined class and the table metadata to which
@@ -636,8 +643,8 @@ representation of a particular attribute.  The most common variants of \code{Map
 a mapped column or SQL expression, and \code{RelationshipProperty}, representing a linkage to another mapper.
 
 \code{MapperProperty} delegates attribute loading behavior---including
-how the attribute renders in a SQL statement and how it is populated from a result row---
-to a \code{LoaderStrategy} object, of which
+how the attribute renders in a SQL statement and how it is populated from a result row---to 
+a \code{LoaderStrategy} object, of which
 there are several varieties.   Different \code{LoaderStrategies} determine if the loading behavior of
 an attribute is \emph{deferred}, \emph{eager}, or \emph{immediate}.  A default version is chosen at mapper
 configuration time, with the option to use an alternate strategy at query time.
@@ -715,7 +722,7 @@ scenario, illustrating their connection to a rendered SQL statement which occurs
 method of \code{Query}.  It also shows generation of \emph{row population} functions which receive result rows
 and populate individual object attributes, a process which occurs within the \code{instances} method of \code{Query}.
 
-\aosafigure{../images/sqlalchemy/query-loading.pdf}{Traversal of loader strategies including a joined eager load}{fig.sqlalchemy.loading}
+\aosafigure[400pt]{../images/sqlalchemy/query-loading.pdf}{Traversal of loader strategies including a joined eager load}{fig.sqlalchemy.loading}
 
 SQLAlchemy's early approach to populating results used a traditional traversal
 of fixed object methods associated with each strategy to receive each row and
@@ -859,8 +866,8 @@ attribute) on behalf of the \code{AttributeImpl} objects associated with the cla
 The \code{IdentityMap} is a mapping of database identities to \code{InstanceState} objects,
 for those objects which have a database identity, which are referred to as \emph{persistent}.
 The default implementation of \code{IdentityMap} works with \code{InstanceState} to self-manage
-its size by removing user-mapped instances once all strong references to them have been removed---
-in this way it works in the same way as Python's \code{WeakValueDictionary}.  The \code{Session}
+its size by removing user-mapped instances once all strong references to them have been removed---in 
+this way it works in the same way as Python's \code{WeakValueDictionary}.  The \code{Session}
 protects the set of all objects marked as \emph{dirty} or \emph{deleted}, as well as pending objects
 marked \emph{new}, from garbage collection, by creating strong
 references to those objects with pending changes.  All strong references are then discarded after the flush.
@@ -874,7 +881,7 @@ and the \code{\_\_dict\_\_} associated with the object are compared to produce
 the set of net changes on each object.
 
 In the case of collections, a separate \code{collections} package coordinates
-with the \code{InstrumentedAttribute}/\code{InstanceState}
+with the \linebreak \code{InstrumentedAttribute}/\code{InstanceState}
 system to maintain a collection of net changes to a particular mapped collection of
 objects.   Common Python classes such as \code{set}, \code{list} and \code{dict} are subclassed
 before use and augmented with history-tracking mutator methods.   The collection system
@@ -966,7 +973,7 @@ behavior of the topological sort.
 The unit of work constructs a partial ordering based on those persistence commands which must precede others.   The
 commands are then topologically sorted and invoked in order.
 The determination of which commands precede which is derived primarily from the
-presence of a \code{relationship} that bridges two \code{Mapper} objects — generally, one \code{Mapper}
+presence of a \code{relationship} that bridges two \code{Mapper} objects---generally, one \code{Mapper}
 is considered to be dependent on the other, as the \code{relationship} implies that one \code{Mapper}
 has a foreign key dependency on the other.  Similar rules exist for many-to-many association tables, but here
 we focus on the case of one-to-many/many-to-one relationships.   Foreign key dependencies are resolved
@@ -990,7 +997,7 @@ a set of \code{User} objects, then a set of \code{Address} objects, where an
 intermediary step copies newly generated \code{User} primary key values into the
 \code{user\_id} foreign key column of each \code{Address} object.
 
-\aosafigure[250pt]{../images/sqlalchemy/uow-mapper-buckets.pdf}{Organizing objects by mapper}{fig.sqlalchemy.organizing}
+\aosafigure[225pt]{../images/sqlalchemy/uow-mapper-buckets.pdf}{Organizing objects by mapper}{fig.sqlalchemy.organizing}
 
 In the per-mapper sorting situation, any number of \code{User} and \code{Address} objects can be flushed
 with no impact on the complexity of steps or how many ``dependencies'' must be considered.
@@ -1015,7 +1022,7 @@ per-mapper buckets.   \aosafigref{fig.sqlalchemy.cyclesteps} illustrates
 the bucket of \code{User} objects being broken up into individual per-object commands,
 resulting from the addition of a new \code{relationship} from \code{User} to itself called \code{contact}.
 
-\aosafigure[250pt]{../images/sqlalchemy/uow-element-buckets.pdf}{Organizing reference cycles into individual steps}{fig.sqlalchemy.cyclesteps}
+\aosafigure[225pt]{../images/sqlalchemy/uow-element-buckets.pdf}{Organizing reference cycles into individual steps}{fig.sqlalchemy.cyclesteps}
 
 The rationale behind the bucket structure is that it allows batching of common
 statements as much as possible, both reducing the number of steps required in
