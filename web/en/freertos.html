@@ -25,9 +25,9 @@
     </div>
 
 <p>
-FreeRTOS (prounounced as "free-arr-toss") is an open source real-time operating 
-system (RTOS) for embedded systems. FreeRTOS supports many different architectures 
-and compiler toolchains, and is designed to be "small, simple, and easy to use."
+FreeRTOS (prounounced "free-arr-toss") is an open source real-time operating system 
+(RTOS) for embedded systems. FreeRTOS supports many different architectures and 
+compiler toolchains, and is designed to be "small, simple, and easy to use."
 <sup class="footnote"><a href="#footnote-1">1</a></sup>
 </p>
 
@@ -167,7 +167,7 @@ code in the next section.
 <h3>999.2.2. Hardware Considerations</h3>
 
 <p>
-If the hardware-independent FreeRTOS code doesn't talk to the hardware, then who 
+If the hardware-independent FreeRTOS code doesn't talk to the hardware, then what 
 does?  Why, the hardware-dependent FreeRTOS code, of course!
 </p>
 
@@ -774,36 +774,30 @@ small, like in the simple integer example in the previous paragraph, or the user
 queue pointers to the items if the items are large. Note that in both cases FreeRTOS 
 does a deep copy: if the user chooses to queue copies of items then the queue stores 
 a deep copy of each item; if the user chooses to queue pointers then the queue stores 
-a deep copy of the pointer. The queue doesn't care what data you're storing in it, it 
-just needs to know the data's size.
+a deep copy of the pointer. Of course, if the user stores pointers in the queue then 
+the user is responsible for managing the memory associated with the pointers. The 
+queue doesn't care what data you're storing in it, it just needs to know the data's 
+size.
 </p>
 
 <p>
 FreeRTOS supports blocking and non-blocking queue insertions and removals.
 Non-blocking operations return immediately with a "did the queue insertion work?" or 
 "did the queue removal work?" status. Blocking operations are specified with a 
-timeout. A task can block indefinitely or for a given amount of time.
+timeout. A task can block indefinitely or for a limited amount of time.
 </p>
 
 <p>
-The queue insertion and removal algorithms are basically big infinite loops that 
-continue trying to insert or remove until the queue is ready or a blocking timeout 
-expires. Non-blocking queue insertion and removal algorithms check if the queue is 
-ready for the insert/remove, do the insert/remove if so, and then return "success" or 
-"failure" immediately.
-</p>
-
-<p>
-In the "block indefinitely" case an insert operation blocks until there is space in 
-the queue, and a remove operation blocks until there is at least one item in the 
-queue.  The insert/remove operation then does the actual insert/remove and returns 
-with a "passed" status.
-</p>
-
-<p>
-The "block for a given amount of time" case is similar, except that if an 
-insert/remove operation isn't possible within the given amount of time the 
-insert/remove returns with a "failed" status.
+A blocked task, call it Task A, will remain blocked as long as its insert/remove
+operation cannot complete and its timeout (if any) has not expired.  If an interrupt
+or another task modifies the queue so that Task A's operation could complete, Task A
+will be unblocked. If Task A's queue operation is still possible by the time Task A 
+actually runs then Task A will complete its queue operation and return "success." 
+However, by the time Task A actually runs it is possible that a higher priority task 
+or interrupt has performed yet another operation on the queue that prevents Task A 
+from performing its operation. In this case Task A will check its timeout and either 
+resume blocking if the timeout hasn't expired, or return with a queue operation 
+"failed" status.
 </p>
 
 <p>
@@ -825,24 +819,6 @@ Similarly, <code>xTasksWaitingToReceive</code> keeps track of tasks that are blo
 on removing from a queue.  Each time a new element is inserted into a queue the 
 <code>xTasksWaitingToReceive</code> list is checked. If a task is waiting in that 
 list the task is unblocked.
-</p>
-
-<p>
-A blocked task, call it Task A, will remain blocked as long as its insert/remove
-operation cannot complete and its timeout (if any) has not expired.  If an interrupt
-or another task modifies the queue so that Task A's operation could complete, Task A
-will be unblocked. If Task A's queue operation is still possible by the time Task A 
-actually runs Task A will complete its queue operation and return "success." However, 
-by the time Task A actually runs it is possible that a higher priority task or 
-interrupt has performed yet another operation on the queue that prevents Task A from 
-performing its operation. At this point Task A will check its timeout and either 
-resume blocking if the timeout hasn't expired, or return with a queue operation 
-"failed" status.
-</p>
-
-<!-- EDIT: RB: I realise
-that is probably not a particularly clear explanation.  Let me know if you would
-like further explanation - I could provide a sequence diagram  to make it clearer. --> 
 </p>
 
 <div class="subsect">
@@ -902,9 +878,9 @@ article.
 <h4>999.6.2.2. Implementation</h4>
 
 <p>
-FreeRTOS implements an N-element semaphore as queue that can hold N items. It doesn't 
-store any actual data for the queue items; the semaphore just cares how many queue 
-entries are currently occupied, which is tracked in the queue's 
+FreeRTOS implements an N-element semaphore as a queue that can hold N items. It 
+doesn't store any actual data for the queue items; the semaphore just cares how many 
+queue entries are currently occupied, which is tracked in the queue's 
 <code>uxMessagesWaiting</code> field.  It's doing "pure synchronization" as the 
 FreeRTOS header file <code>semphr.h</code> calls it.  Therefore the queue has a item 
 size of zero bytes (<code>uxItemSize == 0</code>).  Each semaphore access increments 
@@ -965,12 +941,12 @@ available again.
 <h2>999.7. Conclusion</h2>
 
 <p>
-We've completed our look at the FreeRTOS's main data structures and algorithms.
+We've completed our look at the FreeRTOS architecture.
 </p>
 
 <p>
-Hopefully you have a good feel for how FreeRTOS tasks run and communicate. And if 
-you've never looked at any OS's internals before you now have a basic idea of how 
+Hopefully you now have a good feel for how FreeRTOS's tasks run and communicate. And 
+if you've never looked at any OS's internals before you now have a basic idea of how 
 they work.
 </p>
 
