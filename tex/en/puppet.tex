@@ -1,4 +1,4 @@
-\begin{aosachapter}{Puppet}{s:puppet}{Luke Kanies, Nigel Kersten, and James Turnbull}
+\begin{aosachapter}{Puppet}{s:puppet}{Luke Kanies}
 
 % FIXME: diagrams need to be inserted
 
@@ -11,7 +11,7 @@ by Puppet Labs, which also founded the project.  Puppet can manage as
 few as 2 machines and as many as 50,000, on teams with one system
 administrator or hundreds.
 
-Puppet is a tool for configuring and maintaining your computers: In
+Puppet is a tool for configuring and maintaining your computers; in
 its simple configuration language, you explain to Puppet how you want
 your machines configured, and it changes them as needed to match your
 specification.  As you change that specification over time---such as
@@ -20,19 +20,19 @@ will automatically update your machines to match.  If they are already
 configured as desired, then Puppet does nothing.
 
 In general, Puppet does everything it can to use existing system
-features to do its work; e.g., on Red Hat it will yum for packages and
-init.d for services, but on OS X it will use dmg for packages and
-launchd for services.  One of the guiding goals in Puppet is to have
+features to do its work; e.g., on Red Hat it will \code{yum} for packages and
+\code{init.d} for services, but on OS X it will use \code{dmg} for packages and
+\code{launchd} for services.  One of the guiding goals in Puppet is to have
 the work it does make sense whether you are looking at Puppet code or
 the system itself, so following system standards is critical.
 
 Puppet comes from multiple traditions of other tools.  In the open
-source world, it is most influenced by Cfengine, which was the first
+source world, it is most influenced by CFEngine, which was the first
 open source general-purpose configuration tool, and ISconf, whose use
-of 'make' for all work inspired the focus on explicit dependencies
+of \code{make} for all work inspired the focus on explicit dependencies
 throughout the system.  In the commercial world, Puppet is a response
 to BladeLogic and Opsware (both since acquired by larger companies),
-each of which was successful in the market when Puppet was begun but
+each of which was successful in the market when Puppet was begun, but
 each of which was focused on selling to executives at large companies
 rather than building great tools directly for system administrators.
 Puppet is meant to solve similar problems to these tools, but it is
@@ -57,74 +57,74 @@ class ssh {
 }
 \end{verbatim}
 
-This makes sure the package is installed, the file is in place, and
-the service is running.  Note that we’ve specified dependencies
+\noindent This makes sure the package is installed, the file is in place, and
+the service is running.  Note that we've specified dependencies
 between the resources, so that we always perform any work in the right
 order.  This class could then be associated with any host to apply
-this configuration on it.  Notice that the building blocks of a Puppet
-configuration are structured objects, in this case 'package', 'file',
-and 'service'.  We call these objects 'resources' in Puppet, and
+this configuration to it.  Notice that the building blocks of a Puppet
+configuration are structured objects, in this case \code{package}, \code{file},
+and \code{service}.  We call these objects \emph{resources} in Puppet, and
 everything in a Puppet configuration comes down to these resources and
 the dependencies between them.
 
 A normal Puppet site will have tens or even hundreds of these code
-snippets, which we call 'classes'; we store these classes on disk in
-files called 'manifests', and collect them in related groups called
-'modules'. For instance, you might have an 'ssh' module with this
-'ssh' class plus any other related classes, along with modules for
-'mysql', 'apache', and 'sudo'.
+snippets, which we call \emph{classes}; we store these classes on disk in
+files called \code{manifests}, and collect them in related groups called
+\emph{modules}. For instance, you might have an \code{ssh} module with this
+\code{ssh} class plus any other related classes, along with modules for
+\code{mysql}, \code{apache}, and \code{sudo}.
 
 Most Puppet interactions are via the command line or long-running HTTP
-services, but there are graphical interfaces for some things, such as
+services, but there are graphical interfaces for some things such as
 report processing.  Puppet Labs also produces commercial products
 around Puppet, which tend more toward graphical web-based interfaces.
 
 Puppet's first prototype was written in the summer of 2004, and it was
 turned into a full-time focus in February of 2005.  It was initially
-designed and written by Luke Kanies, a sysadmin who had done a lot of
+designed and written by Luke Kanies, a sysadmin who had a lot of
 experience writing small tools, but none writing tools greater than
 10,000 lines of code.  In essence, Luke learned to be a programmer
-while writing Puppet, and that shows in both positive and negative
-ways in its architecture.
+while writing Puppet, and that shows in its architecture in both positive and negative
+ways.
 
-Puppet was first and foremost built to be a tool for sysadmins, to be
-something that made their lives easier and allowed them to work
+Puppet was first and foremost built to be a tool for sysadmins, to 
+make their lives easier and allow them to work
 faster, more efficiently, and with fewer errors.  The first key
 innovation meant to deliver on this was a set of primitives, which we
-call 'resources', that would both be portable across most operating
+call \emph{resources}, that would both be portable across most operating
 systems and also abstract away implementation detail, allowing the
 user to focus on outcomes rather than how to achieve them.  This set
 of primitives was implemented in Puppet's Resource Abstraction Layer.
 
 Puppet resources must be unique on a given host.  You can only have
-one package named 'ssh', one service named 'sshd', and one file named
-'/etc/ssh/sshd\_config'.  This prevents different parts of your
+one package named ``ssh', one service named ``sshd', and one file named
+``/etc/ssh/sshd\_config''.  This prevents different parts of your
 configurations from conflicting with each other, and you find out
 about those conflicts very early in the configuration process.  We
 refer to these resources by their type and title; e.g., Package[ssh]
-and Service[sshd].  You have a package and a service with the same
-name, because they are different types, but not two packages or
-services.
+and Service[sshd].  You can have a package and a service with the same
+name because they are different types, but not two packages or
+services with the same name.
 
 The second key innovation in Puppet provides the ability to directly
 specify dependencies between resources.  Previous tools focused on the
 individual work to be done, rather than how the various bits of work
-were related, and Puppet was the first tool to explicitly say that
-dependencies were a first-class part of your configurations and must
-be modeled that way.  It built a graph of resources and their
+were related; Puppet was the first tool to explicitly say that
+dependencies are a first-class part of your configurations and must
+be modeled that way.  It builds a graph of resources and their
 dependencies as one of the core data types, and essentially everything
-in Puppet hangs off of this graph (which is called a Catalog, in
-Puppet parlance) and its vertices and edges.
+in Puppet hangs off of this graph (called a Catalog)
+and its vertices and edges.
 
 The last major component in Puppet is its configuration language.
 This language is declarative, and is meant to be more configuration
 data than full programming---it most resembles Nagios's configuration
-format, but is also heavily influenced by Cfengine and ruby.
+format, but is also heavily influenced by CFEngine and Ruby.
 
 Beyond the functional components, Puppet has had two guiding
-principles throughout its development: It should be as simple as
+principles throughout its development: it should be as simple as
 possible, always preferring usability even at the expense of
-capability, and it should be built as a framework first and
+capability; and it should be built as a framework first and
 application second, so that others could build their own applications
 on Puppet's internals as desired.  It was understood that Puppet's
 framework needed a killer application to be adopted widely, but the
@@ -134,11 +134,11 @@ behind it.
 
 When Puppet's prototype was first built, Luke was essentially a decent
 Perl programmer with a lot of shell experience and some C experience,
-mostly consisting of working in Cfengine.  The odd bit is he had
+mostly working in CFEngine.  The odd thing is he had
 experience building parsers for simple languages, having built two as
-part of smaller tools and also having rewritten Cfengine's parser from
+part of smaller tools and also having rewritten CFEngine's parser from
 scratch in an effort to make it more maintainable (this code was never
-submitted back, because of small incompatibilities).
+submitted to the project, because of small incompatibilities).
 
 A dynamic language was easily decided on for Puppet's implementation,
 based on much higher developer productivity and time to market, but
@@ -147,9 +147,9 @@ went nowhere, so other languages were sought for experimentation.
 Python was tried, but Luke found the language quite at odds with how
 he thought about the world.  Based on what amounted to a rumor of
 utility heard from a friend, Luke tried Ruby, and in four hours had
-built a usable prototype.  When Puppet became a full time effort in
-2005, Ruby was a complete unknown, so the decision to stick with it
-was a big risk, but again, programmer productivity was deemed the
+built a usable prototype.  When Puppet became a full-time effort in
+2005 Ruby was a complete unknown, so the decision to stick with it
+was a big risk, but again programmer productivity was deemed the
 primary driver in language choice.  The major distinguishing feature
 in Ruby, at least as opposed to Perl, was how easy it was to build
 non-hierarchical class relationships, but it also mapped very well to
@@ -177,10 +177,10 @@ mode in what amounts to a client/server configuration, by pulling all
 configuration files to each client and having it parse them directly.
 This section will focus on the client/server mode, because it's more
 easily understood as separate components, but keep in mind that this
-is all true of the serverless mode, also.
+is all true of the serverless mode, too.
 
 One of the defining choices in Puppet's application architecture is
-that the clients should not get access to raw Puppet modules; instead,
+that clients should not get access to raw Puppet modules; instead,
 they get a configuration compiled just for them.  This provides
 multiple benefits: First, you follow the principle of least privilege,
 in that each host only knows exactly what it needs to know (how it
@@ -188,7 +188,7 @@ should be configured), but it does not know how any other servers are
 configured.  Second, you can completely separate the rights needed to
 compile a configuration (which might include access to central data
 stores) from the need to apply that configuration.  Third, you can run
-hosts in a disconnected mode, where they repeatedly apply a
+hosts in a disconnected mode where they repeatedly apply a
 configuration with no contact to a central server, which means you
 remain in compliance even if the server is down or the client is
 disconnected (such as would be the case in a mobile installation, or
@@ -220,26 +220,26 @@ configuration.
 Beyond the components that go into this workflow, which we'll address
 next, there are many data types that Puppet uses for internal
 communication. These data types are critical, because they're how all
-communication is done, and they're public types and any other tools
+communication is done and they're public types which any other tools
 can consume or produce.
 
-The most most important data types are:
+The most important data types are:
 
-\begin{aosaitemize}
+\begin{aosadescription}
 
-\item Facts: System data collected on each machine and used to compile
-  configurations
+\item{Facts:} System data collected on each machine and used to compile
+  configurations.
 
-\item Manifest: Files containing Puppet code, generally organized into
-  collections called 'modules'
+\item{Manifest:} Files containing Puppet code, generally organized into
+  collections called ``modules''.
 
-\item Catalog: A graph of a given host's resources to be managed and
-  the dependencies between them
+\item{Catalog:} A graph of a given host's resources to be managed and
+  the dependencies between them.
 
-\item Report: The collection of all events generated during
-  application of a given Catalog
+\item{Report:} The collection of all events generated during
+  application of a given Catalog.
 
-\end{aosaitemize}
+\end{aosadescription}
 
 Beyond Facts, Manifests, Catalogs, and Reports, Puppet supports data
 types for files, certificates (which it uses for authentication), and
@@ -251,10 +251,10 @@ others.
 
 \begin{aosasect2}{Agent}
 
-The first component you encounter in a Puppet run is the agent
+The first component encountered in a Puppet run is the \code{agent}
 process.  This was traditionally a separate executable called
-'puppetd', but in 2.6 we reduced down to one executable, so now this
-is invoked with 'puppet agent', akin to how 'git' works.  The agent
+\code{puppetd}, but in version 2.6 we reduced down to one executable so now it
+is invoked with \code{puppet agent}, akin to how Git works.  The agent
 has little functionality of its own; it is primarily configuration and
 code that implements the client-side aspects of the above-described
 workflow.
@@ -263,10 +263,10 @@ workflow.
 
 \begin{aosasect2}{Facter}
 
-The first component after the agent is an external tool called Facter,
+The next component after the agent is an external tool called Facter,
 which is a very simple tool used to discover information about the
 host it is running on.  This is data like the operating system, IP
-address, and host name, but Facter is also easily extensible, so many
+address, and host name, but Facter is easily extensible so many
 organizations add their own plugins to discover custom data.  The
 agent sends the data discovered by Facter to the server, at which
 point it takes over the workflow.
@@ -284,12 +284,12 @@ Dashboard or Foreman, or integration with existing data stores, such
 as LDAP.  The purpose of the ENC is to specify what functional classes
 a given host belongs to, and what parameters should be used to
 configure those classes.  For example, a given host might be in the
-'debian' and 'webserver' classes, and have the parameter 'datacenter'
-set to 'atlanta'.
+\code{debian} and \code{webserver} classes, and have the parameter \code{datacenter}
+set to \code{atlanta}.
 
-Note that as of Puppet 2.7, the ENC is not a required component.  You
+Note that as of Puppet 2.7, the ENC is not a required component; users
 can instead directly specify node configurations in Puppet code.
-Support for an ENC was added about 2 years after Puppet was launched,
+Support for an ENC was added about 2 years after Puppet was launched
 because we realized that classifying hosts is fundamentally different
 than configuring them, and it made more sense to split these problems
 into separate tools than to extend the language to support both
@@ -299,7 +299,7 @@ a sufficiently useful one that that requirement will not be a burden).
 
 Once the server receives classification information from the ENC and
 system information from Facter (via the agent), it bundles all of the
-information into a 'Node' object and passes it on to the Compiler.
+information into a Node object and passes it on to the Compiler.
 
 \end{aosasect2}
 
@@ -307,14 +307,14 @@ information into a 'Node' object and passes it on to the Compiler.
 
 As mentioned above, Puppet has a custom language built for specifying
 system configurations.  Its compiler is really three chunks: A
-YACC-style parser generator and a customer lexer; a group of classes
+Yacc-style parser generator and a customer lexer; a group of classes
 used to create our Abstract Syntax Tree (AST); and the Compiler class
 that handles the interactions of all of these classes and also
 functions as the API to this part of the system.
 
 The most complicated thing about the compiler is the fact that most
 Puppet code is lazily loaded on first reference (to reduce both load
-times and irrelevant logging about missing but unneeded dependencies),
+times and irrelevant logging about missing-but-unneeded dependencies),
 which means there aren't really explicit calls to load and parse the
 code.
 
@@ -327,7 +327,7 @@ Puppet was begun, so it uses a custom lexer.
 
 Because we use an AST in Puppet, every statement in the Puppet grammar
 evaluates to an instance of a Puppet AST class (e.g.,
-Puppet::Parser::AST::Statement), rather than taking action directly,
+\code{Puppet::Parser::AST::Statement}), rather than taking action directly,
 and these AST instances are collected into a tree as the grammar tree
 is reduced.  This AST provides a performance benefit when a single
 server is compiling configurations for many different nodes, because
@@ -336,13 +336,11 @@ opportunity to perform some introspection of the AST, which provides
 us information and capability we wouldn't have if parsing operated
 directly.
 
-Very few approachable AST examples were available hen Puppet was
-begun, so there has been a lot of evolution in it, and we've also
+Very few approachable AST examples were available when Puppet was
+begun, so there has been a lot of evolution in it, and we've 
 arrived at what seems a relatively unique formulation.  Rather than
 creating a single AST for the entire configuration, we create many
-small ASTs, keyed off of their name
-
-For instance, this code:
+small ASTs, keyed off their name.  For instance, this code:
 
 \begin{verbatim}
 class ssh {
@@ -350,21 +348,22 @@ class ssh {
 }
 \end{verbatim}
 
-creates a new AST containing a single Puppet::Parser::AST::Resource
-instance, and stores that AST by the name 'ssh' in the hash of all
-classes for this particular environment.  (I've left out detail about
-other constructs akin to classes, but it's unnecessary for this
+\noindent creates a new AST containing a single 
+\code{Puppet::Parser::AST::Resource}
+instance, and stores that AST by the name ``ssh'' in the hash of all
+classes for this particular environment.  (I've left out details about
+other constructs akin to classes, but they are unnecessary for this
 discussion.)
 
 Given the AST and a Node object (from the ENC), the compiler takes the
 classes specified in the node object (if there are any), looks them
-up, and evaluates them.  In the course of this evaluation, the
-compiler is building up a tree of variable scopes---every class gets
-its own scope, which is attached to the creating scope.  This amounts
-to dynamic scoping in Puppet---if one class includes another class,
+up and evaluates them.  In the course of this evaluation, the
+compiler is building up a tree of variable scopes; every class gets
+its own scope which is attached to the creating scope.  This amounts
+to dynamic scoping in Puppet: if one class includes another class,
 then the included class can look up variables directly in the
 including class. This has always been a nightmare, and we have been on
-the path of getting rid of this capability.
+the path to getting rid of this capability.
 
 The Scope tree is temporary and is discarded once compiling is done,
 but the artifact of compiling is also built up gradually over the
@@ -374,16 +373,16 @@ variables, control structures, or function calls survive into the
 catalog; it's plain data, and can be trivially converted to JSON,
 YAML, or just about anything else.
 
-During compilation, we create containment relationships---a class
-'contains' all of the resources that come with that class (e.g., the
-'ssh' package above is 'contained by' the 'ssh' class above).  A class
+During compilation, we create containment relationships; a class
+``contains'' all of the resources that come with that class (e.g., the
+ssh package above is contained by the ssh class).  A class
 might contain a definition, which itself contains either yet more
-definitions or individual resources.  A catalog tends to be a very
-horizontal, disconnected graph---many classes, each no more than a
-couple levels deep.
+definitions, or individual resources.  A catalog tends to be a very
+horizontal, disconnected graph: many classes, each no more than a
+couple of levels deep.
 
 One of the awkward aspects of this graph is that it also contains
-'dependency' relationships, such as a service requiring a package
+``dependency'' relationships, such as a service requiring a package
 (maybe because the package installation actually creates the service),
 but these dependency relationships are actually specified as parameter
 values on the resources, rather than as edges in the structure of the
@@ -402,20 +401,20 @@ separate client and server, the Transaction runs on the client.
 Puppet's transaction class provides the framework for actually
 affecting the system, whereas everything else we've discussed just
 builds up and passes around objects.  Unlike transactions in more
-common systems, such as databases, Puppet transactions do not have
+common systems such as databases, Puppet transactions do not have
 behaviors like atomicity.
 
-The transaction performs a relatively straightforward task: Walk the
+The transaction performs a relatively straightforward task: walk the
 graph in the order specified by the various relationships, and make
 sure each resource is in sync.  As mentioned above, it has to convert
-the graph from containment edges (e.g., Class[ssh] contains
-Package[ssh] and Service[sshd]) to dependency edges (e.g.,
-Service[sshd] depends on Package[ssh]), and then it does a standard
+the graph from containment edges (e.g., \code{Class[ssh]} contains
+\code{Package[ssh]} and \code{Service[sshd]}) to dependency edges (e.g.,
+\code{Service[sshd]} depends on \code{Package[ssh]}), and then it does a standard
 topological sort of the graph, selecting each resource in turn.
 
-For a given resource, we perform a simple three-step process: Retrieve
+For a given resource, we perform a simple three-step process: retrieve
 the current state of that resource, compare it to the desired state,
-and make any changes necessary to fix any discrepancies.  For
+and make any changes necessary to fix discrepancies.  For
 instance, given this code:
 
 \begin{verbatim}
@@ -426,9 +425,9 @@ file { "/etc/motd":
 }
 \end{verbatim}
 
-the transaction checks the content and mode of '/etc/motd', and if
+\noindent the transaction checks the content and mode of /etc/motd, and if
 they don't match the specified state, it will fix either or both of
-them.  If '/etc/motd' is somehow a directory, then it will back up all
+them.  If /etc/motd is somehow a directory, then it will back up all
 of the files in that directory, remove it, and replace it with a file
 that has the appropriate content and mode.
 
@@ -447,8 +446,8 @@ but all of the work is actually done by the Resource Abstraction Layer
 (RAL), which also happens to be the most interesting component in
 Puppet, architecturally speaking.
 
-The RAL was the first component created in Puppet, and other than the
-language it most clearly defines what the user can do.  The job of the
+The RAL was the first component created in Puppet and, other than the
+language, it most clearly defines what the user can do.  The job of the
 RAL is to define what it means to be a resource and how resources can
 get work done on the system, and Puppet's language is specifically
 built to specify resources as modeled by the RAL.  Because of this,
@@ -459,41 +458,41 @@ years (the most crucial being the addition of Providers), but there is
 still a lot of work to do to the RAL in the long term.
 
 In the Compiler subsystem, we model resources and resource types with
-separate classes (named, conveniently, Puppet::Resource and
-Puppet::Resource::Type).  Our goal is to have these classes also form
+separate classes (named, conveniently, \code{Puppet::Resource} and
+\code{Puppet::Resource::Type}).  Our goal is to have these classes also form
 the heart of the RAL, but for now these two behaviors (resource and
-type) are modeled within a single class, Puppet::Type.  The class is
+type) are modeled within a single class, \code{Puppet::Type}.  (The class is
 named poorly because it significantly predates our use of the term
 Resource, and at the time we were directly serializing memory
 structures when communicating between hosts, so it was actually quite
-complicated to change class names.
+complicated to change class names.)
 
-When Puppet::Type was first created, it seemed reasonable to put
+When \code{Puppet::Type} was first created, it seemed reasonable to put
 resource and resource type behaviors in the same class; after all,
 resources are just instances of resource types.  Over time, however,
 it became clear that the relationship between a resource and its
 resource type aren't modeled well in a traditional inheritance
 structure.  Resource types define what parameters a resource can have,
 but not whether it accepts parameters (they all do), for instance.
-Thus, our base class of Puppet::Type has class-level behaviors that
+Thus, our base class of \code{Puppet::Type} has class-level behaviors that
 determine how resource types behave, and instance-level behaviors that
 determine how resource instances behave.  It additionally has the
 responsibility of managing registration and retrieval of resource
-types---if you want the 'user' type, you call
-'Puppet::Type.type(:user)'.
+types; if you want the ``user'' type, you call
+\code{Puppet::Type.type(:user)}.
 
-This mix of behaviors makes Puppet::Type quite difficult to maintain.
+This mix of behaviors makes \code{Puppet::Type} quite difficult to maintain.
 The whole class is less than 2,000 lines of code, but working at three
 levels---resource, resource type, and resource type manager---makes
 it convoluted.  This is obviously why it's a major target for being
 refactored, but it's more plumbing than user-facing, so it's always
 been hard to justify effort here rather than directly in features.
 
-Beyond Puppet::Type, there are two major kinds of classes in the RAL,
+Beyond \code{Puppet::Type}, there are two major kinds of classes in the RAL,
 the most interesting of which are what we call Providers.  When the
 RAL was first developed, each resource type mixed the definition of a
 parameter with code that knew how to manage it.  For instance, we
-would define the 'mode' parameter, and then provide a method that
+would define the ``mode'' parameter, and then provide a method that
 could read the content of a file, and another method that could change
 the content:
 
@@ -511,7 +510,7 @@ Puppet::Type.newtype(:file) do
 end
 \end{verbatim}
 
-This example is simplified considerably (e.g., we use checksums
+\noindent This example is simplified considerably (e.g., we use checksums
 internally, rather than the full content strings), but you get the
 idea.
 
@@ -544,12 +543,12 @@ This is a touch more code in the simplest cases, but is much easier to
 understand and maintain, especially as either the number of properties
 or number of providers increases.
 
-We said at the beginning of this section that the Transaction doesn't
+I said at the beginning of this section that the Transaction doesn't
 actually affect the system directly, and it instead relies on the RAL
 for that.  Now it's clear that it's the providers that do the actual
 work.  In fact, in general the providers are the only part of Puppet
 that actually touch the system.  The transaction asks for a file's
-content, and the provider collects it; the transaction specifies a
+content, and the provider collects it; the transaction specifies that a
 file's content should be changed, and the provider changes it.  Note,
 however, that the provider never decides to affect the system---the
 Transaction owns the decisions, and the provider does the work.  This
@@ -560,7 +559,7 @@ we can largely guarantee the system won't be affected.
 
 The second major class type in the RAL is responsible for the
 parameters themselves.  We actually support three kinds of parameters:
-Metaparameters, which affect all resource types (e.g., whether you
+metaparameters, which affect all resource types (e.g., whether you
 should run in simulation mode); parameters, which are values that
 aren't reflected on disk (e.g., whether you should follow links in
 files); and properties, which model aspects of the resource that you
@@ -578,7 +577,7 @@ As the transaction walks the graph and uses the RAL to change the
 system's configuration, it progressively builds a report.  This report
 largely consists of the events generated by changes to the system.
 These events, in turn, are comprehensive reflections of what work was
-done: They retain a timestamp the resource changed, the previous
+done: they retain a timestamp the resource changed, the previous
 value, the new value, any message generated, and whether the change
 succeeded or failed (or was in simulation mode).
 
@@ -598,35 +597,35 @@ complete, and the agent goes back to sleep or the process just ends.
 
 \begin{aosasect1}{Infrastructure}
 
-Now that we have a thorough understanding of what Puppet does and how
-it does it, it's worth spending a little time on the pieces that don't
+Now that we have a thorough understanding of what Puppet does and how,
+it's worth spending a little time on the pieces that don't
 show up as capabilities but are still critical to getting the job
 done.
 
 \begin{aosasect2}{Plugins}
 
-One of the great things about Puppet is that it is amazingly
+One of the great things about Puppet is that it is very
 extensible.  There are at least 12 different kinds of extensibility in
 Puppet, and most of these are meant to be usable by just about anyone.
 For example, you can create custom plugins for these areas:
 
 \begin{aosaitemize}
 
-\item Resource types and custom providers
+\item resource types and custom providers
 
-\item Report handlers, such as for storing reports in a custom
+\item report handlers, such as for storing reports in a custom
   database
 
 \item Indirector plugins for interacting with existing data stores
 
-\item Facts for discovering extra information about your hosts
+\item facts for discovering extra information about your hosts
 
 \end{aosaitemize}
 
 However, Puppet's distributed nature means that agents need a way to
 retrieve and load new plugins.  Thus, at the start of every Puppet
 run, the first thing we do is download all plugins that the server has
-available.  This might include new resource types or providers, new
+available.  These might include new resource types or providers, new
 facts, or even new report processors.
 
 This makes it possible to heavily upgrade Puppet agents without ever
@@ -639,8 +638,8 @@ highly customized Puppet installations.
 
 You've probably detected by now that we have a tradition of bad class
 names in Puppet, and according to most people, this one takes the
-cake.  The Indirector is a relatively standard inversion of control
-framework with significant extensibility.  Inversion of control
+cake.  The Indirector is a relatively standard Inversion of Control
+framework with significant extensibility.  Inversion of Control
 systems allow you to separate development of functionality from how
 you control which functionality you use.  In Puppet's case, this
 allows us to have many plugins that provide very different
@@ -648,14 +647,14 @@ functionality, such as reaching the compiler via HTTP or loading it
 in-process, and switch between them with a small configuration change
 rather than a code change.  In other words, Puppet's Indirector is
 basically an implementation of a service locator, as described on the
-Wikipedia page for 'inversion of control'.  All of the hand-offs from
+Wikipedia page for ``Inversion of Control'.  All of the hand-offs from
 one class to another go through the Indirector, via a standard
 REST-like interface (e.g., we support find, search, save, and destroy
-as methods), and switch Puppet from serverless to client/server is
-largely a question of configuring the agent to use an http endpoint
+as methods), and switching Puppet from serverless to client/server is
+largely a question of configuring the agent to use an HTTP endpoint
 for retrieving catalogs, rather than using a compiler endpoint.
 
-Because it is an inversion of control framework, where configuration
+Because it is an Inversion of Control framework where configuration
 is stringently separated from the code paths, this class can also be
 difficult to understand, especially when you're debugging why a given
 code path was used.
@@ -667,22 +666,22 @@ code path was used.
 Puppet's prototype was written in the summer of 2004, when the big
 networking question was whether to use XMLRPC or SOAP.  We chose
 XMLRPC, and it worked fine but had most of the problems everyone else
-had: It didn't encourage standard interfaces between components, and
+had: it didn't encourage standard interfaces between components, and
 it tended to get overcomplicated very quickly as a result.  We also
 had significant memory problems, because the encoding needed for
 XMLRPC resulted in every object appearing at least twice in memory,
 which quickly gets expensive for large files.
 
 For our 0.25 release (begun in 2008), we began the process of
-switching all networking to a RESTful model, but we chose a much more
+switching all networking to a REST-like model, but we chose a much more
 complicated route than just changing out the networking.  We developed
 the Indirector as the standard framework for inter-component
 communication, and built REST endpoints as just one option.  It took
 two releases to fully support REST, and we have not quite finished
 converting to using JSON (instead of YAML) for all serialization.  We
-undertook switching to JSON for two major reasons: First, YAML
-processing ruby is painfully slow, and pure-ruby processing of JSON is
-a lot faster.  Second, most of the web seems to be moving to JSON, and
+undertook switching to JSON for two major reasons: first, YAML
+processing Ruby is painfully slow, and pure Ruby processing of JSON is
+a lot faster; second, most of the web seems to be moving to JSON, and
 it tends to be implemented more portably than YAML.  Certainly in the
 case of Puppet, the first use of YAML was not portable across
 languages, and was often not portable across different versions of
@@ -699,7 +698,7 @@ support.
 \begin{aosasect1}{Lessons Learned}
 
 In terms of implementation, we're proudest of the various kinds of
-separation that exist in Puppet: The language is completely separate
+separation that exist in Puppet: the language is completely separate
 from the RAL, the Transaction cannot directly touch the system, and
 the RAL can't decide to do work on its own.  This gives the
 application developer a lot of control over application workflow,
@@ -716,21 +715,27 @@ It's still too difficult to get running, but it's miles easier than
 any of the other tools on the market.  This simplicity comes with a
 lot of engineering costs, especially in the form of maintenance and
 extra design work, but it's worth it to allow users to focus on their
-problems instead of the tool.  Puppet's configurability is a real
+problems instead of the tool.  
+
+Puppet's configurability is a real
 feature, but we took it a bit too far.  There are too many ways you
 can wire Puppet together, and it's too easy to build a workflow on top
 of Puppet that will make you miserable.  One of our major near-term
 goals is to dramatically reduce the knobs you can turn in a Puppet
 configuration, so the user cannot so easily configure it poorly, and
-so we can more easily upgrade it over time without worrying about some
-obscure edge case.
+so we can more easily upgrade it over time without worrying about 
+obscure edge cases.
 
 We also just generally changed too slowly.  There are major refactors
 we've been wanting to do for years but have never quite tackled.  This
 has meant a more stable system for our users in the short term, but
-also a more difficult to maintain system, and one that's much harder
+also a more difficult-to-maintain system, and one that's much harder
 to contribute to.
 
+%% QUERY: Use of "adopted" below - it's not clear from the sentence before
+%% what it is that you adopted; either change the verb to "realized" or 
+%% something similar, or change "that" to something like "a policy of 
+%% expressing our goals as design choices".
 Lastly, it took us too long to realize that our goals of simplicity
 were best expressed in the language of design.  Once we adopted that,
 we acquired a much better framework for making decisions about adding
@@ -747,8 +752,8 @@ changed pretty dramatically since its founding in 2005.  It is a
 framework that can be used for all manner of configuration problems,
 but as an application it is simple and approachable.
 
-Our future opportunity rests on that framework becoming more solid and
-more simple, and that application staying approachable while it adds
+Our future success rests on that framework becoming more solid and
+more simple, and that application staying approachable while it gains
 capability.
 
 \end{aosasect1}
