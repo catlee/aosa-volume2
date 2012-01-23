@@ -13,15 +13,16 @@ GNU Mailman has been around since the early 1990s, when John Viega wrote the
 first version to connect fans with the nascent Dave Matthews Band, who he was
 friends with in college.  This early version came to our attention by the
 mid-90s, when the center of the Python universe had moved from `CWI`_ in the
-Netherlands to `CNRI`_ in Reston, Virginia, USA.  At CNRI, we were running
-various Python-related mailing lists using Majordomo, a Perl-based mailing
-list manager.  Of course, it just wouldn't do for the Python world to be
-maintaining so much Perl code.  More importantly, because of its design, we
-found that modifying Majordomo for our purposes (such as to add minimal
-anti-spam measures) was too difficult.  Ken Manheimer was instrumental in much
-of the early GNU Mailman work, and many excellent developers have contributed
-to Mailman since then.  Today, Mark Sapiro is maintaining the stable 2.1
-branch, while Barry Warsaw concentrates on the new 3.0 version.
+Netherlands to `CNRI`_ in Reston, Virginia, USA.  At CNRI, my PythonLabs
+colleagues and I were running various Python-related mailing lists using
+Majordomo, a Perl-based mailing list manager.  Of course, it just wouldn't do
+for the Python world to be maintaining so much Perl code.  More importantly,
+because of its design, we found that modifying Majordomo for our purposes
+(such as to add minimal anti-spam measures) was too difficult.  Ken Manheimer
+was instrumental in much of the early GNU Mailman work, and many excellent
+developers have contributed to Mailman since then.  Today, Mark Sapiro is
+maintaining the stable 2.1 branch, while Barry Warsaw concentrates on the new
+3.0 version.
 
 Many of the original architectural decisions John made have lived on in the
 code right up until the Mailman 3 branch, and can still be seen in the stable
@@ -203,20 +204,19 @@ Another problem was that each ``config.pck`` file lived in a directory named
 after the mailing list, but Mailman was originally designed without
 consideration for virtual domains.  This lead to a very unfortunate problem
 where two mailing lists could not have the same name in different domains.
-For example, if you owned both the ``example.com`` and ``example.org``
-domains, and you wanted them to act independently and allow for a different
-``support`` mailing list in each, you cannot do this in Mailman 2, without
+For example, if Anne owned both the ``example.com`` and ``example.org``
+domains, wanted them to act independently, and allow for a different
+``support`` mailing list in each, she cannot do this in Mailman 2, without
 modifications to the code, a barely-supported hook, or conventional
 workarounds that forced a different list name under the covers, which is the
 approach used by large sites such as SourceForge.
 
 This has been solved in Mailman 3 by changing the way mailing lists are
 identified, along with moving all the data into a traditional database.  The
-*primary key* for the mailing list table is the *fully qualified list name* or
-as you'd probably recognize it, the posting address.  Thus
-``support@example.com`` and ``support@example.org`` are now completely
-independent rows in the mailing list table, and can easily co-exist in a
-single Mailman system.
+*primary key* for the mailing list table is the *fully qualified list name*,
+commonly known as the posting address.  Thus ``support@example.com`` and
+``support@example.org`` are now completely independent rows in the mailing
+list table, and can easily co-exist in a single Mailman system.
 
 
 Runners
@@ -229,7 +229,7 @@ runners which are simply independent, long-running processes that perform a
 specific task and are managed by a master process.  More on that later.  When
 a runner does manage files in a directory, it is called a *queue runner*.
 
-Mailman is religiously single threaded, even though there is significant
+The Mailman code is strictly single threaded, even though there is significant
 parallelism to exploit.  For example, Mailman can accept messages from the
 mail server at the same time it's sending messages out to recipients, or
 processing bounces, or archiving a message.  Parallelism in Mailman is
@@ -246,16 +246,17 @@ server.
 
 Each queue runner is responsible for a single directory, i.e., its *queue*.
 While the typical Mailman system can perform perfectly well with a single
-process per queue, we use a clever algorithm for allowing parallelism within a
-single queue directory, without requiring any kind of cooperation or locking.
-The secret is in the way we name the files within the queue directory.
+process per queue, Mailman uses a clever algorithm for allowing parallelism
+within a single queue directory, without requiring any kind of cooperation or
+locking.  The secret is in the way Mailman name the files within the queue
+directory.
 
 As mentioned above, every message that flows through the system is also
 accompanied by a metadata dictionary that accumulates state and allows
 independent components of Mailman to communicate with each other.  Python's
 ``pickle`` library is able to serialize and deserialize multiple objects to a
-single file, so we can pickle both the message object tree and metadata
-dictionary into one file.
+single file, so the message object tree and metadata dictionary can both be
+pickled into a single file.
 
 There is a core Mailman class called ``Switchboard`` which provides an
 interface for enqueuing (i.e., writing) and dequeuing (i.e., reading) the
@@ -263,8 +264,8 @@ message object tree and metadata dictionary to files in a specific queue
 directory.  Every queue directory has at least one switchboard instance, and
 every queue runner instance has exactly one switchboard.
 
-Pickle files all end in the ``.pck`` suffix, though you may also see ``.bak``,
-``.tmp``, and ``.psv`` files in a queue.  These are used to ensure the two
+Pickle files all end in the ``.pck`` suffix, although ``.bak``, ``.tmp``, and
+``.psv`` files may also appear in a queue.  These are used to ensure the two
 sacrosanct tenets of Mailman: no file should ever get lost, and no message
 should ever be delivered more than once.  But things usually work properly and
 these files can be pretty rare.
