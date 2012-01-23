@@ -20,20 +20,18 @@ indeed from any other dynamic language implementation.
 
 \begin{aosasect1}{Overview of PyPy}
 
-PyPy, except for a negligible amount of C stubs, is written completely
-in Python. The PyPy source tree contains two major
-components. Firstly, there is the Python interpreter, which is the
-user-facing Python runtime that people using PyPy as a Python
-implementation invoke. The Python interpreter is actually written in a
-subset of Python called Restricted Python (abbreviated RPython). The
-purpose of writing the Python interpreter in RPython is that it can be
-fed to the second major part of PyPy, the RPython translation
-toolchain. The RPython translator takes RPython code and converts it
-to a choosen lower level language, most commonly C
-(\aosafigref{fig:pypy:steps}). This allows PyPy to be a self-hosting
-implementation. As we shall see throughout this chapter, the RPython
-translator also makes PyPy a general dynamic language implementation
-framework.
+PyPy, except for a negligible amount of C stubs, is written completely in
+Python. The PyPy source tree contains two major components. Firstly, there is
+the Python interpreter, which is the user-facing Python runtime that people
+using PyPy as a Python implementation invoke. The Python interpreter is actually
+written in a subset of Python called Restricted Python (abbreviated
+RPython). The purpose of writing the Python interpreter in RPython is that it
+can be fed to the second major part of PyPy, the RPython translation
+toolchain. The RPython translator takes RPython code and converts it to a chosen
+lower level language, most commonly C (\aosafigref{fig:pypy:steps}). This allows
+PyPy to be a self-hosting implementation. As we shall see throughout this
+chapter, the RPython translator also makes PyPy a general dynamic language
+implementation framework.
 
 \aosafigure{../images/pypy/translation_steps.png}{Translation Steps}{fig:pypy:steps}
 
@@ -65,7 +63,7 @@ objects or fetching an attribute is handled completely by the objspace. This
 allows the interpreter to not know anything about the implementation details of
 Python objects. The interpreter treats Python objects as black boxes and calls
 objspace methods whenever it needs to use them. For example, here is a rough
-implementation of the \verb+BINARY\_ADD+ opcode, which is called when two
+implementation of the \verb+BINARY_ADD+ opcode, which is called when two
 objects are combined with +
 
 \begin{verbatim}
@@ -96,7 +94,7 @@ sized integer when it is small enough, so the memory and computationally less
 efficient arbitrary-precision implementation need only be used when
 necessary. (There's even an implementation of Python integers available using
 tagged pointers.) Container types can also be specialized to certain data
-types. For example, PyPy has an dictionary (Python's hash table data type)
+types. For example, PyPy has a dictionary (Python's hash table data type)
 implementation specialized for strings keys. The fact that the same data type
 can be represented by different implementations is completely transparent to
 application level code; a dictionary specialized to strings is identical to a
@@ -184,24 +182,25 @@ will be annotated to accept and return an integer.
 
 The next phase is called RTyping. RTyping uses type information from the
 annotator to expand each high-level flow-graph operation into low-level ones. It
-is the first part of translation that the target backend matters. The RTyper
+is the first part of translation where the target backend matters. The RTyper
 currently has two type systems: A low level typesystem for backends like C and
 one for higher level typesystems with classes. The backend chooses which type
 system the program is specialized to. High-level Python operations and types are
-transformed into the level of the type system. For example, for an +add+
-operation with operands annotated as integers will generate an +int\_add+ with
-the low-level type system. More complication operations like hash table lookups
-generate function calls.
+transformed into the level of the type system. For example, for an \verb+add+
+operation with operands annotated as integers will generate an \verb+int_add+
+with the low-level type system. More complication operations like hash table
+lookups generate function calls.
 
 After RTyping, some optimizations on the low-level flow-graph are
 performed. They are mostly of the traditional compiler variety like constant
-folding, store sinking, and dead code removal. Python code in general makes
-frequent dynamic memory allocations. RPython, begin a Python derivative,
-inherits this allocation intensive pattern. In many cases, though, allocations
-are temporary and local to a function. \emph{Malloc removal} is an optimization
-that addresses these cases. Malloc removal removes these allocations by
-``flattening'' the previously dynamically-allocated object into component
-scalars when possible.
+folding, store sinking, and dead code removal.
+
+Python code typically has frequent dynamic memory allocations. RPython, being a
+Python derivative, inherits this allocation intensive pattern. In many cases,
+though, allocations are temporary and local to a function. \emph{Malloc removal}
+is an optimization that addresses these cases. Malloc removal removes these
+allocations by ``flattening'' the previously dynamically-allocated object into
+component scalars when possible.
 
 To see how malloc removals works, consider the following function that computes
 the euclidean distance between two points on the plane in a roundabout fashion
@@ -232,7 +231,7 @@ v74 = direct_call(math_hypot, v72, v73)
 \end{verbatim}
 This code is suboptimal in several ways. Two tuples that never escape the
 function are allocated. Additionally, there is unnecessary indirection accessing
-its fields.
+the tuple fields.
 
 Running malloc removal produces the following consise code:
 \begin{verbatim}
@@ -240,15 +239,16 @@ v53 = int_sub(x1_0, x2_0)
 v56 = int_sub(y1_0, y2_0)
 v57 = cast_int_to_float(v53)
 v58 = cast_int_to_float(v56)
-v59 = direct_call((<* fn ll_math.ll_math_hypot>), v57, v58)
+v59 = direct_call(math_hypot, v57, v58)
 \end{verbatim}
 The tuple allocations have been completely removed and the indirections
 flattened out. Later, we will see how a technique similar to malloc removal is
 used on application level Python in the PyPy JIT in section~\ref{sec:jit}.
 
-PyPy also does function inlining. Inlining improves performance and reduces the
-size of the final binary because it allows more constant folding and malloc
-removal to take place.
+PyPy also does function inlining. As in lower-level languages, inlining improves
+performance in RPython. Somewhat, surprisingly it also reduces the size of the
+final binary. This it allows more constant folding and malloc removal to take
+place, which reduces overall code size.
 
 The program, now in optimized, low-level flow-graphs, is passed to the backend
 to generate sources. Before it can generate C code, the C backend must perform
@@ -303,7 +303,7 @@ The PyPy JIT takes advantage PyPy's unique translation architecture described
 above. PyPy actually has no \emph{Python-specific} JIT; it has JIT
 generator. JIT generation is implemented as simply another optional pass during
 translation. A interpreter desiring JIT generation need only make two special
-function calls called ``hints''.
+function calls called \emph{hints}.
 
 PyPy's JIT is a \emph{tracing JIT}. This means it detects ``hot'' (meaning
 frequently run) loops to optimize by compiling to assembly. When the JIT has
@@ -315,10 +315,10 @@ As mentioned above, the JIT generator requires only two hints in the interpreter
 to generate a JIT: \verb+merge_point+ and
 \verb+can_enter_jit+. \verb+can_enter_jit+ unsurprisingly tells the JIT where in
 the interpreter a loop starts. In the Python interpreter, this is the end of the
-\verb+JUMP_ABSOLUTE+ bytecode, which occurs at the end of Python \verb+while+
-and \verb+for+ loops. \verb+merge_point+ tells the JIT where it is safe to
-return to the interpreter from the JIT. This is the beginning of bytecode
-dispatch in the Python interpreter.
+\verb+JUMP_ABSOLUTE+ bytecode, which causes the interpreter to jump to the head
+of the app-level loop. \verb+merge_point+ tells the JIT where it is safe to return to the
+interpreter from the JIT. This is the beginning of bytecode dispatch in the
+Python interpreter.
 
 The JIT generator is invoked after the RTyping phase of translation. Recall that
 at this point, the program's flow-graphs consist of low-level operations nearly
@@ -335,46 +335,52 @@ invoked and tracing begins. The key concept in tracing is the
 \emph{meta-interpreter}. The meta-interpreter executes the jitcodes created in
 translation. It is thus interpreting the main interpreter, hence the name. As it
 traces the loop, it creates a list of the operations it is executing and records
-them in JIT intermediate representation (IR), another instruction format. The
-meta-interpreter is forced to specialize the trace to properties of the current
-iteration. For example, when the meta-interpreter encounters a conditional in
-the jitcode, it naturally must choose one path. When it makes a choice based on
-runtime information, the meta-interpreter records an IR operation called a
-\emph{guard}. In the case of a conditional, this will be a \verb+guard_true+ or
-\verb+guard_false+ operation on the condition variable. Most arithmetic
-operations also have guards, which ensure the operation did not
-overflow. Essentially, guards codify assumptions the meta-interpreter is making
-as it traces. When assembly is generated, the guards will protect assembly from
-being run in an invalid context. Tracing ends when the meta-interpreter reaches
-the same \verb+can_enter_jit+ operation with which it started tracing. The loop
-IR can now be passed to the optimizer.
+them in JIT intermediate representation (IR), another instruction format.
+
+The meta-interpreter is forced to specialize the trace to properties of the
+current loop iteration. For example, when the meta-interpreter encounters a
+conditional in the jitcode, it naturally must choose one path. When it makes a
+choice based on runtime information, the meta-interpreter records an IR
+operation called a \emph{guard}. In the case of a conditional, this will be a
+\verb+guard_true+ or \verb+guard_false+ operation on the condition
+variable. Most arithmetic operations also have guards, which ensure the
+operation did not overflow. Essentially, guards codify assumptions the
+meta-interpreter is making as it traces. When assembly is generated, the guards
+will protect assembly from being run in an invalid context. Tracing ends when
+the meta-interpreter reaches the same \verb+can_enter_jit+ operation with which
+it started tracing. The loop IR can now be passed to the optimizer.
 
 The JIT optimizer features a few classical compiler optimizations and many
 optimizations specialized for dynamic languages. Among the most important of the
-latter are \emph{virtuals} and \emph{virtualizables}. Virtuals are objects which
-are known not to escape the trace, meaning they are not passed as arguments to
-an external function call. Structs and constant length arrays can be
-virtuals. Virtuals do not have to be allocated, and their data can be stored
-directly in registers and on the stack. (This is much like the static malloc
-removal phase described in the paragraph about translation backend
-optimizations.) The virtuals optimization strips away the indirection and memory
-allocation inefficiencies in the Python interpreter. For example, boxed Python
-integer objects are unboxed into simple word-sized integers by becoming
-virtual. A virtualizable acts much like a virtual but may escape the trace. In
-the Python interpreter, the frame object, which holds variable values and the
-instruction pointer, is marked virtualizable. This allows stack manipulations
-and other operations on the frame to be optimized out. Although virtuals and
-virtualizables are similar, they share nothing in implementation. Virtualizables
-are handled during tracing not trace optimization like virtuals. The reason for
-this is virtualizables require special treatment, since they may escape the
-trace. During JIT generation, code which accesses a virtualizable is rewritten
-to check if JITed assembly is running. If it is, the JIT is asked to update the
-fields from data in assembly. Additionally when the external call returns to
-JITed code, execution bails back to the interpreter (\aosafigref{fig:pypy:bail}).
+latter are \emph{virtuals} and \emph{virtualizables}.
 
-\aosafigure{../images/pypy/guard_fails.png}{Bailing Back to the Interpreter}{fig:pypy:bail}
+Virtuals are objects which are known not to escape the trace, meaning they are
+not passed as arguments to an external function call. Structs and constant
+length arrays can be virtuals. Virtuals do not have to be allocated, and their
+data can be stored directly in registers and on the stack. (This is much like
+the static malloc removal phase described in the paragraph about translation
+backend optimizations.) The virtuals optimization strips away the indirection
+and memory allocation inefficiencies in the Python interpreter. For example,
+boxed Python integer objects are unboxed into simple word-sized integers by
+becoming virtual.
 
-When a guard fails, the compiled assembly is now longer valid, and control must
+A virtualizable acts much like a virtual but may escape the
+trace. In the Python interpreter, the frame object, which holds variable values
+and the instruction pointer, is marked virtualizable. This allows stack
+manipulations and other operations on the frame to be optimized out. Although
+virtuals and virtualizables are similar, they share nothing in
+implementation. Virtualizables are handled during tracing not trace optimization
+like virtuals. The reason for this is virtualizables require special treatment,
+since they may escape the trace. During JIT generation, code which accesses a
+virtualizable is rewritten to check if JITed assembly is running. If it is, the
+JIT is asked to update the fields from data in assembly. Additionally when the
+external call returns to JITed code, execution bails back to the interpreter
+(\aosafigref{fig:pypy:bail}).
+
+\aosafigure{../images/pypy/guard_fails.png}{Bailing back to the interpreter on
+  guard failure}{fig:pypy:bail}
+
+When a guard fails, the compiled assembly is no longer valid, and control must
 return to the bytecode interpreter. This bailing out is one of the most
 difficult parts of JIT implementation, since the interpreter state has to be
 reconstructed from the register and stack state at the point the guard
