@@ -2,12 +2,12 @@
 
 The Mozilla Release Engineering team has made a lot of advances
 recently in how the release automation for Firefox works. We have
-reduced the requirements for human involvement during signing, sending
+reduced the requirements for human involvement during signing and sending
 notices to various stakeholders throughout the process, and automated
-many other small manual steps. Each manual step in the process is an
+many other small manual steps; each manual step in the process is an
 opportunity for human error. While what we have now isn't perfect,
 we're always striving to streamline and automate our release
-process. Our final goal is being able to push a button and walk away,
+process. Our final goal is to be able to push a button and walk away,
 with minimal human interventions, thereby eliminating many of the
 headaches and do-overs we experienced with our older part-manual,
 part-automated release processes. In this chapter, we will explore and
@@ -25,7 +25,7 @@ Mozilla Community's network of mirrors which provide the downloads to
 our users.
 
 We'll look at some of the newer decisions that have been made to
-improve this process like our sanity-checking script that helps
+improve this process, like our sanity-checking script that helps
 eliminate much of what used to be vulnerable to human error, our
 automated signing script, our integration of mobile releases into the
 desktop release stream, and the land of patcher/AUS where updates are
@@ -36,25 +36,27 @@ Follow a Mozilla Firefox release from the moment the Release
 Coordinator gives the official ``Go'' to when it's available for
 download (or update) to your computer or mobile device.
 
-\begin{aosasect1}{Look N Ways Before You Start a Release}
+\begin{aosasect1}{Look \code{N} Ways Before You Start a Release}
 
 This section describes the mechanics of how we generate release builds
 for the Firefox product. Most of this chapter details the significant
-steps in a release process that occurs once the builds start, but
-there is also plenty of complex cross-group communications to deal
+steps in a release process that occur once the builds start, but
+there is plenty of complex cross-group communication to deal
 with before Release Engineering even starts to generate release
-builds, so lets start there.
+builds, so let's start there.
 
+%% QUERY: I moved this figure because it was bunching together with the
+%% next figure. Is this location okay? --ARB
 \aosafigure[100pt]{../images/ffreleng/gotobuild.png}{Getting From Code to ``Go to build''}{fig.ffreleng.getting}
 
 When we started on the project to improve Mozilla's release process,
 we began with the premise that the more popular Firefox became, the
-more users we would have, the more attractive a target Firefox would
-become to ``blackhat hackers'' looking for security vulnerabilities to
+more users we would have, and the more attractive a target Firefox would
+become to blackhat hackers looking for security vulnerabilities to
 exploit. Also, the more popular Firefox became, the more users we
 would have to protect from a newly discovered security vulnerability,
-so the more important it would be to deliver a security fix as quickly
-as possible. We even have a term for this---a ``chemspill''
+so the more important it would be to be able to deliver a security fix as quickly
+as possible. We even have a term for this: a ``chemspill''
 release. Instead of being surprised by the occasional need for a
 chemspill release in between our regularly scheduled releases, we
 decided to plan as if every release could be a chemspill release, and
@@ -66,8 +68,12 @@ This mindset has three important side-effects:
 
 \item We do a postmortem after \emph{every} release, and look to see
   where things could be made smoother, easier, and faster next
-  time. If at all possible, we find and fix any one thing immediately,
-  no matter how small, before the next release. This constant
+  time. If at all possible, we find and fix any one thing,
+%% QUERY: I'm not sure about "any one thing" here - you mean you
+%% only fix one thing at a time? (Surely not.) Or that you fix
+%% things that are small, i.e., not systemic? Or can we just 
+%% change this to "fix anything," --ARB
+  no matter how small, immediately, before the next release. This constant
   polishing of our release automation means we're always looking for
   new ways to rely on less human involvement while also enhancing
   robustness and speeding up turnaround time. A lot of effort is spent
@@ -82,27 +88,25 @@ This mindset has three important side-effects:
   Engineering are not stressed by it. We're used to the idea of going
   as fast as possible with calm precision, and we've built tools to do
   this as safely and robustly as we know how. Less stress means more
-  calm and precise work, on a well-rehearsed process, which in turn
-  helps chemspill releases go smoothly.
+  calm and precise work within a well-rehearsed process, which in turn
+  helps actual chemspill releases go smoothly.
 
 \item We created a Mozilla-wide ``go to build'' process. When doing a
-  a non-chemspill release, its possible to have everyone looking
+  non-chemspill release, it's possible to have everyone looking
   through the same bug triage queries, have everyone see clearly when
-  the last fix was landed, and tested just fine, and have consensus on
+  the last fix was landed and tested just fine, and have consensus on
   when to start builds. However, in a chemspill release---where
-  minutes matter---keeping track of all the details of the issue,
-  following up bug confirmations and fixes, gets very tricky very
-  quickly.  To reduce complexity, and the risk of mistakes, Mozilla
-  now has a full-time person---someone explicitly not in Release
-  Engineering---track the readiness of the code for a ``go to build''
-  decision.  Changing processes during a chemspill is risky, so in
-  order to make sure everyone is familiar with the process when
-  minutes matter, we use this same process for ``chemspill'' and
-  ``regular'' releases.
+  minutes matter---keeping track of all the details of the issue and
+  following up bug confirmations and fixes gets very tricky very
+  quickly.  To reduce complexity and the risk of mistakes, Mozilla
+  now has a full-time person 
+  to track the readiness of the code for a ``go to build''
+  decision.  
 
 \end{aosaenumerate}
 
-\aosafigure{../images/ffreleng/timeline.png}{Complete Release Timeline}{fig.ffreleng.timeline}
+%% FIXME: Don't forget to check this image in the printed proof.
+\aosafigure{../images/ffreleng/timeline.pdf}{Complete release timeline, using a chemspill as example}{fig.ffreleng.timeline}
 
 \end{aosasect1}
 
@@ -111,31 +115,33 @@ This mindset has three important side-effects:
 \begin{aosasect2}{Who Can Send the ``Go to Build''?}
 
 Before the start of the release, one person is designated to assume
-the responsibility for the entire release. It is worth noting that
+responsibility for the entire release. It is worth noting that
 this person is not in Release Engineering. This person needs to be
-someone that everyone trusts to attend triage meetings, have
+%% QUERY: Worth noting but you never say why. Can we have
+%% something about that? --ARB
+trusted by everyone to attend triage meetings, understand the
 background context on all the work being landed, referee bug severity
-disputes fairly, approve landing of late breaking changes, and make
-tough back-out decisions.  Additionally, for the actual release day,
+disputes fairly, approve landing of late-breaking changes, and make
+tough back-out decisions.  Additionally, on the actual release day
 this person is on point for all communications with the different
 groups (developers, QA, Release Engineering, website developers, PR,
 marketing, {\ldots}).
 
-Different companies use different titles for this type of role.  Some
-titles are: Release Manager, Release Engineer (!), Program Manager,
+Different companies use different titles for this type of role:
+Release Manager, Release Engineer (!), Program Manager,
 Project Manager, Product Manager, Product Czar, Release Driver. This
-chapter will use the term ``Release Coordinator'' as it most clearly
-defines the role in our process, but the important point is that the
-role, and the final authority of the role, is clearly understood by
-everyone before the release starts, regardless of their background, or
-previous work experiences elsewhere. In the heat of the moment of a
-release day, we all have to abide by, and trust, the final decision
+chapter will use the term ``Release Coordinator'', as it most clearly
+describes the role in our process, but the important point is that the
+role and the final authority of the person in the role, regardless of 
+their background or previous work experience elsewhere, is clearly understood by
+everyone before the release starts. In the heat of the moment on a
+release day, we all have to abide by and trust the final decision
 that this person makes.
 
-This Release Coordinator is also the only person outside of Release
+The Release Coordinator is also the only person outside of Release
 Engineering who is authorized to send ``stop builds'' emails if a
-show-stopper problem is discovered with the release. Any reports of
-``suspected show-stopper problems'' are redirected to the Release
+show-stopper problem is discovered. Any reports of
+suspected show-stopper problems are redirected to the Release
 Coordinator, who will evaluate, make the final go/no-go decision and
 communicate that decision to everyone in a timely manner.
 
@@ -143,23 +149,23 @@ communicate that decision to everyone in a timely manner.
 
 \begin{aosasect2}{How to Send the ``Go to Build''?}
 
-Early experiments with sending ``go to build'' in IRC channels, or
-verbally over the phone, led to misunderstandings at some point,
+Early experiments with sending ``go to build'' in IRC channels or
+verbally over the phone led to misunderstandings,
 occasionally causing problems for the release in progress. Therefore,
 we now require that the ``go to build'' signal for every release is
-done by email to a mailing list that includes everyone across all
+done by email, to a mailing list that includes everyone across all
 groups involved in release processes. The subject of the email
 includes ``go to build'' and the explicit product name and version
-number, for example:
+number; for example:
 
 \begin{verbatim}
 go to build Firefox 6.0.1
 \end{verbatim}
 
-Similarly, if a problem found in the release, then the Release
+Similarly, if a problem is found in the release, the Release
 Coordinator will send a new "all stop" email to the same mailing list,
 with a new subject line. We found that it was not ok to just hit reply
-on the most-recent email about the release---email threading of some
+on the most recent email about the release; email threading in some
 email clients caused some people to not notice the "all stop" email if
 it was way down a long and unrelated thread.
 
@@ -169,37 +175,38 @@ it was way down a long and unrelated thread.
 
 \begin{aosaenumerate}
 
-\item The exact code to be built from. Ideally, give the URL to the
-explicit change in your source code repo that the release builds are
+\item The exact code to be built from; ideally, the URL to the
+explicit change in the source code repo that the release builds are
+%% QUERY: Should this be "specific", not "explicit"? --ARB
 to be created from.
 
   \begin{aosaenumerate2}
 
-    \item Comments like ``use the latest code'' are never ok: In one
+    \item Comments like ``use the latest code'' are never ok; in one
       release, after the ``go to build'' email was sent and before
-      builds started, a well intentioned developer landed a change
-      without approval in the wrong branch. The release included that
-      unwanted change in the builds. Thankfully, this mistake was
+      builds started, a well-intentioned developer landed a change,
+      without approval, in the wrong branch. The release included that
+      unwanted change in the builds. Thankfully the mistake was
       caught before we shipped, but we did have to do a full stop and
       rebuild everything.
 
-    \item In a time-based Version Control System, like CVS, be fully
-      explicit of the exact time to use. Give time down to seconds,
+    \item In a time-based version control system like CVS, be fully
+      explicit about the exact time to use; give the time down to seconds,
       and specify timezone. In one release, when Firefox was still
       based on CVS, the Release Coordinator specified the cutoff time
-      to be used for the builds, but did not give the timezone. By the
+      to be used for the builds but did not give the timezone. By the
       time Release Engineering noticed the missing timezone info, the
-      Release Coordinator was asleep in his timezone. Release
+      Release Coordinator was asleep. Release
       Engineering correctly guessed that the intent was local time (in
-      California), but in a late-night mixup over PDT instead of PST,
+      California), but in a late-night mixup over PDT instead of PST
       we ended up missing the last critical bug fix. This was caught
-      by QA before we shipped, but we did have to stop builds and
-      start build over using the correct cutoff time.
+      by QA before we shipped, but we had to stop builds and
+      start the build over using the correct cutoff time.
 
     \end{aosaenumerate2}
 
 \item A clear sense of the urgency for this particular release.  This
-  sounds so obvious, you might be tempted to not bother including
+  sounds so obvious you might be tempted to not bother including
   it. However, it is important when handling some important edge
   cases, so here is a quick summary:
 
@@ -210,29 +217,29 @@ to be created from.
       on schedule, and there is no emergency. Of course, all release
       builds need to be created in a timely manner, but there is no
       need for Release Engineers to pull all-nighters and burn out
-      humans for a ``routine'' release.  Instead, we schedule this out
-      properly in advance, so everything stays on schedule with people
+      for a routine release.  Instead, we schedule them
+      properly in advance so everything stays on schedule with people
       working normal hours. This keeps people fresh and better able to
       handle unscheduled urgent work if the need arises.
 
-    \item Some releases are urgent, where minutes matter. These are
-      typically to fix a published security exploit, or fix a
-      newly-introduced-top-crash problem, impacting a large percentage
-      of our userbase. These ``chemspills'' need to be created as
+    \item Some releases---``chemspills''---are urgent, where minutes matter. These are
+      typically to fix a published security exploit, or to fix a
+      newly-introduced top-crash problem impacting a large percentage
+      of our userbase. Chemspills need to be created as
       quickly as possible and are typically not pre-scheduled
       releases.
 
-    \item Some releases change from ``routine'' to ``chemspill'' or
-      from ``chemspill'' to ``routine''. For example, if a security
-      fix in a ``routine'' release was accidentally leaked, it is now
-      a ``chemspill'' release. If a business requirement like a
-      ``special sneak preview'' release needed for an upcoming
-      conference announcement was suddenly delayed for business
-      reasons, the release now changes from ``chemspill'' to
-      ``routine''.
+    \item Some releases change from routine to chemspill or
+      from chemspill to routine. For example, if a security
+      fix in a routine release was accidentally leaked, it is now
+      a chemspill release. If a business requirement like a
+      ``special sneak preview'' release for an upcoming
+      conference announcement was delayed for business
+      reasons, the release now changes from chemspill to
+      routine.
 
-    \item Some releases have different people each holding different
-      opinions on whether the release is ``normal'' or ``urgent'',
+    \item Some releases have different people holding different
+      opinions on whether the release is normal or urgent,
       depending on their perspective on the fixes being shipped in the
       release.
 
@@ -245,7 +252,7 @@ opinions, reach a decision, and then communicate that decision about
 urgency consistently across all groups. If new information arrives,
 the Release Coordinator reassesses, and then communicates the new
 urgency to all the same groups. Having some groups believe a release
-is ``urgent'', while other groups believe the release is ``normal''
+is urgent, while other groups believe the release is normal
 can be very destructive to cross-group cohesion across an
 organization.
 
@@ -253,16 +260,16 @@ Finally, these emails also became very useful to measure where time
 was spent during a release.  While these are only accurate to
 wall-clock time resolution, this accuracy is really helpful when
 figuring out where next to focus our efforts on making things faster.
-As the old adage goes, before you can improve something, first you
+As the old adage goes, before you can improve something, you
 have to be able to measure it.
 
-Throughout the beta cycle for Firefox, we also do weekly releases from
+Throughout the beta cycle for Firefox we also do weekly releases from
 our \code{mozilla-beta}
 repository\footnote{\url{http://hg.mozilla.org/releases/mozilla-beta/}}. Each
 one of these beta releases goes through our usual full release
-automation and is treated almost identically to our regular final
+automation, and is treated almost identically to our regular final
 releases. To minimize surprises during a release, our intent is to
-have no new ``untested'' changes to release automation or
+have no new untested changes to release automation or
 infrastructure by the time we start the final release builds.
 
 \end{aosasect2}
@@ -274,15 +281,17 @@ infrastructure by the time we start the final release builds.
 \aosafigure{../images/ffreleng/tagging.png}{Automated tagging}{fig.ffreleng.tagging}
     
 In preparation for starting automation, we recently started to use a
-script that was originally written by a summer Build and Release
-intern,
-\code{release\_sanity.py}\footnote{\url{http://mxr.mozilla.org/build/source/tools/buildbot-helpers/release_sanity.py}}. This
-Python script is relied upon to assist a Release Engineer double-check
+script,
+\code{release\_sanity.py}\footnote{\url{http://mxr.mozilla.org/build/source/tools/buildbot-helpers/release_sanity.py}}, 
+that was originally written by a summer Build and Release intern. This
+Python script assists a Release Engineer with double-checking that
 all configurations for a release match what is checked into our tools
-and configuration repos as well as what is in the specified release
+and configuration repos, as well as what is in the specified release
 code revisions for mozilla-release and all the languages for this
 release (which will be what the builds and language repacks are
 generated from).
+%% QUERY: This sentence loses me around "as well as" -- maybe break into
+%% two or more sentences? --ARB
 
 The script accepts the buildbot config files for any release configs
 that will be used (desktop, mobile), the branch to look at (eg:
