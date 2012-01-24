@@ -45,6 +45,8 @@ there is also plenty of complex cross-group communications to deal
 with before Release Engineering even starts to generate release
 builds, so lets start there.
 
+\aosafigure[100pt]{../images/ffreleng/gotobuild.png}{Getting From Code to ``Go to build''}{fig.ffreleng.getting}
+
 When we started on the project to improve Mozilla's release process,
 we began with the premise that the more popular Firefox became, the
 more users we would have, the more attractive a target Firefox would
@@ -105,8 +107,6 @@ This mindset has three important side-effects:
 \end{aosasect1}
 
 \begin{aosasect1}{"Go to Build"}
-
-\aosafigure{../images/ffreleng/gotobuild.png}{Getting From Code to ``Go to build''}{fig.ffreleng.getting}
 
 \begin{aosasect2}{Who Can Send the ``Go to Build''?}
 
@@ -173,7 +173,7 @@ it was way down a long and unrelated thread.
 explicit change in your source code repo that the release builds are
 to be created from.
 
-  \begin{aosaenumerate}
+  \begin{aosaenumerate2}
 
     \item Comments like ``use the latest code'' are never ok: In one
       release, after the ``go to build'' email was sent and before
@@ -196,14 +196,14 @@ to be created from.
       by QA before we shipped, but we did have to stop builds and
       start build over using the correct cutoff time.
 
-    \end{aosaenumerate}
+    \end{aosaenumerate2}
 
 \item A clear sense of the urgency for this particular release.  This
   sounds so obvious, you might be tempted to not bother including
   it. However, it is important when handling some important edge
   cases, so here is a quick summary:
 
-  \begin{aosaenumerate}
+  \begin{aosaenumerate2}
 
     \item Some releases are ``routine'', and can be worked on in
       normal working hours. They are a pre-scheduled release, they are
@@ -236,7 +236,7 @@ to be created from.
       depending on their perspective on the fixes being shipped in the
       release.
 
-  \end{aosaenumerate}
+  \end{aosaenumerate2}
 
 \end{aosaenumerate}
 
@@ -271,7 +271,7 @@ infrastructure by the time we start the final release builds.
 
 \begin{aosasect1}{Tagging, Building, and Source Tarballs}
 
-\aosafigure{../images/ffreleng/tagging.png}{Automated Tagging}{fig.ffreleng.tagging}
+\aosafigure{../images/ffreleng/tagging.png}{Automated tagging}{fig.ffreleng.tagging}
     
 In preparation for starting automation, we recently started to use a
 script that was originally written by a summer Build and Release
@@ -476,7 +476,7 @@ keyphrases, passwords, and keystores are passed among Release
 Engineers only in secure channels, often in person, to minimize the
 risk of exposure as much as possible in a team.
 
-\aosafigure{../images/ffreleng/signing.png}{Signing Firefox Installers}{fig.ffreleng.signing}
+\aosafigure[325pt]{../images/ffreleng/signing.png}{Signing Firefox Installers}{fig.ffreleng.signing}
 
 Until recently this signing process involved a release engineer
 working on a dedicated server (the ``signing master'') for almost an
@@ -777,7 +777,10 @@ write this chapter all over again with a very different set of
 strategies and workflow. Hopefully, people find this information
 useful. If you have comments/feedback, or details on things you've
 done differently that did/didn't work better for you, please contact
-us at release [at] mozilla [dot] com. We'd love to hear from you.
+us at release\@mozilla.com. We'd love to hear from you.
+%% NB: When converting to HTML make the email address read
+%% "release [at] mozilla [dot] com" - that is how the authors formatted
+%% it originally.
   
 \end{aosasect1}
 
