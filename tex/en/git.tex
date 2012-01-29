@@ -401,49 +401,6 @@ history and context):
 What we are starting to see here is the content representation inside Git's
 object database.
 
-Let us explore what this means more concretely by inspecting the contents of
-files under the .git directory (or repository).
-
-\begin{aosaitemize}
-  \item \code{GIT\_DIR=\${PWD}/.git}
-  \item \code{cat \${GIT\_DIR}/HEAD}
-\begin{verbatim}
-ref: refs/heads/master
-\end{verbatim}
-  \item \code{MY\_CURRENT\_BRANCH=\$(cat .git/HEAD | sed 's/ref: //g')}
-  \item \code{cat \${GIT\_DIR}/\${MY\_CURRENT\_BRANCH}}
-\begin{verbatim}
-cat: .git/refs/heads/master: No such file or directory
-\end{verbatim}
-\end{aosaitemize}
-
-We get an error because, before making any commits to a Git repository at
-all, no branches exist, except the default branch in Git is \code{master},
-whether it exists yet or not.
-
-We can verify that no branches exist yet by attempting to list the branches
-in our repository with \code{git branch}.
-
-Now if we make a new commit then the master branch is created by default for
-this commit. Let us do this (continuing in the same shell, retaining
-history and context):
-
-\begin{aosaitemize}
-  \item \code{git commit -m "Initial empty commit" --allow-empty}
-  \item \code{git branch}
-\begin{verbatim}
-* master
-\end{verbatim}
-  \item \code{cat \${GIT\_DIR}/\${MY\_CURRENT\_BRANCH}}
-\begin{verbatim}
-3bce5b130b17b7ce2f98d17b2998e32b1bc29d68
-\end{verbatim}
-  \item \code{git cat-file -p \$(cat \${GIT\_DIR}/\${MY\_CURRENT\_BRANCH})}
-\end{aosaitemize}
-
-What we are starting to see here is the content representation inside Git's
-object database.
-
 \end{aosasect1}
 
 \begin{aosasect1}{The Object Database}
