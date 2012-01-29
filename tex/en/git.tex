@@ -546,21 +546,31 @@ be applied to the branch.
 As mentioned previously, Git core as we know it today is based on a toolkit
 design philosophy from the Unix world, which is very handy for scripting,
 but less useful for embedding inside or linking with longer running
-applications or services.
+applications or services. While there is Git support in many popular
+Integrated Development Environments (IDE) today, adding this support and
+maintaining it has been more challenging than integrating support for VCSes
+that provide an easy to link and share library for multiple platforms.
 
-To combat this Shawn Pearce spearheaded an effort to create a linkable Git
-library with more permissive licensing that did not inhibit use of the
-library. This was called libgit2. It did not find much traction until a
-student named, Vincent Marti chose it for his Google Summer of Code project
-last year. Since then Vincent and GitHub have continued contributing to the
-libgit2 project and created Ruby bindings for it in a project called Rugged.
-More recently Python bindings around libgit2 have emerged in an open source
-project called pygit2. These three open source projects are maintained
-independently of the Git core project.
+To combat this Shawn Pearce (of Google's Open Source Programs Office)
+spearheaded an effort to create a linkable Git library with more permissive
+licensing that did not inhibit use of the library. This was called libgit2.
+It did not find much traction until a student named, Vincent Marti chose it
+for his Google Summer of Code project last year. Since then Vincent and
+Github have continued contributing to the libgit2 project and created Ruby
+bindings for it in a project called Rugged. More recently Python bindings
+around libgit2 have emerged in an open source project called pygit2. These
+three open source projects are maintained independently of the Git core
+project. Today Shawn Pearce maintains a BSD licensed pure Java library that
+supports various read and write operations on Git repositories called JGit.
 
 From this effort another related project that allows Git's object database
 to be persisted in a number of different key-value database backends has
 emerged such as Memcached, Redis, SQLite and MySQL (at time of writing).
+Another project offering an alternative backend for Git repositories is
+Shawn Pearce's jgit\_hbase and jgit\_cassandra extensions to JGit's generic
+distributed hash table (DHT) storage interface to Apache HBase (distributed
+key-value datastore) and Apache Cassandra (a hybrid datastore of Dynamo-style
+distribution with BigTable column family datamodel semantics) respectively.
 
 As you can see today there is a wide array of ways to use the Git format.
 The face of Git is no longer just the toolkit command line interface of
