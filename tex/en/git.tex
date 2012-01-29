@@ -64,13 +64,27 @@ in fundamentally different ways and allows even more distributed plus
 local-only workflows, which were not possible with BitKeeper, which requires
 a server.
 
-Around this time (circa 2005) three other open source distributed VCS projects
-were initiated, including Mercurial, which is a project covered in volume 1
-of this title series. All of these dCVS tools offer slightly different ways
-to enable distributed workflows, which centralized VCS systems before them
-were not capable of handling directly. \emph{Note: Subversion has an
-extension maintained by different developers to support server-to-server
-synchronization named SVK.}
+Distributed version control systems offer greater workflow flexibility often
+at the expense of simplicity. However, specific benefits to a distributed
+model include:
+\begin{aosaitemize}
+  \item providing the ability for the collaborators to work offline and
+  commit incrementally as they work offline
+  \item allowing the collaborator to determine when his/her work is
+  ready to share
+  \item offering the collaborator history access to the repository when
+  offline
+  \item allowing the managed work to be published to multiple repositories
+  potentially with different branches or granularity of changes visible
+\end{aosaitemize}
+
+Around the time the Git project started (circa 2005) three other open source
+distributed VCS projects were initiated, including Mercurial. Mercurial is a
+project covered in volume 1 of this title series. All of these dCVS tools
+offer slightly different ways to enable highly flexible workflows, which
+centralized VCS systems before them were not capable of handling directly.
+\emph{Note: Subversion has an extension maintained by different developers
+to support server-to-server synchronization named SVK.}
 
 Open source DVCS projects today include Bazaar, Darcs, Fossil, Git,
 Mercurial, and Veracity.
@@ -200,25 +214,20 @@ are stored in the public repository as were originally created in the
 local Git repository.
 
 There are a lot more moving parts in the Git scenario, both under the
-covers and two user interactions with the tool as opposed to just one
-to share the commit with others. However, there are benefits to this
-model such as:
-\begin{aosaitemize}
-  \item providing the ability for the collaborators to work offline and
-    commit incrementally as they work offline
-  \item allowing the collaborator to determine when his/her work is
-    ready to share
-  \item offer the collaborator history access to the repository when
-    offline
-\end{aosaitemize}
+covers and requiring the user to explicitly express intent to share
+changes with the remote repository separately from tracking the change as a
+commit locally. However, both levels of added complexity offer the team
+maintaining the body of work greater flexibility in terms of their
+workflow and publishing capabilities as listed in the Git's Origin section
+earlier in this chapter.
 
 In the Subversion scenario the collaborator did not have to remember
 to push to the public remote repository when ready for others to
 view the changes made. When a small modification to a larger file is sent
-to the central repository in Subversion the delta stored is much more
+to the central Subversion repository the delta stored is much more
 efficient than storing the complete file contents for each version.
 However, as we will see later there is a work around for this that Git
-uses in certain scenarios.
+takes advantage of in certain scenarios.
 
 \end{aosasect1}
 
