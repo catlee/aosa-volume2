@@ -49,20 +49,19 @@ stream and continue merging contributed patches once cleanly able to.
 Torvald's had one philosphical goal for Git - to embody the anti-CVS - plus
 three usability design goals from the outset:
 \begin{aosaitemize}
-  \item support distributed workflows like those enabled by BitKeeper
+  \item support distributed workflows similar to those enabled by BitKeeper
   \item offer safeguards against content corruption
   \item offer high performance
 \end{aosaitemize}
 
 These design goals have been accomplished and maintained to a degree as I
-will attempt to show by dissecting Git's use of DAGs for content storage,
-reference pointers for heads, object model representatation, remote protocol
-and how it tracks the merging of trees.
+will attempt to show by dissecting Git's use of directed acyclic graphs
+(DAGs) for content storage, reference pointers for heads, object model
+representatation, remote protocol and how it tracks the merging of trees.
 
 Despite BitKeeper influencing the original design of Git, it is implemented
 in fundamentally different ways and allows even more distributed plus
-local-only workflows, which were not possible with BitKeeper, which requires
-a server.
+local-only workflows, which were not possible with BitKeeper.
 
 Distributed version control systems offer greater workflow flexibility often
 at the expense of simplicity. However, specific benefits to a distributed
@@ -86,8 +85,8 @@ centralized VCS systems before them were not capable of handling directly.
 \emph{Note: Subversion has an extension maintained by different developers
 to support server-to-server synchronization named SVK.}
 
-Open source DVCS projects today include Bazaar, Darcs, Fossil, Git,
-Mercurial, and Veracity.
+Today popular and actively maintained open source DVCS projects include
+Bazaar, Darcs, Fossil, Git, Mercurial, and Veracity.
 
 \end{aosasect1}
 
@@ -333,10 +332,10 @@ directories:
   \code{HEAD}.
 \end{aosaitemize}
 
-This is the actual repository. The directory that contains the working set
-of files is the \emph{working directory}, which is typically the parent of
-the .git directory (or \emph{repository}). If you were creating a Git
-remote repository that would not have a working directory you could
+The .git directory is the actual repository. The directory that contains the
+working set of files is the \emph{working directory}, which is typically the
+parent of the .git directory (or \emph{repository}). If you were creating a
+Git remote repository that would not have a working directory you could
 initialize it using the \code{git init --bare} command. This would create
 just the pared down repository files at the root, instead of creating it
 as a subdirectory under the working tree.
