@@ -111,13 +111,18 @@ all VCSs.}
 
 The most common design choices for storing content in the VCS world are:
 \begin{aosaitemize}
-  \item delta based
-  \item directed acyclic graph (DAG)
+  \item delta based changeset
+  \item directed acyclic graph (DAG) content representation
 \end{aosaitemize}
 
-Git stores the content as a directed acyclic graph (DAG). Where a hierarchy
-mimicking the filesystem's directory structure is created with objects of
-different types (see 'Object Database' below).
+Delta based changesets encapsulate the differences between two versions of
+the flattened content plus some metadata. Representing content as a
+directed acyclic graph (DAG) consists of objects forming a hierarchy
+mirroring the content's filesystem tree as a snapshot of the commit (reusing
+the unchanged objects inside the tree where possible). Git stores content as
+a directed acyclic graph (DAG) using different types of objects. The
+'Object Database' section later in this chapter describes the different
+types of objects that can form DAGs inside the Git repository.
 
 \end{aosasect2}
 \begin{aosasect2}{Commit and Merge Histories}
