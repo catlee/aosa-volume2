@@ -465,20 +465,16 @@ Git repository using \code{git count-objects}. Now we can have Git pack
 \emph{loose} objects in the object database, remove loose objects already
 packed, and find redundant pack files with Git plumbing commands if desired.
 
-There are two versions of pack files as of this writing: version 1 and
-version 2. Version 1 being used in versions of Git before version 1.6 of Git
-and version 2 of the pack file format being used by default in version 1.6
-and above of Git.
-
-In version 1 of the pack file format in Git, only CRC checksums for
-the pack file and index file are stored in the index file. This means there
-is the possibility of undetectable corruption in the compressed data during
-the repacking phase without any further checks. Version 2 of the pack file
-format overcomes this problem by including the CRC checksums of each
-compressed object in the pack index file. Version 2 also allows packfiles
-larger than 4 Gb, which version 1 does not support. As a way to quickly
-detect pack file corruption the end of the pack file contains a 20-byte SHA1
-sum of the ordered list of all the SHAs in that file.
+The pack file format in Git has evolved with the initial format only storing
+CRC checksums for the pack file and index file stored in the index file
+itself. However, this meant there was the possibility of undetectable
+corruption in the compressed data during the repacking phase without any
+further checks. Version 2 of the pack file format overcomes this problem by
+including the CRC checksums of each compressed object in the pack index
+file. Version 2 also allows packfiles larger than 4 Gb, which the initial
+format did not support. As a way to quickly detect pack file corruption the
+end of the pack file contains a 20-byte SHA1 sum of the ordered list of all
+the SHAs in that file.
 
 The emphasis of the newer pack file format is to help fulfill Git second
 usability design goal of offering safegaurds against data corruption.
