@@ -558,26 +558,40 @@ that provide an easy to link and share library for multiple platforms.
 
 To combat this Shawn Pearce (of Google's Open Source Programs Office)
 spearheaded an effort to create a linkable Git library with more permissive
-licensing that did not inhibit use of the library. This was called libgit2.
-It did not find much traction until a student named, Vincent Marti chose it
+licensing that did not inhibit use of the library. This was called libgit2
+\footnote{\url{https://github.com/libgit2/libgit2}}.
+It did not find much traction until a student named, Vincent Marti, chose it
 for his Google Summer of Code project last year. Since then Vincent and
-Github have continued contributing to the libgit2 project and created Ruby
-bindings for it in a project called Rugged. More recently Python bindings
-around libgit2 have emerged in an open source project called pygit2. These
-three open source projects are maintained independently of the Git core
-project. Today Shawn Pearce maintains a BSD licensed pure Java library that
-supports various read and write operations on Git repositories called JGit.
+Github engineers have continued contributing to the libgit2 project and
+created bindings for numerous other popular languages such as Ruby, Python,
+PHP, .NET languages, Lua, and Objective-C.
 
-From this effort another related project that allows Git's object database
-to be persisted in a number of different key-value database backends has
-emerged such as Memcached, Redis, SQLite and MySQL (at time of writing).
-Another project offering an alternative backend for Git repositories is
-Shawn Pearce's jgit\_hbase and jgit\_cassandra extensions to JGit's generic
-distributed hash table (DHT) storage interface to Apache HBase (distributed
-key-value datastore) and Apache Cassandra (a hybrid datastore of Dynamo-style
-distribution with BigTable column family datamodel semantics) respectively.
+Shawn Pearce also started a BSD licensed pure Java library that
+supports many common operations on Git repositories called JGit
+\footnote{\url{https://github.com/eclipse/jgit}}. It is now maintained by
+the Eclipse Foundation for use in the Eclipse IDE Git integration.
 
-As you can see today there is a wide array of ways to use the Git format.
+Other interesting and experimental open source endeavours outside of the
+Git core project are a number of implementations using alternative datastores
+as backends for the Git object database such as:
+\begin{aosaitemize}
+  \item jgit\_cassandra\footnote{\url{https://github.com/spearce/jgit\_cassandra}}
+    offers Git object persistence using Apache Cassandra, a hybrid datastore
+    using Dynamo-style distribution with BigTable column family data model
+    semantics.
+  \item jgit\_hbase\footnote{\url{https://github.com/spearce/jgit\_hbase}}
+    enables read and write operations to Git objects stored in HBase, a
+    distributed key-value datastore.
+  \item libgit2-backends\footnote{\url{https://github.com/libgit2/libgit2-backends}}
+    emerged from the libgit2 effort to create Git object database
+    backends for multiple popular datastores such as Memcached, Redis,
+    SQLite, and MySQL.
+\end{aosaitemize}
+
+All of these open source projects are maintained independently of the Git
+core project.
+
+As you can see today there is a wide number of ways to use the Git format.
 The face of Git is no longer just the toolkit command line interface of
 the Git Core project, rather it is the repository format and protocol to
 share between repositories.
