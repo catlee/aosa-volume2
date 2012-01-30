@@ -1,10 +1,10 @@
 \begin{aosachapter}{FreeRTOS}{s:freertos}{Christopher Svec}
 
-FreeRTOS (prounounced ``free-arr-toss'') is an open source real-time
+FreeRTOS (pronounced ``free-arr-toss'') is an open source real-time
 operating system (RTOS) for embedded systems. FreeRTOS supports many
 different architectures and compiler toolchains, and is designed to be
 ``small, simple, and easy to
-use''\footnote{\url{http://www.freertos.org/index.html?http://www.freertos.org/FreeRTOS\_Features.html}}.
+use''\footnote{\url{http://www.freertos.org/index.html?http://www.freertos.org/FreeRTOS_Features.html}}.
 
 FreeRTOS is under active development, and has been since Richard Barry
 started work on it in 2002.  As for me, I'm not a developer of or
@@ -25,8 +25,8 @@ tasks, so you'll get a good look at exactly how FreeRTOS does that.
 If this is your first look under the hood of an operating system, I
 also hope that you'll learn the basics about how any OS
 works. FreeRTOS is relatively simple, especially when compared to
-Windows, Linux, or OS X, but all operating systems share the basic
-concepts and goals, and so looking at any OS can be very instructive
+Windows, Linux, or OS X, but all operating systems share the same basic
+concepts and goals, so looking at any OS can be instructive
 and interesting.
 
 \begin{aosasect1}{What is ``Embedded'' and ``Real-Time''?}
@@ -34,9 +34,9 @@ and interesting.
 ``Embedded'' and ``real-time'' can mean different things to different
 people, so let's define them as FreeRTOS uses them.
 
-Embedded systems are computer systems that are designed to do only a
-few things, like a TV remote control, in-car GPS system, digital
-watch, or a pacemaker.  Embedded systems are typically smaller and
+An embedded systems is a computer system that is designed to do only a
+few things, like the system in a TV remote control, in-car GPS, digital
+watch, or pacemaker.  Embedded systems are typically smaller and
 slower than general purpose computer systems, and are also usually
 less expensive. A typical low-end embedded system may have an 8-bit
 CPU running at 25MHz, a few KB of RAM, and maybe 32KB of flash memory.
@@ -44,12 +44,12 @@ A higher-end embedded system may have a 32-bit CPU running at 750MHz,
 a GB of RAM, and multiple GB of flash memory.
 
 Real-time systems are designed to do something within a certain amount
-of time: Real-time systems guarantee that stuff happens when it's
+of time; they guarantee that stuff happens when it's
 supposed to.
 
 A pacemaker is an excellent example of a real-time embedded system. A
 pacemaker must contract the heart muscle at the right time to keep you
-alive. It can't be too busy to respond in time. Pacemakers and other
+alive; it can't be too busy to respond in time. Pacemakers and other
 real-time embedded systems are carefully designed to run their tasks
 on time, every time.
 
@@ -69,9 +69,8 @@ communication, and hardware interfacing.
 \begin{aosaitemize}
 
 \item{Tasks}: Almost half of FreeRTOS's core code deals with the
-  central figure in many operating systems: tasks. A task is a
+  central concern in many operating systems: tasks. A task is a
   user-defined C function with a given priority.
-
   \code{tasks.c} and \code{task.h} do all the heavy lifting for
   creating, scheduling, and maintaining tasks.
 
@@ -79,19 +78,16 @@ communication, and hardware interfacing.
   with each other are even better!  Which brings us to the second
   FreeRTOS job: communication. About 40\% of FreeRTOS's core code
   deals with communication.
-
   \code{queue.c} and \code{queue.h} handle FreeRTOS
   communication. Tasks and interrupts use queues to send data to each
   other and to signal the use of critical resources using semaphores
   and mutexes.
 
 \item{The Hardware Whisperer}: The approximately 9000 lines of code
-  that make up the base of FreeRTOS are hardware-independent.  They
-  are competely unaware of the underlying hardware or processor
-  architecture.  The same code runs no matter what processor FreeRTOS
-  is running on, from the humble 8051 to the newest, shiniest ARM
+  that make up the base of FreeRTOS are hardware-independent;
+  the same code runs whether FreeRTOS
+  is running on the humble 8051 or the newest, shiniest ARM
   core.
-
   About 6\% of FreeRTOS's core code acts a shim between the
   hardware-independent FreeRTOS core and the hardware-dependent
   code. We'll discuss the hardware-dependent code in the next section.
@@ -100,26 +96,22 @@ communication, and hardware interfacing.
 
 \begin{aosasect2}{Hardware Considerations}
 
-If the hardware-independent FreeRTOS code doesn't talk to the
-hardware, then what does?  Why, the hardware-dependent FreeRTOS code,
-of course!
-
 The hardware-independent FreeRTOS layer sits on top of a
 hardware-dependent layer.  This hardware-dependent layer knows how to
 talk to whatever chip architecture and compiler toolchain you
-choose. \aosafigref{fig.freertos.layers} shows FreeRTOS's layers:
+choose. \aosafigref{fig.freertos.layers} shows FreeRTOS's layers.
 
-\aosafigure{../images/freertos/freertos-figures-layers.png}{FreeRTOS software layers}{fig.freertos.layers}
+\aosafigure[250pt]{../images/freertos/freertos-figures-layers.pdf}{FreeRTOS software layers}{fig.freertos.layers}
 
 FreeRTOS ships with all the hardware-independent as well as
 hardware-dependent code you'll need to get a system up and running. It
 supports many compilers (CodeWarrior, GCC, IAR, etc.) as well as many
 processor architectures (ARM7, ARM Cortex-M3, various PICs, Silicon
-Labs 8051, x86, etc.). See the FreeRTOS website for all supported
+Labs 8051, x86, etc.). See the FreeRTOS website for a list of supported
 architectures and compilers.
 
 FreeRTOS is highly configurable by design. FreeRTOS can be built as a
-single CPU, bare-bones, stripped down RTOS, supporting only a few
+single CPU, bare-bones RTOS, supporting only a few
 tasks, or it can be built as a highly functional multicore beast with
 TCP/IP, a file system, and USB.
 
@@ -162,11 +154,12 @@ chip, FreeRTOS is built with the file
 \code{FreeRTOS/Source/portable/IAR/ARM\_CM3/portmacro.h} which defines
 \code{portENTER\_CRITICAL()} like this:
 
+%% FIXME: This is widowed - try and fix --ARB
 \begin{verbatim}
 #define portENTER_CRITICAL()   vPortEnterCritical()
 \end{verbatim}
 
-\code{vPortEnterCritical()} is actually defined in
+\noindent \code{vPortEnterCritical()} is actually defined in
 \code{FreeRTOS/Source/portable/IAR/ARM\_CM3/port.c}. The \code{port.c}
 file is hardware-dependent, and contains code that understands the IAR
 compiler and the Cortex-M3 chip. \code{vPortEnterCritical()} enters
@@ -188,8 +181,8 @@ This method of using data types and functions through thin layers of
 \code{\#defines} may seem a bit complicated, but it allows FreeRTOS to
 be recompiled for a completely different system architecture by
 changing only the hardware-dependent files. And if you want to run
-FreeRTOS on an architecture it doesn't currently support you only have
-to implement the hardware-dependent functionality, which is much
+FreeRTOS on an architecture it doesn't currently support, you only have
+to implement the hardware-dependent functionality which is much
 smaller than the hardware-independent part of FreeRTOS.
 
 As we've seen, FreeRTOS implements hardware-dependent functionality
@@ -224,7 +217,7 @@ task lists like this:
 static xList pxReadyTasksLists[ configMAX_PRIORITIES ]; /*< Prioritised ready tasks.  */
 \end{verbatim}
 
-\code{pxReadyTasksLists[0]} is a list of all ready priority 0 tasks,
+\noindent \code{pxReadyTasksLists[0]} is a list of all ready priority 0 tasks,
 \code{pxReadyTasksLists[1]} is a list of all ready priority 1 tasks,
 and so on, all the way up to
 \code{pxReadyTasksLists[configMAX\_PRIORITIES-1]}.
@@ -236,52 +229,53 @@ and so on, all the way up to
 The heartbeat of a FreeRTOS system is called the system tick. FreeRTOS
 configures the system to generate a periodic tick interrupt. The user
 can configure the tick interrupt frequency, which is typically in the
-millisecond range.  Every time the tick interrupt fires the
+millisecond range.  Every time the tick interrupt fires, the
 \code{vTaskSwitchContext()} function is called.
-\code{vTaskSwitchContext()} selects the highest priority ready task
+\code{vTaskSwitchContext()} selects the highest-priority ready task
 and puts it in the \code{pxCurrentTCB} variable like this:
 
 \begin{verbatim}
-/* Find the highest priority queue that contains ready tasks. */
+/* Find the highest-priority queue that contains ready tasks. */
 while( listLIST_IS_EMPTY( &( pxReadyTasksLists[ uxTopReadyPriority ] ) ) )
 {
     configASSERT( uxTopReadyPriority );
     --uxTopReadyPriority;
 }
 
-/* listGET_OWNER_OF_NEXT_ENTRY walks through the list, so the tasks of the same priority get an equal share of the processor time. */
+/* listGET_OWNER_OF_NEXT_ENTRY walks through the list, so the tasks of the same 
+priority get an equal share of the processor time. */
 listGET_OWNER_OF_NEXT_ENTRY( pxCurrentTCB, &( pxReadyTasksLists[ uxTopReadyPriority ] ) );
 \end{verbatim}
 
 Before the while loop starts, \code{uxTopReadyPriority} is guaranteed
-to be greater than or equal to the priority of the highest priority
+to be greater than or equal to the priority of the highest-priority
 ready task. The while() loop starts at priority level
 \code{uxTopReadyPriority} and walks down through the
-\code{pxReadyTasksLists[]} array to find the highest priority level
+\code{pxReadyTasksLists[]} array to find the highest-priority level
 with ready tasks. \code{listGET\_OWNER\_OF\_NEXT\_ENTRY()} then grabs
 the next ready task from that priority level's ready list.
 
-Now \code{pxCurrentTCB} points to the highest priority task, and when
+Now \code{pxCurrentTCB} points to the highest-priority task, and when
 \code{vTaskSwitchContext()} returns the hardware-dependent code starts
 running that task.
 
 Those nine lines of code are the absolute heart of FreeRTOS. The other
 8900+ lines of FreeRTOS are there to make sure those nine lines are
-all that's needed to keep the highest priority task running.
+all that's needed to keep the highest-priority task running.
 
 \end{aosasect2}
 
 % FIXME: dangles outside a second-level section.
 
-\aosafigref{fig.freertos.ready} is a high level picture of what a
+\aosafigref{fig.freertos.ready} is a high-level picture of what a
 ready list looks like. This example has three priority levels, with
 one priority 0 task, no priority 1 tasks, and three priority 2
 tasks. This picture is accurate but not complete; it's missing a few
 details which we'll fill in later.
 
-\aosafigure{../images/freertos/freertos-figures-basic-ready-list.png}{Basic View of FreeRTOS Ready List}{fig.freertos.ready}
+\aosafigure[325pt]{../images/freertos/freertos-figures-basic-ready-list.pdf}{Basic view of FreeRTOS Ready List}{fig.freertos.ready}
 
-Now that we have the high level overview out of the way, let's dive in
+Now that we have the high-level overview out of the way, let's dive in
 to the details.  We'll look at the three main FreeRTOS data
 structures: tasks, lists, and queues.
 
@@ -289,36 +283,52 @@ structures: tasks, lists, and queues.
 
 \begin{aosasect1}{Tasks}
 
-% FIXME: back-to-back section headings
+The main job of all operating systems is to run and coordinate user
+tasks. Like many operating systems, the basic unit of work in FreeRTOS
+is the task. FreeRTOS uses a Task Control Block (TCB) to represent
+each task. 
 
 \begin{aosasect2}{Task Control Block (TCB)}
 
-The main job of all operating systems is to run and coordinate user
-tasks. Like many operating systems, the basic unit of work in FreeRTOS
-is ``the task.'' FreeRTOS uses a Task Control Block (TCB) to represent
-each task. The TCB is defined in \code{tasks.c} like this:
+The TCB is defined in \code{tasks.c} like this:
 
+%% QUERY: I rearranged comments so they would not get cut off - is
+%% the code still okay? --ARB
 \begin{verbatim}
-/*
- * Task control block.  A task control block (TCB) is allocated to each task,
- * and stores the context of the task.
- */
 typedef struct tskTaskControlBlock
 {
-  volatile portSTACK_TYPE *pxTopOfStack;                 /*< Points to the location of the last item placed on the tasks stack.  THIS MUST BE THE FIRST MEMBER OF THE STRUCT. */
+  volatile portSTACK_TYPE *pxTopOfStack;                 /*< Points to the location of
+                                                             the last item placed on 
+                                                             the tasks stack.  THIS 
+                                                             MUST BE THE FIRST MEMBER 
+                                                             OF THE STRUCT. */
                                                          
-  xListItem    xGenericListItem;                         /*< List item used to place the TCB in ready and blocked queues. */
-  xListItem    xEventListItem;                           /*< List item used to place the TCB in event lists.  */
-  unsigned portBASE_TYPE uxPriority;                     /*< The priority of the task where 0 is the lowest priority. */
-  portSTACK_TYPE *pxStack;                               /*< Points to the start of the stack. */
-  signed char    pcTaskName[ configMAX_TASK_NAME_LEN ];  /*< Descriptive name given to the task when created.  Facilitates debugging only. */
+  xListItem    xGenericListItem;                         /*< List item used to place 
+                                                             the TCB in ready and 
+                                                             blocked queues. */
+  xListItem    xEventListItem;                           /*< List item used to place 
+                                                             the TCB in event lists.*/
+  unsigned portBASE_TYPE uxPriority;                     /*< The priority of the task                                                              where 0 is the lowest 
+                                                             priority. */
+  portSTACK_TYPE *pxStack;                               /*< Points to the start of 
+                                                             the stack. */
+  signed char    pcTaskName[ configMAX_TASK_NAME_LEN ];  /*< Descriptive name given 
+                                                             to the task when created.
+                                                             Facilitates debugging 
+                                                             only. */
 
   #if ( portSTACK_GROWTH > 0 )
-    portSTACK_TYPE *pxEndOfStack;                        /*< Used for stack overflow checking on architectures where the stack grows up from low memory. */
+    portSTACK_TYPE *pxEndOfStack;                        /*< Used for stack overflow 
+                                                             checking on architectures
+                                                             where the stack grows up
+                                                             from low memory. */
   #endif
 
   #if ( configUSE_MUTEXES == 1 )
-    unsigned portBASE_TYPE uxBasePriority;               /*< The priority last assigned to the task - used by the priority inheritance mechanism. */
+    unsigned portBASE_TYPE uxBasePriority;               /*< The priority last 
+                                                             assigned to the task - 
+                                                             used by the priority 
+                                                             inheritance mechanism. */
   #endif
 
 } tskTCB;
@@ -334,8 +344,7 @@ start of stack memory in \code{pxStack}.
 
 The TCB stores the initial priority of the task in \code{uxPriority}
 and \code{uxBasePriority}. A task is given a priority when it is
-created. Higher priority tasks will be given priority over lower
-priority tasks. A task's priority can be changed.  If FreeRTOS
+created, and a task's priority can be changed.  If FreeRTOS
 implements priority inheritance then it uses \code{uxBasePriority} to
 remember the original priority while the task is temporarily elevated
 to the ``inherited'' priority. (See the discussion about mutexes below
@@ -349,19 +358,14 @@ the TCB's \code{xGenericListItem} or \code{xEventListItem}. These
 they merely held a pointer to the TCB. We'll see an example of this
 when we discuss lists later.
 
-Interestingly, the TCB structure doesn't have a field that keeps track
-of the state of the task.
-
 A task can be in one of four states: running, ready to run, suspended,
 or blocked.  You might expect each task to have a variable that tells
-FreeRTOS what the task is doing. Instead, however, FreeRTOS tracks
+FreeRTOS what the task is doing, but it doesn't. Instead, FreeRTOS tracks
 task state implicitly by putting tasks in the appropriate list: ready
 list, suspended list, etc. The presence of a task in a particular list
-is implicitly the task's state.
-
-As a task changes from one state to another, FreeRTOS simply moves it
-from one list to another, without needing to explicitly maintain a
-state variable.
+indicates the task's state.  As a task changes from one state to another, 
+FreeRTOS simply moves it
+from one list to another.
 
 \end{aosasect2}
 
@@ -370,7 +374,7 @@ state variable.
 % FIXME: some one-sentence paragraphs in this chapter
 
 We've already touched on how a task is selected and scheduled with the
-\code{pxReadyTasksLists} array. Now Let's look at how a task is
+\code{pxReadyTasksLists} array; now let's look at how a task is
 initially created.  A task is created when the \code{xTaskCreate()}
 function is called.  FreeRTOS uses a newly allocated TCB object to
 store the name, priority, and other details for a task, then allocates
@@ -380,19 +384,23 @@ available) and remembers the start of the stack memory in TCB's
 
 The stack is initialized to look as if the new task is already running
 and was interrupted by a context switch. This way the scheduler can
-treat newly created tasks exactly the same way as tasks that have
-already been running for a while; the scheduler doesn't need any
+treat newly created tasks exactly the same way as it treats tasks that have
+been running for a while; the scheduler doesn't need any
 special case code for handling new tasks.
 
 The way that a task's stack is made to look like it was interrupted by
 a context switch depends on the architecture FreeRTOS is running on,
 but this ARM Cortex-M3 processor's implementation is a good example:
 
+%% FIXME: Some of this code is too wide - can someone who knows more 
+%% about code than me put in line breaks? 86 characters is the right 
+%% width to fit in our margins. --ARB
 \begin{verbatim}
 unsigned int *pxPortInitialiseStack( unsigned int *pxTopOfStack, pdTASK_CODE pxCode, void *pvParameters )
 {
   /* Simulate the stack frame as it would be created by a context switch interrupt. */
-  pxTopOfStack--; /* Offset added to account for the way the MCU uses the stack on entry/exit of interrupts. */
+  pxTopOfStack--; /* Offset added to account for the way the MCU uses the stack on 
+                     entry/exit of interrupts. */
   *pxTopOfStack = portINITIAL_XPSR;  /* xPSR */
   pxTopOfStack--;
   *pxTopOfStack = ( portSTACK_TYPE ) pxCode;  /* PC */
@@ -407,11 +415,11 @@ unsigned int *pxPortInitialiseStack( unsigned int *pxTopOfStack, pdTASK_CODE pxC
 \end{verbatim}
 
 The ARM Cortex-M3 processor pushes registers on the stack when a task
-is interrupted.  \code{pxPortInitialiseStack()} modifies the stack to
+is interrupted. \linebreak \code{pxPortInitialiseStack()} modifies the stack to
 look like the registers were pushed even though the task hasn't
 actually started running yet.  Known values are stored to the stack
 for the ARM registers \code{xPSR, PC, LR,} and \code{R0}. The
-remaining registers \code{R1 - R12} get stack space allocated for them
+remaining registers \code{R1} -- \code{R12} get stack space allocated for them
 by decrementing the top of stack pointer, but no specific data is
 stored in the stack for those registers. The ARM architecture says
 that those registers are undefined at reset, so a (non-buggy) program
@@ -429,7 +437,7 @@ possible priority level. FreeRTOS also has a few other lists for
 tracking tasks that have been suspended, killed, and delayed. These
 are all initialized now as well.
 
-After any first-time initialization is done the new task is added to
+After any first-time initialization is done, the new task is added to
 the ready list at its specified priority level.  Interrupts are
 re-enabled and new task creation is complete.
 
@@ -441,36 +449,44 @@ re-enabled and new task creation is complete.
 
 After tasks, the most used FreeRTOS data structure is the
 list. FreeRTOS uses its list structure to keep track of tasks for
-scheduling, and also to implement its queues.
+scheduling, and also to implement queues.
 
 The FreeRTOS list is a standard circular doubly linked list with a
 couple of interesting additions. Here's a list element:
 
+%% QUERY: Rearranged comments - okay? --ARB
 \begin{verbatim}
 struct xLIST_ITEM
 {
-  portTickType xItemValue;                  /*< The value being listed.  In most cases this is used to sort the list in descending order. */
-  volatile struct xLIST_ITEM * pxNext;      /*< Pointer to the next xListItem in the list.  */
-  volatile struct xLIST_ITEM * pxPrevious;  /*< Pointer to the previous xListItem in the list. */
-  void * pvOwner;                           /*< Pointer to the object (normally a TCB) that contains the list item.  There is therefore a two way link between the object containing the list item and the list item itself. */
-  void * pvContainer;                      /*< Pointer to the list in which this list item is placed (if any). */
+  portTickType xItemValue;                  /*< The value being listed.  In most cases
+                                                this is used to sort the list in 
+                                                descending order. */
+  volatile struct xLIST_ITEM * pxNext;      /*< Pointer to the next xListItem in the 
+                                                list.  */
+  volatile struct xLIST_ITEM * pxPrevious;  /*< Pointer to the previous xListItem in 
+                                                the list. */
+  void * pvOwner;                           /*< Pointer to the object (normally a TCB)
+                                                that contains the list item.  There is
+                                                therefore a two-way link between the 
+                                                object containing the list item and 
+                                                the list item itself. */
+  void * pvContainer;                       /*< Pointer to the list in which this list
+                                                item is placed (if any). */
 };
 \end{verbatim}
 
 Each list element holds a number, \code{xItemValue}, that is the
 usually the priority of the task being tracked or a timer value for
 event scheduling.  Lists are kept in high-to-low priority order,
-meaning that the highest priority xItemValue (the largest number) is
-at the front of the list and the lowest priority xItemValue (the
+meaning that the highest-priority \code{xItemValue} (the largest number) is
+at the front of the list and the lowest priority \code{xItemValue} (the
 smallest number) is at the end of the list.
 
 The \code{pxNext} and \code{pxPrevious} pointers are standard linked
-list pointers.
-
-\code{pvOwner} is a pointer to the owner of the list element. This is
+list pointers.  \code{pvOwner} is a pointer to the owner of the list element. This is
 usually a pointer to a task's TCB object. \code{pvOwner} is used to
 make task switching fast in \code{vTaskSwitchContext()}: once the
-highest priority task's list element is found in
+highest-priority task's list element is found in
 \code{pxReadyTasksLists[]}, that list element's \code{pvOwner} pointer
 leads us directly to the TCB needed to schedule the task.
 
@@ -478,23 +494,28 @@ leads us directly to the TCB needed to schedule the task.
 to quickly determine if a list item is in a particular list.  Each
 list element can be put in a list, which is defined as:
 
+%% QUERY: Reformatted comments - is this okay? --ARB
 \begin{verbatim}
 typedef struct xLIST
 {
   volatile unsigned portBASE_TYPE uxNumberOfItems;
-  volatile xListItem * pxIndex;          /*< Used to walk through the list.  Points to the last item returned by a call to pvListGetOwnerOfNextEntry (). */
-  volatile xMiniListItem xListEnd;       /*< List item that contains the maximum possible item value meaning it is always at the end of the list and is therefore used as a marker. */
+  volatile xListItem * pxIndex;          /*< Used to walk through the list.  Points to
+                                             the last item returned by a call to 
+                                             pvListGetOwnerOfNextEntry (). */
+  volatile xMiniListItem xListEnd;       /*< List item that contains the maximum 
+                                             possible item value, meaning it is always
+                                             at the end of the list and is therefore 
+                                             used as a marker. */
 } xList;
 \end{verbatim}
 
-The size of a list at any time is stored in \code{uxNumberOfItems} for
-fast list size operations.
-
+The size of a list at any time is stored in \code{uxNumberOfItems}, for
+fast list-size operations.
 All new lists are initialized to contain a single element: the
 \code{xListEnd} element.  \code{xListEnd.xItemValue} is a sentinal
 value which is equal to the largest value for the \code{xItemValue}
-variable: 0xffff when \code{portTickType} is a 16-bit value and
-0xffffffff when \code{portTickType} is a 32-bit value. Other list
+variable: \code{0xffff} when \code{portTickType} is a 16-bit value and
+\code{0xffffffff} when \code{portTickType} is a 32-bit value. Other list
 elements may also have the same value; the insertion algorithm ensures
 that \code{xListEnd} is always the last item in the list.
  
@@ -503,7 +524,7 @@ used as a marker for the start of the list.  And since the list is
 circular, this \code{xListEnd} element is also a marker for the end of
 the list.
 
-Most ``traditional'' list accesses you've ever used probably do all of
+Most ``traditional'' list accesses you've used probably do all of
 their work within a single for() loop or function call like this:
 
 \begin{verbatim}
@@ -529,20 +550,22 @@ there are three tasks at that priority level. This is similar to the
 basic ready list picture we looked at earlier, but this time we'll
 include all of the data structures and fields.
 
-\aosafigure{../images/freertos/freertos-figures-full-ready-list.png}{Full View of FreeRTOS Ready List}{fig.freertos.list}
+%% FIXME: This figure breaks in the middle of a block of code (and over a page turn).
+%% See if it can be moved. --ARB
+\aosafigure[325pt]{../images/freertos/freertos-figures-full-ready-list.pdf}{Full view of FreeRTOS Ready List}{fig.freertos.list}
 
 As you can see in \aosafigref{fig.freertos.list}, \code{pxCurrentTCB}
 indicates that we're currently running Task B.  The next time
-\code{vTaskSwitchContext()} runs it calls
+\code{vTaskSwitchContext()} runs, it calls
 \code{listGET\_OWNER\_OF\_NEXT\_ENTRY()} to get the next task to
 run. This function uses \code{pxIndex-{\textgreater}pxNext} to figure
 out the next task is Task C, and now \code{pxIndex} points to Task C's
 list element and \code{pxCurrentTCB} points to Task C's TCB.
 
-Note that each of \code{struct xListItem} objects is actually the
+Note that each \code{struct xListItem} object is actually the
 \code{xGenericListItem} object from the associated TCB.
 
-\aosafigure{../images/freertos/freertos-figures-full-ready-list-2.png}{Full View of FreeRTOS Ready List After a System Timer Tick}{fig.freertos.aftertick}
+\aosafigure[325pt]{../images/freertos/freertos-figures-full-ready-list-2.pdf}{Full view of FreeRTOS Ready List after a system timer tick}{fig.freertos.aftertick}
 
 \end{aosasect1}
 
@@ -555,24 +578,34 @@ communication and synchronization.
 The basic queue data structure is:
 
 \begin{verbatim}
-/*
- * Definition of the queue used by the scheduler.
- * Items are queued by copy, not reference.
- */
 typedef struct QueueDefinition
 {
-  signed char *pcHead;                     /*< Points to the beginning of the queue storage area. */
-  signed char *pcTail;                     /*< Points to the byte at the end of the queue storage area.  Once more byte is allocated than necessary to store the queue items, this is used as a marker. */
+  signed char *pcHead;                     /*< Points to the beginning of the queue 
+                                               storage area. */
+  signed char *pcTail;                     /*< Points to the byte at the end of the 
+                                               queue storage area. One more byte is 
+                                               allocated than necessary to store the 
+                                             queue items; this is used as a marker. */
+  signed char *pcWriteTo;                  /*< Points to the free next place in the 
+                                               storage area. */
+  signed char *pcReadFrom;                 /*< Points to the last place that a queued 
+                                               item was read from. */
                                            
-  signed char *pcWriteTo;                  /*< Points to the free next place in the storage area. */
-  signed char *pcReadFrom;                 /*< Points to the last place that a queued item was read from. */
-                                           
-  xList xTasksWaitingToSend;               /*< List of tasks that are blocked waiting to post onto this queue.  Stored in priority order. */
-  xList xTasksWaitingToReceive;            /*< List of tasks that are blocked waiting to read from this queue.  Stored in priority order. */
+  xList xTasksWaitingToSend;               /*< List of tasks that are blocked waiting 
+                                               to post onto this queue.  Stored in 
+                                               priority order. */
+  xList xTasksWaitingToReceive;            /*< List of tasks that are blocked waiting 
+                                               to read from this queue. Stored in 
+                                               priority order. */
 
-  volatile unsigned portBASE_TYPE uxMessagesWaiting; /*< The number of items currently in the queue. */
-  unsigned portBASE_TYPE uxLength;                   /*< The length of the queue defined as the number of items it will hold, not the number of bytes. */
-  unsigned portBASE_TYPE uxItemSize;                 /*< The size of each items that the queue will hold. */
+  volatile unsigned portBASE_TYPE uxMessagesWaiting; /*< The number of items currently
+                                                         in the queue. */
+  unsigned portBASE_TYPE uxLength;                   /*< The length of the queue 
+                                                         defined as the number of 
+                                                         items it will hold, not the 
+                                                         number of bytes. */
+  unsigned portBASE_TYPE uxItemSize;                 /*< The size of each items that 
+                                                         the queue will hold. */
                                          
 } xQUEUE;
 \end{verbatim}
@@ -581,7 +614,7 @@ This is a fairly standard queue with head and tail pointers, as well
 as pointers to keep track of where we've just read from and written
 to.
 
-When creating a queue the user specifies the length of the queue and
+When creating a queue, the user specifies the length of the queue and
 the size of each item to be tracked by the queue. \code{pcHead} and
 \code{pcTail} are used to keep track of the queue's internal
 storage. Adding an item into a queue does a deep copy of the item into
@@ -608,19 +641,19 @@ memory associated with the pointers. The queue doesn't care what data
 you're storing in it, it just needs to know the data's size.
 
 FreeRTOS supports blocking and non-blocking queue insertions and
-removals.  Non-blocking operations return immediately with a ``did the
-queue insertion work?'' or ``did the queue removal work?''
+removals.  Non-blocking operations return immediately with a ``Did the
+queue insertion work?'' or ``Did the queue removal work?''
 status. Blocking operations are specified with a timeout. A task can
 block indefinitely or for a limited amount of time.
 
-A blocked task, call it Task A, will remain blocked as long as its
+A blocked task---call it Task A---will remain blocked as long as its
 insert/remove operation cannot complete and its timeout (if any) has
 not expired.  If an interrupt or another task modifies the queue so
 that Task A's operation could complete, Task A will be unblocked. If
-Task A's queue operation is still possible by the time Task A actually
+Task A's queue operation is still possible by the time it actually
 runs then Task A will complete its queue operation and return
-``success.''  However, by the time Task A actually runs it is possible
-that a higher priority task or interrupt has performed yet another
+``success''.  However, by the time Task A actually runs, it is possible
+that a higher-priority task or interrupt has performed yet another
 operation on the queue that prevents Task A from performing its
 operation. In this case Task A will check its timeout and either
 resume blocking if the timeout hasn't expired, or return with a queue
@@ -628,7 +661,7 @@ operation ``failed'' status.
 
 It's important to note that the rest of the system keeps going while a
 task is blocking on a queue; other tasks and interrupts continue to
-run. This way the blocked task doesn't waste CPU cycles that can be
+run. This way the blocked task doesn't waste CPU cycles that could be
 used productively by other tasks and interrupts.
 
 FreeRTOS uses the \code{xTasksWaitingToSend} list to keep track of
@@ -652,12 +685,12 @@ and mutexes.
 Semaphores and mutexes may sound like the same thing, but they're
 not. FreeRTOS implements them similarly, but they're intended to be
 used in different ways.  How should they be used differently? Embedded
-guru Michael Barr says it best in his article, ``Mutexes and
+operating systems guru Michael Barr says it best in his article, ``Mutexes and
 Semaphores
 Demystified''\footnote{\url{http://www.netrino.com/node/202}}:
 
 \begin{quotation}
-The correct use of a semaphore is for signaling from one task to another. A mutex 
+\noindent The correct use of a semaphore is for signaling from one task to another. A mutex 
 is meant to be taken and released, always in that order, by each task that uses the 
 shared resource it protects. By contrast, tasks that use semaphores either signal 
 [``send'' in FreeRTOS terms] or wait [``receive'' in FreeRTOS terms] - not both.
@@ -672,13 +705,13 @@ Semaphores are used by one task to signal another task. To quote
 Barr's article:
 
 \begin{quotation}
-For example, Task 1 may contain code to post (i.e., signal or increment) a 
+\noindent For example, Task 1 may contain code to post (i.e., signal or increment) a 
 particular semaphore when the ``power'' button is pressed and Task 2, which wakes the 
 display, pends on that same semaphore. In this scenario, one task is the producer of 
 the event signal; the other the consumer.
 \end{quotation}
 
-If you're at all in doubt about semaphores and mutexes please check
+\noindent If you're at all in doubt about semaphores and mutexes, please check
 out Michael's article.
 
 \end{aosasect3}
@@ -689,7 +722,7 @@ FreeRTOS implements an N-element semaphore as a queue that can hold N
 items. It doesn't store any actual data for the queue items; the
 semaphore just cares how many queue entries are currently occupied,
 which is tracked in the queue's \code{uxMessagesWaiting} field.  It's
-doing ``pure synchronization'' as the FreeRTOS header file
+doing ``pure synchronization'', as the FreeRTOS header file
 \code{semphr.h} calls it.  Therefore the queue has a item size of zero
 bytes (\code{uxItemSize == 0}).  Each semaphore access increments or
 decrements the \code{uxMessagesWaiting} field; no item or data copying
@@ -708,7 +741,7 @@ of the \code{xQUEUE} struct fields are overloaded using
 Since a mutex doesn't store any data in the queue, it doesn't need any
 internal storage, and so the \code{pcHead} and \code{pcTail} fields
 aren't needed.  FreeRTOS sets the \code{uxQueueType} field (really the
-\code{pcHead} field) to 0 to note that this queue is being used for a
+\code{pcHead} field) to \code{0} to note that this queue is being used for a
 mutex.  FreeRTOS uses the overloaded \code{pcTail} fields to implement
 priority inheritence for mutexes.
 
@@ -718,7 +751,7 @@ Michael Barr again to define it, this time from his article,
 Inversion''\footnote{\url{http://www.eetimes.com/discussion/beginner-s-corner/4023947/Introduction-to-Priority-Inversion}}:
 
 \begin{quotation}
-[Priority inheritance] mandates that a lower-priority task inherit the priority 
+\noindent [Priority inheritance] mandates that a lower-priority task inherit the priority 
 of any higher-priority task pending on a resource they share. This priority change 
 should take place as soon as the high-priority task begins to pend; it should end 
 when the resource is released.
@@ -728,9 +761,9 @@ FreeRTOS implements priority inheritance using the
 \code{pxMutexHolder} field (which is really just the
 overloaded-by-\code{\#define} \code{pcTail} field). FreeRTOS records
 the task that holds a mutex in the \code{pxMutexHolder} field.  When a
-higher priority task is found to be waiting on a mutex currently taken
-by a lower priority task, FreeRTOS ``upgrades'' the lower priority
-task to the priority of the higher priority task until the mutex is
+higher-priority task is found to be waiting on a mutex currently taken
+by a lower-priority task, FreeRTOS ``upgrades'' the lower-priority
+task to the priority of the higher-priority task until the mutex is
 available again.
 
 \end{aosasect3}
@@ -743,20 +776,17 @@ available again.
 
 We've completed our look at the FreeRTOS architecture.  Hopefully you
 now have a good feel for how FreeRTOS's tasks run and communicate. And
-if you've never looked at any OS's internals before you now have a
+if you've never looked at any OS's internals before, I hope you now have a
 basic idea of how they work.
 
 Obviously this chapter did not cover all of FreeRTOS's
 architecture. Notably, I didn't mention memory allocation, ISRs,
-debugging, or MPU support. Please check out the source code for more
-information about the FreeRTOS architecture.
-
-This chapter also did not discuss how to setup or use
+debugging, or MPU support.  This chapter also did not discuss how to set up or use
 FreeRTOS. Richard Barry has written an excellent
 book\footnote{\url{http://www.freertos.org/Documentation/FreeRTOS-documentation-and-book.html}},
 \emph{Using the FreeRTOS Real Time Kernel: A Practical Guide}, which
-discusses exactly that.  It's not free, but it's authoritative and
-very well written; I highly recommend it if you're going to use
+discusses exactly that;
+I highly recommend it if you're going to use
 FreeRTOS.
 
 \end{aosasect1}
@@ -766,7 +796,7 @@ FreeRTOS.
 I would like to thank Richard Barry for creating and maintaining
 FreeRTOS, and for choosing to make it open source. Richard was very
 helpful in writing this chapter, providing some FreeRTOS history as
-well as very valuable technical review.
+well as a very valuable technical review.
 
 Thanks also to Amy Brown and Greg Wilson for pulling this whole AOSA
 thing together.
