@@ -20,7 +20,7 @@ will automatically update your machines to match.  If they are already
 configured as desired, then Puppet does nothing.
 
 In general, Puppet does everything it can to use existing system
-features to do its work; e.g., on Red Hat it will \code{yum} for packages and
+features to do its work; e.g., on Red Hat it will use \code{yum} for packages and
 \code{init.d} for services, but on OS X it will use \code{dmg} for packages and
 \code{launchd} for services.  One of the guiding goals in Puppet is to have
 the work it does make sense whether you are looking at Puppet code or
@@ -46,7 +46,7 @@ configured properly:
 class ssh {
     package { ssh: ensure => installed }
     file { "/etc/ssh/sshd_config":
-        source => "ssh/sshd_config",
+        source => "puppet:///ssh/sshd_config",
         ensure => present,
         require => Package[ssh]
     }
@@ -97,12 +97,12 @@ user to focus on outcomes rather than how to achieve them.  This set
 of primitives was implemented in Puppet's Resource Abstraction Layer.
 
 Puppet resources must be unique on a given host.  You can only have
-one package named ``ssh', one service named ``sshd', and one file named
+one package named ``ssh'', one service named ``sshd'', and one file named
 ``/etc/ssh/sshd\_config''.  This prevents different parts of your
 configurations from conflicting with each other, and you find out
 about those conflicts very early in the configuration process.  We
-refer to these resources by their type and title; e.g., Package[ssh]
-and Service[sshd].  You can have a package and a service with the same
+refer to these resources by their type and title; e.g., \code{Package[ssh]}
+and \code{Service[sshd]}.  You can have a package and a service with the same
 name because they are different types, but not two packages or
 services with the same name.
 
@@ -213,7 +213,7 @@ Given this choice, the workflow becomes relatively straightforward:
 
 \aosafigure{../images/puppet/dataflowGrey.pdf}{Puppet Dataflow}{fig.puppet.dataflow}
 
-\aosafigure{../images/puppet/TimingDiagram.pdf}{FIXME: Caption}{fig.puppet.timing}
+\aosafigure{../images/puppet/TimingDiagram.pdf}{Orchestration of data flow between Puppet processes and components}{fig.puppet.timing}
 
 Thus, the agent has access to its own system information, its
 configuration, and each report it generates.  The server has copies of
@@ -311,13 +311,13 @@ information into a Node object and passes it on to the Compiler.
 
 As mentioned above, Puppet has a custom language built for specifying
 system configurations.  Its compiler is really three chunks: A
-Yacc-style parser generator and a customer lexer; a group of classes
+Yacc-style parser generator and a custom lexer; a group of classes
 used to create our Abstract Syntax Tree (AST); and the Compiler class
 that handles the interactions of all of these classes and also
 functions as the API to this part of the system.
 
 The most complicated thing about the compiler is the fact that most
-Puppet code is lazily loaded on first reference (to reduce both load
+Puppet configuration code is lazily loaded on first reference (to reduce both load
 times and irrelevant logging about missing-but-unneeded dependencies),
 which means there aren't really explicit calls to load and parse the
 code.
@@ -400,7 +400,7 @@ same graph, so we have to convert between them for various purposes.
 
 Once the catalog is entirely constructed (assuming there is no
 failure), it is passed on to the Transaction.  In a system with a
-separate client and server, the Transaction runs on the client.
+separate client and server, the Transaction runs on the client, which pulls the Catalog down via HTTP as in \aosafigref{fig.puppet.timing}.
 
 Puppet's transaction class provides the framework for actually
 affecting the system, whereas everything else we've discussed just
@@ -496,7 +496,7 @@ Beyond \code{Puppet::Type}, there are two major kinds of classes in the RAL,
 the most interesting of which are what we call Providers.  When the
 RAL was first developed, each resource type mixed the definition of a
 parameter with code that knew how to manage it.  For instance, we
-would define the ``mode'' parameter, and then provide a method that
+would define the ``content'' parameter, and then provide a method that
 could read the content of a file, and another method that could change
 the content:
 
