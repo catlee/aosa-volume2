@@ -23,9 +23,7 @@ The Linux kernel was unusual to most commercial software projects at that
 time due to the large number of committers and the high variance of
 contributors with respect to involvement and knowledge in the existing
 codebase. The core development community struggled to find a VCS that
-satisfied most of their needs. Initially the version control systems
-reviewed were open source projects themselves and they were from the linear
-history lineage such as SCCS, RCS, and CVS.
+satisfied most of their needs.
 
 Git is an open source project that was born out of the needs and
 frustrations of the Linux Kernel development community in 2005. At that time
@@ -34,17 +32,13 @@ and CVS) by different core developers. BitKeeper offered a different
 view of VCS history lineage to the popular open source VCS projects at this
 time.
 
-BitMover, the company that built BitKeeper, provided free licenses and VCS
-hosting services to some core developers on the Linux kernel until early 2005
-when it announced it would no longer provide free licenses or VCS hosting
-services as of mid-2005.
-
-In April 2005, days after this BitMover announcement, Linus Torvalds began
-development in haste of what was to become Git as we know it today. He began
-by writing a collection of scripts to help him manage email patches to apply
-one after the other. The aim of this initial collection of scripts was to
-fail merges quickly so the maintainer could modify the codebase mid-patch
-stream and continue merging contributed patches once cleanly able to.
+Days after BitMover (maker of BitKeeper) announced it would revoke licenses
+for some core Linux kernel developers, Linus Torvalds began development in
+haste of what was to become Git as we know it today. He began by writing a
+collection of scripts to help him manage email patches to apply one after
+the other. The aim of this initial collection of scripts was to fail merges
+quickly so the maintainer could modify the codebase mid-patch stream and
+continue merging contributed patches once cleanly able to.
 
 Torvald's had one philosphical goal for Git - to embody the anti-CVS - plus
 three usability design goals from the outset:
@@ -61,7 +55,10 @@ representatation, remote protocol and how it tracks the merging of trees.
 
 Despite BitKeeper influencing the original design of Git, it is implemented
 in fundamentally different ways and allows even more distributed plus
-local-only workflows, which were not possible with BitKeeper.
+local-only workflows, which were not possible with BitKeeper. Monotone
+\footnote{\url{http://www.monotone.ca/}}
+(an open source distributed VCS started in 2003) was likely another
+inspiration during Git's early development.
 
 Distributed version control systems offer greater workflow flexibility often
 at the expense of simplicity. However, specific benefits to a distributed
