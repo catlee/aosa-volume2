@@ -46,7 +46,7 @@ configured properly:
 class ssh {
     package { ssh: ensure => installed }
     file { "/etc/ssh/sshd_config":
-        source => "puppet:///ssh/sshd_config",
+        source => 'puppet:///modules/ssh/sshd_config',
         ensure => present,
         require => Package[ssh]
     }
