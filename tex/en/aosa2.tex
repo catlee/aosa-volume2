@@ -14,6 +14,7 @@
 \pagestyle{fancy}
 \usepackage{sectsty}
 \usepackage{wrapfig}
+\usepackage[small]{caption}  % make caption text size smaller
 
 \usepackage[T1]{fontenc}
 \usepackage{tgtermes}    % body font
@@ -109,12 +110,15 @@
 {\begin{enumerate}\addtolength{\itemsep}{-0.6\baselineskip}}
 {\end{enumerate}}
 
+% new environment for second-level nested enumerated lists
 \newenvironment{aosaenumerate2}
 {\begin{enumerate}\addtolength{\itemsep}{-0.3\baselineskip}}
 {\end{enumerate}}
 
 \newenvironment{aosaitemize}
-{\begin{itemize}\addtolength{\itemsep}{-0.6\baselineskip}}
+{\begin{itemize}
+\setlength{\parsep}{-1.8\baselineskip}
+\addtolength{\itemsep}{-0.6\baselineskip}}
 {\end{itemize}}
 
 \newcommand{\aosaboxref}[1]{Box~\ref{#1}}
