@@ -90,10 +90,10 @@ defined in the various MIME standards.  A container \emph{message
   part} can encode an image, some audio, or just about any type of
 binary or text data.  In mail reader applications, these are known as
 \emph{attachments}.  \aosafigref{fig.mailman.mime} shows the structure
-of a complex MIME message.  The blue boxes are the container parts,
-the yellow boxes are
+of a complex MIME message.  The boxes with solid borders are the container parts,
+the boxes with dashed borders are
 Base64\footnote{\url{http://en.wikipedia.org/wiki/Base64}} encoded
-binary data, and the red box is a plain text message.
+binary data, and the box with a dotted border is a plain text message.
 
 \aosafigure{../images/mailman/mime.png}{A MIME \code{multipart/mixed} Message Containing Text, Images, and an Audio File}{fig.mailman.mime}
 
@@ -840,7 +840,7 @@ file system, and this would override more generic defaults.
 
 \end{aosasect1}
 
-\begin{aosasect1}{Lessons}
+\begin{aosasect1}{Lessons Learned}
 
 While this article has provided an overview of Mailman 3's
 architecture and insight into how that architecture has evolved over
@@ -911,6 +911,9 @@ GNU Mailman is a vibrant project with a healthy user base, and lots of
 opportunities for contributions.  Here are some resources you can use
 if you think you'd like to help us out, which I hope you do!
 
+%% FIXME: Maybe we should make a table environment with space before
+%% and after? --ARB
+\hspace{20pt}
 \begin{tabular}{ll}
 Primary web site        & \code{http://www.list.org} \\
 Project wiki            & \code{http://wiki.list.org} \\
@@ -919,13 +922,17 @@ Users mailing list      & \code{mailman-users@python.org} \\
 Freenode IRC channel    & \code{\#mailman}
 \end{tabular}
 
-A final note; while this article was being written, we learned with
+\begin{aosasect3}{A Final Note}
+
+While this article was being written, we learned with
 sadness of the passing of Tokio
 Kikuchi\footnote{\url{http://wiki.list.org/display/COM/TokioKikuchi}},
 a Japanese professor who contributed heavily to Mailman, and was
 especially knowledgeable about internationalization and the
 idiosyncrasies of Japanese mail user agents.  He will be greatly
 missed.
+
+\end{aosasect3}
 
 \end{aosasect1}
 
