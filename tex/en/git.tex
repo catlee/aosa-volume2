@@ -140,7 +140,7 @@ Another primary difference between Git, Subversion and its linear history
 ancenstors, is its ability to directly support branching that will record
 most merge history cases.
 
-\aosafigure{../images/git/dag-example.png}{Example of a DAG representation
+\aosafigure[200pt]{../images/git/dag-example.png}{Example of a DAG representation
   in Git}{fig.git.dag}
 
 Git enables full branching capability using directed acyclic
@@ -458,7 +458,7 @@ Git tackles the storage space problem by "packing" objects in a compressed
 format using an index file to point to offsets to specific objects in the
 corresponding \emph{packed} file.
 
-\aosafigure{../images/git/packed-format.png}{Diagram of a pack file with
+\aosafigure[200pt]{../images/git/packed-format.png}{Diagram of a pack file with
   corresponding index file}{fig.git.pack}
 
 We can count the number of \emph{loose} (or unpacked) objects in the local
@@ -495,6 +495,9 @@ file or tree history has a linear progression. Whatever has a higher revision
 number will supercede anything before it. Branching is not supported directly,
 only through an unenforced directory structure within the repository.
 
+\aosafigure[150pt]{../images/git/merge-history.png}{Diagram showing merge history
+ lineage}{fig.git.merge}
+
 Let us first use an example to show how this can be problematic when
 maintaining multiple branches of a work. Then we will look at a scenario to
 show its limitations.
@@ -527,9 +530,6 @@ parents. Therefore the merge commit on the \code{db-migration} branch
 HEAD of the other upstream branch through the SHA hashes of the parents.
 The same is true of the merge commit in the \code{master} (the \code{trunk}
 equivalent in Git).
-
-\aosafigure{../images/git/merge-history.png}{Diagram showing merge history
- lineage}{fig.git.merge}
 
 A question that is hard to answer definitively using DAG (and linear) based
 merge histories is which commits are contained within each branch. For
