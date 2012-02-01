@@ -678,13 +678,13 @@ years of Mailman's existence.
 
 Second, imagine the situation where a member of a mailing list has
 several forwards.  She might be subscribed to the list with her
-anne@example.com address, but this might forward to
-person@example.org, which might further forward the message to
-me@example.net.  When the final destination server at example.net
+\code{anne@example.com} address, but this might forward to
+\code{person@example.org}, which might further forward the message to
+\code{me@example.net}.  When the final destination server at example.net
 receives the message, it will usually just send a bounce saying that
-me@example.net is no longer valid.  But the Mailman server that sent
-the message only knows the member as anne@example.com, so a bounce
-flagging me@example.net will not contain a subscribed address, and
+\code{me@example.net} is no longer valid.  But the Mailman server that sent
+the message only knows the member as \code{anne@example.com}, so a bounce
+flagging \code{me@example.net} will not contain a subscribed address, and
 Mailman will ignore it.
 
 Along comes VERP, which exploits a requirement of the fundamental SMTP
@@ -706,7 +706,7 @@ modern mail servers.  So when the bounce comes back, it will actually
 be delivered to \code{mylist-bounce@example.com} but with the
 \code{To:} header still set to VERP-encoded recipient address.
 Mailman can then parse this \code{To:} header to decode the original
-recipient as anne@example.com.
+recipient as \code{anne@example.com}.
 
 While VERP is an extremely powerful tool for culling bad addresses
 from the mailing list, it does have one potentially important
