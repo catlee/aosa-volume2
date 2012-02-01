@@ -2,7 +2,7 @@
 
 GNU Mailman\footnote{\url{http://www.list.org}} is free software for
 managing mailing lists.  Almost everybody who writes or uses free and
-open source software has probably encountered a mailing list.  Mailing
+open source software has encountered a mailing list.  Mailing
 lists can be discussion-based or announcement-based, with all kinds of
 variations in between.  Sometimes mailing lists are gatewayed to
 newsgroups on Usenet or similar services such as
@@ -12,16 +12,20 @@ have been posted to the mailing list.
 
 GNU Mailman has been around since the early 1990s, when John Viega
 wrote the first version to connect fans with the nascent Dave Matthews
-Band, who he was friends with in college.  This early version came to
-our attention by the mid-90s, when the center of the Python universe
-had moved from CWI\footnote{\url{http://www.cwi.nl/}} in the
-Netherlands to CNRI\footnote{\url{http://www.cnri.reston.va.us/}} in
-Reston, Virginia, USA.  At CNRI, we were running various
+Band, the members of which he was friends with in college.  This early version came to
+%% QUERY: Who does "our" refer to?
+our attention by the mid-'90s, when the center of the Python universe
+had moved from CWI\footnote{\url{http://www.cwi.nl/}}, a scientific research institute in the
+Netherlands, to CNRI\footnote{\url{http://www.cnri.reston.va.us/}}, 
+the Corporation for National Research Initiatives in
+Reston, Virginia, USA.  At CNRI we were running various
 Python-related mailing lists using Majordomo, a Perl-based mailing
 list manager.  Of course, it just wouldn't do for the Python world to
 be maintaining so much Perl code.  More importantly, because of its
 design, we found that modifying Majordomo for our purposes (such as to
-add minimal anti-spam measures) was too difficult.  Ken Manheimer was
+add minimal anti-spam measures) was too difficult.  
+
+Ken Manheimer was
 instrumental in much of the early GNU Mailman work, and many excellent
 developers have contributed to Mailman since then.  Today, Mark Sapiro
 is maintaining the stable 2.1 branch, while Barry Warsaw concentrates
@@ -36,7 +40,7 @@ we've addressed them in Mailman 3.
 In the early Mailman 1 days, we had a lot of problems with messages
 getting lost, or bugs causing messages to be re-delivered over and
 over again.  This prompted us to articulate two overriding principles
-that I think were critical to Mailman's ongoing success:
+that critical to Mailman's ongoing success:
 
 \begin{aosaitemize}
 
@@ -66,7 +70,7 @@ On the face of it, an email message is a simple object.  It consists
 of a number of colon-separated key-value pairs, called the headers,
 followed by an empty line which separates the headers from the message
 body.  This textural representation should be easy to parse, generate,
-reason about, and manipulate, but in fact, it quickly gets quite
+reason about, and manipulate, but in fact it quickly gets quite
 complicated.  There are countless RFCs that describe all the
 variations that can occur, such as handling complex data types like
 images, audio, and more.  Email can contain ASCII English, or just
@@ -94,8 +98,8 @@ binary data, and the red box is a plain text message.
 \aosafigure{../images/mailman/mime.png}{A MIME \code{multipart/mixed} Message Containing Text, Images, and an Audio File}{fig.mailman.mime}
 
 Container parts can also be arbitrarily nested; these are called
-\emph{multiparts} and can in fact get quite deep.  But all email
-messages regardless of their complexity can be modeled as a tree, with
+\emph{multiparts} and can in fact get quite deep.  But any email
+message, regardless of its complexity, can be modeled as a tree with
 a single message object at its root.  Within Mailman, we often refer
 to this as the \emph{message object tree}, and we pass this tree
 around by reference to the root message object.
@@ -105,11 +109,11 @@ multipart message in \aosafigref{fig.mailman.mime}.
 \aosafigure{../images/mailman/tree.png}{Message Object Tree of a Complex MIME Email Message}{fig.mailman.tree}
 
 Mailman will almost always modify the original message in some way.
-Sometimes, the transformations can be fairly benign, such as adding or
-removing headers.  Sometimes, we'll completely change the structure of
+Sometimes the transformations can be fairly benign, such as adding or
+removing headers.  Sometimes we'll completely change the structure of
 the message object tree, such as when the content filter removes
 certain content types like HTML, images, or other non-text parts.
-Mailman might even collapse `multipart/alternatives`, where a message
+Mailman might even collapse ``multipart/alternatives'', where a message
 appears as both plain text and as some rich text type, or add
 additional parts containing information about the mailing list itself.
 
@@ -122,7 +126,7 @@ Along the way, Mailman
 pickles\footnote{\url{http://docs.python.org/library/pickle.html}} the
 message object tree for quick storage to, and reconstruction from, the
 file system.  \emph{Pickles} are a Python technology for serializing
-any Python object to a byte stream, including all its subobjects, and
+any Python object, including all its subobjects, to a byte stream, and
 it's perfectly suited to optimizing the handling of email message
 object trees. \emph{Unpickling} is deserializing this byte stream back
 into a live object.  By storing these byte streams in a file, Python
@@ -143,7 +147,7 @@ list-centric, such as:
 
 \item Mailing lists have a large number of configuration options that
   are stored in the database, and which control everything from
-  posting privileges, to how the message is modified before final
+  posting privileges to how messages are modified before final
   delivery.
 
 \item Mailing lists have owners and moderators which have greater
@@ -158,7 +162,7 @@ list-centric, such as:
 
 \noindent
 and so on.  Almost every operation in Mailman takes a mailing list as
-an argument - it's that fundamental.  Mailing list objects have
+an argument---it's that fundamental.  Mailing list objects have
 undergone a radical redesign in Mailman 3 to make them more efficient
 and to expand their flexibility.
 
@@ -166,20 +170,21 @@ One of John's earliest design decisions was how to represent a mailing
 list object inside the system.  For this central data type, he chose a
 Python class with multiple base classes, each of which implements a
 small part of the mailing list's responsibility.  These cooperating
-base classes, called \emph{mixin classes} were a clever way to
+base classes, called \emph{mixin classes}, were a clever way to
 organize the code so that it was easy to add entirely new
 functionality.  By grafting on a new mixin base class, the core
 \code{MailList} class could easily accommodate something new and cool.
 
 For example, to add an auto-responder to Mailman 2, a mixin class was
-created that held the data specific to that feature, which would get
+created that held the data specific to that feature. The data would get
 automatically initialized when a new mailing list was created.  The
 mixin class also provided the methods necessary to support the
-auto-responder feature.
-
+auto-responder feature.  
 This structure was even more useful when it came to the design of the
-mailing \code{MailList} object's persistence.  Another of John's early
-design decisions was to use Python pickles for storing\code{MailList}
+mailing \code{MailList} object's persistence.  
+
+Another of John's early
+design decisions was to use Python pickles for storing \code{MailList}
 state persistence.
 
 In Mailman 2, the \code{MailList} object's state is stored in a file
@@ -216,8 +221,8 @@ operation.  This serialization of operations on a mailing list turned
 out to be horribly slow and inefficient.
 
 For these reasons, Mailman 3 stores all of its data in a SQL database.
-By default SQLite3 is used, though this is easily changed, since
-Mailman 3 utilizes the Object Relational Mapper called Storm, which
+By default SQLite3 is used, though this is easily changed since
+Mailman 3 uses the Object Relational Mapper called Storm, which
 supports a wide variety of databases.  PostgreSQL support was added
 with just a few lines of code, and a site administrator can enable it
 by changing one configuration variable.
@@ -228,7 +233,7 @@ them.  For example, a user might want to temporarily suspend all their
 subscriptions when they go on vacation.  Or a site administrator might
 want to add some disclaimer to the welcome message of all of the
 mailing lists on her system.  Even the simple matter of figuring out
-which mailing lists a single address was subscribed to required
+which mailing lists a single address is subscribed to required
 unpickling the state of every mailing list on the system, since
 membership information was kept in the \code{config.pck} file too.
 
@@ -262,10 +267,10 @@ processes called \emph{runners}.  Originally conceived as a way of
 predictably processing all the queued message files found in a
 particular directory, there are now a few runners which are simply
 independent, long-running processes that perform a specific task and
-are managed by a master process.  More on that later.  When a runner
+are managed by a master process; more on that later.  When a runner
 does manage files in a directory, it is called a \emph{queue runner}.
 
-Mailman is religiously single threaded, even though there is
+Mailman is religiously single-threaded, even though there is
 significant parallelism to exploit.  For example, Mailman can accept
 messages from the mail server at the same time it's sending messages
 out to recipients, or processing bounces, or archiving a message.
@@ -284,7 +289,7 @@ Mail Transfer Protocol
 an administrative HTTP server.
 
 Each queue runner is responsible for a single directory, i.e., its
-\emph{queue}.  While the typical Mailman system can perform perfectly
+queue.  While the typical Mailman system can perform perfectly
 well with a single process per queue, we use a clever algorithm for
 allowing parallelism within a single queue directory, without
 requiring any kind of cooperation or locking.  The secret is in the
@@ -311,7 +316,7 @@ should ever get lost, and no message should ever be delivered more
 than once.  But things usually work properly and these files can be
 pretty rare.
 
-As indicated, for really busy sites, Mailman supports running more
+As indicated, for really busy sites Mailman supports running more
 than one runner process per queue directory, completely in parallel,
 with no communication between them or locking necessary to process the
 files.  It does this by naming the pickle files with a SHA1 hash, and
@@ -349,7 +354,7 @@ Mailman's solution was to extend the file naming algorithm to include
 a time stamp prefix, as the number of seconds since the epoch (e.g.,
 \code{<timestamp>+<sha1hash>.pck}).  Each loop through the queue
 runner starts by doing an \code{os.listdir()}, which returns all the
-files in the queue directory, then for each file, it splits the file
+files in the queue directory. Then for each file, it splits the file
 name and ignores any file names where the SHA1 hash doesn't match its
 slice of responsibility.  The runner then sorts the remaining files
 based on the timestamp part of the file name.  It's true that with
@@ -368,12 +373,12 @@ Mailman and was largely ported untouched from Mailman 2 to Mailman 3.
 \begin{aosasect1}{The Master Runner}
 
 With all these runner processes, Mailman needed a simple way to start
-and stop them consistently.  Thus the master watcher process was born,
-and it must be able to handle both queue runners, and runners which do
+and stop them consistently;  thus the master watcher process was born.
+It must be able to handle both queue runners and runners which do
 not manage a queue.  For example, in Mailman 3, we accept messages
 from the incoming upstream mail server via LMTP, which is a protocol
 similar to SMTP, but which operates only for local delivery and thus
-can be much simpler, as it doesn't need to deal with the vagaries of
+can be much simpler as it doesn't need to deal with the vagaries of
 delivering mail over an unpredictable Internet.  The LMTP runner
 simply listens on a port, waiting for its upstream mail server to
 connect and send it a byte stream.  It then parses this byte stream
@@ -384,9 +389,9 @@ Mailman also has a runner that listens on another port and processes
 REST requests over HTTP.  This process doesn't handle queue files at
 all.
 
-A typical running Mailman system might have 8 or 10 processes, and
+A typical running Mailman system might have eight or ten processes, and
 they all need to be stopped and started appropriately and
-conveniently.  They can also crash occasionally, for example when a
+conveniently.  They can also crash occasionally; for example, when a
 bug in Mailman causes an unexpected exception to occur.  When this
 happens, the message being delivered is \emph{shunted} to a holding
 area, with the state of the system at the time of the exception
@@ -470,8 +475,7 @@ restart the master, as well as all the subprocesses, and also to cause
 all the log files to be reopened.  The \code{start} subcommand
 \code{fork()}s and \code{exec()}s the master process, while the others
 simply send the appropriate signal to the master, which then
-propagates it to its subprocesses as described above.
-
+propagates it to its subprocesses as described above.  
 This improved separation of responsibility make it much easier to
 understand each individual piece.
 
@@ -480,25 +484,25 @@ understand each individual piece.
 \begin{aosasect1}{Rules, Links, and Chains}
 
 A mailing list posting goes through several phases from the time it's
-first received, until the time it's sent out to the list's membership.
+first received until the time it's sent out to the list's membership.
 In Mailman 2, each processing step was represented by a
 \emph{handler}, and a string of handlers were put together into a
 \emph{pipeline}.  So, when a message came into the system, Mailman
 would first determine which pipeline would be used to process it, and
 then each handler in the pipeline would be called in turn.  Some
-handlers would do moderation functions (e.g., ``is this person allowed
+handlers would do moderation functions (e.g., ``Is this person allowed
 to post to the mailing list?''), others would do modification
-functions (e.g., ``which headers should I remove or add?''), and
+functions (e.g., ``Which headers should I remove or add?''), and
 others would copy the message to other queues.  A few examples of the
 latter are:
 
 \begin{aosaitemize}
 
-\item A message accepted for posting would be copied to the *archiver*
+\item A message accepted for posting would be copied to the \code{archiver}
   queue at some point, so that its queue runner would add the message
   to the archive.
 
-\item A copy of the message eventually had to end up in the *outgoing*
+\item A copy of the message eventually had to end up in the \code{outgoing}
   queue so that it could be delivered to the upstream mail server,
   which has the ultimate responsibility of delivery to a list member.
 
@@ -515,7 +519,7 @@ straightforward, and it was a simple matter to implement a new
 handler, ensuring it got added to the right pipeline in the right
 location to accomplish the custom operation.
 
-One problem with this though was that mixing moderation and
+One problem with this was that mixing moderation and
 modification in the same pipeline became problematic.  The handlers
 had to be sequenced in the pipeline just so, or unpredictable or
 undesirable things would happen.  For example, if the handler that
@@ -548,7 +552,7 @@ each link is associated with a \emph{rule}.  Rules are simply pieces
 of code that get passed the three typical parameters: the mailing
 list, the message object tree, and the metadata dictionary.  Rules are
 not supposed to modify the message; they just make a binary decision
-and return a boolean answering the question ``did the rule match or
+and return a boolean answering the question, ``Did the rule match or
 not?''.  Rules can also record information in the metadata dictionary.
 
 In the figure, green arrows indicates message flow when the rule
@@ -584,7 +588,7 @@ The ``truth'' rule is a bit different.  It's always associated with
 the last link in the chain, and it always matches.  With the
 combination of the penultimate ``any'' rule sweeping aside all
 previously matching messages, the last link then knows that any
-message making it through thus far is allowed to be posted to the
+message making it this far is allowed to be posted to the
 mailing list, so it unconditionally moves the message to the
 ``accept'' chain.
 
@@ -611,26 +615,25 @@ illustrated.
 
 \begin{aosasect1}{Handlers and Pipelines}
 
-Once a message as made its way through the chains and rules, and a
-message is accepted for posting, the message must be further processed
+Once a message has made its way through the chains and rules and 
+is accepted for posting, the message must be further processed
 before it can be delivered to the final recipients.  For example, some
 headers may get added or deleted, and some messages may get some extra
 decorations that provide important disclaimers or information, such as
 how to leave the mailing list.  These modifications are performed by a
-\emph{pipeline} which contains a sequence of \emph{handlers}.  In a
+pipeline which contains a sequence of handlers.  In a
 manner similar to chains and rules, pipelines and handlers are
 extensible, but there are a number of built-in pipelines for the
 common cases.  Handlers have a similar interface as rules, accepting a
-mailing list, message object, and metadata dictionary.  However unlike
-rules, handlers can and do modify the message.
-
+mailing list, message object, and metadata dictionary.  However, unlike
+rules, handlers can and do modify the message.  
 \aosafigref{fig.mailman.pipeline} illustrates the default pipeline and
 set of handlers (some handlers are omitted for simplicity).
 
 \aosafigure[150px]{../images/mailman/pipeline.png}{Pipeline Queue Handlers}{fig.mailman.pipeline}
 
 For example, a posted message needs to have a \code{Precedence:}
-header added which tells other automated software that this message
+header added, which tells other automated software that this message
 came from a mailing list.  This header is a de facto standard to
 prevent vacation programs from responding back to the mailing list.
 Adding this header (among other header modifications) is done by the
@@ -651,14 +654,14 @@ for final delivery to the mailing list's members.
 
 ``VERP'' stands for ``Variable Envelope Return Path'', and it is a
 well-known technique\footnote{\url{http://cr.yp.to/proto/verp.txt}}
-that mailing lists can use to unambiguously determine bouncing
+that mailing lists use to unambiguously determine bouncing
 recipient addresses.  When an address on a mailing list is no longer
 active, the recipient's mail server will send a notification back to
 the sender.  In the case of a mailing list, you want this bounce to go
-back to the mailing list, not to the original author of the message.
-The author can't do anything about the bounce, and worse, sending the
+back to the mailing list, not to the original author of the message;
+the author can't do anything about the bounce, and worse, sending the
 bounce back to the author can leak information about who is subscribed
-to the mailing list.  When the mailing list gets the bounce, it can do
+to the mailing list.  When the mailing list gets the bounce, however, it can do
 something useful, such as disable the bouncing address or remove it
 from the list's membership.
 
@@ -690,13 +693,13 @@ provide unambiguous bounce detection, by returning such bounce
 messages to the \emph{envelope sender}.  This is not the \code{From:}
 field in the message body, but in fact the \code{MAIL FROM} value set
 during the SMTP dialog.  This is preserved along the delivery route,
-and the ultimate receiving mail server is required by the standards to
+and the ultimate receiving mail server is required, by the standards, to
 send the bounces to this address.  Mailman uses this fact to encode
 the original recipient email address into the \code{MAIL FROM} value.
 
-If the recipient is anne@example.com and the Mailman server is
-mylist@example.org, then the VERP-encoded envelope sender for a
-mailing list posting sent to anne@example.com will be
+If the recipient is \code{anne@example.com} and the Mailman server is
+\code{mylist@example.org}, then the VERP-encoded envelope sender for a
+mailing list posting sent to \code{anne@example.com} will be
 \code{mylist-bounce+anne=example.com@example.org}.  Here, the \code{+}
 is a local address separator, which is a format supported by most
 modern mail servers.  So when the bounce comes back, it will actually
@@ -711,14 +714,14 @@ disadvantage.  Using VERP requires that Mailman send out exactly one
 copy of the message per recipient.  Without VERP, Mailman can bundle
 up identical copies of an outgoing message for multiple recipients,
 thus reducing overall bandwidth and processing time.  But VERP
-requires a unique \code{MAIL FROM} for each recipient, and the only
+requires a unique \code{MAIL\,FROM} for each recipient, and the only
 way to do that is to send a unique copy of the message.  Generally
 this is an acceptable trade-off, and in fact, once these
 individualized messages are being sent for VERP anyway, there are a
 lot of useful things Mailman can also do.  For example, it can embed a
 URL in the footer of the message customized for each recipient which
 gives them a direct link to unsubscribe from the list.  You could even
-imagine various types of \emph{mail-merge} operations for customizing
+imagine various types of mail-merge operations for customizing
 the body of the message for each individual recipient.
 
 \end{aosasect1}
@@ -727,8 +730,13 @@ the body of the message for each individual recipient.
 
 One of the key architectural changes in Mailman 3 addresses a common
 request over the years: allow Mailman to be more easily integrated
+%% QUERY: Can you add a short description of Canonical here: "hired
+%% by Canonical, a company which provides support and services to
+%% the Ubuntu community, in 2007..." Something like that. --ARB
 with external systems.  When I was hired by Canonical in 2007, my job
-was originally to add mailing lists to Launchpad.  I knew that Mailman
+%% QUERY: Is this description of Launchpad okay? --ARB
+was originally to add mailing lists to Launchpad, a collaboration and
+hosting platform for software projects.  I knew that Mailman
 2 could do the job, but there was a requirement to use Launchpad's web
 user interface instead of Mailman's default user interface.  Since
 Launchpad mailing lists were almost always going to be discussion
@@ -740,11 +748,11 @@ would be exposed through the Launchpad web user interface.
 At the time, Launchpad was not open source (this changed in 2009), so
 we had to design the integration in such a way that Mailman 2's GPLv2
 code could not infect Launchpad.  This led to a number of
-architectural decision during that integration design that were quite
+architectural decisions during that integration design that were quite
 tricky and somewhat inefficient.  Because Launchpad is now open
 source, these hacks wouldn't be necessary today, but having to do it
-this way did provide some very valuable lessons on how a web user
-interface-less Mailman could be integrated with external systems.  The
+this way did provide some very valuable lessons on how a 
+web-user-interface-less Mailman could be integrated with external systems.  The
 vision that emerged was of a core engine that implemented mailing list
 operations efficiently and reliably, and that could be managed by any
 kind of web front-end, including ones written in Zope, Django, or PHP,
@@ -756,7 +764,7 @@ But XMLRPC has a number of problems that make it a less-than-ideal
 protocol.
 
 Mailman 3 has adopted the Representational State
-Transfer\footnote{\url{http://en.wikipedia.org/wiki/Representational\_state\_transfer}}
+Transfer\footnote{\url{http://en.wikipedia.org/wiki/Representational_state_transfer}}
 (REST) model for external administrative control.  REST is based on
 HTTP, and Mailman's default object representation is
 JSON\footnote{\url{http://en.wikipedia.org/wiki/Json}}.  These
@@ -790,7 +798,7 @@ end and continue experimenting and developing the web user interface
 while the core engine catches up.
 
 We plan to use the REST API for many more things, including allowing
-the scripting of common operations, and even integration with IMAP or
+the scripting of common operations and integration with IMAP or
 NNTP servers for alternative access to the archives.
 
 \end{aosasect1}
@@ -802,11 +810,11 @@ internationalization.  Of course, because Mailman does not usually
 modify the contents of email messages posted through it, those
 messages can be in any language of the original author's choosing.
 However, when interacting directly with Mailman, either through the
-web interface, or via email commands, users would prefer to use their
+web interface or via email commands, users would prefer to use their
 own natural language.
 
-Mailman pioneered many of the technologies used in the Python world to
-internationalize applications, but it is actually much more complex
+Mailman pioneered many of the internationalization technologies used in the Python 
+world, but it is actually much more complex
 than most applications.  In a typical desktop environment, the natural
 language is chosen when the user logs in, and remains static
 throughout the desktop session.  However, Mailman is a server
@@ -814,20 +822,20 @@ application, so it must be able to handle dozens of languages,
 separate from the language of the system on which it runs.  In fact,
 Mailman must somehow determine the \emph{language context} that a
 response is to be returned under, and translate its text to that
-language.  Sometimes a response may even involve multiple language,
-for example if a bounce message from a Japanese user is to be
+language.  Sometimes a response may even involve multiple languages;
+for example, if a bounce message from a Japanese user is to be
 forwarded to list administrators who speak German, Italian, and
 Catalan.
 
 Again, Mailman pioneered some key Python technologies to handle
 complex language contexts such as these.  It utilizes a library that
-manages a stack of languages, which can be pushed onto and popped from
+manages a stack of languages which can be pushed onto and popped from
 as the context changes, even within the processing of a single
 message.  It also implements an elaborate scheme for customizing its
 response templates based on site preferences, list owner preferences,
 and language choice.  For example, if a list owner wants to customize
 a response template for one of her lists, but only for Japanese users,
-they would place the specific template in the appropriate place on the
+she would place the specific template in the appropriate place on the
 file system, and this would override more generic defaults.
 
 \end{aosasect1}
@@ -835,7 +843,7 @@ file system, and this would override more generic defaults.
 \begin{aosasect1}{Lessons}
 
 While this article has provided an overview of Mailman 3's
-architecture, and insight into how that architecture has evolved over
+architecture and insight into how that architecture has evolved over
 the 15 years of its existence (through three major rewrites), there
 are lots of other interesting architectural decisions in Mailman which
 I can't cover.  These include the configuration subsystem, the testing
@@ -844,7 +852,7 @@ interfaces, archiving, mailing list styles, the email commands and
 command-line interface, and integration with the outgoing mail server.
 Contact us on the mailman-developers mailing
 list\footnote{\url{http://mail.python.org/mailman/listinfo/mailman-developers}}
-if you're interested in more detail.
+if you're interested in more details.
 
 Here are some lessons we've learned while rewriting a popular,
 established, and stable piece of the open source ecosystem.
@@ -869,28 +877,31 @@ established, and stable piece of the open source ecosystem.
   to writing correct code.  Python 2 blurred this line by having both
   Unicode and 8-bit ASCII strings, with some automated coercions
   between them.  While appearing to be a useful convenience, problems
-  with this fuzzy line is the number one cause of bugs in Mailman 2.
+  with this fuzzy line are the number one cause of bugs in Mailman 2.
   This is not helped by the fact that email is notoriously difficult
-  to classify between strings and bytes.  Technically, the on-the-wire
+  to classify into strings and bytes. Technically, the on-the-wire
   representation of an email is as a sequence of bytes, but these
   bytes are almost always ASCII, and there is a strong temptation to
   manipulate message components as text.  The email standards
-  themselves describe how human readable, non-ASCII text can be safely
+  themselves describe how human-readable, non-ASCII text can be safely
   encoded, so even things like finding a \code{Re:} prefix in a
   \code{Subject:} header will be text operations, not byte operations.
+%% QUERY: You say "back to bytes" at the end of this sentence, but it's
+%% not clear that you converted FROM bytes at the beginning of the sentence.
+%% Can you clarify?  --ARB
   Mailman's principle is to convert all text to Unicode as early as
   possible, deal with the text as Unicode internally, and only convert
   it back to bytes on the way out.  It's critical to be crystal clear
   from the start when you're dealing with bytes and when you're
-  dealing with text (\code{unicode}), since it's very difficult to
+  dealing with text, since it's very difficult to
   retrofit this fundamental model shift later.
 
 \item Internationalize your application from the start.  Do you want
-  your application to only be used by the minority of the world that
+  your application to be used only by the minority of the world that
   speaks English?  Think about how many fantastic users this ignores!
   It's not hard to set up internationalization, and there are lots of
   good tools for making this easy, many of which were pioneered in
-  Mailman.  Don't worry about the translations to start with, if your
+  Mailman.  Don't worry about the translations to start with; if your
   application is accessible to the world's wealth of languages, you
   will have volunteer translators knocking down your door to help.
 
@@ -900,14 +911,6 @@ GNU Mailman is a vibrant project with a healthy user base, and lots of
 opportunities for contributions.  Here are some resources you can use
 if you think you'd like to help us out, which I hope you do!
 
-A final note; while this article was being written, we learned with
-sadness of the passing of Tokio
-Kikuchi\footnote{\url{http://wiki.list.org/display/COM/TokioKikuchi}},
-a Japanese professor who contributed heavily to Mailman, and was
-especially knowledgeable about internationalization and the
-idiosyncrasies of Japanese mail user agents.  He will be greatly
-missed.
-
 \begin{tabular}{ll}
 Primary web site        & \code{http://www.list.org} \\
 Project wiki            & \code{http://wiki.list.org} \\
@@ -915,6 +918,14 @@ Developer mailing list  & \code{mailman-developers@python.org} \\
 Users mailing list      & \code{mailman-users@python.org} \\
 Freenode IRC channel    & \code{\#mailman}
 \end{tabular}
+
+A final note; while this article was being written, we learned with
+sadness of the passing of Tokio
+Kikuchi\footnote{\url{http://wiki.list.org/display/COM/TokioKikuchi}},
+a Japanese professor who contributed heavily to Mailman, and was
+especially knowledgeable about internationalization and the
+idiosyncrasies of Japanese mail user agents.  He will be greatly
+missed.
 
 \end{aosasect1}
 
