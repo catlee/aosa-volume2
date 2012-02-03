@@ -13,6 +13,7 @@
 \usepackage{fancyhdr} % to format headers/footers
 \pagestyle{fancy}
 \usepackage{sectsty}
+\usepackage{xspace}
 \usepackage{wrapfig}
 \usepackage[small]{caption}  % make caption text size smaller
 
@@ -133,6 +134,13 @@
 \newcommand{\aosagraphics}[2][375pt]{\includegraphics[width={#1}]{#2}}
 \newcommand{\aosaquestion}[1]{\begin{textbf}{#1}\end{textbf}}
 \newcommand{\code}[1]{\texttt{#1}}
+
+% GHC commands
+\newcommand{\clift}[1]{\lfloor{#1}\rfloor}
+\newcommand{\ol}[1]{\overline{#1}}
+\newcommand{\tcase}[2]{\mathbf{case}\;{#1}\;\mathbf{of}\;\ol{#2}}
+\newcommand{\tlet}[4]{\mathbf{let}\;{#1}{:}{#2} = {#3}\;\mathbf{in}\;{#4}}
+\newcommand{\tcast}[2]{{#1}\xspace{\triangleright}\xspace{#2}}
 
 % format chapter title pages
 \titleformat{\chapter}

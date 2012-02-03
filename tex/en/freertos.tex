@@ -101,7 +101,7 @@ hardware-dependent layer.  This hardware-dependent layer knows how to
 talk to whatever chip architecture and compiler toolchain you
 choose. \aosafigref{fig.freertos.layers} shows FreeRTOS's layers.
 
-\aosafigure[250pt]{../images/freertos/freertos-figures-layers.pdf}{FreeRTOS software layers}{fig.freertos.layers}
+\aosafigure[250pt]{../images/freertos/freertos-figures-layers.png}{FreeRTOS software layers}{fig.freertos.layers}
 
 FreeRTOS ships with all the hardware-independent as well as
 hardware-dependent code you'll need to get a system up and running. It
@@ -273,7 +273,7 @@ one priority 0 task, no priority 1 tasks, and three priority 2
 tasks. This picture is accurate but not complete; it's missing a few
 details which we'll fill in later.
 
-\aosafigure[325pt]{../images/freertos/freertos-figures-basic-ready-list.pdf}{Basic view of FreeRTOS Ready List}{fig.freertos.ready}
+\aosafigure[325pt]{../images/freertos/freertos-figures-basic-ready-list.png}{Basic view of FreeRTOS Ready List}{fig.freertos.ready}
 
 Now that we have the high-level overview out of the way, let's dive in
 to the details.  We'll look at the three main FreeRTOS data
@@ -552,7 +552,7 @@ include all of the data structures and fields.
 
 %% FIXME: This figure breaks in the middle of a block of code (and over a page turn).
 %% See if it can be moved. --ARB
-\aosafigure[325pt]{../images/freertos/freertos-figures-full-ready-list.pdf}{Full view of FreeRTOS Ready List}{fig.freertos.list}
+\aosafigure[325pt]{../images/freertos/freertos-figures-full-ready-list.png}{Full view of FreeRTOS Ready List}{fig.freertos.list}
 
 As you can see in \aosafigref{fig.freertos.list}, \code{pxCurrentTCB}
 indicates that we're currently running Task B.  The next time
@@ -565,7 +565,7 @@ list element and \code{pxCurrentTCB} points to Task C's TCB.
 Note that each \code{struct xListItem} object is actually the
 \code{xGenericListItem} object from the associated TCB.
 
-\aosafigure[325pt]{../images/freertos/freertos-figures-full-ready-list-2.pdf}{Full view of FreeRTOS Ready List after a system timer tick}{fig.freertos.aftertick}
+\aosafigure[325pt]{../images/freertos/freertos-figures-full-ready-list-2.png}{Full view of FreeRTOS Ready List after a system timer tick}{fig.freertos.aftertick}
 
 \end{aosasect1}
 
