@@ -32,10 +32,6 @@ desktop release stream, and the land of AUS (Application Update Service) where u
 created and served to our users across multiple versions of the
 software.
 
-Follow a Mozilla Firefox release from the moment the Release
-Coordinator gives the official ``Go'' to when it's available for
-download (or update) to your computer or mobile device.
-
 \begin{aosasect1}{Look \code{N} Ways Before You Start a Release}
 
 This section describes the mechanics of how we generate release builds
@@ -43,10 +39,8 @@ for Firefox. Most of this chapter details the significant
 steps in a release process that occur once the builds start, but
 there is plenty of complex cross-group communication to deal
 with before Release Engineering even starts to generate release
-builds, so let's start there.
+builds.
 
-%% QUERY: I moved this figure because it was bunching together with the
-%% next figure. Is this location okay? --ARB
 \aosafigure[100pt]{../images/ffreleng/gotobuild.png}{Getting From Code to ``Go to build''}{fig.ffreleng.getting}
 
 When we started on the project to improve Mozilla's release process,
@@ -57,7 +51,7 @@ exploit. Also, the more popular Firefox became, the more users we
 would have to protect from a newly discovered security vulnerability,
 so the more important it would be to be able to deliver a security fix as quickly
 as possible. We even have a term for this: a ``chemspill''
-release. Instead of being surprised by the occasional need for a
+release\footnote{Short for ``chemical spill''.}. Instead of being surprised by the occasional need for a
 chemspill release in between our regularly scheduled releases, we
 decided to plan as if every release could be a chemspill release, and
 designed our release automation accordingly.
@@ -85,16 +79,16 @@ This mindset has three important side-effects:
   release, especially in a chemspill release.
 
 \item When we do have a chemspill release, the humans in Release
-  Engineering are not stressed by it. We're used to the idea of going
-  as fast as possible with calm precision, and we've built tools to do
+  Engineering are not stressed by it. We're used to the idea of moving
+  quickly and calmly, and we've built tools to do
   this as safely and robustly as we know how. Less stress means more
   calm and precise work within a well-rehearsed process, which in turn
   helps actual chemspill releases go smoothly.
 
 \item We created a Mozilla-wide ``go to build'' process. When doing a
-  non-chemspill release, it's possible to have everyone looking
-  through the same bug triage queries, have everyone see clearly when
-  the last fix was landed and tested just fine, and have consensus on
+  non-chemspill release, it's possible to have everyone look
+  through the same bug triage queries, see clearly when
+  the last fix was landed and tested successfully, and reach consensus on
   when to start builds. However, in a chemspill release---where
   minutes matter---keeping track of all the details of the issue and
   following up bug confirmations and fixes gets very tricky very
@@ -106,7 +100,7 @@ This mindset has three important side-effects:
 \end{aosaenumerate}
 
 %% FIXME: Don't forget to check this image in the printed proof.
-\aosafigure{../images/ffreleng/timeline.png}{Complete release timeline, using a chemspill as example}{fig.ffreleng.timeline}
+\aosafigure{../images/ffreleng/timeline.png}{Complete Release Timeline, Using a Chemspill as Example}{fig.ffreleng.timeline}
 
 \end{aosasect1}
 
@@ -114,11 +108,8 @@ This mindset has three important side-effects:
 
 \begin{aosasect2}{Who Can Send the ``Go to Build''?}
 
-Before the start of the release, one person is designated to assume
-responsibility for the entire release. It is worth noting that
-this person is not in Release Engineering. This person needs to be
-%% QUERY: Worth noting but you never say why. Can we have
-%% something about that? --ARB
+Before the start of the release, one person \emph{not} in Release Engineering, called a Release Coordinator, is designated to assume
+responsibility for the entire release. This person needs to be
 trusted by everyone to attend triage meetings, understand the
 background context on all the work being landed, referee bug severity
 disputes fairly, approve landing of late-breaking changes, and make
@@ -127,20 +118,7 @@ this person is on point for all communications with the different
 groups (developers, QA, Release Engineering, website developers, PR,
 marketing, etc.).
 
-Different companies use different titles for this type of role:
-Release Manager, Release Engineer (!), Program Manager,
-%% QUERY: I'm not sure of the significance of this exclamation mark, and
-%% I'm not sure our readers will either. Can I remove? --ARB
-Project Manager, Product Manager, Product Czar, Release Driver. This
-chapter will use the term ``Release Coordinator'', as it most clearly
-describes the role in our process, but the important point is that the
-role and the final authority of the person in the role, regardless of 
-their background or previous work experience elsewhere, is clearly understood by
-everyone before the release starts. In the heat of the moment on a
-release day, we all have to abide by and trust the final decision
-that this person makes.
-
-The Release Coordinator is also the only person outside of Release
+The Release Coordinator is the only person outside of Release
 Engineering who is authorized to send ``stop builds'' emails if a
 show-stopper problem is discovered. Any reports of
 suspected show-stopper problems are redirected to the Release
@@ -166,7 +144,7 @@ go to build Firefox 6.0.1
 
 Similarly, if a problem is found in the release, the Release
 Coordinator will send a new "all stop" email to the same mailing list,
-with a new subject line. We found that it was not ok to just hit reply
+with a new subject line. We found that it was not OK to just hit reply
 on the most recent email about the release; email threading in some
 email clients caused some people to not notice the "all stop" email if
 it was way down a long and unrelated thread.
@@ -178,13 +156,12 @@ it was way down a long and unrelated thread.
 \begin{aosaenumerate}
 
 \item The exact code to be built from; ideally, the URL to the
-explicit change in the source code repository that the release builds are
-%% QUERY: Should this be "specific", not "explicit"? --ARB
+specific change in the source code repository that the release builds are
 to be created from.
 
   \begin{aosaenumerate2}
 
-    \item Comments like ``use the latest code'' are never ok; in one
+    \item Comments like ``use the latest code'' are never OK; in one
       release, after the ``go to build'' email was sent and before
       builds started, a well-intentioned developer landed a change,
       without approval, in the wrong branch. The release included that
@@ -224,10 +201,10 @@ to be created from.
       working normal hours. This keeps people fresh and better able to
       handle unscheduled urgent work if the need arises.
 
-    \item Some releases---``chemspills''---are urgent, where minutes matter. These are
+    \item Other releases---the chemspills---are urgent, so minutes matter. These are
       typically to fix a published security exploit, or to fix a
       newly-introduced top-crash problem impacting a large percentage
-      of our userbase. Chemspills need to be created as
+      of our user base. Chemspills need to be created as
       quickly as possible and are typically not pre-scheduled
       releases.
 
@@ -259,7 +236,7 @@ can be very destructive to cross-group cohesion across an
 organization.
 
 Finally, these emails also became very useful to measure where time
-was spent during a release.  While these are only accurate to
+was spent during a release.  While they are only accurate to
 wall-clock time resolution, this accuracy is really helpful when
 figuring out where next to focus our efforts on making things faster.
 As the old adage goes, before you can improve something, you
@@ -284,48 +261,33 @@ infrastructure by the time we start the final release builds.
     
 In preparation for starting automation, we recently started to use a
 script,
-\code{release\_sanity.py}\footnote{\url{http://mxr.mozilla.org/build/source/tools/buildbot-helpers/release_sanity.py}}, 
+\code{release\_sanity.py}\footnote{\url{http://mxr.mozilla.org/build/source/tools/buildbot-helpers/release_sanity.py}},
 that was originally written by a summer Build and Release intern. This
-Python script assists a release engineer with double-checking that
-all configurations for a release match what is checked into our tools
-and configuration repos, as well as what is in the specified release
-code revisions for mozilla-release and all the languages for this
-release (which will be what the builds and language repacks are
-generated from).
-%% QUERY: This sentence loses me around "as well as" -- maybe break into
-%% two or more sentences? --ARB
+Python script assists a release engineer with double-checking that all
+configurations for a release match what is checked into our tools and
+configuration repos.  It also checks what is in the specified release
+code revisions for \code{mozilla-release} and all the (human)
+languages for this release, which will be what the builds and language
+repacks are generated from.
 
-%% QUERY/FIXME: The next two paragraphs seem to have a lot of jargon. Greg,
-%% can you have a look at them and see if you can unwind them a little? -ARB
-
-%% QUERY: Use of locale/local seems to be inconsistent - please check. --ARB
-
-The script accepts the buildbot config files for any release configs
-%% QUERY: Not sure what the second "config" refers to here. --ARB
-that will be used (desktop, mobile), the branch to look at (eg:
-mozilla-release), the build and version number, and the names of the
-products that are to be built (fennec, firefox). It will error out if
-all the release repos (mozilla-release and locales) are not properly
-matched to what's in the configs, if locale repository changesets don't
-match our shipping locales and l10n changeset files, and if the
-%% QUERY: Will our readers know l10n? Is it needless jargon/colloquialism?
-release version and build number don't match what has been landed in
-%% QUERY: "landed" - can we use a clearer term or is this the clearest?
-our build tools under the tag which is generated by using the product,
-version, and build number. The script also checks the build
-configuration files (mozconfigs) from Nightly builds to release builds
-where branding and update channels are set, among other things. If all
-the tests in the script pass, it will run the step to reconfigure the
+The script accepts the buildbot config files for any release configurations
+that will be used (such as desktop or mobile), the branch to look at (e.g.,
+\code{mozilla-release}), the build and version number, and the names of the
+products that are to be built (such as ``fennec'' or ``firefox''). It will fail if
+the release repositories do not
+match what's in the configurationss, if locale repository changesets don't
+match our shipping locales and localization changeset files, and if the
+release version and build number don't match what has been given to
+our build tools with the tag generated using the product,
+version, and build number. If all
+the tests in the script pass, it will reconfigure the
 buildbot master where the script is being run and where release
-builders will be triggered, and then generate the sendchange that
+builders will be triggered, and then generate the ``send change'' that
 starts the automated release process.
 
-% FIXME: should it be 'release_sanity' in the line below?
-%% QUERY: Does an engineer pass sanity, or does the 
-%% configuration/build/release? --ARB
-After a release engineer passes release sanity and kicks off builders,
+After a release engineer kicks off builders,
 the first automated step in the Firefox release process is tagging all
-the related source code repositories, to record which revision of
+the related source code repositories to record which revision of
 the source, language repos, and related tools are being used for this
 version and build number of a release candidate. 
 These tags allow us
@@ -355,8 +317,9 @@ as they become available.  This allows anyone to see exactly what code
 is in a release, and gives a snapshot that would allow us to re-create
 the builds if we ever needed to (if our VCS failed somehow).
  
-%% QUERY: "cut over" - will our readers what that this means?
-For the Firefox build's source, sometimes we need to do a cut over
+%% FIXME (GW): could really use a picture of the repos and connections here 
+%% FIXME (GW): You keep putting ``chemspill'' in quotes and re-explaining it.
+For the Firefox build's source, sometimes we need to import code
 from an earlier repository. For example, with a beta release this means
 pulling in the signed-off revision from Mozilla-Aurora (our
 more-stable-than-Nightly repo) for Firefox 10.0b1. For a release it
@@ -378,33 +341,31 @@ automation starts again and bumps the tagging to the new changeset on
 that relbranch.
     
 Our tagging process does a \emph{lot} of operations with local and
-remote Mercurial (hg) repositories. To factor out some of the most
+remote Mercurial repositories. To factor out some of the most
 common operations we've written a few tools to assist us:
-\code{hgtool.py}\footnote{\url{http://hg.mozilla.org/build/mozharness/file/a0fce0162fd5/scripts/hgtool.py}}
+\code{retry.py}\footnote{\url{http://hg.mozilla.org/build/tools/file/7adc08bd1386/lib/python/util/retry.py}}
 and
-\code{retry.py}\footnote{\url{http://hg.mozilla.org/build/tools/file/7adc08bd1386/lib/python/util/retry.py}}.
+\code{hgtool.py}\footnote{\url{http://hg.mozilla.org/build/mozharness/file/a0fce0162fd5/scripts/hgtool.py}}.
 \code{retry.py} is a simple wrapper that can take a given command and
 run it, retrying several times if it fails. It can also watch for
 exceptional output conditions and retry or report failure in those
-cases. We've found it useful to wrap retry.py around most of the
+cases. We've found it useful to wrap \code{retry.py} around most of the
 commands which can fail due to external dependencies.  For tagging,
-the hg operations could fail due to temporary network outages, web
-server issues, or the back end hg server being temporarily
+the Mercurial operations could fail due to temporary network outages, web
+server issues, or the back end Mercurial server being temporarily
 overloaded. Being able to automatically retry these operations and
 continue saves a lot of our time, since we don't have to manually
 recover and get the release automation running again.
     
-\code{hgtool.py} is a utility that encapsulates several common hg
-operations, like cloning/pulling/updating with a single invocation. It
-also adds support for hg's share extension, which we use extensively
+\code{hgtool.py} is a utility that encapsulates several common Mercurial
+operations, like cloning, pulling, and updating with a single invocation. It
+also adds support for Mercurial's share extension, which we use extensively
 to avoid having to have several full clones of repositories in
 different directories on the same machine.  Adding support for shared
 local repositories significantly sped up our tagging process, since most
 full clones of the product and locale repositories could be avoided.
     
-%% QUERY: Is "factoring out" here jargon? Will readers know what
-%% is meant?  --ARB
-An important motivation for factoring out tools like these is 
+An important motivation for creating tools like these is 
 making our automation as testable as possible. Because tools like
 \code{hgtool.py} are small, single-purpose utilities built on top of
 reusable libraries, they're much easier to test in isolation.
@@ -430,9 +391,9 @@ reduce the total time to have builds ready by 15 minutes.
 \aosafigure{../images/ffreleng/repacksl10n.png}{Repacking Firefox for Each Localization}{fig.ffreleng.repack}
 
 Once the desktop builds are generated and uploaded to
-\code{ftp.mozilla.org}, our automation triggers the localization
+\code{\code{ftp.mozilla.org}}, our automation triggers the localization
 repackaging jobs. This consists of a handful of jobs that take the
-original build (using the en-US locale), unpack it and insert
+original build (using the en-US locale), unpack it, and insert
 the strings for each locale that we are shipping for this release
 (this is why we call them repackages). Each job takes a handful of
 locales; this approach allows us to parallelize the jobs across many
@@ -503,16 +464,16 @@ keyphrases, passwords, and keystores are passed among release
 engineers only in secure channels, often in person, to minimize the
 risk of exposure as much as possible.
 
-\aosafigure[325pt]{../images/ffreleng/signing.png}{Signing Firefox installers}{fig.ffreleng.signing}
+\aosafigure[325pt]{../images/ffreleng/signing.png}{Signing Firefox Installers}{fig.ffreleng.signing}
 
 Until recently this signing process involved a release engineer
 working on a dedicated server (the ``signing master'') for almost an
 hour manually downloading builds, signing them, and
-uploading them back to ftp.mozilla.org before the automation could
+uploading them back to \code{ftp.mozilla.org} before the automation could
 continue.  Once signing on the master is completed and all files have
 been uploaded, a log file of all the signing activities is uploaded to
-the release candidates directory on ftp.mozilla.org.  The appearance
-of this log file on ftp.mozilla.org signifies the end of human signing
+the release candidates directory on \code{ftp.mozilla.org}.  The appearance
+of this log file on \code{ftp.mozilla.org} signifies the end of human signing
 work and from that point, dependent builders watching for that log
 file can resume automation.  Recently we've added an additional
 wrapper of automation around the signing steps: the release engineer
@@ -523,7 +484,7 @@ the heavy lifting.
 The release engineer will open a Cygwin shell on the signing master
 and set up a few environment variables pertaining to the release, like
 \code{VERSION}, \code{BUILD}, \code{TAG}, and \code{RELEASE\_CONFIG}, that
-help the script find the right directories on ftp.mozilla.org and know
+help the script find the right directories on \code{ftp.mozilla.org} and know
 when all the deliverables for a release have been downloaded so that
 the signing can start. After checking out the most recent production
 version of our signing tools the release engineer simply runs
@@ -552,11 +513,11 @@ platforms.
 All deliverables have an MD5SUM and SHA1SUM generated for them, and
 those hash values are written to files of the same name.  These files
 will be uploaded back to the release-candidates directory as well as
-synced into the final location of the release on ftp.mozilla.org once
+synced into the final location of the release on \code{ftp.mozilla.org} once
 it is live, so that anyone who downloads a Firefox installer from one of our
 mirrors can ensure they got the correct object. When all signed bits
 are available and verified 
- they are uploaded back to ftp.mozilla.org along
+ they are uploaded back to \code{ftp.mozilla.org} along
 with the signing log file, which the automation is waiting for to
 proceed.
 
@@ -599,8 +560,7 @@ installer from Firefox \code{N}, \code{N-1}, \code{N-2}, \code{N-3}, {\ldots} al
 \code{LATEST}, in both complete and partial forms. We do all this for several
 release trains at a time.
 
-%% QUERY: What does "bumps" mean here? Increments? Uploads? Downloads?
-%% Will our readers know? --ARB
+%% QUERY: What does "bumps" mean here? Increments? Uploads? Downloads? --ARB
 Our update generation automation bumps the update configuration files
 of each release's build off a branch to maintain our canonical list of
 what version numbers, platforms, and localizations need to have
@@ -715,7 +675,7 @@ updates. Only after QA has finished verification of the builds and
 the updates will we push them to our
 community mirrors. These community mirrors are essential to
 handle the global load of users, by allowing them to request their updates
-from local mirror nodes instead of from ftp.mozilla.org
+from local mirror nodes instead of from \code{ftp.mozilla.org}
 directly. It's worth noting that we do not make builds and updates
 available on the community mirrors until after QA signoff, because of
 complications that arise if QA finds a last-minute showstopper
@@ -781,13 +741,13 @@ automatically update Firefox to the latest version.
   
 \end{aosasect1}
 
-\begin{aosasect1}{Working in the Open}
+\begin{aosasect1}{Lessons Learned}
 
-At Mozilla we strive to do everything in the open; for example, the Firefox
-developers make all their code changes in the open. Similarly, all of
-Release Engineering's code and blow-by-blow build notes are public,
-available for everyone to see.  Here are some links for further
-reading:
+%% FIXME: please fill this in.
+
+\begin{aosasect2}{For More Information}
+
+For more information, please see:
 
 \begin{aosaitemize}  
 
@@ -814,23 +774,8 @@ reading:
 
 \end{aosaitemize}
 
-In the last few years, we've made a lot of changes to our automation.
-These changes have made a material difference to Mozilla's ability to
-deliver ``rapid-release cadence'' releases, as well as ``urgent
-security fix'' releases. With this chapter, we've
-tried to give a quick overview of how things work right now. We are
-constantly improving our processes; a year from now we could probably
-write this chapter again with a very different set of
-strategies and workflow. 
+\end{aosasect2}
 
-Hopefully, you will find this information
-useful. If you have comments or feedback, or observations about things you've
-done differently that did (or didn't) work better for you, please contact
-us at \url{release@mozilla.com}. We'd love to hear from you.
-%% NB: When converting to HTML make the email address read
-%% "release [at] mozilla [dot] com" - that is how the authors formatted
-%% it originally.
-  
 \end{aosasect1}
 
 \end{aosachapter}
