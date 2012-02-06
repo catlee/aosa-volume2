@@ -697,9 +697,11 @@ and the ultimate receiving mail server is required, by the standards, to
 send the bounces to this address.  Mailman uses this fact to encode
 the original recipient email address into the \code{MAIL FROM} value.
 
+%% FIXME: Added \linebreaks to deal with long \code - not sure if this is the
+%% best way to handle this. --ARB
 If the Mailman server is
-\code{mylist@example.org}, then the VERP-encoded envelope sender for a mailing list
-posting sent to \code{anne@example.com} will be
+\code{mylist@example.org}, then the VERP-encoded \linebreak envelope sender for a mailing list
+posting sent to \code{anne@example.com} will be\linebreak
 \code{mylist-bounce+anne=example.com@example.org}.  Here, the \code{+}
 is a local address separator, which is a format supported by most
 modern mail servers.  So when the bounce comes back, it will actually
