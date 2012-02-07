@@ -36,12 +36,9 @@ Days after BitMover (maker of BitKeeper) announced it would revoke licenses
 for some core Linux kernel developers, Linus Torvalds began development, in
 haste, of what was to become Git. He began by writing a
 collection of scripts to help him manage email patches to apply one after
-%% QUERY: I'm not sure of the meaning of the verb "fail" in this sentence.
-%% Will our readers know what you mean? If not can you please reword the
-%% sentence? --ARB
-the other. The aim of this initial collection of scripts was to fail merges
-quickly so the maintainer could modify the codebase mid-patch stream and
-continue merging contributed patches once cleanly able to.
+the other. The aim of this initial collection of scripts was to abort
+applying merges quickly so the maintainer could modify the codebase
+mid-patch stream to manually merge then continue merging subsequent patches.
 
 From the outset, Torvalds had one philosphical goal for Git---to be the anti-CVS---plus
 three usability design goals:
