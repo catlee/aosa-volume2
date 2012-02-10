@@ -24,7 +24,7 @@ thread for output that would block on some kind of write, and a ``logic'' thread
 that would sleep while waiting for timers to expire or events to queue. As
 players moved through the virtual landscape and interacted, threads were
 deadlocking, caches were getting corrupted, and the locking logic was never
-quite right -- the use of threads had made the software complicated, buggy, and
+quite right---the use of threads had made the software complicated, buggy, and
 hard to scale.
 
 Seeking alternatives, he discovered Python, and in particular Python's
@@ -38,21 +38,21 @@ prototype of the game in Python using \code{select} immediately proved
 less complex and more reliable than the threaded version.
 
 An instant convert to Python, \code{select}, and event-driven
-programming in general, glyph wrote a client and server for the game in Python
+programming, glyph wrote a client and server for the game in Python
 using the \code{select} API. But then he wanted to do more. Fundamentally,
 he wanted to be able to turn network activity into method calls on objects in
-the game. What if you could receive e-mail in the game, like the Nethack mailer
+the game. What if you could receive email in the game, like the Nethack mailer
 daemon? What if every player in the game had a home page? Glyph found himself
-needing good IMAP and HTTP clients and servers in Python that used
+needing good Python IMAP and HTTP clients and servers that used
 \code{select}.
 
-He first turned to Medusa, a platform developed in the mid-90s for
+He first turned to Medusa, a platform developed in the mid-'90s for
 writing networking servers in Python based on the \code{asyncore}
 module\footnote{\url{http://www.nightmare.com/medusa/}}. \code{asyncore}
 is an asynchronous socket handler that builds a dispatcher and
 callback interface on top of the operating system's \code{select} API.
 
-This was an inspiring find for glyph, but Medusa had 2 drawbacks:
+This was an inspiring find for glyph, but Medusa had two drawbacks:
 
 \begin{aosaenumerate}
 
@@ -80,8 +80,12 @@ which would do what existing networking platforms in Python didn't:
 \item Use event-driven programming instead of multi-threaded
   programming.
 
+%% QUERY: I'm not sure "performant" is the word you want here - it has
+%% to do with speed/efficiency. I'm thinking a synonym for "useful"
+%% is more appropriate: functional, serviceable, worthwhile, productive,
+%% valuable... --ARB
 \item Be performant: do event-driven network programming correctly
-  once so that nobody else has to suffer through the mistakes to get
+  once, so that nobody else has to suffer through the mistakes to get
   it right.
 
 \item Be cross-platform: provide a uniform interface to the event
@@ -113,12 +117,14 @@ of callbacks to trigger actions when events happen. Two other common
 programming paradigms are (single-threaded) synchronous and multi-threaded
 programming.
 
-\aosafigure{../images/twisted/threading_models.png}{Threading Models}{fig:twisted:threadingmodels}
+%% QUERY: This image relies on colour for meaning - can you make a version which
+%% doesn't? Also, can you change the label on "Asynchronous" to "Event-driven"? --ARB
+\aosafigure{../images/twisted/threading_models.png}{Threading models}{fig:twisted:threadingmodels}
 
 Let's compare and contrast single-threaded, multi-threaded, and
 event-driven programming models with an example.
 \aosafigref{fig:twisted:threadingmodels} shows the work done by a
-program over time under these 3 models. The program has 3 tasks to
+program over time under these three models. The program has three tasks to
 complete, each of which blocks while waiting for I/O to finish. Time
 spent blocking on I/O is greyed out.
 
@@ -126,22 +132,22 @@ In the single-threaded synchronous version of the program, tasks are
 performed serially. If one task blocks for a while on I/O, all of the other
 tasks have to wait until it finishes and they are executed in turn. This
 definite order and serial processing are easy to reason about, but the program
-is unnecessarily slow if the tasks don't depend on each other yet still have to
+is unnecessarily slow if the tasks don't depend on each other, yet still have to
 wait for each other.
 
-In the threaded version of the program, the 3 tasks that block while doing
+In the threaded version of the program, the three tasks that block while doing
 work are performed in separate threads of control. These threads are managed by
 the operating system and may run concurrently on multiple processors or
 interleaved on a single processor. This allows progress to be made by some
 threads while others are blocking on resources. This is often more
 time-efficient than the analogous synchronous program, but one has to write code
-to protects shared resources that could be accessed concurrently from multiple
+to protect shared resources that could be accessed concurrently from multiple
 threads. Multi-threaded programs can be harder to reason about because one now
 has to worry about thread safety via process serialization (locking),
 re-entrancy, thread-local storage, or other mechanisms, which when implemented
 improperly can lead to subtle and painful bugs.
 
-The event-driven version of the program interleaves the execution of the 3
+The event-driven version of the program interleaves the execution of the three
 tasks, but in a single thread of control. When performing I/O or other expensive
 operations, a callback is registered with an event loop, and then execution
 continues while the I/O completes. The callback describes how to handle an event
@@ -155,11 +161,9 @@ The event-driven model is often a good choice when there are:
 
 \begin{aosaenumerate}
 
-\item many tasks, that are
-
+\item many tasks, that are\dots
 \item largely independent (so they don't have to communicate with or
-  wait on each other), and
-
+  wait on each other), and\ldots
 \item some of these tasks block while waiting on events.
 
 \end{aosaenumerate}
@@ -196,7 +200,7 @@ protocols, and to test one's code.
 
 \begin{aosasect2}{The Reactor}
 
-Twisted implements the reactor design pattern, which describes demultiplexing
+Twisted implements the \emph{reactor} design pattern, which describes demultiplexing
 and dispatching events from multiple sources to their handlers in a
 single-threaded environment.
 
@@ -287,6 +291,7 @@ except Error, e:
 finally:
     finishProcessing()
 
+
 # asynchronous URL fetcher
 from twisted.internet import reactor
 import getPage
@@ -327,10 +332,10 @@ In the synchronous version, by virtue of the structure of a
 \code{try/except} block exactly one of \code{logError} and
 \code{processPage} is called, and \code{finishProcessing} is always
 called once; in the asynchronous version it is the programmer's responsibility
-to invoke the correct chain of success and error callbacks. If through
-programming error the call to \code{finishProcessing} were left out of
-\code{processPage} or \code{logError}, along their respective
-callback chains the reactor would never get stopped and the program would run
+to invoke the correct chain of success and error callbacks. If, through
+programming error, the call to \code{finishProcessing} were left out of
+\code{processPage} or \code{logError} along their respective
+callback chains, the reactor would never get stopped and the program would run
 forever.
 
 This toy example hints at the complexity frustrating programmers during the
@@ -356,7 +361,7 @@ arrives, the \code{Deferred} is ``fired'' and the appropriate callbacks or
 errbacks are invoked in the order in which they were added.
 
 Here is a version of the asynchronous URL fetcher pseudo-code which
-utilizes \code{Deferreds}:
+uses \code{Deferred}s:
 
 % FIXME: lay this out
 \begin{verbatim}
@@ -386,7 +391,7 @@ In this version, the same event handlers are invoked, but they are all
 registered with a single \code{Deferred} object instead of spread out in
 the code and passed as arguments to \code{getPage}.
 
-The \code{Deferred} is created with 2 stages of callbacks. First,
+The \code{Deferred} is created with two stages of callbacks. First,
 \code{addCallbacks} adds the \code{processPage} callback and
 \code{logError} errback to the first stage of their respective
 chains. Then \code{addBoth} adds \code{finishProcessing} to the second
@@ -395,9 +400,9 @@ stage of both chains. Diagrammatically, the callback chains look like
 
 \aosafigure{../images/twisted/deferred.png}{Callback Chains}{fig:twisted:callback}
 
-\code{Deferreds} can only be fired once; attempting to re-fire them
-will raise an \code{Exception}. This gives \code{Deferreds}
-semantics closer to the \code{try/except} blocks of their synchronous
+\code{Deferred}s can only be fired once; attempting to re-fire them
+will raise an \code{Exception}. This gives \code{Deferred}s
+semantics closer to those of the \code{try/except} blocks of their synchronous
 cousins, which makes processing the asynchronous events easier to reason about
 and avoids subtle bugs caused by callbacks being invoked more or less than once
 for a single event.
@@ -417,9 +422,9 @@ many other event-driven platforms, including jQuery, Dojo, and Mochikit.
 \begin{aosasect2}{Transports}
 
 Transports represent the connection between two endpoints communicating over
-a network. Transports are responsible for describing connection details like
+a network. Transports are responsible for describing connection details, like
 being stream- or datagram-oriented, flow control, and reliability. TCP, UDP, and
-UNIX sockets are examples of transports. They are designed to be ``minimally
+Unix sockets are examples of transports. They are designed to be ``minimally
 functional units that are maximally reusable'' and are decoupled from protocol
 implementations, allowing for many protocols to utilize the same type of
 transport. Transports implement the \code{ITransport} interface, which has
@@ -505,7 +510,7 @@ reactor.run()
 Running the server script starts a TCP server listening for connections on
 port 8000. The server uses the \code{Echo} protocol, and data is written
 out over a TCP transport. Running the client makes a TCP connection to the
-server, echos the server response, and then terminates the connection and stops
+server, echoes the server response, and then terminates the connection and stops
 the reactor. Factories are used to produce instances of protocols for both sides
 of the connection. The communication is asynchronous on both sides;
 \code{connectTCP} takes care of registering callbacks with the reactor to
@@ -526,8 +531,8 @@ programmer to avoid boilerplate code by hooking an application into existing
 tools for customizing the way it is run, including daemonization, logging, using
 a custom reactor, profiling code, and more.
 
-The application infrastructure has 4 main parts: Services, Applications,
-configuration management (via TAC files and plugins), and the twistd
+The application infrastructure has four main parts: Services, Applications,
+configuration management (via TAC files and plugins), and the \code{twistd}
 command-line utility. To illustrate this infrastructure, we'll turn the echo
 server from the previous section into an Application.
 
@@ -561,7 +566,7 @@ interface.
 \begin{aosasect3}{Application}
 
 An Application is the top-level service that represents the entire Twisted
-application. Services register themselves with an Application, and the twistd
+application. Services register themselves with an Application, and the \code{twistd}
 deployment utility described below searches for and runs Applications.
 
 We'll create an echo Application with which the echo Service can
@@ -587,7 +592,8 @@ algorithm:
   module.
 
 \item Inside a TAC file:
-    \begin{aosaenumerate}
+
+    \begin{aosaenumerate2}
     
 \item Create an echo Application.
 
@@ -595,7 +601,7 @@ algorithm:
 \item Create an instance of the TCPServer Service which will use our
   EchoFactory, and register it with the Application.
     
-\end{aosaenumerate}
+\end{aosaenumerate2}
 
 \end{aosaenumerate}
 
@@ -632,7 +638,7 @@ echoService.setServiceParent(application)
 \code{twistd} (pronounced ``twist-dee'') is a cross-platform utility for
 deploying Twisted applications. It runs TAC files and handles starting and
 stopping an application. As part of Twisted's batteries-included approach to
-network programming, twistd comes with a number of useful configuration flags,
+network programming, \code{twistd} comes with a number of useful configuration flags,
 including daemonizing the application, the location of log files, dropping
 privileges, running in a chroot, running under a non-default reactor, or even
 running the application under a profiler.
@@ -643,7 +649,7 @@ We can run our echo server Application with:
 $ twistd -y echo_server.tac
 \end{verbatim}
 
-In this simplest case, twistd starts a daemonized instance of the
+In this simplest case, \code{twistd} starts a daemonized instance of the
 application, logging to \code{twistd.log}. After starting and stopping the
 application, the log looks like this:
 
@@ -674,7 +680,7 @@ An alternative to the TAC-based system for running Twisted applications is
 the plugin system. While the TAC system makes it easy to register simple
 hierarchies of pre-defined services within an application configuration file,
 the plugin system makes it easy to register custom services as subcommands of
-the twistd utility, and to extend the command-line interface to an
+the \code{twistd} utility, and to extend the command-line interface to an
 application.
 
 Using this system:
@@ -701,7 +707,7 @@ transformation into a Twisted plugin is straightforward. Alongside the
 protocol and \code{EchoFactory} definitions, we add a directory called
 \code{twisted}, containing a subdirectory called \code{plugins},
 containing our echo plugin definition. This plugin will allow us to start an
-echo server and specify the port to use as arguments to the twistd utility:
+echo server and specify the port to use as arguments to the \code{twistd} utility:
 
 \begin{verbatim}
 from zope.interface import implements
@@ -732,15 +738,15 @@ serviceMaker = EchoServiceMaker()
 \end{verbatim}
 
 Our echo server will now show up as a server option in the output of
-\code{twistd --help}, and running \code{twistd echo --port=1235}
+\code{twistd\,--help}, and running \code{twistd\,echo\,--port=1235}
 will start an echo server on port 1235.
 
 Twisted comes with a pluggable authentication system for servers called
-\code{twisted.cred}, and a common use of the plugin system is adding an
-authentication pattern to an application. One can use the \code{twisted.cred
-AuthOptionMixin} to add command-line support for various kinds of
+\code{twisted.cred}, and a common use of the plugin system is to add an
+authentication pattern to an application. One can use the 
+\code{twisted.cred\,AuthOptionMixin} to add command-line support for various kinds of
 authentication off the shelf, or to add a new kind. For example, one could add
-authentication via a local UNIX password database or an LDAP server using the
+authentication via a local Unix password database or an LDAP server using the
 plugin system.
 
 \code{twistd} comes with plugins for many of Twisted's supported protocols,
@@ -749,20 +755,20 @@ some examples of \code{twistd} servers that ship with Twisted:
 
 \begin{aosaitemize}
 
-\item \code{twistd web --port 8080 --path .}:  Run an HTTP server on
+\item \code{twistd\,web\,--port\,8080\,--path .}:  Run an HTTP server on
   port 8080, serving both static and dynamic content out of the
   current working directory.
 
-\item \code{twistd dns -p 5553 --hosts-file=hosts}: Run a DNS server
-  on port 5553, resolving domains out of a file call hosts in the
-  format of /etc/hosts.
+\item \code{twistd\,dns\,-p\,5553\,--hosts-file=hosts}: Run a DNS server
+  on port 5553, resolving domains out of a file called \code{hosts} in the
+  format of \code{/etc/hosts}.
 
-\item \code{sudo twistd conch -p tcp:2222}: Run an ssh server on port
+\item \code{sudo\,twistd\,conch\,-p\,tcp:2222}: Run an ssh server on port
   2222. ssh keys must be set up independently.
 
-\item \code{twistd mail -E -H localhost -d localhost=emails}: Run an
-  ESMTP POP3 server, accepting e-mail for localhost and saving it to
-  the emails directory.
+\item \code{twistd\,mail\,-E\,-H\,localhost\,-d\,localhost=emails}: Run an
+  ESMTP POP3 server, accepting email for localhost and saving it to
+  the \code{emails} directory.
 
 \end{aosaitemize}
 
@@ -770,11 +776,11 @@ some examples of \code{twistd} servers that ship with Twisted:
 but it is also pluggable, production-grade code.
 
 In that respect, Twisted's application deployment mechanisms via TAC files,
-plugins, and \code{twistd} have been a success. However, anecdotally most
+plugins, and \code{twistd} have been a success. However, anecdotally, most
 large Twisted deployments end up having to rewrite some of these management and
 monitoring facilities; the architecture does not quite expose what system
 administrators need. This is a reflection of the fact that Twisted has not
-historically had much architectural input from system administrators -- the
+historically had much architectural input from system administrators---the
 people who are experts at deploying and maintaining applications.
 
 Twisted would be well-served to more aggressively solicit feedback from
@@ -797,17 +803,17 @@ platform. Server implementations in Twisted are the core of numerous other open
 source applications, including BuildBot, BitTorrent, and Tahoe-LAFS.
 
 Twisted has had few major architectural changes since its initial
-development. The one crucial addition was the \code{Deferred}, as
+development. The one crucial addition was \code{Deferred}, as
 discussed above, for managing pending results and their callback chains.
 
 There was one important removal, which has almost no footprint in the current
-implementation:
+implementation: Twisted Application Persistence.
 
 \begin{aosasect2}{Twisted Application Persistence}
 
 Twisted Application Persistence (TAP) was a way of keeping an application's
 configuration and state in a pickle. Running an application using this scheme
-was a 2-step process:
+was a two-step process:
 
 \begin{aosaenumerate}
 
@@ -849,7 +855,7 @@ complexity before committing the project to it.
 
 While not primarly an architectural decision, a project management decision
 about rewriting the Twisted Web implementation has had long-term ramifications
-on Twisted's image and the maintainers' ability to make architectural
+for Twisted's image and the maintainers' ability to make architectural
 improvements to other parts of the code base, and it deserves a short
 discussion.
 
@@ -903,7 +909,7 @@ Implementations also have to evolve as the interfaces exposed by
 supported operating systems change. For example, the \code{epoll}
 event notification facility was added to Linux 2.5.44 in 2002, and
 Twisted grew a new \code{epoll} reactor to take advantage of this new
-API. In 2007, Apple released OS 10.5 Leopard with a \code{poll}
+API. In 2007, Apple released OS~10.5 Leopard with a \code{poll}
 implementation that didn't support devices, which was buggy enough
 behavior for Apple to not expose \code{select.poll} in its build of
 Python\footnote{\url{http://twistedmatrix.com/trac/ticket/4173}}.
@@ -914,7 +920,9 @@ Sometimes, Twisted development doesn't keep up with the changing networking
 landscape, and enhancements are moved to libraries outside of the core
 software. For example, the Wokkel project, a collection of enhancements to
 Twisted's Jabber/XMPP support, has lived as a to-be-merged independent project
-for years without a champion to oversee the merge [8]. An attempt was made to
+%% QUERY: In your original chapter you have a footnote marker after "merge" but 
+% no footnote. Do you remember what you meant to link to here? --ARB
+for years without a champion to oversee the merge. An attempt was made to
 add Web Sockets to Twisted as browsers began to adopt support for the new
 protocol in 2009, but development moved to external projects after a decision
 not to include the protocol until it moved from an IETF draft to a standard.
@@ -926,7 +934,7 @@ project avoid regressions and preserve backwards compatibility while maintaining
 a large matrix of supported protocols and platforms. It is a mature, stable
 project that continues to have very active development and adoption.
 
-Twisted looks forward to being the engine of your Internet for another 10
+Twisted looks forward to being the engine of your Internet for another ten
 years.
 
 \end{aosasect2}
