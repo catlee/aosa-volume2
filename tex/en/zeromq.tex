@@ -28,7 +28,7 @@ applications and supporting arbitrary messaging patterns, various
 transport mechanisms, arbitrary language bindings, etc.
 
 During the third year the focus was mainly on improving usability and 
-flattening the learning curve. We've adopted the BSD socket API, tried to
+flattening the learning curve. We've adopted the BSD Sockets API, tried to
 clean up the semantics of individual messaging patterns, and so on.
 
 Hopefully, this chapter will give an insight into how the three goals
@@ -262,7 +262,7 @@ without huge traffic peaks, the number of memory allocations on the
 critical path drops to zero (the allocated memory chunks are not
 returned to the system, but re-used over and over again).
 
-Lesson learned: Optimize where it makes difference. Optimising pieces
+Lesson learned: optimize where it makes difference. Optimizing pieces
 of code that are not on the critical path is wasted effort.
 
 \end{aosasect1}
@@ -317,7 +317,7 @@ performance penalty associated with traversing the call stack and
 thus, when creating high-performance applications, it's wise to avoid
 as much stack traversing as possible.
 
-\aosafigure[150pt]{../images/zeromq/aosa3.png}{Sending Four Messages}{fig.zeromq.send4}
+\aosafigure[150pt]{../images/zeromq/aosa3.png}{Sending four messages}{fig.zeromq.send4}
 
 Consider \aosafigref{fig.zeromq.send4}.  To send four messages, you
 have to traverse the entire network stack four times (i.e., {\O}MQ, glibc,
@@ -331,7 +331,7 @@ The impact on message throughput can be overwhelming: up to two orders
 of magnitude, especially if the messages are small and hundreds of
 them can be packed into a single batch.
 
-\aosafigure[150pt]{../images/zeromq/aosa4.png}{Joining Messages}{fig.zeromq.joinmessage}
+\aosafigure[150pt]{../images/zeromq/aosa4.png}{Joining messages}{fig.zeromq.joinmessage}
 
 On the other hand, batching can have negative impact on latency. Let's
 take, for example, the well-known Nagle's
@@ -381,6 +381,8 @@ the topmost level. If the messages are batched there, the lower layers
 have nothing to batch anyway, and so all the batching algorithms
 underneath do nothing except introduce additional latency.
 
+%% FIXME: Think about putting these Lesson Learneds into sidebars, 
+%% as long as they don't float away. --ARB
 Lesson learned: To get optimal throughput combined with optimal
 response time in an asynchronous system, turn off all the batching
 algorithms on the low layers of the stack and batch on the topmost
@@ -627,43 +629,43 @@ Lesson learned: Understand what you want your project to be and design
 the user interface accordingly. Having a user interface that doesn't align with
 the vision of the project is a 100\% guaranteed way to fail.
 
-One of the important aspects of the move to BSD socket API was that it
+One of the important aspects of the move to the BSD Sockets API was that it
 wasn't a revolutionary freshly-invented API, but an existing and
-well-known one. Actually, BSD socket API is one of the oldest APIs
-still in active use today. It dates back to 1983 and 4.2BSD Unix. It's
+well-known one. Actually, the BSD Sockets API is one of the oldest APIs
+still in active use today; it dates back to 1983 and 4.2BSD Unix. It's been
 widely used and stable for literally decades.
 
 The above fact brings a lot of advantages.  Firstly, it's an API that
 everybody knows, so the learning curve is ludicrously flat. Even if
-you never heard about {\O}MQ before, you can build your first application
+you've never heard of {\O}MQ, you can build your first application
 in couple of minutes thanks to the fact that you are able to reuse
-your BSD socket knowledge.
+your BSD Sockets knowledge.
 
 Secondly, using a widely implemented API enables integration of {\O}MQ
 with existing technologies. For example, exposing {\O}MQ objects as
 ``sockets'' or ``file descriptors'' allows for processing TCP, UDP,
-pipe, file and {\O}MQ events in the same event loop. Another example: The
-experimental project to bring {\O}MQ-like functionality to Linux
+pipe, file and {\O}MQ events in the same event loop. Another example: the
+experimental project to bring {\O}MQ-like functionality to the Linux
 kernel\footnote{\url{https://github.com/250bpm/linux-2.6}} turned out
 to be pretty simple to implement. By sharing the same conceptual
 framework it can re-use a lot of infrastructure already in place.
 
-Thirdly and probably the most importantly, the fact that BSD socket
-APIs survived almost three decades despite the numerous attempts to
-replace it, means that there is something inherently right in the
-design. BSD socket API designers have---whether deliberately or by
+Thirdly and probably most importantly, the fact that the BSD Sockets
+API survived almost three decades despite numerous attempts to
+replace it means that there is something inherently right in the
+design. BSD Sockets API designers have---whether deliberately or by
 chance---made the right design decisions. By adopting the API we can
 automatically share those design decisions without even knowing what
 they were and what problem they were solving.
 
-Lesson learned: While code reuse have been promoted from the times
-unmemorable and pattern
-reuse\footnote{\url{http://en.wikipedia.org/wiki/Design_pattern_\%28computer_science\%29}}
-have joined the suite later on, it's important to think of reuse in
-even more generic way. When designing a product have a look at similar
-products. Check which have failed and which have succeeded. Learn from
-the successful projects. Don't succumb to the NIH
-syndrome\footnote{\url{http://en.wikipedia.org/wiki/Not_Invented_Here}}. Reuse
+Lesson learned: While code reuse has been promoted from time
+immemorial and pattern
+reuse\footnote{\url{http://en.wikipedia.org/wiki/Design_pattern}}
+joined in later on, it's important to think of reuse in an
+even more generic way. When designing a product, have a look at similar
+products. Check which have failed and which have succeeded; learn from
+the successful projects. Don't succumb to Not Invented Here
+syndrome. Reuse
 the ideas, the APIs, the conceptual frameworks, whatever you find
 appropriate. By doing so you are allowing users to reuse their
 existing knowledge. At the same time you may be avoiding technical
@@ -673,31 +675,31 @@ pitfalls you are not even aware of at the moment.
 
 \begin{aosasect1}{Messaging Patterns}
 
-In any messaging system, the most important design problem is how to
+In any messaging system, the most important design problem is that of how to
 provide a way for the user to specify which messages are routed to
-which destinations.  There are two main approaches and I believe this
+which destinations.  There are two main approaches, and I believe this
 dichotomy is quite generic and applicable to basically any problem
 encountered in the domain of software.
 
-One approach is to adopt the UNIX
-philosophy\footnote{\url{http://en.wikipedia.org/wiki/Unix_philosophy}}
-of ``do one thing and do it well''. What it means is that the problem
-domain should be artificially restricted to a small and well
-understood area. The program should then solve this restricted problem
+One approach is to adopt the Unix
+philosophy
+of ``do one thing and do it well''. What this means is that the problem
+domain should be artificially restricted to a small and well-understood 
+area. The program should then solve this restricted problem
 in a correct and exhaustive way. An example of such approach in
-messaging area is MQTT\footnote{\url{http://mqtt.org/}}. It's a
+the messaging area is MQTT\footnote{\url{http://mqtt.org/}}. It's a
 protocol for distributing messages to a set of consumers. It can't be
 used for anything else (say for RPC) but it is easy to use and does
 message distribution well.
 
-The other approach is to focus on generality and to provide a powerful
+The other approach is to focus on generality and provide a powerful
 and highly configurable system. AMQP is an example of such a
 system. Its model of queues and exchanges provides the user with the
-means to programatically define almost any routing algorithm he can
+means to programatically define almost any routing algorithm they can
 think of. The trade-off, of course, is a lot of options to take care
 of.
 
-{\O}MQ opts for the former, UNIX, model because it allows the resulting
+{\O}MQ opts for the former model because it allows the resulting
 product to be used by basically anyone, while the generic model
 requires messaging experts to use it. To demonstrate the point, let's
 have a look how the model affects the complexity of the API. What
@@ -724,17 +726,16 @@ basic.publish (exchange="requests", routing-key="my-service",
 reply = get-message ()
 \end{verbatim}
 
-{\O}MQ, on the other hand, opts for the ``do one thing and do it well''
-approach. It splits the messaging landscape into so called ``messaging
+On the other hand, {\O}MQ splits the messaging landscape into so-called ``messaging
 patterns''. Examples of the patterns are ``publish/subscribe'',
 ``request/reply'' or ``parallelised pipeline''. Each messaging pattern
 is completely orthogonal to other patterns and can be thought of as a
 separate tool.
 
 What follows is the re-implementation of the above application using
-the {\O}MQ's request/reply pattern. Note how all the option tweaking is
-reduced to a single step of choosing the right messaging pattern
-(``REQ''):
+{\O}MQ's request/reply pattern. Note how all the option tweaking is
+reduced to the single step of choosing the right messaging pattern
+(``\code{REQ}''):
 
 \begin{verbatim}
 s = socket (REQ)
@@ -746,7 +747,7 @@ reply = s.recv ()
 Up to this point we've argued that specific solutions are better than
 generic solutions. We want our solution to be as specific as
 possible. However, at the same time we want to provide our customers
-with as wide range of functionality as possible. How can we solve this
+with as wide a range of functionality as possible. How can we solve this
 apparent contradiction?
 
 The answer consists of two steps:
@@ -754,7 +755,7 @@ The answer consists of two steps:
 \begin{aosaenumerate}
 
 \item Define a layer of the stack to deal with a particular problem
-  area (e.g. transport, routing, presentation, etc.)
+  area (e.g. transport, routing, presentation, etc.).
 
 \item Provide multiple implementations of the layer. There should be a
   separate non-intersecting implementation for each use case.
@@ -763,26 +764,26 @@ The answer consists of two steps:
 
 Let's have a look at the example of the transport layer in the
 Internet stack. It's meant to provide services such as transferring
-data streams, applying flow control, providing reliability, etc. on the
+data streams, applying flow control, providing reliability, etc., on the
 top of the network layer (IP). It does so by defining multiple
 non-intersecting solutions: TCP for connection-oriented reliable
 stream transfer, UDP for connectionless unreliable packet transfer,
-SCTP to transfer of multiple streams, DCCP for unreliable connections
+SCTP for transfer of multiple streams, DCCP for unreliable connections
 and so on.
 
-Note that each implementation is completely orthogonal: UDP endpoint
-cannot speak to TCP endpoint. Neither can SCTP endpoint speak to DCCP
+Note that each implementation is completely orthogonal: a UDP endpoint
+cannot speak to a TCP endpoint. Neither can a SCTP endpoint speak to a DCCP
 endpoint. It means that new implementations can be added to the stack
 at any moment without affecting the existing portions of the
-stack. Other way round, failed implementations can be forgotten and
-discarded without compromising the viability of transport layer as a
+stack. Conversely, failed implementations can be forgotten and
+discarded without compromising the viability of the transport layer as a
 whole.
 
-Same principle applies to messaging patterns as defined by
-{\O}MQ. Messaging patterns form a layer (so called ``scalability layer'')
+The same principle applies to messaging patterns as defined by
+{\O}MQ. Messaging patterns form a layer (the so-called ``scalability layer'')
 on top of the transport layer (TCP and friends). Individual messaging
 patterns are implementations of this layer. They are strictly
-orthogonal---publish/subscribe endpoint can't speak to request/reply
+orthogonal---the publish/subscribe endpoint can't speak to the request/reply
 endpoint, etc. Strict separation between the patterns in turn means
 that new patterns can be added as needed and that failed experiments
 with new patterns won't hurt the existing patterns.
@@ -803,15 +804,15 @@ confusing for the users.
 \begin{aosasect1}{Conclusion}
 
 As our world becomes populated with lots of small computers connected
-via Internet, the mobile phones, the RFID readers, tablets and
-laptops, GPS devices, etc. the problem of distributed computing ceases
-to be a domain of academic science and becomes a common everyday
+via the Internet---mobile phones, RFID readers, tablets and
+laptops, GPS devices, etc.---the problem of distributed computing ceases
+to be the domain of academic science and becomes a common everyday
 problem for every developer to tackle. The solutions, unfortunately,
 are mostly domain-specific hacks. This article summarises our
 experience with building a large-scale distributed system in a
-systemic manner. It focuses on problems that are interesting from
-software architecture point of view and we hope that designers and
-programmers in open source community will find it useful.
+systematic manner. It focuses on problems that are interesting from
+a software architecture point of view, and we hope that designers and
+programmers in the open source community will find it useful.
 
 \end{aosasect1}
 
