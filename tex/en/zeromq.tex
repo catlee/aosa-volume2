@@ -164,7 +164,7 @@ subtle than that, and often the metrics are quite counter-intuitive.
 %% FIXME - Forcing a newpage here so that the diagram below stays with
 % its explanation. Revisit this closer to publication. --ARB
 \newpage 
-\aosafigure[175pt]{../images/zeromq/aosa8.png}{Sending a message from A to B}{fig.zeromq.a2b}
+\aosafigure[175pt]{../images/zeromq/aosa8.png}{Sending messages from A to B}{fig.zeromq.a2b}
 
 %% QUERY: Some of the numbers in this passage looked wrong so I corrected
 % them -- please have a look and make sure the numbers are now correct. --ARB
@@ -331,7 +331,7 @@ The impact on message throughput can be overwhelming: up to two orders
 of magnitude, especially if the messages are small and hundreds of
 them can be packed into a single batch.
 
-\aosafigure[150pt]{../images/zeromq/aosa4.png}{Joining messages}{fig.zeromq.joinmessage}
+\aosafigure[150pt]{../images/zeromq/aosa4.png}{Batching messages}{fig.zeromq.joinmessage}
 
 On the other hand, batching can have negative impact on latency. Let's
 take, for example, the well-known Nagle's
@@ -441,7 +441,7 @@ object, but there's a different engine type for each underlying
 protocol {\O}MQ supports. Thus, we have TCP engines, IPC (inter-process
 %% QUERY: Should we expand PGM to "Pragmatic General Multicast" or is it one
 %% of those things which is better known by its acronym? --ARB
-communication) engines, PGM
+communication) engines, PGM\footnote{Reliable multicast protocol, see RFC 3208.}
 engines, etc. The set of engines is extensible---in the future we may
 choose to implement, say, a WebSocket engine or an SCTP engine.
 
@@ -488,7 +488,7 @@ objects won't be migrated between CPU cores so would thus avoid the
 negative performance impact of cache pollution
 (\aosafigref{fig.zeromq.cache}).
 
-\aosafigure[250pt]{../images/zeromq/aosa5.png}{Caching}{fig.zeromq.cache}
+\aosafigure[250pt]{../images/zeromq/aosa5.png}{Multiple worker threads}{fig.zeromq.cache}
 
 This design makes a lot of traditional multi-threading problems
 disappear. Nevertheless, there's a need to share the worker thread
@@ -578,7 +578,7 @@ phase.
 
 %% FIXME: This figure is orphaned from the paragraph which explains it.
 %% Try and work it out. --ARB
-\aosafigure[300pt]{../images/zeromq/aosa7.png}{Flushing}{fig.zeromq.flush}
+\aosafigure[300pt]{../images/zeromq/aosa7.png}{Lock-free queue}{fig.zeromq.flush}
 
 The arrow on the left of \aosafigref{fig.zeromq.flush} shows how
 the pre-write buffer can be flushed to the queue simply by modifying a
