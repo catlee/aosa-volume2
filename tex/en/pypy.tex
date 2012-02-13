@@ -129,7 +129,7 @@ translation are shown in figure~\aosafigref{fig:pypy:steps}. The translator is
 itself written in (unrestricted) Python and intimately linked to the PyPy Python
 interpreter for reasons that will be illuminated shortly.
 
-\aosafigure{../images/pypy/translation_steps.png}{Translation steps}{fig:pypy:steps}
+\aosafigure[250pt]{../images/pypy/translation_steps.png}{Translation steps}{fig:pypy:steps}
 
 The first thing the translator does is load the RPython program into its
 process. (This is done with the normal Python module loading support.) RPython
@@ -176,7 +176,7 @@ def factorial(n):
 The flow-graph for the function looks like
 figure~\aosafigref{fig.pypy.flowgraph}.
 
-\aosafigure{../images/pypy/flowgraph.png}{Flow-graph of factorial}{fig.pypy.flowgraph}
+\aosafigure[200pt]{../images/pypy/flowgraph.png}{Flow-graph of factorial}{fig.pypy.flowgraph}
 
 The factorial function has been divided into blocks containing the operations
 the flowspace recorded. Each block has input arguments and a list of operations
@@ -541,7 +541,7 @@ to JIT IR to assembly. The jitviewer is shown in
 figure~\aosafigref{fig.pypy.jitviewer}. Visualization tools help developers
 understand how PyPy's many layers interact with each other.
 
-\aosafigure{../images/pypy/jitviewer.png}{The jitviewer showing Python bytecode
+\aosafigure[300pt]{../images/pypy/jitviewer.png}{The jitviewer showing Python bytecode
   and associated JIT IR operations}{fig.pypy.jitviewer}
 
 \end{aosasect1}
