@@ -1,4 +1,4 @@
-\begin{aosachapter}{Mailman}{s:mailman}{Barry Warsaw}
+\begin{aosachapter}{GNU Mailman}{s:mailman}{Barry Warsaw}
 
 GNU Mailman\footnote{\url{http://www.list.org}} is free software for
 managing mailing lists.  Almost everybody who writes or uses free and
@@ -13,8 +13,8 @@ have been posted to the mailing list.
 GNU Mailman has been around since the early 1990s, when John Viega
 wrote the first version to connect fans with the nascent Dave Matthews
 Band, the members of which he was friends with in college.  This early version came to
-%% QUERY: Who does "our" refer to?
-our attention by the mid-'90s, when the center of the Python universe
+the
+attention of the Python community in the mid-'90s, when the center of the Python universe
 had moved from CWI\footnote{\url{http://www.cwi.nl/}}, a scientific research institute in the
 Netherlands, to CNRI\footnote{\url{http://www.cnri.reston.va.us/}}, 
 the Corporation for National Research Initiatives in
@@ -40,7 +40,7 @@ we've addressed them in Mailman 3.
 In the early Mailman 1 days, we had a lot of problems with messages
 getting lost, or bugs causing messages to be re-delivered over and
 over again.  This prompted us to articulate two overriding principles
-that critical to Mailman's ongoing success:
+that are critical to Mailman's ongoing success:
 
 \begin{aosaitemize}
 
@@ -88,7 +88,7 @@ continues to make them more standards-compliant and robust.
 Email messages can act as containers for other types of data, as
 defined in the various MIME standards.  A container \emph{message
   part} can encode an image, some audio, or just about any type of
-binary or text data.  In mail reader applications, these are known as
+binary or text data, including other container parts.  In mail reader applications, these are known as
 \emph{attachments}.  \aosafigref{fig.mailman.mime} shows the structure
 of a complex MIME message.  The boxes with solid borders are the container parts,
 the boxes with dashed borders are
@@ -697,9 +697,11 @@ and the ultimate receiving mail server is required, by the standards, to
 send the bounces to this address.  Mailman uses this fact to encode
 the original recipient email address into the \code{MAIL FROM} value.
 
-If the recipient is \code{anne@example.com} and the Mailman server is
-\code{mylist@example.org}, then the VERP-encoded envelope sender for a
-mailing list posting sent to \code{anne@example.com} will be
+%% FIXME: Added \linebreaks to deal with long \code - not sure if this is the
+%% best way to handle this. --ARB
+If the Mailman server is
+\code{mylist@example.org}, then the VERP-encoded \linebreak envelope sender for a mailing list
+posting sent to \code{anne@example.com} will be\linebreak
 \code{mylist-bounce+anne=example.com@example.org}.  Here, the \code{+}
 is a local address separator, which is a format supported by most
 modern mail servers.  So when the bounce comes back, it will actually
@@ -729,12 +731,8 @@ the body of the message for each individual recipient.
 \begin{aosasect1}{REST}
 
 One of the key architectural changes in Mailman 3 addresses a common
-request over the years: allow Mailman to be more easily integrated
-%% QUERY: Can you add a short description of Canonical here: "hired
-%% by Canonical, a company which provides support and services to
-%% the Ubuntu community, in 2007..." Something like that. --ARB
-with external systems.  When I was hired by Canonical in 2007, my job
-%% QUERY: Is this description of Launchpad okay? --ARB
+request over the years: to allow Mailman to be more easily integrated
+with external systems.  When I was hired by Canonical, the corporate sponsor of the Ubuntu project, in 2007 my job
 was originally to add mailing lists to Launchpad, a collaboration and
 hosting platform for software projects.  I knew that Mailman
 2 could do the job, but there was a requirement to use Launchpad's web
@@ -745,12 +743,12 @@ List administrators would not need the plethora of options available
 in the typical Mailman site, and what few options they would need
 would be exposed through the Launchpad web user interface.
 
-At the time, Launchpad was not open source (this changed in 2009), so
+At the time, Launchpad was not free software (this changed in 2009), so
 we had to design the integration in such a way that Mailman 2's GPLv2
 code could not infect Launchpad.  This led to a number of
 architectural decisions during that integration design that were quite
-tricky and somewhat inefficient.  Because Launchpad is now open
-source, these hacks wouldn't be necessary today, but having to do it
+tricky and somewhat inefficient.  Because Launchpad is now free
+software licensed under the AGPLv3, these hacks wouldn't be necessary today, but having to do it
 this way did provide some very valuable lessons on how a 
 web-user-interface-less Mailman could be integrated with external systems.  The
 vision that emerged was of a core engine that implemented mailing list
@@ -886,10 +884,7 @@ established, and stable piece of the open source ecosystem.
   themselves describe how human-readable, non-ASCII text can be safely
   encoded, so even things like finding a \code{Re:} prefix in a
   \code{Subject:} header will be text operations, not byte operations.
-%% QUERY: You say "back to bytes" at the end of this sentence, but it's
-%% not clear that you converted FROM bytes at the beginning of the sentence.
-%% Can you clarify?  --ARB
-  Mailman's principle is to convert all text to Unicode as early as
+  Mailman's principle is to convert all incoming data from bytes to Unicode as early as
   possible, deal with the text as Unicode internally, and only convert
   it back to bytes on the way out.  It's critical to be crystal clear
   from the start when you're dealing with bytes and when you're

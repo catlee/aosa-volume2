@@ -20,7 +20,6 @@ CHAPTERS = \
 	nginx \
 	openmpi \
 	oscar \
-	osm \
 	pjs \
 	puppet \
 	pypy \
