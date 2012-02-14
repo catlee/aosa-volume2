@@ -25,9 +25,9 @@
     </div>
 
 <p>
-FreeRTOS (prounounced as "free-arr-toss") is an open source real-time operating 
-system (RTOS) for embedded systems. FreeRTOS supports many different architectures 
-and compiler toolchains, and is designed to be "small, simple, and easy to use."
+FreeRTOS (prounounced "free-arr-toss") is an open source real-time operating system 
+(RTOS) for embedded systems. FreeRTOS supports many different architectures and 
+compiler toolchains, and is designed to be "small, simple, and easy to use."
 <sup class="footnote"><a href="#footnote-1">1</a></sup>
 </p>
 
@@ -131,8 +131,8 @@ creating, scheduling, and maintaining tasks.
 
 <p>
 Tasks are good, but tasks that can communicate with each other are even better!  
-Which brings us to the second largest FreeRTOS job: communication. About 40% of 
-FreeRTOS's core code deals with communication.
+Which brings us to the second FreeRTOS job: communication. About 40% of FreeRTOS's 
+core code deals with communication.
 </p>
 
 <p>
@@ -167,7 +167,7 @@ code in the next section.
 <h3>999.2.2. Hardware Considerations</h3>
 
 <p>
-If the hardware-independent FreeRTOS code doesn't talk to the hardware, then who 
+If the hardware-independent FreeRTOS code doesn't talk to the hardware, then what 
 does?  Why, the hardware-dependent FreeRTOS code, of course!
 </p>
 
@@ -769,91 +769,56 @@ new value.
 </p>
 
 <p>
-FreeRTOS allows the user to choose what to queue. The user can queue copies of items 
-if the items are small, like in the simple integer example in the previous paragraph, 
-or the user can queue pointers to the items if the items are large. Note that in both 
-cases FreeRTOS does a deep copy: if the user chooses to queue copies of items then 
-the queue stores a deep copy of each item; if the user chooses to queue pointers then 
-the queue stores a deep copy of the pointer. The queue doesn't care what data you're 
-storing in it, it just needs to know the data's size.
+The user chooses what to queue. The user can queue copies of items if the items are 
+small, like in the simple integer example in the previous paragraph, or the user can 
+queue pointers to the items if the items are large. Note that in both cases FreeRTOS 
+does a deep copy: if the user chooses to queue copies of items then the queue stores 
+a deep copy of each item; if the user chooses to queue pointers then the queue stores 
+a deep copy of the pointer. Of course, if the user stores pointers in the queue then 
+the user is responsible for managing the memory associated with the pointers. The 
+queue doesn't care what data you're storing in it, it just needs to know the data's 
+size.
 </p>
 
 <p>
 FreeRTOS supports blocking and non-blocking queue insertions and removals.
 Non-blocking operations return immediately with a "did the queue insertion work?" or 
 "did the queue removal work?" status. Blocking operations are specified with a 
-timeout. A task can block indefinitely or for a given amount of time.
+timeout. A task can block indefinitely or for a limited amount of time.
 </p>
 
 <p>
-The queue insertion and removal algorithms are basically big infinite loops that 
-continue trying to insert or remove until the queue is ready or a blocking timeout 
-expires. Non-blocking queue insertion and removal algorithms check if the queue is 
-ready for the insert/remove, do the insert/remove if so, and then return "success" or 
-"failure" immediately.
+A blocked task, call it Task A, will remain blocked as long as its insert/remove
+operation cannot complete and its timeout (if any) has not expired.  If an interrupt
+or another task modifies the queue so that Task A's operation could complete, Task A
+will be unblocked. If Task A's queue operation is still possible by the time Task A 
+actually runs then Task A will complete its queue operation and return "success." 
+However, by the time Task A actually runs it is possible that a higher priority task 
+or interrupt has performed yet another operation on the queue that prevents Task A 
+from performing its operation. In this case Task A will check its timeout and either 
+resume blocking if the timeout hasn't expired, or return with a queue operation 
+"failed" status.
 </p>
 
 <p>
-In the "block indefinitely" case an insert operation blocks until there is space in 
-the queue, and a remove operation blocks until there is at least one item in the 
-queue.  The insert/remove operation then does the actual insert/remove and returns 
-with a "passed" status.
-</p>
-
-<p>
-The "block for a given amount of time" case is similar, except that if an 
-insert/remove operation isn't possible within the given amount of time the 
-insert/remove returns with a "failed" status.
-</p>
-
-<p>
-The rest of the system keeps going while a task is blocking on a queue; other tasks 
-continue to run. A blocked task will periodically check the queue status and if the 
-task is still blocked it will yield to other tasks. This way the blocked task doesn't 
-waste CPU cycles that can be used productively by other tasks.
+It's important to note that the rest of the system keeps going while a task is 
+blocking on a queue; other tasks and interrupts continue to run. This way the blocked 
+task doesn't waste CPU cycles that can be used productively by other tasks and 
+interrupts.
 </p>
 
 <p>
 FreeRTOS uses the <code>xTasksWaitingToSend</code> list to keep track of tasks that 
-are blocking on inserting into the queue. Each time an element is removed from a 
-queue the <code>xTasksWaitingToSend</code> list is checked. If a task is waiting in 
-that list the task is unblocked.
-</p>
-
-<p>
-Similarly, <code>xTasksWaitingToReceive</code> keeps track of tasks that are blocking 
-on removing from the queue.  Each time a new element is inserted into a queue the 
-<code>xTasksWaitingToReceive</code> list is checked. If a task is waiting in that 
+are blocking on inserting into a queue. Each time an element is removed from a queue 
+the <code>xTasksWaitingToSend</code> list is checked. If a task is waiting in that 
 list the task is unblocked.
 </p>
 
 <p>
-Managing the <code>xTasksWaitingToSend</code> and <code>xTasksWaitingToReceive</code> 
-lists is straightforward when "block indefinitely" inserts and removals are used. It 
-gets more complicated when blocking for a specified amount of time.
-</p>
-
-<p>
-When using a blocking timeout the insert/remove code uses the system timer to keep 
-track of how much time has passed since the initial insert/remove request. Each time 
-the blocking task runs it checks if the queue is ready to actually do the 
-insert/remove. If the queue is ready, then the insert/remove happens and the queue 
-access is done.  If the queue is not ready, then the system timer is checked. If the 
-task has been blocking longer than the requested timeout the queue access returns 
-with a "failed" status. If the requested timeout has not been reached yet then the 
-task will attempt the queue access again the next time it runs.
-<!-- EDIT: RB: I think it is easy for people to misinterpret this.  A task that is 
-waiting
-on a queue (to send or receive) will remain blocked as long as the operation cannot
-complete, and its time out has not expired.  If an interrupt or another task
-performs an operation that allows the blocked tasks operation to complete, the
-blocked task will leave the blocked state.  However, by the time it actually
-runs it is possible that a higher priority task or interrupt has performed yet another
-operation on the queue that means the task that was unblocked still cannot perform
-its operation - and that is the only time it will loop back to the top of the queue
-function (after checking to see if there is any block time remaining).  I realise
-that is probably not a particularly clear explanation.  Let me know if you would
-like further explanation - I could provide a sequence diagram  to make it clearer. --> 
+Similarly, <code>xTasksWaitingToReceive</code> keeps track of tasks that are blocking 
+on removing from a queue.  Each time a new element is inserted into a queue the 
+<code>xTasksWaitingToReceive</code> list is checked. If a task is waiting in that 
+list the task is unblocked.
 </p>
 
 <div class="subsect">
@@ -913,9 +878,9 @@ article.
 <h4>999.6.2.2. Implementation</h4>
 
 <p>
-FreeRTOS implements an N-element semaphore as queue that can hold N items. It doesn't 
-store any actual data for the queue items; the semaphore just cares how many queue 
-entries are currently occupied, which is tracked in the queue's 
+FreeRTOS implements an N-element semaphore as a queue that can hold N items. It 
+doesn't store any actual data for the queue items; the semaphore just cares how many 
+queue entries are currently occupied, which is tracked in the queue's 
 <code>uxMessagesWaiting</code> field.  It's doing "pure synchronization" as the 
 FreeRTOS header file <code>semphr.h</code> calls it.  Therefore the queue has a item 
 size of zero bytes (<code>uxItemSize == 0</code>).  Each semaphore access increments 
@@ -976,12 +941,12 @@ available again.
 <h2>999.7. Conclusion</h2>
 
 <p>
-We've completed our look at the FreeRTOS's main data structures and algorithms.
+We've completed our look at the FreeRTOS architecture.
 </p>
 
 <p>
-Hopefully you have a good feel for how FreeRTOS tasks run and communicate. And if 
-you've never looked at any OS's internals before you now have a basic idea of how 
+Hopefully you now have a good feel for how FreeRTOS's tasks run and communicate. And 
+if you've never looked at any OS's internals before you now have a basic idea of how 
 they work.
 </p>
 
@@ -1012,7 +977,7 @@ it's a book *and* a URL.]
 <p>
 I would like to thank Richard Barry for creating and maintaining FreeRTOS, and for 
 choosing to make it open source. Richard was very helpful in writing this chapter, 
-providing some FreeRTOS history as well as technical review.
+providing some FreeRTOS history as well as very valuable technical review.
 </p>
 
 <p>

@@ -123,7 +123,7 @@ project sitting in a dark corner of the Interwebs, unknown to most
 search engines, and hosted on a single server. Still, performance was
 already an issue, notably because UseModWiki stored its content in a
 flat file database. At the time, Wikipedians were worried about being
-``inundated with traffic'' following articles in the New York Times,
+inundated with traffic following articles in the New York Times,
 Slashdot and Wired.
 
 So in summer 2001, Wikipedia participant Magnus Manske (then a
@@ -157,7 +157,7 @@ Despite the improvements from the PHP script and database back end,
 the combination of increasing traffic, expensive features and limited
 hardware continued to cause performance issues on Wikipedia. In 2002,
 Lee Daniel Crocker rewrote the code again, calling the new software
-``Phase III''. Because the site was experiencing frequent difficulties,
+``Phase III''\footnote{\url{http://article.gmane.org/gmane.science.linguistics.wikipedia.technical/2794}}. Because the site was experiencing frequent difficulties,
 Lee thought there ``wasn't much time to sit down and properly architect
 and develop a solution'', so he ``just reorganized the existing
 architecture for better performance and hacked all the
@@ -257,7 +257,7 @@ of working within an inadequate architecture becomes apparent.
 Because MediaWiki is the platform for high-profile sites such as
 Wikipedia, core developers and code reviewers have enforced strict
 security rules\footnote{See
-  \url{https://www.mediawiki.org/wiki/Security\_for\_developers} for a
+  \url{https://www.mediawiki.org/wiki/Security_for_developers} for a
   detailed guide.}. To make it easier to write secure code, MediaWiki
 gives developers wrappers around HTML output and database queries to
 handle escaping. To sanitize user input, a develop uses the
@@ -299,7 +299,10 @@ those objects to be reused in a much more flexible way.
 
 \begin{aosasect1}{Database and Text Storage}
 
-\aosafigure{../images/mediawiki/database-schema.png}{Database schema.}{fig.mediawiki.schema}
+%% I'm going to take out this image because it's huge and I'm 
+%% pretty sure it won't print properly, and the chapter can do
+%% without it. Maybe keep it for web? --ARB
+%% \aosafigure{../images/mediawiki/database-schema.png}{Database schema.}{fig.mediawiki.schema}
 
 MediaWiki has been using a relational database back end since the
 Phase II software. The default (and best-supported) database

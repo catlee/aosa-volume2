@@ -2,7 +2,7 @@
 
 GDB, the GNU Debugger, was among the first programs to be written for
 the Free Software Foundation, and it has been a staple of free and
-open-source software systems ever since.  Originally designed as a
+open source software systems ever since.  Originally designed as a
 plain Unix source-level debugger, it has since been expanded to a wide
 range of uses, including with many embedded systems, and has grown from
 a few thousand lines of C to over half a million.
@@ -82,7 +82,8 @@ of the original plan.
 
 At the largest scale, GDB can be said to have two sides to it:
 
-1) The ``symbol side'' is concerned with symbolic information about
+\begin{enumerate}
+\item The ``symbol side'' is concerned with symbolic information about
 the program.  Symbolic information includes function and variable
 names and types, line numbers, machine register usage, and so forth.
 The symbol side extracts symbolic information from the program's
@@ -90,7 +91,7 @@ executable file, parses expressions, finds the memory address of a
 given line number, lists source code, and in general works with
 the program as the programmer wrote it.
 
-2) The ``target side'' is concerned with the manipulation of the
+\item The ``target side'' is concerned with the manipulation of the
 target system.  It has facilities to start and stop the program, to
 read memory and registers, to modify them, to catch signals, and so
 on.  The specifics of how this is done can vary drastically between
@@ -101,6 +102,7 @@ mostly about making \code{ptrace} calls and interpreting the results.
 But for cross-debugging an embedded system, the target side constructs
 message packets to send over a wire, and waits for response packets in
 return.
+\end{enumerate}
 
 The two sides are somewhat independent of each other; you can look
 around your program's code, display variable types, etc, without
@@ -190,7 +192,8 @@ something like \code{cat} or \code{diff}, and over time, GDB's
 portability bits came to be separated into three classes, each with
 its own makefile fragment and header file.
 
-* ``Host'' definitions are for the machine that GDB itself runs on,
+\begin{itemize}
+\item ``Host'' definitions are for the machine that GDB itself runs on,
 and might include things like the sizes of the host's integer types.
 Originally done as handwritten header files, it eventually occurred to
 people that they could be calculated by having \code{configure} run
@@ -200,24 +203,27 @@ used to build the tool.  This is what
 GNU tools and many (if not most) Unix programs use
 \code{autoconf}-generated configure scripts.
 
-* ``Target'' definitions are specific to the machine running the
+\item ``Target'' definitions are specific to the machine running the
 program being debugged.  If the target is the same as the host, then
 we are doing ``native'' debugging, otherwise it is ``cross''
 debugging, using some kind of wire connecting the two systems.  Target
 definitions fall in turn into two main classes:
 
-** ``Architecture'' definitions - how to disassemble machine code, how
+\begin{itemize}
+\item ``Architecture'' definitions --- how to disassemble machine code, how
 to walk through the call stack, the trap instruction to insert at
 breakpoints.  Originally done with macros, they were migrated to
 regular C accessed by via ``gdbarch'' objects, described in more depth
 below.
 
-** ``Native'' definitions - these define the specifics of arguments to
+\item ``Native'' definitions --- these define the specifics of arguments to
 \code{ptrace} (which vary considerably between flavors of Unix), how
 to find shared libraries that have been loaded, and so forth, which
 only apply to the native debugging case.  Native definitions are a
 last holdout of 1980s-style macros, although most are now figured out
 using \code{autoconf}.
+\end{itemize}
+\end{itemize}
 
 \end{aosasect1}
 
@@ -265,7 +271,7 @@ sometimes growing to occupy multiple gigabytes of RAM.  To some
 extent, this is unavoidable; a large application in C++ can have
 millions of symbols in its own right, and it pulls in system header
 files which can have millions more symbols.  Each local variable, each
-named type, each value of an enum - all of these are separate symbols.
+named type, each value of an enum --- all of these are separate symbols.
 
 GDB uses a number of tricks to reduce symbol table space, such as
 partial symbol tables (more about those later), bit fields in structs,
@@ -319,8 +325,8 @@ all as a tree structure built out of node objects.  The set of node
 types is effectively a union of all the types of expressions possible
 in all the different languages; unlike in the compiler, there is no
 reason to disallow the user from trying to subtract a Fortran variable
-from a C variable -- perhaps the difference of the two is an obvious
-power of 2, and that gives us the aha moment.
+from a C variable --- perhaps the difference of the two is an obvious
+power of two, and that gives us the aha moment.
 
 \end{aosasect2}
 
@@ -357,11 +363,11 @@ tools.  (Porting BFD is also a key first step in porting the tools to a
 a new target.)
 
 GDB only uses BFD to read files, using it to pull blocks of data
-from the executable file into GDB's memory.  GDB then has two levels
-of reader functions of its own.  The first level is for basic symbols
-aka ''minimal symbols'', which are just the names that the linker needs
-to do its work.  These are strings with addresses and not much else;
-we assume that addresses in text sections are functions, and addresses
+from the executable file into GDB's memory. GDB then has two levels of
+reader functions of its own. The first level is for basic symbols, or
+``minimal symbols'', which are just the names that the linker needs to
+do its work. These are strings with addresses and not much else; we
+assume that addresses in text sections are functions, and addresses
 in data sections are data, and so forth.
 
 The second level is detailed symbolic information, which typically has
@@ -482,13 +488,13 @@ as one might think.  Target vectors are not really orthogonal to each
 other; if you have both an executable and a live process in the
 session, while it makes sense to have the live process's methods
 override the executable's methods, it almost never makes sense to do
-the reverse.  So GDB has ended up with a notion of {\em stratum} in
+the reverse.  So GDB has ended up with a notion of a {\em stratum} in
 which ``process-like'' target vectors are all at one stratum, while
 ``file-like'' target vectors get assigned to a lower stratum, and
 target vectors can get inserted as well as pushed and popped.
 
 (Although GDB maintainers don't like the target stack much, no one has
-proposed -- and prototyped -- any better alternative.)
+proposed --- or prototyped --- any better alternative.)
 
 \end{aosasect2}
 
@@ -546,7 +552,7 @@ i386_gdbarch_init( [...] )
 \begin{aosasect2}{Execution control}
 
 The heart of GDB is its execution control loop.  We touched on it
-earlier when describing single-stepping over a line - the algorithm
+earlier when describing single-stepping over a line --- the algorithm
 entailed looping over multiple instructions until finding one
 associated with a different source line.
 
@@ -574,7 +580,7 @@ instance, with the proliferation of Unix variants, there was no one
 person who understood all their fine points, nor did we have access to
 all of them for regression testing, so there was a strong incentive to
 modify the code in a way that exactly preserved behavior for existing
-ports--and a goto skipping over part of the loop was an all-too-easy
+ports---and a goto skipping over part of the loop was an all-too-easy
 tactic.
 
 The single big loop was also a problem for any kind of asynchronous
@@ -654,7 +660,7 @@ and translates the packets into device library calls.
 \begin{aosasect2}{GDBserver}
 
 The GDB sources do include one complete and working implementation of
-the target side of the remote protocol -- GDBserver.  GDBserver is a
+the target side of the remote protocol --- GDBserver.  GDBserver is a
 {\em native} program that runs under the target's operating system,
 and controls other programs on the target OS using its native
 debugging support, in response to packets received via remote protocol.
@@ -723,7 +729,7 @@ context.
 To solve this problem, GDB has an alternate ``user'' interface, known
 as the Machine Interface or MI for short.  It is still fundamentally a
 command-line interface, but both commands and results have additional
-syntax that makes everything explicit--each argument is bounded by
+syntax that makes everything explicit --- each argument is bounded by
 quotes, while complex output has delimiters for subgroups, and
 parameter names for component pieces.  In addition, MI commands can be
 prefixed with sequence identifiers that are echoed back in results,
@@ -841,8 +847,8 @@ larger than ever before, and quality is just as good or better.
 
 \begin{aosasect2}{Make a Plan, but Expect it to Change}
 
-The open-source development process is intrinsically somewhat chaotic,
-as different individuals work on the code for awhile, then fall away,
+The open source development process is intrinsically somewhat chaotic,
+as different individuals work on the code for a while, then fall away,
 leaving others to continue on.
 
 However, it still makes sense to make a development plan and publish
@@ -868,7 +874,7 @@ concept and are expunging the now-pointless bits of code.
 
 \begin{aosasect2}{Things Would Be Great If We Were Infinitely Intelligent}
 
-After seeing some of the changes we did, you might be thinking--why
+After seeing some of the changes we did, you might be thinking: why
 didn't we do things right in the first place?  Well, we just weren't
 smart enough.
 
@@ -898,7 +904,7 @@ that enabled more extensive development and reengineering later.
 
 \begin{aosasect2}{Learn to Live with Incomplete Transitions}
 
-Try to complete transitions, but they may take awhile; expect to live
+Try to complete transitions, but they may take a while; expect to live
 with them being incomplete.
 
 At the GCC Summit in 2003, Zack Weinberg lamented the ``incomplete
@@ -921,7 +927,7 @@ other way around.
 Don't.
 
 Everything in the code originated with a series of conscious
-decisions; some inspired, some less so.  The clever space-saving trick
+decisions: some inspired, some less so.  The clever space-saving trick
 of 1991 is a pointless complexity with the multi-gigabyte RAMs of
 2011.
 

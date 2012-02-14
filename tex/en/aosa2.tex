@@ -13,7 +13,9 @@
 \usepackage{fancyhdr} % to format headers/footers
 \pagestyle{fancy}
 \usepackage{sectsty}
+\usepackage{xspace}
 \usepackage{wrapfig}
+\usepackage[small]{caption}  % make caption text size smaller
 
 \usepackage[T1]{fontenc}
 \usepackage{tgtermes}    % body font
@@ -102,15 +104,22 @@
 { \end{framed}\end{minipage} \rule{12.82cm}{0.75pt} \end{figure} }
 
 \newenvironment{aosadescription}
-{\begin{description}\addtolength{\itemsep}{-0.6\baselineskip}}
+{\begin{description}\addtolength{\itemsep}{-0.5\baselineskip}}
 {\end{description}}
 
 \newenvironment{aosaenumerate}
-{\begin{enumerate}\addtolength{\itemsep}{-0.6\baselineskip}}
+{\begin{enumerate}\addtolength{\itemsep}{-0.5\baselineskip}}
+{\end{enumerate}}
+
+% new environment for second-level nested enumerated lists
+\newenvironment{aosaenumerate2}
+{\begin{enumerate}\addtolength{\itemsep}{-0.3\baselineskip}}
 {\end{enumerate}}
 
 \newenvironment{aosaitemize}
-{\begin{itemize}\addtolength{\itemsep}{-0.6\baselineskip}}
+{\begin{itemize}
+\setlength{\parsep}{-1.8\baselineskip} %% doesn't appear to do anything
+\addtolength{\itemsep}{-0.5\baselineskip}}
 {\end{itemize}}
 
 \newcommand{\aosaboxref}[1]{Box~\ref{#1}}
@@ -126,6 +135,13 @@
 \newcommand{\aosaquestion}[1]{\begin{textbf}{#1}\end{textbf}}
 \newcommand{\code}[1]{\texttt{#1}}
 
+% GHC commands
+\newcommand{\clift}[1]{\lfloor{#1}\rfloor}
+\newcommand{\ol}[1]{\overline{#1}}
+\newcommand{\tcase}[2]{\mathbf{case}\;{#1}\;\mathbf{of}\;\ol{#2}}
+\newcommand{\tlet}[4]{\mathbf{let}\;{#1}{:}{#2} = {#3}\;\mathbf{in}\;{#4}}
+\newcommand{\tcast}[2]{{#1}\xspace{\triangleright}\xspace{#2}}
+
 % format chapter title pages
 \titleformat{\chapter}
   [display] % shape/type of title
@@ -140,6 +156,9 @@
      \chapterauthor % insert chapter author name 
   ]% end of what comes after title
 
+% list of hard-to-hyphenate words with correct possibly hyphenation-points
+\hyphenation{Free-RTOS}
+
 \raggedbottom
 
 \begin{document}
@@ -153,7 +172,6 @@
 
 \mainmatter
 \include{distsys}
-\include{erlang}
 \include{ffreleng}
 \include{freertos}
 \include{gdb}
@@ -191,7 +209,6 @@
 
 \backmatter
 
-\include{makingsoftware}
 \include{colophon}
 
 \end{document}

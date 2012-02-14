@@ -5,7 +5,6 @@ CHAPTERS = \
   frontmatter \
 	intro \
 	distsys \
-	erlang \
 	ffreleng \
 	freertos \
 	gdb \

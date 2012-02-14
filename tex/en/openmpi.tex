@@ -223,9 +223,11 @@ focused on three things:
   architectural view of Open MPI showing its three main
   layers: OPAL, ORTE, and OMPI.}{fig.openmpi.layers}
 
-Open MPI has three main abstraction layers, shown in
+\noindent Open MPI has three main abstraction layers, shown in
 \aosafigref{fig.openmpi.layers}:
 
+%% FIXME: The spacing between the multiple paragraphs in items is bothering
+%% me but I can't seem to fix it in aosa2.tex. Look into this more.  --ARB
 \begin{aosaitemize}
 \item \emph{Open, Portable Access Layer (OPAL)}: OPAL is the bottom
   layer of Open MPI's abstractions.  Its abstractions are focused on
@@ -330,8 +332,8 @@ architecture.
 %
 Case in point: the Open MPI v1.5 series includes 155 plugins.
 %
-To list just a few examples, there are plugins for different {\tt
-  memcpy()} implementations, plugins for how to launch processes on
+To list just a few examples, there are plugins for different \code{memcpy()} 
+implementations, plugins for how to launch processes on
 remote servers, and plugins for how to communicate on different types
 of underlying networks.
 
@@ -376,8 +378,8 @@ the Modular Component Architecture (MCA).
   a \emph{base} and one or more components.  This structure is
   replicated in each of the layers shown in
   \aosafigref{fig.openmpi.layers}.  The sample frameworks listed in
-  this figure are spread across all three layers: \code{btl} and {\tt
-    coll} are in the OMPI layer, \code{plm} is in the ORTE layer, and
+  this figure are spread across all three layers: \code{btl} and \code{coll} 
+  are in the OMPI layer, \code{plm} is in the ORTE layer, and
   \code{timer} is in the OPAL layer.}{fig.openmpi.mca}
 
 Finally, another major advantage of using frameworks and components is
@@ -400,10 +402,10 @@ the \code{memory} directory.
 Framework directories contain at least the following three items:
 
 \begin{aosaenumerate}
-\item \emph{Component interface definition:} A header file named {\tt
-    <framework>.h} will be located in the top-level framework
-  directory (e.g., the Memory framework contains {\tt
-    memory/memory.h}).  This well-known header file defines the
+\item \emph{Component interface definition:} A header file named 
+\code{<framework>.h} will be located in the top-level framework
+  directory (e.g., the Memory framework contains 
+  \code{memory/memory.h}).  This well-known header file defines the
   interfaces that each component in the framework must support.  This
   header includes function pointer typedefs for the interface
   functions, structs for marshaling these function pointers, and any
@@ -411,8 +413,8 @@ Framework directories contain at least the following three items:
 
 \item \emph{Base code}: The \code{base} subdirectory contains the glue
   code that provides the core functionality of the framework.  For
-  example, the \code{memory} framework's base directory is {\tt
-    memory/base}.  The base is typically comprised of logistical grunt
+  example, the \code{memory} framework's base directory is \code{memory/base}.  
+  The base is typically comprised of logistical grunt
   work such as finding and opening components at run-time, common
   utility functionality that may be utilized by multiple components,
   etc.
@@ -549,8 +551,8 @@ transport for message passing.
 Regardless of framework, each component contains a well-known,
 statically-allocated and initialized component struct.  
 %
-The struct must be named according to the template {\tt
-  mca\_\-<framework>\_\-<component>\_\-component}.  For example, the
+The struct must be named according to the template 
+\code{mca\_\-<framework>\_\-<component>\_\-component}.  For example, the
 TCP network driver component's struct in the BTL framework is named
 \code{mca\_\-btl\_\-tcp\_\-component}.
 
@@ -561,16 +563,11 @@ equivalent in each supported operating system).
 
 The base component struct contains some logistical information, such
 as the component's formal name, version, framework version adherence,
-etc.  (See the ``Base Component Struct'' sidebar.)
+etc.
 %
 This data is used for debugging purposes, inventory listing, and
 run-time compliance and compatibility checking.
 
-%% FIXME Author has all his code blocks in sidebars - it seems to work
-%% because he refers to them in the body text, but they are tending to
-%% cluster. Revisit this closer to ship date. -ARB
-
-\begin{aosabox}{Base Component Struct}
 \begin{verbatim}
 struct mca_base_component_2_0_0_t {
     /* Component struct version number */
@@ -595,7 +592,6 @@ struct mca_base_component_2_0_0_t {
         mca_register_component_params;
 };
 \end{verbatim}
-\end{aosabox}
 
 %% FIXME This is widowed from the list that follows at the moment. Revisit
 %% before going to print. -ARB Jan 19
@@ -657,10 +653,8 @@ component) can add a function pointer in its framework-specific
 component struct.
 
 The MPI \code{btl} framework, which provides point-to-point MPI
-messaging functionality, uses this technique.  Its framework-specific
-struct is shown in the ``BTL Framework Component Struct'' sidebar.
+messaging functionality, uses this technique.
 
-\begin{aosabox}{BTL Framework Component Struct}
 \begin{verbatim}
 struct mca_btl_base_component_2_0_0_t {
     /* Base component struct */
@@ -673,7 +667,6 @@ struct mca_btl_base_component_2_0_0_t {
     mca_btl_base_component_progress_fn_t btl_progress;
 };
 \end{verbatim}
-\end{aosabox}
 
 As an example of the TCP BTL framework query functions, the TCP BTL
 component \code{btl\_\-init} function does several things:
@@ -689,10 +682,8 @@ Similarly, plugins can extend the framework-specific component struct
 with their own members.
 %
 The \code{tcp} component in the \code{btl} framework does this; it
-caches many data members in its component struct. (See the ``TCP
-Component Struct (in the BTL Framework)'' sidebar.)
+caches many data members in its component struct.
 
-\begin{aosabox}{TCP Component Struct (in the BTL Framework)}
 \begin{verbatim}
 struct mca_btl_tcp_component_t {
     /* btl framework-specific component struct */ 
@@ -708,7 +699,6 @@ struct mca_btl_tcp_component_t {
     /* ...and many more not shown here */
 };
 \end{verbatim}
-\end{aosabox}
 
 This struct-nesting technique is effectively a simple emulation of C++
 single inheritance: a pointer to an instance of a \code{struct

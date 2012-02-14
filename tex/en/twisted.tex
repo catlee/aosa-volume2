@@ -101,7 +101,7 @@ which would do what existing networking platforms in Python didn't:
 
 \end{aosasect1}
 
-\begin{aosasect1}{The architecture of Twisted}
+\begin{aosasect1}{The Architecture of Twisted}
 
 Twisted is an event-driven networking engine. Event-driven programming is so
 integral to Twisted's design philosophy that it is worth taking a moment to
@@ -179,8 +179,8 @@ would have to get re-implemented from scratch for Twisted?
 
 The problem is that all of these server implementations have networking code
 written from scratch, typically in C, with application code coupled directly to
-the networking layer. This makes them very difficult to use as libraries. They
-have to be treated as black boxes when used together, giving a developer no
+the networking layer. This makes them very difficult to use as libraries. 
+They have to be treated as black boxes when used together, giving a developer no
 chance to reuse code if he or she wanted to expose the same data over multiple
 protocols. Additionally, the server and client implementations are often
 separate applications that don't share code. Extending these applications and
@@ -196,11 +196,14 @@ protocols, and to test one's code.
 
 \begin{aosasect2}{The Reactor}
 
-Twisted implements the reactor pattern, and the core of Twisted is the
-reactor event loop. The reactor knows about network, file system, and timer
-events. It waits on and then handles these events, abstracting away
-platform-specific behavior and presenting interfaces to make responding to
-events anywhere in the network stack easy.
+Twisted implements the reactor design pattern, which describes demultiplexing
+and dispatching events from multiple sources to their handlers in a
+single-threaded environment.
+
+The core of Twisted is the reactor event loop. The reactor knows about network,
+file system, and timer events. It waits on and then handles these events,
+abstracting away platform-specific behavior and presenting interfaces to make
+responding to events anywhere in the network stack easy.
 
 The reactor essentially accomplishes:
 
@@ -244,7 +247,7 @@ implementation.
 
 \end{aosasect2}
 
-\begin{aosasect2}{Deferreds}
+\begin{aosasect2}{Managing Callback Chains}
 
 Callbacks are a fundamental part of event-driven programming and are the way
 that the reactor indicates to an application that events have completed. As
@@ -301,7 +304,8 @@ def finishProcessing(value):
     reactor.stop()
 
 url = "http://google.com"
-getPage(url, success, failure)
+# getPage takes: url, success callback, error callback
+getPage(url, processPage, logError)
 
 reactor.run()
 \end{verbatim}
@@ -333,7 +337,7 @@ This toy example hints at the complexity frustrating programmers during the
 first few years of Twisted's development. Twisted responded to this complexity
 by growing an object called a \code{Deferred}.
 
-\begin{aosasect3}{Using Deferreds}
+\begin{aosasect3}{Deferreds}
 
 A \code{Deferred} is an abstraction to the idea of a result that
 doesn't exist yet. It also helps manage the callback chains for this
@@ -458,6 +462,7 @@ from twisted.internet import protocol, reactor
 
 class Echo(protocol.Protocol):
     def dataReceived(self, data):
+        # As soon as any data is received, write it back
         self.transport.write(data)
 
 class EchoFactory(protocol.Factory):
@@ -475,7 +480,6 @@ class EchoClient(protocol.Protocol):
        self.transport.write("hello, world!")
 
    def dataReceived(self, data):
-       # As soon as any data is received, write it back
        print "Server said:", data
        self.transport.loseConnection()
 
@@ -739,9 +743,9 @@ authentication off the shelf, or to add a new kind. For example, one could add
 authentication via a local UNIX password database or an LDAP server using the
 plugin system.
 
-\code{twistd} comes with plugins for many of Twisted's supported
-protocols, which turns the work of spinning up a server into a single
-command. Here are some examples of twistd servers that ship with Twisted:
+\code{twistd} comes with plugins for many of Twisted's supported protocols,
+which turns the work of spinning up a server into a single command. Here are
+some examples of \code{twistd} servers that ship with Twisted:
 
 \begin{aosaitemize}
 

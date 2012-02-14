@@ -1,0 +1,16 @@
+Files in this archive:
+
+README: This file
+
+gpsd.tex: TeX master for the GPSD chapter
+
+software-layers.pic:
+    pic diagram illustrating the vertical software layering
+
+dataflow.pic:
+    pic diagram illustrating the flow of sensor data
+
+I know it's possible to embed pic diagrams in LaTeX, but I never learned
+the exact magic - it has something to do with beating gpic into emitting TeX
+picture-environment commands rather than troff.  I've just left comments
+in the chapter where the diagrams should go.
