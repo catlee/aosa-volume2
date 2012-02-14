@@ -36,12 +36,9 @@ Days after BitMover (maker of BitKeeper) announced it would revoke licenses
 for some core Linux kernel developers, Linus Torvalds began development, in
 haste, of what was to become Git. He began by writing a
 collection of scripts to help him manage email patches to apply one after
-%% QUERY: I'm not sure of the meaning of the verb "fail" in this sentence.
-%% Will our readers know what you mean? If not can you please reword the
-%% sentence? --ARB
-the other. The aim of this initial collection of scripts was to fail merges
-quickly so the maintainer could modify the codebase mid-patch stream and
-continue merging contributed patches once cleanly able to.
+the other. The aim of this initial collection of scripts was to abort
+applying merges quickly so the maintainer could modify the codebase
+mid-patch stream to manually merge then continue merging subsequent patches.
 
 From the outset, Torvalds had one philosphical goal for Git---to be the anti-CVS---plus
 three usability design goals:
@@ -112,11 +109,9 @@ all VCSs.
 
 \begin{aosasect2}{Content Storage}
 
-The most common design choices for storing content in the VCS world are:
-\begin{aosaitemize}
-  \item Delta-based changeset
-  \item Directed acyclic graph (DAG) content representation
-\end{aosaitemize}
+The most common design choices for storing content in the VCS world are with
+a delta-based changeset, or with directed acyclic graph (DAG) content 
+representation.
 
 Delta-based changesets encapsulate the differences between two versions of
 the flattened content, plus some metadata. Representing content as a
@@ -144,7 +139,7 @@ in a Git repository would have zero parents, while the result of a three-way mer
 would have three parents.
 
 Another primary difference between Git and Subversion and its linear history
-ancestors, is its ability to directly support branching that will record
+ancestors is its ability to directly support branching that will record
 most merge history cases.
 
 \aosafigure[200pt]{../images/git/dag-example.png}{Example of a DAG representation
@@ -156,10 +151,7 @@ up its directory structure (via nodes representing directories) to the root
 directory, which is then linked to a commit node. This commit node, in turn,
 can have one or more parents. This affords Git two
 properties that allow us to reason about history and content in
-%% QUERY: You haven't introduced the RCS family - can you define this
-%% term briefly, like: "the RCS family, the group of VCSs based on GNU's RCS."
-%% (Or whatever it actually means!) --ARB
-more definite ways than the RCS family. Namely:
+more definite ways than VCSs derived from RCS (the RCS family), namely:
 \begin{aosaitemize}
   \item When a content (i.e., file or directory) node in the graph has the same
   reference identity (the SHA in Git) as that in a different commit, the two
@@ -196,7 +188,7 @@ has a local checkout of the Subversion repository and a local clone of the
 Git repository.
 
 Let us say Alex makes a change to a 1 MB file in the local Subversion
-checkout then commits the change. Locally, the checkout of the file mimics
+checkout, then commits the change. Locally, the checkout of the file mimics
 the latest change and local metadata is updated. During Alex's commit in the centralized
 Subversion repository, a diff is generated between the
 previous snapshot of the files and the new changes, and this diff is stored
@@ -293,7 +285,7 @@ directory. We can branch, commit, tag and even communicate with other local
 and remote Git repositories. Even communication with other types of VCS
 repositories is possible with just a handful of \code{git} commands.
 
-The \code{git init} command creates a .git subdirectory inside of testgit.
+The \code{git\,init} command creates a .git subdirectory inside of testgit.
 Let's have a peek inside it:
 \begin{verbatim}
 tree .git/
@@ -532,7 +524,7 @@ our changes into \code{trunk}. The problem with the way linear-history VCSs
 like Subversion handle this is that there is no way to know that the
 changesets from the other branch are now contained within the trunk.
 
-%%% QUERY: Greg, which words should be in \code{}: HEAD? trunk? master? --ARB
+%%% FIXME: Greg, which words should be in \code{}: HEAD? trunk? master? --ARB
 DAG-based merge history VCSs, like Git, handle this case reasonably well.
 Assuming the other branch does not contain commits that have not been merged
 into our database vendor migration branch (say, \code{db-migration} in our
@@ -587,11 +579,11 @@ Git core project are a number of implementations using alternative datastores
 as backends for the Git object database such as:
 
  \begin{aosaitemize}
-  \item jgit\_cassandra\footnote{\url{https://github.com/spearce/jgit\_cassandra}},
+  \item jgit\_cassandra\footnote{\url{https://github.com/spearce/jgit_cassandra}},
     which offers Git object persistence using Apache Cassandra, a hybrid datastore
     using Dynamo-style distribution with BigTable column family data model
     semantics.
-  \item jgit\_hbase\footnote{\url{https://github.com/spearce/jgit\_hbase}},
+  \item jgit\_hbase\footnote{\url{https://github.com/spearce/jgit_hbase}},
     which enables read and write operations to Git objects stored in HBase, a
     distributed key-value datastore.
   \item libgit2-backends\footnote{\url{https://github.com/libgit2/libgit2-backends}},
@@ -617,13 +609,11 @@ but the future of Git appears bright.
 \begin{aosasect1}{Lessons Learned}
 
 In software, every design decision is ultimately a trade-off. As a power
-user of Git for version control and someone who has developed software
-around the Git object database model I have a deep fondness of Git in its
+user of Git for version control and as someone who has developed software
+around the Git object database model, I have a deep fondness for Git in its
 present form. Therefore, these lessons learned are more of a reflection
-of common recurring complaints about Git that due to design decisions and
+of common recurring complaints about Git that are due to design decisions and
 focus of the Git core developers.
-%% QUERY: I don't think you mean "that" in the previous sentence, but I don't 
-%% know what you did mean. Can you please rewrite the previous sentence? --ARB
 
 One of the most common complaints by developers and managers who evaluate
 Git has been the lack of IDE

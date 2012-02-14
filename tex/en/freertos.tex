@@ -101,9 +101,13 @@ hardware-dependent layer.  This hardware-dependent layer knows how to
 talk to whatever chip architecture you
 choose. \aosafigref{fig.freertos.layers} shows FreeRTOS's layers.
 
-%% FIXME: In the pdf, the layers figure is right on top of the code snippet, and the "Figure 3.1 FreeRTOS software layers" looks like it might apply to either the figure or the code. Can we move the figure to be right under this paragraph (above) so it is separate from the code snippet? --CS
+%% FIXME-FIXED: In the pdf, the layers figure is right on top of the code snippet,
+%and the "Figure 3.1 FreeRTOS software layers" looks like it might apply to
+%either the figure or the code. Can we move the figure to be right under this
+%paragraph (above) so it is separate from the code snippet? --CS
+%% Fixed for now - made image smaller. --ARB
 
-\aosafigure[250pt]{../images/freertos/freertos-figures-layers.png}{FreeRTOS software layers}{fig.freertos.layers}
+\aosafigure[200pt]{../images/freertos/freertos-figures-layers.pdf}{FreeRTOS software layers}{fig.freertos.layers}
 
 FreeRTOS ships with all the hardware-independent as well as
 hardware-dependent code you'll need to get a system up and running. It
@@ -156,7 +160,6 @@ chip, FreeRTOS is built with the file
 \code{FreeRTOS/Source/portable/IAR/ARM\_CM3/portmacro.h} which defines
 \code{portENTER\_CRITICAL()} like this:
 
-%% FIXME: This is widowed - try and fix --ARB
 \begin{verbatim}
 #define portENTER_CRITICAL()   vPortEnterCritical()
 \end{verbatim}
@@ -173,7 +176,9 @@ types.  Data types for basic integer variables, pointers, and the
 system timer tick data type are defined like this for the IAR compiler
 on ARM Cortex-M3 chips:
 
-%% FIXME: Can we get the paragraph immediately above and the entire snippet below on the same page? Currently the pdf has a page break in the middle of the snippet. --CS
+%% FIXME-FIXED: Can we get the paragraph immediately above and the entire snippet
+%below on the same page? Currently the pdf has a page break in the middle of
+%the snippet. --CS Fixed for now after resizing image above --ARB
 
 \begin{verbatim}
 #define portBASE_TYPE  long              // Basic integer variable type
@@ -278,11 +283,11 @@ one priority 0 task, no priority 1 tasks, and three priority 2
 tasks. This picture is accurate but not complete; it's missing a few
 details which we'll fill in later.
 
-\aosafigure[325pt]{../images/freertos/freertos-figures-basic-ready-list.png}{Basic view of FreeRTOS Ready List}{fig.freertos.ready}
+\aosafigure[325pt]{../images/freertos/freertos-figures-basic-ready-list.pdf}{Basic view of FreeRTOS Ready List}{fig.freertos.ready}
 
-%% FIXME: the arrows at the bottom of that png file that point to Task B, C and D
+%% FIXME-FIXED: the arrows at the bottom of that png file that point to Task B, C and D
 %% are crooked in the pdf. But when I look at the png itself the arrows are straight.
-%% Will they be straight in the final printing? --CS
+%% Will they be straight in the final printing? --CS Modified the PDF --ARB
 
 Now that we have the high-level overview out of the way, let's dive in
 to the details.  We'll look at the three main FreeRTOS data
@@ -401,7 +406,7 @@ The way that a task's stack is made to look like it was interrupted by
 a context switch depends on the architecture FreeRTOS is running on,
 but this ARM Cortex-M3 processor's implementation is a good example:
 
-%% FIXME: Some of this code is too wide - can someone who knows more 
+%% FIXME-FIXED: Some of this code is too wide - can someone who knows more 
 %% about code than me put in line breaks? 86 characters is the right 
 %% width to fit in our margins. --ARB
 %% FIXME-update: I fixed it (I think). --CS
@@ -463,6 +468,15 @@ After tasks, the most used FreeRTOS data structure is the
 list. FreeRTOS uses its list structure to keep track of tasks for
 scheduling, and also to implement queues.
 
+%% FIXME-FIXED: This figure breaks in the middle of a block of code (and over a page turn).
+%% Moved it way up in the section so it doesn't end up in the next section --ARB
+\aosafigure[325pt]{../images/freertos/freertos-figures-full-ready-list.pdf}{Full view of FreeRTOS Ready List}{fig.freertos.list}
+%% FIXME-FIXED: the arrow at the bottom of that png file that point from pxCurrentTCB to
+%% Task B are crooked in the pdf. But when I look at the png itself the arrows 
+%% are straight. Will they be straight in the final printing? --CS 
+%% I fixed the .graffle and PDF. --ARB
+
+\pagebreak 
 The FreeRTOS list is a standard circular doubly linked list with a
 couple of interesting additions. Here's a list element:
 
@@ -555,20 +569,17 @@ way the list itself is responsible for keeping track of ``where you
 are'' while walking it using \code{pxIndex}, allowing the rest of
 FreeRTOS to not worry about it.
 
+\aosafigure[325pt]{../images/freertos/freertos-figures-full-ready-list-2.pdf}{Full view of FreeRTOS Ready List after a system timer tick}{fig.freertos.aftertick}
+%% FIXME-FIXED: the arrow at the bottom of that png file that point from pxCurrentTCB to
+%% Task C are crooked in the pdf. But when I look at the png itself the arrows 
+%% are straight. Will they be straight in the final printing? --CS
+
 The \code{pxReadyTasksLists[]} list manipulation done in
 \code{vTaskSwitchContext()} is a good example of how \code{pxIndex} is
 used. Let's assume we have only one priority level, priority 0, and
 there are three tasks at that priority level. This is similar to the
 basic ready list picture we looked at earlier, but this time we'll
 include all of the data structures and fields.
-
-%% FIXME: This figure breaks in the middle of a block of code (and over a page turn).
-%% See if it can be moved. --ARB
-\aosafigure[325pt]{../images/freertos/freertos-figures-full-ready-list.png}{Full view of FreeRTOS Ready List}{fig.freertos.list}
-
-%% FIXME: the arrow at the bottom of that png file that point from pxCurrentTCB to
-%% Task B are crooked in the pdf. But when I look at the png itself the arrows 
-%% are straight. Will they be straight in the final printing? --CS
 
 As you can see in \aosafigref{fig.freertos.list}, \code{pxCurrentTCB}
 indicates that we're currently running Task B.  The next time
@@ -579,11 +590,6 @@ out the next task is Task C, and now \code{pxIndex} points to Task C's
 list element and \code{pxCurrentTCB} points to Task C's TCB, as shown in
 \aosafigref{fig.freertos.aftertick}.
 
-\aosafigure[325pt]{../images/freertos/freertos-figures-full-ready-list-2.png}{Full view of FreeRTOS Ready List after a system timer tick}{fig.freertos.aftertick}
-%% FIXME: the arrow at the bottom of that png file that point from pxCurrentTCB to
-%% Task C are crooked in the pdf. But when I look at the png itself the arrows 
-%% are straight. Will they be straight in the final printing? --CS
-
 Note that each \code{struct xListItem} object is actually the
 \code{xGenericListItem} object from the associated TCB.
 
@@ -591,9 +597,11 @@ Note that each \code{struct xListItem} object is actually the
 
 \begin{aosasect1}{Queues}
 
-%% FIXME: The page breaks around the two previous figures and the queue
+%% FIXME-FIXED: The page breaks around the two previous figures and the queue
 %% data structure code run together strangely: the figures are both in the Queues
 %% section. Can we fix them to be as the .tex file layout has them? -- CS
+%% Reply: Yes, I moved them waaaay up in the previous section, so they
+% show up before they are discussed, but there's no other way to lay them out. --ARB
 
 FreeRTOS allows tasks to communicate and synchronize with each other
 using queues.  Interrupt service routines (ISRs) also use queues for
