@@ -321,7 +321,7 @@ loop optimizations and register allocation.
 \begin{aosasect1}{The PyPy JIT}
 \label{sec.pypy.jit}
 
-%% QUERY: Greg: This section is long and unbroken - can you split it up into
+%% FIXME: This section is long and unbroken - could we split it up into
 %% subsections? --ARB
 Python, like most dynamic languages, has traditionally traded efficiency for
 flexibility. The architecture of PyPy, being especially rich in flexibility and
@@ -330,9 +330,7 @@ multimethod abstractions in the std objspace do not come without a
 cost. Consequently, the vanilla PyPy interpreter performs up to 4 times slower
 than CPython. To remedy not only this but Python's reputation as a sluggish
 language, PyPy has a just-in-time compiler (commonly written JIT). The JIT
-%% QUERY: Is "codepaths to assembly" correct? It doesn't parse for me
-%% but then, I'm not a coder. --ARB
-compiles frequently used codepaths to assembly during the runtime of the
+compiles frequently used codepaths into assembly during the runtime of the
 program.
 
 The PyPy JIT takes advantage of PyPy's unique translation architecture described in
