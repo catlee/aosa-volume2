@@ -1,11 +1,13 @@
 \begin{aosachapter}{GPSD}{s:gpsd}{Eric Raymond}
 
-GPSD is a suite of tools for managing collections of GPSes and other
+%% Note: American spelling. --ARB
+
+GPSD is a suite of tools for managing collections of GPS devices and other
 sensors related to navigation and precision timekeeping, including
-marine AIS radios and digital compasses. The main program, a service
+marine AIS (Automatic Identification System) radios and digital compasses. The main program, a service
 daemon named \code{gpsd}, manages a collection of sensors and makes
 reports from all of them available as a JSON object stream on a
-well-known TCP/IP port.  Other programs in the suite include both
+well-known TCP/IP port.  Other programs in the suite include 
 demonstration clients usable as code models and various diagnostic
 tools.
 
@@ -13,17 +15,17 @@ GPSD is widely deployed on laptops, smartphones, and autonomous
 vehicles including self-driving automobiles and robot submarines. It
 features in embedded systems used for navigation, precision
 agriculture, location-sensitive scientific telemetry, and network time
-service. It's even used in the Identfication-Friend-or-Foe system of
-armored fighting vehicles including the M1 "Abrams" main battle tank!
+service. It's even used in the Identification-Friend-or-Foe system of
+armored fighting vehicles including the M1 ``Abrams''main battle tank.
 
-GPSD is a mid-sized project---about 43 KLOC mainly in C and
-Python---with a history under its current lead back to 2005 and a
+GPSD is a mid-sized project---about 43 KLOC, mainly in C and
+Python---with a history under its current lead going back to 2005 and a
 prehistory going back to 1997.  The core team has been stable at about
 three developers, with semi-regular contributions from about two dozen
 more and the usual one-off patches from hundreds of others.
 
 GPSD has historically had an exceptionally low defect rate, as
-measured both by auditing tools such as splint, valgrind, and Coverity
+measured both by auditing tools such as \code{splint}, \code{valgrind}, and Coverity
 and by the incidence of bug reports on its tracker and elsewhere.
 This did not come about by accident; the project has been very
 aggressive about incorporating technology for automated testing, and
@@ -31,13 +33,14 @@ that effort has paid off handsomely.
 
 GPSD is sufficiently good at what it does that it has coopted or
 effectively wiped out all of its approximate predecessors and at least
-one direct attempt to compete with it.  In 2010 GPSD won the first
+one direct attempt to compete with it.  In 2010, GPSD won the first
 Good Code Grant from the Alliance for Code Excellence.  By the time
 you finish this chapter you should understand why.
 
 \begin{aosasect1}{Why GPSD Exists}
 
-GPSD exists because the application protocols shipped by GPSes and
+%% QUERY: Should this be "shipped with GPSs"? --ARB
+GPSD exists because the application protocols shipped by GPSs and
 other navigation-related sensors are badly designed, poorly
 documented, and highly variable by sensor type and model. See
 \cite{bib:gps-suck} for a detailed discussion; in particular, you'll 
@@ -59,7 +62,7 @@ simplifies life by providing client libraries so client applications
 need not even know about that reporting format.  Instead, getting
 sensor information becomes a simple procedure call.
 
-GPSD also supports precision timekeeping: it can act as a time source
+GPSD also supports precision timekeeping; it can act as a time source
 for \code{ntpd} (the Network Time Protocol Daemon) if any of its
 attached sensors have PPS (pulse-per-second) capability. The GPSD
 developers cooperate closely with the \code{ntpd} project in improving
@@ -88,7 +91,7 @@ or D-BUS interface.
 The GPSD distribution ships with client libraries for C, C++, and
 Python.  It includes sample clients in C, C++, Python, and PHP. A Perl
 client binding is available via CPAN.  These client libraries are not
-merely a convenience for application developers: they save GPSD's
+merely a convenience for application developers; they save GPSD's
 developers headaches too, by isolating applications from the details
 of GPSD's JSON reporting protocol.  Thus, the API exposed to clients
 can remain the same even as the protocol grows new features for new
@@ -137,7 +140,7 @@ The \emph{drivers} are essentially user-space device drivers for each
 kind of sensor chipset we support.  The key entry points are methods
 to parse a data packet into time-position-velocity or status
 information, change its mode or baud rate, probe for device subtype,
-etc.  Auxilary methods may support driver control operations, such as
+etc.  Auxiliary methods may support driver control operations, such as
 changing the serial speed of the device. The entire interface to a
 driver is a C structure full of data and method pointers, deliberately
 modeled on a Unix device driver structure.
@@ -179,7 +182,7 @@ Finally, the \emph{multiplexer} is the part of the daemon that handles
 client sessions and device assignment.  It is responsible for passing
 reports up to clients, accepting client commands, and responding to
 hotplug notifications. It is essentially all contained in one source
-file, gpsd.c, and never talks to the device drivers directly.
+file, \code{gpsd.c}, and never talks to the device drivers directly.
 
 The first three components (other than the multiplexer) are linked
 together in a library called \code{libgpsd} and can be used separately
@@ -188,7 +191,7 @@ such as \code{gpsmon} and \code{gpsctl}, do it by calling into the
 core library and driver layer directly.
 
 The most complex single component is the packet sniffer at about two
-thousand lines of code (2 KLOC).  This is irreducible; a state machine
+thousand lines of code.  This is irreducible; a state machine
 that can recognize as many different protocols as it does is bound to
 be large and gnarly.  Fortunately, the packet sniffer is also easy to
 isolate and test; problems in it do not tend to be coupled to other
@@ -211,7 +214,7 @@ Another benefit is that system integrators can drastically reduce
 GPSD's footprint for embedded deployment simply by electing not to
 compile in unused drivers.  The daemon is not large to begin with, and
 a suitably stripped-down build runs quite happily on low-power,
-low-speed, small-memory ARM devices.
+low-speed, small-memory ARM devices\footnote{ARM is a 32-bit RISC instruction set architecture used in mobile and embedded electronics. See \url{http://en.wikipedia.org/wiki/ARM_architecture}.}.
 
 A third benefit of the layering is that the daemon multiplexer can be
 detached from atop the core library and replaced with simpler logic,
@@ -221,7 +224,7 @@ reports that the \code{gpsdecode} utility does.
 There is nothing novel about this part of the GPSD architecture. Its
 lesson is that conscious and rigorous application of the design
 pattern of Unix device handling is beneficial not just in OS kernels
-but also in userspace programs that have similar requirements to deal
+but also in userspace programs that are similarly required to deal
 with varied hardware and protocols.
 
 \end{aosasect1}
@@ -269,8 +272,9 @@ in a compiler.  The packet sniffer's job is to accumulate data from
 each port (separately), recognizing when it has accumulated a packet
 of a known type.
 
-A packet may contain a position fix from a GPS, a Marine AIS datagram,
-a sensor reading from a magnetic compass, a DGPS broadcast packet, or any
+A packet may contain a position fix from a GPS, a marine AIS datagram,
+a sensor reading from a magnetic compass, a DGPS (Differential GPS)
+broadcast packet, or any
 of several other things.  The packet sniffer doesn't care about the 
 content of the packet; all it does is tell the core library when it
 has accumulated one and pass back the payload and the packet type.
@@ -320,12 +324,12 @@ core developers.
 \begin{aosasect1}{Defending the Architecture}
 
 As an open source program like \code{gpsd} evolves, one of the
-recurring themes is that each contributor will do things solve his or
-her particular problem case that gradually leak more information
-between layers or stages that were originally designed for clean
+recurring themes is that each contributor will do things to solve his or
+her particular problem case which gradually leak more information
+between layers or stages that were originally designed with clean
 separation.
 
-One that we're concerned about at time of writing is that some
+One that we're concerned about at the time of writing is that some
 information about input source type (USB, RS232, pty, Bluetooth, TCP,
 UDP) seems to need to be passed up to the multiplexer layer, to tell it
 (for example) whether probe strings should be sent to an unidentified
