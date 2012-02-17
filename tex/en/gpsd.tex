@@ -135,6 +135,7 @@ and it just works'' experience might lead people to assume.
 the \emph{multiplexer}. We'll describe these from the bottom up.
 
 % Insert the software-layers diagram here
+\aosafigure[300pt]{../images/gpsd/software-layers.pdf}{Software layers}{fig.gpsd.layers}
 
 The \emph{drivers} are essentially user-space device drivers for each
 kind of sensor chipset we support.  The key entry points are methods
@@ -229,7 +230,7 @@ with varied hardware and protocols.
 
 \end{aosasect1}
 
-\begin{aosasect1}{The Data-Flow View}
+\begin{aosasect1}{The Dataflow View}
 
 Now we'll consider GPSD's architecture from a dataflow view.  In
 normal operation, gpsd spins in a loop waiting for input from one of
@@ -265,6 +266,7 @@ and the daemon is quiescent. Devices that stop sending data get timed
 out of the device list.
 
 % Insert the dataflow diagram here
+\aosafigure{../images/gpsd/dataflow.png}{Dataflow}{fig.gpsd.dataflow}
 
 When data comes in from a navigation sensor, it's fed to the packet
 sniffer, a finite-state machine that works like the lexical analyzer
@@ -331,20 +333,24 @@ separation.
 
 One that we're concerned about at the time of writing is that some
 information about input source type (USB, RS232, pty, Bluetooth, TCP,
-UDP) seems to need to be passed up to the multiplexer layer, to tell it
-(for example) whether probe strings should be sent to an unidentified
-device. Such probes sometimes required to wake up RS232C sensors, but
+UDP) seems to need to be passed up to the multiplexer layer, to tell it,
+for example, whether probe strings should be sent to an unidentified
+device. Such probes are sometimes required to wake up RS232C sensors, but
 there are good reasons not to ship them to any more devices than we
-have to. Many GPSes and other sensor devices are designed on low
+have to. Many GPSs and other sensor devices are designed on low
 budgets and in a hurry; some can be confused to the point of catatonia
 by unexpected control strings.
 
-For a similar reason, the daemomn has a \code{-b} option that prevents 
+For a similar reason, the daemon has a \code{-b} option that prevents 
 it from attempting baud-rate changes  during the packet-sniffer
 hunt loop.  Some poorly-made Bluetooth devices handle these so poorly
 that they brick and have to be power-cycled to function again; in one
 extreme case a user actually had to unsolder the backup battery to
 unwedge his!
+%% QUERY: "unwedge" - can't find any reference to this usage in this
+%% content. Is this a neologism? If we want to keep it (which we could
+%% since its meaning is clear from context) can we change "brick" as
+%% a verb earlier? Too much slang. --ARB
 
 Both these cases are necessary exceptions to the project's design
 rules.  Much more usually, though, such exceptions are a bad thing.
@@ -372,9 +378,9 @@ a baud-rate switch. Instead, we declined to support this broken device.
 
 One of the most important duties of a project's lead architect is to
 defend the architecture against expedient ``fixes'' that would break
-it and cause functional problems or severe maintainance headaches
-further down the road.  Arguments over this can get quite heated,
-especially when defending the architecture conflicts with something
+it and cause functional problems or severe maintenance headaches
+down the road.  Arguments over this can get quite heated,
+especially when defending architecture conflicts against something
 that a developer or user considers a must-have feature.  But these
 arguments are necessary, because the easiest choice is often the wrong
 one for the longer term.
@@ -417,7 +423,7 @@ daemon should avoid.
 
 The GPSD developers are Unix hackers working from deep inside the
 Unix tradition, in which configurability and having lots of knobs
-is close to being a religion.  Nevertheless, we think open-source
+is close to being a religion.  Nevertheless, we think open source
 projects could be trying a lot harder to throw away their dotfiles
 and autoconfigure to what the running environment is actually doing.
 
@@ -499,7 +505,7 @@ Unix virtues of a purely textual format---easy to examine with a Mark
 programmatically---with the ability to pass structured information in
 rich and flexibile ways.
 
-By mapping report types to JSON, objects, we ensured that any report
+By mapping report types to JSON objects, we ensured that any report
 could contain mixes of string, numeric, and boolean data with
 structure (a capability the old protocol lacked).  By identifying
 report types with a \code{"class"} attribute, we guaranteed that we
@@ -542,8 +548,8 @@ and better fitted to passing around array and record structures.
 \begin{aosasect1}{Designing for Zero Defects}
 
 Because of its use in navigational systems, any software that lives
-between the user and a GPS or other location sensors is potentially
-life-critical, especially at sea and when airborne.  Open source
+between the user and a GPS or other location sensor is potentially
+life-critical, especially at sea or when airborne.  Open source
 navigation software has a tendency to try to evade this problem by
 shipping with disclaimers that say, ``Don't rely on this if doing so
 might put lives at risk.''
@@ -593,9 +599,9 @@ checks everything from the floating-point behavior of the host
 hardware up through JSON parsing to correct reporting behavior on over
 seventy different sensor logs.
 
-Admittedly, we have a bit easier time being rigorous than many
-applications would because the daemon has no user-facing interfaces:
-the environment around it is just a bunch of serial data streams and
+Admittedly, we have a slightly easier time being rigorous than many
+applications would because the daemon has no user-facing interfaces;
+the environment around it is just a bunch of serial data streams and is
 relatively easy to simulate.  Still, as with banishing \code{malloc},
 actually exploiting that advantage requires the right attitude, which
 very specifically means being willing to spend as much design and
@@ -604,7 +610,7 @@ code.  This is a policy we think other open-source projects can and
 should emulate.
 
 As I write (July 2011), GPSD's project bug tracker is empty.  It has
-been empty for weeks, and on past rates of bug submissions we can
+been empty for weeks, and based on past rates of bug submissions we can
 expect it to stay that way for a good many more.  We haven't shipped
 code with a crash bug in six years.  When we do have bugs, they tend
 to be the sort of minor missing feature or mismatch with specification
@@ -617,7 +623,7 @@ Next, we'll review some of our mistakes{\ldots}
 
 \begin{aosasect1}{Lessons Learned}
 
-Software design is difficult.  Mistakes and blind alleys all too
+Software design is difficult; mistakes and blind alleys are all too
 normal a part of it, and GPSD has been no exception to that rule.  The
 largest mistake in this project's history was the design of the
 original pre-JSON protocol for requesting and reporting GPS
@@ -631,8 +637,8 @@ There were two serious problems with the original protocol:
   \item Poor extensibility.  It used requests and response tags
     consisting of a single letter each, case-insensitive. Thus, for
     example, the request to report longitude and latitude was
-    \code{"P"} and a response looked like \code{"P -75.32
-      40.05"}. Furthermore, the parser interpreted a request like
+    \code{"P"} and a response looked like \code{"P\,-75.32\,40.05"}. 
+    Furthermore, the parser interpreted a request like
     \code{"PA"} as a \code{"P"} request followed by an \code{"A"}
     (altitude) request.  As the daemon's capabilities gradually
     broadened, we literally ran out of command space.
@@ -679,13 +685,13 @@ could bear in mind to avoid replicating our mistakes:
     application protocol details. A library may be able to adapt its
     internals to multiple versions of the application protocol,
     substantially reducing both interface complexity and defect rates
-    from the alternative in which each application writer needs to
+    compared to the alternative, in which each application writer needs to
     develop an ad-hoc binding.  This difference will translate
     directly into fewer bug reports on your project's tracker.
 
 \end{enumerate}
 
-One possibly reply to our emphasis on extensibility, not just in
+One possible reply to our emphasis on extensibility, not just in
 GPSD's application protocol but in other aspects of the project
 architecture like the packet-driver interface, is to dismiss it as an
 over-elaboration brought about by mission creep.  Unix programmers
@@ -699,7 +705,7 @@ These are fair questions. We can approach an answer by looking at the
 actual complexity cost of adding a new device type.  For very good
 reasons, including relatively low data volumes and the high
 electrical-noise levels historically associated with serial wires to
-sensors, almost all reporting protocols for GPSes and other
+sensors, almost all reporting protocols for GPSs and other
 navigation-related sensors look broadly similar: small packets with a
 validation checksum of some sort.  Such protocols are fiddly to handle
 but not really difficult to distinguish from each other and parse, and
