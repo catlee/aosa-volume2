@@ -39,8 +39,7 @@ you finish this chapter you should understand why.
 
 \begin{aosasect1}{Why GPSD Exists}
 
-%% QUERY: Should this be "shipped with GPSs"? --ARB
-GPSD exists because the application protocols shipped by GPSs and
+GPSD exists because the application protocols shipped with GPSs and
 other navigation-related sensors are badly designed, poorly
 documented, and highly variable by sensor type and model. See
 \cite{bib:gps-suck} for a detailed discussion; in particular, you'll 
@@ -135,7 +134,7 @@ and it just works'' experience might lead people to assume.
 the \emph{multiplexer}. We'll describe these from the bottom up.
 
 % Insert the software-layers diagram here
-\aosafigure[300pt]{../images/gpsd/software-layers.png}{Software layers}{fig.gpsd.layers}
+\aosafigure[300pt]{../images/gpsd/software-layers.pdf}{Software layers}{fig.gpsd.layers}
 
 The \emph{drivers} are essentially user-space device drivers for each
 kind of sensor chipset we support.  The key entry points are methods
@@ -266,7 +265,7 @@ and the daemon is quiescent. Devices that stop sending data get timed
 out of the device list.
 
 % Insert the dataflow diagram here
-\aosafigure{../images/gpsd/dataflow.png}{Dataflow}{fig.gpsd.dataflow}
+\aosafigure{../images/gpsd/dataflow.pdf}{Dataflow}{fig.gpsd.dataflow}
 
 When data comes in from a navigation sensor, it's fed to the packet
 sniffer, a finite-state machine that works like the lexical analyzer
