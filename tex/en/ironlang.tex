@@ -371,7 +371,7 @@ of the proper \emph{call site binder} that is specific to the language in use,
 and contains all of the necessary information about how to perform the
 operation.
 
-\aosafigure{../images/ironlang/CallSiteClasses.png}{CallSite Class Diagram}{fig.ironlang.callsite}
+\aosafigure[250pt]{../images/ironlang/CallSiteClasses.png}{CallSite Class Diagram}{fig.ironlang.callsite}
 
 Each language will have a different call site binder for each operation, and
 the binders often know many different ways to perform an operation depending on
@@ -380,7 +380,7 @@ expensive (in particular, compiling them to a delegate for execution, which
 involves invoking the .NET JIT), so the call site has a multi-level \emph{call
 site cache} that stores the rules that have already been created for later use.
 
-\aosafigure{../images/ironlang/CallSites.png}{CallSite Flow Chart}{fig.ironlang.flowchart}
+\aosafigure[225pt]{../images/ironlang/CallSites.png}{CallSite Flow Chart}{fig.ironlang.flowchart}
 
 The first level, L0, is the \code{CallSite.Target} property on the call site
 instance itself. This stores the most-recently-used rule for this call site;
@@ -510,7 +510,7 @@ concrete classes that implement the
 \code{System.Dynamic.IDynamicMetaObjectProtocol} interface, which is how the
 DLR identifies dynamic objects. 
 
-\aosafigure{../images/ironlang/IDMOP.png}{IDMOP Class Diagram}{fig.ironlang.class}
+\aosafigure[300pt]{../images/ironlang/IDMOP.png}{IDMOP Class Diagram}{fig.ironlang.class}
 
 From a class that implements \code{IDynamicMetaObjectProtocol}, the DLR can get
 a \code{DynamicMetaObject} by calling \code{GetMetaObject()}. This
