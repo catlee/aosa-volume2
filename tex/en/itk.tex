@@ -78,14 +78,15 @@ variety of algorithms, and continue developing new ones. \emph{``Why do they
 continue doing this?''} you may ask, and the answer is that image processing is
 a combination of science, engineering, art, and ``cooking'' skills. Claiming
 that there is an algorithmic combination that is the ``right'' answer to an
-image processing task, is as mislead as claiming that there is such a thing as
+image processing task, is as misleading as claiming that there is such a thing as
 the ``right'' type of chocolate dessert for a dinner. Instead of pursuing
-perfection, the community strives for producing a rich enough set of tools that
+perfection, the community strives to produce a rich set of tools that
 ensures that there will be no shortage of options to try when it comes the
-time to face a given image processing challenge. This state of affairs, of
-course, comes at a price. The cost is that the image analyzer is confronted with
-the difficulty of choosing among tens of different tools that could be used in
-different combinations to achieve similar results.
+time to face a given image processing challenge. This state of
+affairs, of course, comes at a price. The cost is that the image
+analyst has the difficult task of choosing among dozens of different
+tools that can be used in different combinations to achieve similar
+results.
 
 The image analysis community is also closely integrated with the research
 community. It is common to find specific research groups that become attached
@@ -97,7 +98,9 @@ a recipe that satisfies their needs.
 
 These are some of the reasons why ITK was designed and implemented as a large
 collection of somewhat independent tools, many of which can be used to solve
-similar problems. In this context, a certain level of ``redundancy'' is not
+similar problems. In this context, a certain level of ``redundancy'',
+for example offering three different implementation of the Gaussian
+filter, is not
 seen as a problem but as a valuable feature. The toolkit was also conceived as
 a resource that will grow and renew itself continuously, as new algorithms and
 better implementations become available superseding exiting ones, as well as
@@ -105,7 +108,7 @@ new tools are developed in response to the emerging needs of new medical
 imaging technologies.
 
 Armed with this quick overview of the nature of activities that make the daily
-routine of the image analyzers who compose the ITK community, we can now dive
+routine of the image analysts who compose the ITK community, we can now dive
 into the main features of the architecture:
 
 \begin{aosaitemize}
@@ -123,35 +126,36 @@ into the main features of the architecture:
 \begin{aosasect2}{Modularity}
 Modularity is one of the main characteristics of ITK. This is a requirement
 that emerges from the way people in the image analysis community work when
-solving their problems. Most image analysis problems require to put one or more
+solving their problems. Most image analysis problems put one or more
 input images through a combination of processing filters that enhance or
-extract particular pieces of information from the images. There is therefore,
-no single large processing object, but a myriad of small ones. This structural
-nature of the image processing problem maps to implement the software as a
-large collection of image processing filters that can be combined in many
-different ways.
+extract particular pieces of information from the images. Therefore,
+there is no single large processing object, but rather a myriad of small ones.
+This structural nature of the image processing problem maps to implement the
+software as a large collection of image processing filters that can be combined
+in many different ways.
 
 It is also the case that certain types of processing filters are clustered into
 families, inside which some of their implementation features can be factorized.
 This leads to natural grouping of the image filters into modules and groups of
 modules.
 
-Modularity, therefore occurs at two natural levels in ITK:
+Modularity, therefore occurs at three natural levels in ITK:
 
 \begin{aosaitemize}
 \item Filter Level
 \item Filter Family Level
+\item Filter Family Group Level
 \end{aosaitemize}
 
-At the image filter level, ITK has a collection of about 500 filters. Given
+At the image filter level, ITK has a collection of about 700 filters. Given
 that ITK is implemented in C++, this is a natural level at which every one of
 those filters is implemented by a \textbf{C++ Class} following and Object
 Oriented design.  At the filter family level, ITK groups filters together
 according to the nature of the processing that they perform. For example, all
 filters that are related to Fourier Transforms will be put together into a
-\textbf{Module}.  At the C++ level, Modules maps to directories in the source
-tree, and to libraries once the software is compiled to its binary form. Each
-module contains:
+\textbf{Module}.  At the C++ level, Modules maps to directories in the
+source tree, and to libraries once the software is compiled to its
+binary form. ITK has about 120 of these Modules. Each module contains:
 
 \begin{aosaenumerate}
 
@@ -164,13 +168,18 @@ list dependencies between this module and other modules.
 
 \end{aosaenumerate}
 
+The group level is mostly a conceptual division that has been drawn on
+top of the software to help locate filters in the source tree. Groups
+are associated to high level concepts such as Filtering, Segmentation,
+Registration and IO.
+
 This hierarchical structure is illustrated in
 Figure~\ref{fig.itk.modulehierarchy}.
 
 \aosafigure{../images/itk/IllustrationOfModularStructure.pdf}{Hierarchical Structure of Groups, Modules and Classes}{fig.itk.modulehierarchy}
 
 
-ITK currently has 98 modules, that are in turn aggregated into 16 major groups.
+ITK currently has 124 modules, that are in turn aggregated into 13 major groups.
 The modules have a variety of different sizes. This size distribution, in
 bytes, is presented in Figure~\ref{fig.itk.modulesize}.
 
@@ -185,10 +194,21 @@ format libraries: HDF5, PNG, TIFF, JPEG and openjpeg among others. When these
 libraries are excluded from the analysis of module size, the distribution
 become the one shown in Figure~\ref{fig.itk.modulesizenothirdparty}
 
+The reason why Figure~\ref{fig.itk.modulesize} and
+Figure~\ref{fig.itk.modulesizenothirdparty} present separate analysis, with and
+without the third party libraries, is that these libraries make about 56
+percent of the size of ITK. This reflects the usual nature of open source
+applications that build upon existing platforms. The size distribution of the
+third party libraries does not necessarily reflect the architectural
+organization of ITK, since we have adopted these useful third party libraries
+just as they have been developed upstream. However, they third party code is
+distributed along with the toolkit, and partitioning it was one of the key
+driving directives for the modularization process.
+
 The modular architecture of ITK enables and facilitates:
 
 \begin{aosaitemize}
-\item Reduction of cross-dependencies
+\item Reduction and clarification of cross-dependencies
 \item Adoption of code contributed by the community
 \item Evaluation of quality metrics per module (for example: code coverage)
 \item Building selected subsets of the toolkit
@@ -196,6 +216,20 @@ The modular architecture of ITK enables and facilitates:
 \item Continued growth by progressive addition of new modules
 \end{aosaitemize}
 \end{aosasect2}
+
+The modularization process made possible to very explicitly identify and
+declare the dependencies between different portions of the toolkit as they were
+put into modules. In many cases, this exercise revealed artificial or incorrect
+depencencies that had been introduced in the toolkit over time, and that passed
+unnoticed when most of the code was put together in a few large groups.
+
+The usefulness of evaluating quality metrics per module is twofold. In one
+hand, it makes easier to held developers accoutable for the modules that they
+are maintaining. On the other hand, it also makes possible to engage in
+clean-up innitiatives in which a few developers focus for a short period of
+time in raising the quality of a specific module. When concentrating in a small
+portion of the toolkit, it is easier to see the effect of the effort, and to
+keep developers engaged and motivated to keep up with the effort.
 
 Again, we can recognize in these items the fact that the structure of the
 toolkit reflects the organization of the community and in some cases the
@@ -247,18 +281,18 @@ for the image filters and mesh filters that process such data.
 algorithmic transformation on them, such as the ones illustrated in
 Figure~\ref{fig.itk.brim}.
 
-\aosafigure{../images/itk/ProcessObjectDataObject.pdf}{Relationship between ProcessObjects and DataObjects}{fig.itk.processobjectdataobject}
+\aosafigure{../images/itk/ProcessObjectDataObject.pdf}{Relationship between \code{ProcessObjects} and \code{DataObjects}}{fig.itk.processobjectdataobject}
 
-DataObjects are generated by ProcessObjects. This chain typically starts by
-reading a DataObject from disk, for example by using a FileImageReader which is
-a type of ProcessObject. The ProcessObject that created a given DataObject is
-the only one that should modify such DataObject. This output DataObject is
-typically passed as input to another ProcessObject downstream in the pipeline.
+\code{DataObjects} are generated by \code{ProcessObjects}. This chain typically starts by
+reading a \code{DataObject} from disk, for example by using a FileImageReader which is
+a type of \code{ProcessObject}. The \code{ProcessObject} that created a given \code{DataObject} is
+the only one that should modify such \code{DataObject}. This output \code{DataObject} is
+typically passed as input to another \code{ProcessObject} downstream in the pipeline.
 This sequence is illustrated in Figure~\ref{fig.itk.processobjectdataobject}.
-The same DataObject may be passed as input to multiple ProcessObjects, as it is
-shown in the Figure for the DataObject constructed by the FileReader at the
+The same \code{DataObject} may be passed as input to multiple \code{ProcessObjects}, as it is
+shown in the Figure for the \code{DataObject} constructed by the FileReader at the
 beginning of the pipeline. It is also common for some filters to require two
-DataObjects as input, as it is the case of the ``Subtract Filter'' illustrated
+\code{DataObjects} as input, as it is the case of the ``Subtract Filter'' illustrated
 in the right side of the same figure.
 
 The initial design and implementation of the Data Pipeline in ITK was derived
@@ -277,7 +311,7 @@ filters that produce and consume data are expected to derive from the
 pipeline are implemented, part in the \code{ProcessObject} and part in the
 \code{DataObject}.
 
-\aosafigure{../images/itk/ProcessObjectDataObjectHierarchy.pdf}{Hierarchy of ProcessObjects and DataObjects}{fig.itk.processobjectdataobjecthierarchy}
+\aosafigure{../images/itk/ProcessObjectDataObjectHierarchy.pdf}{Hierarchy of \code{ProcessObjects} and \code{DataObjects}}{fig.itk.processobjectdataobjecthierarchy}
 
 \end{aosasect2}
 
@@ -386,7 +420,7 @@ assembling the resulting blocks on the output side of the pipeline.
 Streaming, unfortunately, can not be apply to all types of algorithms. Specific
 cases that are not suitable for streaming are:
 
-\begin{itemize}
+\begin{aosaitemize}
 \item Iterative algorithms that, to compute a pixel value at every iteration,
 require to use as input the pixel values of its neighbors. This is the case of
 most PDE-solving-based algorithms, such as anisotropic diffusion, demons
@@ -404,7 +438,7 @@ watersheds are typical examples here.
 \item Image registration algorithms, given that they require to have access to
 the full input image data for computing metric values at every iteration of
 their optimization cycles.
-\end{itemize}
+\end{aosaitemize}
 
 Fortunately, on the other hand, the data pipeline structure of ITK enables
 support for streaming in a variety of transformation filters by taking
@@ -440,7 +474,7 @@ address these cases.
 The principle of reusability can also be read as ``avoidance of redundancy''.
 In the case of ITK, this has been achieved by a three-prone approach.
 
-\begin{itemize}
+\begin{aosaitemize}
 \item First, the adoption of Object Oriented Programming, and in particular the
 proper creation of class hierarchies where common functionalities are
 factorized in base classes.
@@ -448,7 +482,7 @@ factorized in base classes.
 use of C++ templates, factorizing behaviors that are identified as patterns.
 \item Third, a generous use of C++ macros has also permitted to reuse standard
 snippets of code that are needed in a myriad of places across the toolkit.
-\end{itemize}
+\end{aosaitemize}
 
 As a concrete example, the widespread use of explicitly naming types via the C++
 ``typedefs'', has proved to be particularly important. This practice plays two
@@ -480,7 +514,7 @@ The architecture satisfies the constraints that minimize maintenance cost.
 As the developers got involved in regular maintenance activities, they
 got exposed to the ``common failures'' of certain details, in particular:
 
-\begin{itemize}
+\begin{aosaitemize}
 \item Assumptions that some filters make regarding specific pixel types for
 their input or output images, but that are not enforced via types nor concept
 checking, and that may as well be missing to be specified in the documentation.
@@ -504,7 +538,7 @@ practice of test driven development. Specially the notion of writing the tests
 first, and only implement functionalities as you test them. It is almost always
 the case that bugs in the code are hiding behind the cases that were skipped
 while implementing the testing code.
-\end{itemize}
+\end{aosaitemize}
 
 Thanks to the communication practices of Open Source communities, many of these
 items end up being exposed through questions that are commonly asked in the
@@ -525,7 +559,7 @@ defect introduced in the software.
 In order to enforce and promote code style uniformity, the following tools have
 proved to be very effective:
 
-\begin{itemize}
+\begin{aosaitemize}
 \item KWStyle\footnote{\url{http://public.kitware.com/KWStyle}}: for automatic
 style checking. This is a simplified C++ parser that checks coding style and
 flags any violations.
@@ -542,7 +576,7 @@ cycles.
 \item Git hooks: that enforce the use of the KWStyle and Gerrit and that also
 perform some checks of their own. For example, ITK uses Git hooks that prevent
 commits of code with tabs, and with trailing blank spaces.
-\end{itemize}
+\end{aosaitemize}
 
 The team has also explored the use of
 ``Uncrustify''\footnote{\url{http://uncrustify.sourceforge.net}} as a tool for
@@ -560,7 +594,7 @@ modifications end up introducing new bugs when they were honestly trying to fix
 old bugs.
 
 The key for making these tools effective is to make sure that they are:
-\begin{itemize}
+\begin{aosaitemize}
 \item Available to all developers, hence our preference for Open Source tools.
 \item Run on a regular basis. In the case of ITK, these tools have been
 integrated in the Nightly and Continuous Dashboard builds managed by
@@ -568,17 +602,18 @@ CDash\footnote{\url{http://www.cdash.org/CDash/index.php?project=Insight}}.
 \item Run as close as possible to the point where the code is being written,
 since in this way, deviations can be fixed immediately, and developers train
 themselves by learning what kind of practices break style rules.
-\end{itemize}
+\end{aosaitemize}
 
 \end{aosasect2}
 
 \begin{aosasect2}{Refactoring}
-ITK Started in the year 2000 and grew continuously until the year 2011. The
-development team had the truly unique opportunity to embark in a refactoring
-effort under the funding of the National Library of Medicine. This is not a
-minor feat. Once you have been working on a piece of software for over a
-decade, and you are offered the opportunity to clean it up: What would you
-change ?.
+ITK Started in the year 2000 and grew continuously until the year 2010. In
+2011, thanks to an infusion of Federal funding investment, the development team
+had the truly unique opportunity to embark in a refactoring effort. The funding
+was provided by the National Library of Medicine as part of the initiative of
+the American Recovery and Reinvestment Act (ARRA). This is not a minor feat.
+Once you have been working on a piece of software for over a decade, and you
+are offered the opportunity to clean it up: What would you change ?.
 
 This opportunity for widespread refactoring is very rare. For the previous ten
 years of the Toolkit, we relied on the daily effort of performing small local
@@ -588,6 +623,38 @@ the massive collaboration of open source communities, and it is safely enabled
 by the testing infrastructure driven by CDash, that exercises on a regular
 basis about 84\% of the code in the toolkit. Note that in contrast, the average
 code coverage of the software industry is estimated to be only 50\%.
+
+Among the many things that were changed in the refactoring effort, the ones
+that are more relevant to the architecture are:
+
+\begin{aosaitemize}
+\item Modularization was introduced in the toolkit
+\item Interger types were standardized
+\item Typedefs where fixed to allow management of image larger than 4Gb in all platforms
+\item The software process was revised
+\begin{aosaitemize}
+\item Migrated from CVS to Git
+\item Introduced Code Review with Gerrit
+\item Introduced testing on demand with CDash@home
+\item Improved method for downloading data for unit testing
+\end{aosaitemize}
+\item Deprecated support for obsolete compilers
+\item Improved support for many IO image file formats including
+\begin{aosaitemize}
+\item DICOM
+\item JPEG2000
+\item TIFF (BigTIFF)
+\item HDF5
+\end{aosaitemize}
+\item Introduced a framework for supporting GPU computation
+\item Introduced support for video processing
+\begin{aosaitemize}
+\item Added a bridge to OpenCV
+\item Added a bridge to VXL
+\end{aosaitemize}
+
+\end{aosaitemize}
+
 \end{aosasect2}
 
 \begin{aosasect2}{Reproducibility}
