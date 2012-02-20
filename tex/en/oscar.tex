@@ -13,12 +13,12 @@ billion CAD).
 
 An EMR permits the digitization of a patient chart and when used
 properly should make it easier for a physician to deliver care. A good
-system should provider a physician a birds' eye view of a patient's
+system should provider a physician a bird's eye view of a patient's
 current and ongoing conditions, their prescription history, their
 recent lab results, history of their previous visits, and so on. OSCAR
 (Open Source Clinical Application Resource), an approximately
-10-year-old project of McMaster University in Hamilton, Ontario,
-Canada is the open source community's attempt to provide such a system
+10 year old project of McMaster University in Hamilton, Ontario,
+Canada, is the open source community's attempt to provide such a system
 to physicians at low or no cost.
 
 OSCAR has many subsystems that provide functionality on a
@@ -46,7 +46,7 @@ This chapter will discuss the architecture of OSCAR in fairly general
 terms, describing the hierarchy, major components, and most
 importantly the impact that past decisions have made on the
 project. As a conclusion and to wrap up, there will be a discussion on
-how OSCAR may be designed today if there was an opportunity to do so.
+how OSCAR might have been designed today if there was an opportunity to do so.
 
 \begin{aosasect1}{System Hierarchy}
 
@@ -113,8 +113,8 @@ Things have changed now. OSCAR's source tree is now controlled by
 git. Any commits to the main branch have to pass code style checking,
 unit testing, successfully compile, and be code reviewed by the
 developers (much of this is handled by the combination of Hudson and
-Gerrit). The project has become much more tightly controlled---going
-forward, many or all of the issues caused by poor handling of the
+Gerrit). The project has become much more tightly controlled. Many
+or all of the issues caused by poor handling of the
 source tree have been solved.
 
 \end{aosasect1}
@@ -124,11 +124,11 @@ source tree have been solved.
 When looking through the OSCAR source, you may notice that there are
 many different ways to access the database---you can use a direct
 connection to the database via a class called \code{DBHandler}, use a
-legacy Hibernate model, a generic JPA model. As new and easier
+legacy Hibernate model, or use a generic JPA model. As new and easier
 database access models became available, they were integrated into
-OSCAR. The result is that there's now a slightly noisy picture of how
+OSCAR. The result is that there is now a slightly noisy picture of how
 OSCAR interacts with data in MySQL, and the differences between the
-three types of data access methods are best described as examples.
+three types of data access methods are best described with examples.
 
 \end{aosasect1}
 
@@ -189,7 +189,7 @@ rejected automatically.
 
 \begin{aosasect1}{Demographic Records (Hibernate)}
 
-A demographic record contains general metadata about a patient; for
+A demographic record contains general metadata about a patient: for
 example, their name, age, address, language, and sex. Consider it to
 be the result of an intake form that a patient fills out during their
 first visit to a doctor. All of this data is retrieved and displayed
@@ -205,7 +205,7 @@ convenient.
 
 The process of working with a Hibernate-style DAO and Model pair is
 quite simple. In the case of the Demographic object, there's a file
-called Demographic.hbm.xml that describes the mapping between object
+called \code{Demographic.hbm.xml} that describes the mapping between object
 field and database column. The file describes which table to look at
 and what type of object to return. When OSCAR starts, this file will
 be read and a sanity check occurs to make sure that this kind of
@@ -261,7 +261,7 @@ OSCAR, it hasn't been used in very many places yet. The Integrator is
 a relatively new addition to the source. It makes quite a lot of sense
 to use this new data access model as opposed to Hibernate.
 
-Touching on a now common theme in this section of the chapter, the
+Touching on a now-common theme in this section of the chapter, the
 annotated POJOs that JPA uses allow for a far more streamlined
 experience. For example, during the Integrator's build process, an SQL
 file is created that sets up all of the tables for you---an enormously
@@ -313,8 +313,7 @@ server. In this specific case, the query was written with basic joins
 with no join columns---meaning that when the query was eventually
 translated to SQL, it was so large that it wasn't immediately obvious
 what the query was gathering. Additionally, in almost all cases, this
-never created a large enough temporary table for it to matter.
-
+never created a large enough temporary table for it to matter.  
 For most users, this query actually runs quickly enough that it's not
 noticeable. In fact this works fine for nearly all cases. However,
 this query is unbelievably inefficient.
@@ -325,7 +324,7 @@ generic type of joins, the number of rows is equal to the number of
 rows in the first table multiplied by the number of rows in the second
 table. So if your table has 500,000 rows, and you join it with a table
 that has 10,000,000 rows, you've just created a $5{\times}10^{12}$ row
-temporary table in memory, which the select is then run against and
+temporary table in memory, which the select statement is then run against and
 that temporary table is discarded.
 
 For one very specific extreme case that we ran into, the join across
@@ -344,7 +343,7 @@ mentioned previously).
 
 The moral of the story is simply that while Hibernate does a fairly
 good job, unless the join is very explicitly defined and controlled
-(either in the .hbm.xml file or a join annotation in the object class
+(either in the \code{.hbm.xml} file or a join annotation in the object class
 for a JPA model), it can very quickly get out of control. Dealing with
 objects instead of SQL queries requires you to leave the actual
 implementation of the query up to the database access library and only
@@ -416,14 +415,15 @@ be a lot easier to just focus on using one for day-to-day operations
 of OSCAR. You can generally date code in OSCAR by knowing which
 permissions model preceded which other permissions model:
 
+% TA: this kind of comes out of nowhere -- is there a better way to format this?
 Provider Type $\rightarrow$ Provider Roles $\rightarrow$ CAISI Programs/Roles
 
-(The oldest type of permissions model, ``Provider Type'', is so dated
+The oldest type of permissions model, ``Provider Type'', is so dated
 that it's actually not used in most parts of the system and is in fact
 defaulted to ``doctor'' during new provider creation---having it as
 any other value (such as ``receptionist'') causes significant issues
 throughout the system. It's easier and more fine-grained to control
-permissions via Provider Roles instead.)
+permissions via Provider Roles instead.
 
 \end{aosasect1}
 
@@ -459,7 +459,7 @@ Integrator can achieve.
 
 The Integrator is available in source code form only, which requires
 the user to retrieve and build it manually. Like OSCAR, it runs on a
-standard installation of Tomcat6 with MySQL.
+standard installation of Tomcat with MySQL.
 
 When the URL where the Integrator lives is accessed, it doesn't appear
 to display anything useful. This component is almost purely a web
@@ -486,7 +486,7 @@ kind of EMR that somebody decides to write a client for; the data
 format is generic enough that it could easily be mapped to local
 types.
 
-For OSCAR though, a client library is built and included in the main
+For OSCAR, though, a client library is built and included in the main
 source tree, for simplicity's sake. That library only ever needs to be
 updated if new functions become available on the Integrator. A bug fix
 on the Integrator doesn't require an update of that file.
@@ -528,7 +528,7 @@ this data, but the local cache expires every hour.
 \aosafigure{../images/oscar/integratorupload.png}{The Demographic information and associated data is sent to the Integrator during a data push from the home clinic. The record on the Integrator may not be a representation of the complete record from the home clinic as the OSCAR can choose not to send all patient data.}{fig.oscar.datatransfer}
 
 After the initial setup of a remote patient by copying their
-demographic data to the local OSCAR, that patient set up as any other
+demographic data to the local OSCAR, that patient is set up as any other
 on the system. All of the remote data that is retrieved from the
 Integrator is marked as such (and the clinic from which it came from
 is noted), but it's only temporarily cached on the local OSCAR. Any
@@ -580,7 +580,7 @@ these physician's clinics.
 
 \begin{aosasect2}{Data Format}
 
-The Integrator's client libraries are built via wsdl2java, which
+The Integrator's client libraries are built via \code{wsdl2java}, which
 creates a set of classes representing the appropriate data types the
 web service communicates in. There are classes for each data type as
 well as classes representing keys for each of these data types.
@@ -605,9 +605,7 @@ is then manually transformed into a local class representing that data
 (in the case of notes, it's a CaseManagementNote). A boolean flag is
 set inside the class to indicate that it's a piece of remote content
 and that is used to change how the data is displayed to the user on
-the screen.
-
-On the opposite end, CaisiIntegratorUpdateTask handles taking local
+the screen. On the opposite end, CaisiIntegratorUpdateTask handles taking local
 OSCAR data, converting it into the Integrator's data format, and then
 sending that data to the Integrator server.
 
