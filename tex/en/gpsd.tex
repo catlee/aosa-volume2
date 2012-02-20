@@ -343,13 +343,9 @@ by unexpected control strings.
 For a similar reason, the daemon has a \code{-b} option that prevents 
 it from attempting baud-rate changes  during the packet-sniffer
 hunt loop.  Some poorly-made Bluetooth devices handle these so poorly
-that they brick and have to be power-cycled to function again; in one
+that they have to be power-cycled to function again; in one
 extreme case a user actually had to unsolder the backup battery to
 unwedge his!
-%% QUERY: "unwedge" - can't find any reference to this usage in this
-%% content. Is this a neologism? If we want to keep it (which we could
-%% since its meaning is clear from context) can we change "brick" as
-%% a verb earlier? Too much slang. --ARB
 
 Both these cases are necessary exceptions to the project's design
 rules.  Much more usually, though, such exceptions are a bad thing.
@@ -502,7 +498,7 @@ Switching to JSON was a big, big win. JSON combines the traditional
 Unix virtues of a purely textual format---easy to examine with a Mark
 1 Eyeball, easy to edit with standard tools, easy to generate
 programmatically---with the ability to pass structured information in
-rich and flexibile ways.
+rich and flexible ways.
 
 By mapping report types to JSON objects, we ensured that any report
 could contain mixes of string, numeric, and boolean data with
