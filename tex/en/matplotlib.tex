@@ -1,4 +1,8 @@
 \begin{aosachapter}{Matplotlib}{s:matplotlib}{John Hunter and Michael Droettboom}
+%% American spelling. --ARB
+
+%% QUERY: Should we capitalize "matplotlib" in the title of the chapter? 
+%% What about elsewhere (i.e., at the beginning of sentences)?  --ARB
 
 matplotlib is a Python-based plotting library widely used in
 the scientific Python computing community with full support for 2D and
@@ -49,7 +53,7 @@ to MATLAB's.  Because matplotlib is a library, users have access to
 all of the rich built-in Python data structures such as lists,
 dictionaries, sets and more.
 
-\aosafigure{../images/matplotlib/ecog.png}{The original matplotlib application: an ECoG viewer.}{fig.matplotlib.ecog}[scale=0.2]
+\aosafigure{../images/matplotlib/ecog.png}{The original matplotlib application: an ECoG viewer.}{fig.matplotlib.ecog}
 
 \end{aosasect1}
 
@@ -92,7 +96,7 @@ concrete implementations of the abstract interface classes:
 
 \item \code{Renderer} does the drawing (e.g. ``the paintbrush'').
 
-\item \code{Event} which user inputs such as keyboard and mouse events.
+\item \code{Event} handles user inputs such as keyboard and mouse events.
 \end{aosaitemize}
 
 For a user interface toolkit such as Qt, the \code{FigureCanvas} has a
@@ -120,27 +124,27 @@ such primitive methods as \code{draw\_point}, \code{draw\_line},
 \code{draw\_rectangle}, \code{draw\_image}, \code{draw\_polygon}, and
 \code{draw\_glyphs}.  Each additional backend we implemented---the
 earliest were the PostScript backend and the GD backend---implemented
-the GDK \code{Drawable} API and translated these into native backend
-dependent drawing commands.  As we discuss below, this unnecessarily
+the GDK \code{Drawable} API and translated these into native 
+backend-dependent drawing commands.  As we discuss below, this unnecessarily
 complicated the implementation of new backends with a large
 proliferation of methods, and this API has subsequently been
 dramatically simplified, resulting in a simple process for porting
 matplotlib to a new user interface toolkit or file specification.
 
 One of the design decisions that has worked quite well for matplotlib
-is support for a core pixel based renderer using the C++ template
+is support for a core pixel-based renderer using the C++ template
 library Anti-Grain Geometry or ``agg'' \cite{bib:agg}.  This is a
 high-performance library for rendering anti-aliased 2D graphics that
 produces attractive images.  matplotlib provides support for inserting
 pixel buffers rendered by the agg backend into each user interface
-toolkit we support, so one can get pixel exact graphics across UIs and
+toolkit we support, so one can get pixel-exact graphics across UIs and
 operating systems.  Because the PNG output matplotlib produces also
 uses the agg renderer, the hardcopy is identical to the screen
 display, so what-you-see is what-you-get across UIs, operating systems
 and PNG output.
 
 The matplotlib \code{Event} framework maps underlying UI events like
-\code{key-press-event} or \code{mouse-motion-event} to the
+\code{key-press-event} or \linebreak \code{mouse-motion-event} to the
 matplotlib classes \code{KeyEvent} or \code{MouseEvent}.
 Users can connect to these events to callback functions and
 interact with their figure and data, for example, to \code{pick}
@@ -148,6 +152,9 @@ a data point or group of points, or manipulate some aspect of the
 figure or its constituents.  The following code sample illustrates
 how to toggle all of the lines in an \code{Axes} window when the
 user types `t'.
+
+%% FIXME: The first two lines of this code are orphaned over a page turn -- 
+%% maybe force a new page before? --ARB
 
 \begin{verbatim}
 import numpy as np
@@ -195,7 +202,7 @@ images, and so on all correspond to individual \code{Artist} instances
 coordinate system to the canvas coordinate system (discussed in more
 detail below), the visibility, the clip box which defines the region
 the artist can paint into, the label, and the interface to handle user
-interaction such as ``picking''---i.e., detecting when a mouse click
+interaction such as ``picking''; i.e., detecting when a mouse click
 happens over the artist.
 
 \aosafigure{../images/matplotlib/artists_figure.pdf}{A Figure}{fig.matplotlib.artistsfigure}
@@ -249,7 +256,7 @@ instance.  For example, \aosatblref{tbl.matplotlib.axmethods} shows
 a small sampling of \code{Axes} methods that create plot objects and store
 them in the \code{Axes} instance.
 
-\begin{table}[t]\scriptsize\centering
+\begin{table}[h!]\scriptsize\centering
 \begin{tabular}[c] { | l | l | l | }
 \hline
 \textbf{method}            & \textbf{creates}                                         & \textbf{stored in}   \\
@@ -271,6 +278,9 @@ Below is a simple Python script illustrating the architecture above.
 It defines the backend, connects a \code{Figure} to it, uses the array
 library \code{numpy} to create 10,000 normally distributed random numbers,
 and plots a histogram of these.
+
+%% FIXME: Once again the first line of this is orphaned over a page turn --
+%% maybe force a page break? --ARB
 
 \begin{verbatim}
 # Import the FigureCanvas from the backend of your choice
@@ -309,7 +319,7 @@ web application server, a UI application, or perhaps a script to be
 shared with other developers.  For everyday purposes, particularly
 for interactive exploratory work by bench scientists who are not
 professional programmers, it is a bit syntactically heavy.  Most
-special purpose languages for data analysis and visualization
+special-purpose languages for data analysis and visualization
 provide a lighter scripting interface to simplify common tasks, and
 matplotlib does so as well in its \code{matplotlib.pyplot}
 interface.  The same code above, using \code{pyplot}, reads
@@ -325,7 +335,7 @@ plt.savefig('matplotlib_histogram.png')
 plt.show()
 \end{verbatim}
 
-\aosafigure{../images/matplotlib/histogram_demo.pdf}{A histogram created using pyplot.}{fig.matplotlib.hist}[scale=0.3]
+\aosafigure{../images/matplotlib/histogram_demo.pdf}{A histogram created using pyplot.}{fig.matplotlib.hist}
 
 \code{pyplot} is a stateful interface that handles much of the boilerplate
 for creating figures and axes and connecting them to the backend of
@@ -369,7 +379,7 @@ internal state is managed.
 \end{aosaitemize}
 
 A somewhat stripped down and simplified version of \code{pyplot}'s
-frequently-used line plotting function \code{matplotlib.pyplot.plot}
+frequently used line plotting function \code{matplotlib.pyplot.plot}
 is shown below to illustrate how a pyplot function wraps functionality
 in matplotlib's object-oriented core.  All other \code{pyplot} scripting
 interface functions follow the same design.
@@ -551,7 +561,7 @@ in the transformation graph.  matplotlib will automatically simplify
 the affine portion and only fall back to the arbitrary functions for
 the non-affine portion.
 
-\aosafigure{../images/matplotlib/nonaffine_transforms.pdf}{The same data, plotted with three different non-affine transformations: logarithmic, polar and lambert.}{fig.matplotlib.nonaffine}
+\aosafigure{../images/matplotlib/nonaffine_transforms.pdf}{The same data, plotted with three different non-affine transformations: logarithmic, polar and Lambert.}{fig.matplotlib.nonaffine}
 
 From these simple pieces, matplotlib can do some pretty advanced
 things.  A blended transformation is a special transformation node
@@ -646,50 +656,58 @@ certain contexts.
 \begin{aosasect1}{Math Text}
 
 Since the users of matplotlib are often scientists, it is useful to
-put richly-formatted math expressions directly on the plot.  Perhaps
-the most widely-used syntax for math expressions is from Donald
-Knuth's \TeX\ typesetting system.  It's a way to turn input in a
-plain-text language like this \verb+\sqrt{\frac{\delta x}{\delta y}}+
-into a properly formatted math expression like this
-$\sqrt{\frac{\delta x}{\delta y}}$.
+put richly formatted math expressions directly on the plot.  Perhaps
+the most widely used syntax for math expressions is from Donald
+Knuth's TeX typesetting system.  It's a way to turn input in a
+plain-text language like this: 
+
+\begin{verbatim}
+\sqrt{\frac{\delta x}{\delta y}}
+\end{verbatim}
+
+\noindent into a properly formatted math expression like this:
+
+\vspace{10px}
+$\sqrt{\frac{\delta x}{\delta y}}$
+\vspace{10px}
 
 matplotlib provides two ways to render math expressions.  The first,
-usetex, uses a full copy of \TeX\ on the user's machine to render the
-math expression.  \TeX\ outputs the location of the characters and
+\code{usetex}, uses a full copy of TeX on the user's machine to render the
+math expression.  TeX outputs the location of the characters and
 lines in the expression in its native DVI (device independent) format.
 matplotlib then parses the DVI file and converts it to a set of
 drawing commands that one of its output backends then renders directly
 onto the plot.  This approach handles a great deal of obscure math
 syntax. However, it requires that the user have a full and working
-installation of \TeX.  Therefore, matplotlib also includes its own
-internal math rendering engine, called mathtext.
+installation of TeX.  Therefore, matplotlib also includes its own
+internal math rendering engine, called \code{mathtext}.
 
-mathtext is a direct port of the \TeX\ math-rendering engine, glued
+\code{mathtext} is a direct port of the TeX math-rendering engine, glued
 onto a much simpler parser written using the \code{pyparsing}
 \cite{bib:pyparsing} parsing framework.  This port was written based
-on the published copy of the \TeX\ source code \cite{bib:texprogram}.
-The simple parser builds up a tree of boxes and glue (in \TeX\
+on the published copy of the TeX source code \cite{bib:texprogram}.
+The simple parser builds up a tree of boxes and glue (in TeX
 nomenclature), that are then laid out by the layout engine.  While the
-complete \TeX\ math rendering engine is included, the large set of
-third-party \TeX\ and \LaTeX\ math libraries is not.  Features in such
+complete TeX math rendering engine is included, the large set of
+third-party TeX and LaTeX math libraries is not.  Features in such
 libraries are ported on an as-needed basis, with an emphasis on
 frequently used and non-discipline-specific features first.  This
 makes for a nice, lightweight way to render most math expressions.
 
 \end{aosasect1}
 
-\begin{aosasect1}{Regression testing}
+\begin{aosasect1}{Regression Testing}
 
 Historically, matplotlib has not had a large number of low-level
 unit tests.  Occasionally, if a serious bug was reported, a script
 to reproduce it would be added to a directory of such files in the
-source tree.  The lack of automated tests created all of these usual
+source tree.  The lack of automated tests created all of the usual
 problems, most importantly regressions in features that previously
 worked.  (We probably don't need to sell you on the idea that
 automated testing is a good thing.)  Of course, with so much code
 and so many configuration options and interchangeable pieces
-(e.g. the backends), it is arguable that low-level unit tests alone
-would ever be enough: instead we've followed the belief that it is
+(e.g., the backends), it is arguable that low-level unit tests alone
+would ever be enough; instead we've followed the belief that it is
 most cost-effective to test all of the pieces working together in
 concert.
 
@@ -738,8 +756,8 @@ then uses those rasters for comparison.
 
 Using this approach, we were able to bootstrap a reasonably effective
 testing framework from scratch more easily than if we had gone on to
-write many low-level unit tests.  Still, it is not perfect.  The code
-coverage of the tests is not very complete.  It takes a long time to
+write many low-level unit tests.  Still, it is not perfect;  the code
+coverage of the tests is not very complete, and it takes a long time to
 run all of the tests.\footnote{Around 15 minutes on a 2.33 GHz Intel
   Core 2 E6550.}  Therefore, some regressions do still fall through
 the cracks, but overall the quality of the releases has improved
@@ -747,21 +765,21 @@ considerably since the testing framework was implemented.
 
 \end{aosasect1}
 
-\begin{aosasect1}{Lessons learned}
+\begin{aosasect1}{Lessons Learned}
 
 One of the important lessons from the development of matplotlib is,
-as Le Corbusier said, ``good architects borrow''.  The early authors
+as Le Corbusier said, ``Good architects borrow''.  The early authors
 of matplotlib were largely scientists, self-taught programmers
 trying to get their work done, not formally trained computer
-scientists.  Thus we did not get the internal design right on the
-first try.  The decision to implement a user-facing scripting layer
+scientists. Thus we did not get the internal design right on the
+first try. The decision to implement a user-facing scripting layer
 largely compatible with the MATLAB API benefited the project in
 three significant ways: it provided a time-tested interface to
 create and customize graphics, it made for an easy transition to
-matplotlib from the large base of MATLAB users, and most importantly
-for us in the context of matplotlib architecture, it freed
+matplotlib from the large base of MATLAB users, and---most importantly
+for us in the context of matplotlib architecture---it freed
 developers to refactor the internal object-oriented API several
-times with a minimal impact to most users because the scripting
+times with minimal impact to most users because the scripting
 interface was unchanged.  While we have had API users (as opposed to
 scripting users) from the outset, most of them are power users or
 developers able to adapt to API changes.  The scripting users, on
