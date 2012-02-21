@@ -344,6 +344,13 @@ dichotomy of the \code{ProcessObject} and \code{DataObject}. The
 functionalities such as the API for communications of \code{Events},
 and the support for multi-threading.
 
+
+\aosafigure{../images/itk/ProcessObjectDataObjectInteractionUML.pdf}{UML
+diagram of Data Pipeline interactions between \code{ProcessObjects} and
+\code{DataObjects} for the case of a minimal pipeline involving an
+\code{ImageFileReader}, \code{MedianImageFilter} and
+\code{ImageFileWriter}.}{fig.itk.processobjectdataobjectinteractionuml}
+
 \end{aosasect2}
 
 \begin{aosasect2}{Factories}
@@ -462,18 +469,18 @@ and the process of paralellizing the execution of a given filter. Both
 of them rely on the possibility of dividing the image processing work
 in to image chunks that are processed separatedly. In the streaming
 case, the image chunks are processed across time, one after another;
-while in the parallelization case, the image chuncks are assigned to
-different threads, which in turn are assigned to separate cores. At
-the bottom, it is the algorithmic nature of the filter, the one that
-will determine whether it is possible to split the output image into
-chuncks that are computed independently based on a corresponding set
-of image chunks from the input image. In ITK, streaming and
-parallelization are actually orthogonal, in the sense that there is an
-API to take care of the streaming process, and a separate API
-dedicated to support the implementation of parallel computation base
-on multiple-threads and shared memory.
+while in the parallelization case, the image chunks are assigned to
+different threads, which in turn are assigned to separate processor
+cores. At the end, it is the algorithmic nature of the filter, the
+one that will determine whether it is possible to split the output
+image into chunks that can be computed independently based on a
+corresponding set of image chunks from the input image. In ITK,
+streaming and parallelization are actually orthogonal, in the sense
+that there is an API to take care of the streaming process, and a
+separate API dedicated to support the implementation of parallel
+computation base on multiple-threads and shared memory.
 
-Streaming, unfortunately, can not be apply to all types of algorithms. Specific
+Streaming, unfortunately, can not be applied to all types of algorithms. Specific
 cases that are not suitable for streaming are:
 
 \begin{aosaitemize}
