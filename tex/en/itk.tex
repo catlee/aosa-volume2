@@ -285,7 +285,7 @@ quarter of the image, that is an image region of size 100x25 pixels.  Such
 request can be further propagated upstream, with the caveat that every
 intermediate filter may have to add an extra border to the image region size in
 order to produce that requested output region size.
-More on data streaming in section~\ref{Streaming}.
+More on data streaming in \aosasecref{sec.itk.streaming}.
 
 Both a changes in parameters in a given filter, or a change in the
 specific requested region to be processed by that filter will have the
@@ -451,7 +451,7 @@ reading and writing files containing spatial transformations represented by the
 
 \end{aosasect2}
 
-\begin{aosasect2}{Streaming}
+\begin{aosasect2}{Streaming}\label{sec.itk.streaming}
 ITK was conceived initially as a set of tools for processing the images
 acquired by the Visible Human
 Project\footnote{\url{http://www.nlm.nih.gov/research/visible/visible_human.html}}.
