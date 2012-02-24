@@ -30,7 +30,7 @@ $$1 = -34
 (gdb)
 \end{verbatim}
 GDB shows something that is not right, the developer says ``aha''
-or ``hmmm,'' and then has to decide both what the mistake is and how
+or ``hmmm'', and then has to decide both what the mistake is and how
 to fix it.
 
 The important point for design is that a tool like GDB is basically an
@@ -45,7 +45,7 @@ GDB also needs to be able to debug programs compiled by different
 compilers (not just the GNU C compiler), to debug programs compiled
 years earlier by long-obsolete versions of compilers, and to debug
 programs whose symbolic info is missing, out of date, or simply
-incorrect: so, another design consideration is that GDB should
+incorrect; so, another design consideration is that GDB should
 continue to work and be useful even if data about the program is
 missing, or corrupted, or simply incomprehensible.
 
@@ -63,7 +63,7 @@ of GNU.  (In those days, there were no public source control
 repositories, and much of the detailed development history is now
 lost.)
 
-The earliest readily-available releases are from 1988, and comparison
+The earliest readily available releases are from 1988, and comparison
 with present-day sources shows that only a handful of lines bear much
 resemblance; nearly all of GDB has been rewritten at least once.
 Another striking thing about early versions of GDB is that the
@@ -102,7 +102,7 @@ return.
 \end{enumerate}
 
 The two sides are somewhat independent of each other; you can look
-around your program's code, display variable types, etc, without
+around your program's code, display variable types, etc., without
 actually running the program.  Conversely, it is possible to do pure
 machine-language debugging even if no symbols are available.
 
@@ -149,10 +149,11 @@ going on behind the scenes.  When the user asks to step to the next
 line in the program, the target side is asked to execute only a single
 instruction of the program and then stop it again (this is one of the
 things that \code{ptrace} can do).  Upon being informed that the
-program has stopped, GDB asks for the program counter register
+program has stopped, GDB asks for the program counter (PC) register
 (another target side operation) and then compares it with the range of
 addresses that the symbol side says is associated with the current
-line.  It the PC is outside that range, then GDB leaves the program
+%% QUERY: PC is "program counter"? --ARB
+line.  If the PC is outside that range, then GDB leaves the program
 stopped, figures out the new source line, and reports that to the
 user.  If the PC is still in the range of the current line, then GDB
 steps by another instruction and checks again, repeating until the PC
@@ -160,8 +161,8 @@ gets to a different line.  This basic algorithm has the advantage that
 it always does the right thing, whether the line has jumps, subroutine
 calls, etc., and does not require GDB to interpret all the details of
 the machine's instruction set.  A disadvantage is that there are many
-interactions with the target for each single-step, which for some
-embedded targets results in noticeably slow stepping.
+interactions with the target for each single-step which, for some
+embedded targets, results in noticeably slow stepping.
 
 \end{aosasect1}
 
@@ -189,10 +190,10 @@ something like \code{cat} or \code{diff}, and over time, GDB's
 portability bits came to be separated into three classes, each with
 its own Makefile fragment and header file.
 
-\begin{itemize}
+\begin{aosaitemize}
 \item ``Host'' definitions are for the machine that GDB itself runs on,
 and might include things like the sizes of the host's integer types.
-Originally done as handwritten header files, it eventually occurred to
+Originally done as human-written header files, it eventually occurred to
 people that they could be calculated by having \code{configure} run
 little test programs, using the same compiler that was going to be
 used to build the tool.  This is what
@@ -206,21 +207,21 @@ we are doing ``native'' debugging, otherwise it is ``cross''
 debugging, using some kind of wire connecting the two systems.  Target
 definitions fall in turn into two main classes:
 
-\begin{itemize}
-\item ``Architecture'' definitions --- these define how to disassemble machine code, how
+\begin{aosaitemize}
+\item ``Architecture'' definitions: These define how to disassemble machine code, how
 to walk through the call stack, and which trap instruction to insert at
 breakpoints.  Originally done with macros, they were migrated to
 regular C accessed by via ``gdbarch'' objects, described in more depth
 below.
 
-\item ``Native'' definitions --- these define the specifics of arguments to
+\item ``Native'' definitions: These define the specifics of arguments to
 \code{ptrace} (which vary considerably between flavors of Unix), how
 to find shared libraries that have been loaded, and so forth, which
 only apply to the native debugging case.  Native definitions are a
 last holdout of 1980s-style macros, although most are now figured out
 using \code{autoconf}.
-\end{itemize}
-\end{itemize}
+\end{aosaitemize}
+\end{aosaitemize}
 
 \end{aosasect1}
 
@@ -241,7 +242,7 @@ the user.  The user creates a breakpoint with the \code{break}
 command, whose argument specifies a {\em location}, which can be a
 function name, a source line number, or a machine address.  GDB
 assigns a small positive integer to the breakpoint object, which the
-user uses subsequently to operate on the breakpoint.  Within GDB, the
+user subsequently uses to operate on the breakpoint.  Within GDB, the
 breakpoint is a C \code{struct} with a number of fields.  The location gets
 translated to a machine address, but is also saved in its original
 form, since the address may change and need recomputation, for
@@ -268,7 +269,7 @@ sometimes growing to occupy multiple gigabytes of RAM.  To some
 extent, this is unavoidable; a large application in C++ can have
 millions of symbols in its own right, and it pulls in system header
 files which can have millions more symbols.  Each local variable, each
-named type, each value of an enum --- all of these are separate symbols.
+named type, each value of an enum---all of these are separate symbols.
 
 GDB uses a number of tricks to reduce symbol table space, such as
 partial symbol tables (more about those later), bit fields in \code{struct}s,
@@ -297,7 +298,7 @@ system, compiler, and optimization options.
 
 A port of GDB to a new chip may need a considerable volume of code to
 analyze the stack, as programs (especially buggy ones, which are the
-ones debugger users are mostly interested in!) can stop anywhere, with
+ones debugger users are mostly interested in) can stop anywhere, with
 frames possibly incomplete, or partly overwritten by the program.
 Worse, constructing a stack frame for each function call slows down the
 application, and a good optimizing compiler will take every
@@ -322,7 +323,7 @@ all as a tree structure built out of node objects.  The set of node
 types is effectively a union of all the types of expressions possible
 in all the different languages; unlike in the compiler, there is no
 reason to disallow the user from trying to subtract a Fortran variable
-from a C variable --- perhaps the difference of the two is an obvious
+from a C variable---perhaps the difference of the two is an obvious
 power of two, and that gives us the ``aha'' moment.
 
 \end{aosasect2}
@@ -478,7 +479,7 @@ which ``process-like'' target vectors are all at one stratum, while
 target vectors can get inserted as well as pushed and popped.
 
 (Although GDB maintainers don't like the target stack much, no one has
-proposed --- or prototyped --- any better alternative.)
+proposed---or prototyped---any better alternative.)
 
 \end{aosasect2}
 
@@ -533,7 +534,7 @@ i386_gdbarch_init( [...] )
 \begin{aosasect2}{Execution control}
 
 The heart of GDB is its execution control loop.  We touched on it
-earlier when describing single-stepping over a line --- the algorithm
+earlier when describing single-stepping over a line---the algorithm
 entailed looping over multiple instructions until finding one
 associated with a different source line.  The loop is called \code{wait\_for\_inferior}, or ``wfi'' for short.
 
@@ -592,7 +593,7 @@ The basic protocol is simple, reflecting the desire to have it work on
 small embedded systems of the 1980s, whose memories were measured in
 kilobytes.  For instance, the protocol packet \code{\$g} requests all
 registers, and expects a reply consisting of all the bytes of all the
-registers, all run together --- the assumption being that their number,
+registers, all run together---the assumption being that their number,
 size, and order will match what GDB knows about.
 
 The protocol expects a single reply to each packet sent, and assumes
@@ -639,7 +640,7 @@ and translates the packets into device library calls.
 \begin{aosasect2}{GDBserver}
 
 The GDB sources do include one complete and working implementation of
-the target side of the remote protocol --- GDBserver.  GDBserver is a
+the target side of the remote protocol---GDBserver.  GDBserver is a
 {\em native} program that runs under the target's operating system,
 and controls other programs on the target OS using its native
 debugging support, in response to packets received via remote protocol.
@@ -708,7 +709,7 @@ context.
 To solve this problem, GDB has an alternate ``user'' interface, known
 as the Machine Interface or MI for short.  It is still fundamentally a
 command-line interface, but both commands and results have additional
-syntax that makes everything explicit --- each argument is bounded by
+syntax that makes everything explicit---each argument is bounded by
 quotes, while complex output has delimiters for subgroups, and
 parameter names for component pieces.  In addition, MI commands can be
 prefixed with sequence identifiers that are echoed back in results,
@@ -830,7 +831,7 @@ it.  It helps guide developers as they work on related tasks, it can
 be shown to potential funders, and it lets volunteers think about what they can do
 to advance it.
 
-But don't try to force dates or time frames!  Even if everyone is
+But don't try to force dates or time frames; even if everyone is
 enthusiastic about a direction, it is unlikely that people can
 guarantee full-time effort for long enough to finish by a chosen date.
 
@@ -856,8 +857,8 @@ Certainly we could have anticipated that GDB was going to be
 tremendously popular, and was going to be ported to dozens and dozens
 of architectures, both native and cross.  If we had known that, we
 could have started with the gdbarch objects, instead of spending years
-upgrading old macros and global variables.  Ditto for the target
-vector!
+upgrading old macros and global variables;  ditto for the target
+vector.
 
 Certainly we could have anticipated GDB was going to be used with
 GUIs. After all in 1986 both the Mac and the X Window System had
@@ -915,7 +916,7 @@ In fact, there are a number of radical changes on the table or already
 underway, ranging from the adoption of Python for scripting, to
 support for debugging of highly parallel multicore systems, to
 recoding into C++.  The changes may take years to complete; all the
-more reason to get started on them now!
+more reason to get started on them now.
 
 \end{aosasect2}
 
