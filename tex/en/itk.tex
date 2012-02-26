@@ -97,15 +97,17 @@ algorithmic implementations that they can try, and then mix and match to create
 a recipe that satisfies their needs.
 
 These are some of the reasons why ITK was designed and implemented as a large
-collection of somewhat independent tools, many of which can be used to solve
-similar problems. In this context, a certain level of ``redundancy'',
-for example offering three different implementation of the Gaussian
-filter, is not
-seen as a problem but as a valuable feature. The toolkit was also conceived as
-a resource that will grow and renew itself continuously, as new algorithms and
-better implementations become available superseding exiting ones, as well as
-new tools are developed in response to the emerging needs of new medical
-imaging technologies.
+collection of somewhat independent but coherent tools, the image filters, many
+of which can be used to solve similar problems. In this context, a certain
+level of ``redundancy'', for example offering three different implementation of
+the Gaussian filter, is not seen as a problem but as a valuable feature,
+because they can be used interchangeably to satisfy constrains and exploit
+efficiencies related to conditions such as image size, number of processors,
+and Gaussian kernel size that might be specific to a given imaging application.
+The toolkit was also conceived as a resource that will grow and renew itself
+continuously, as new algorithms and better implementations become available
+superseding exiting ones, as well as new tools are developed in response to the
+emerging needs of new medical imaging technologies.
 
 Armed with this quick overview of the nature of activities that make the daily
 routine of the image analysts who compose the ITK community, we can now dive
@@ -608,7 +610,7 @@ A concrete example, where an application manages 3D MRI scans, will look like:
 
 There is a limit, however, to how much the particularities of the image file
 formats can be hidden from the application developer.  For example, when
-reading image from DICOM files, or when reading RAW images, the application
+reading images from DICOM files, or when reading RAW images, the application
 developer may have to insert extra calls to further specify the characteristics
 of the file format at hand. DICOM files will be the most commonly found in
 clinical environments, while RAW images are still a necessary evil for
