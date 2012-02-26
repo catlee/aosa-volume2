@@ -307,7 +307,7 @@ altogether, such as for tail calls.
 
 The result of GDB's chip-specific stack analysis is recorded in a
 series of frame objects.  Originally GDB kept track of frames by using
-the literal value of a fixed frame pointer register.  This approach
+the literal value of a fixed-frame pointer register.  This approach
 breaks down for inlined function calls and other kinds of compiler
 optimizations, and starting in 2002, GDBers introduced explicit frame
 objects that recorded what had been figured out about each frame, and
@@ -322,7 +322,7 @@ expressions of the various languages it supports, and represents them
 all as a tree structure built out of node objects.  The set of node
 types is effectively a union of all the types of expressions possible
 in all the different languages; unlike in the compiler, there is no
-reason to disallow the user from trying to subtract a Fortran variable
+reason to prevent the user from trying to subtract a Fortran variable
 from a C variable---perhaps the difference of the two is an obvious
 power of two, and that gives us the ``aha'' moment.
 
@@ -350,7 +350,7 @@ building it into a symbol table.
 The reading process starts with the BFD library.  BFD is a sort of
 universal library for handling binary and object files; running on any
 host, it can read and write the original Unix \code{a.out} format,
-COFF (used on System V Unix and MS Windows), and ELF (modern Unix,
+COFF (used on System V Unix and MS Windows), ELF (modern Unix,
 GNU/Linux, and most embedded systems), and some other file formats.
 Internally, the library has a complicated structure of C macros that
 expand into code incorporating the arcane details of object file
@@ -358,21 +358,21 @@ formats for dozens of different systems.  Introduced in 1990, BFD is
 also used by the GNU assembler and linker, and its ability to produce
 object files for any target is key to cross-development using GNU
 tools.  (Porting BFD is also a key first step in porting the tools to a
-a new target.)
+new target.)
 
 GDB only uses BFD to read files, using it to pull blocks of data
 from the executable file into GDB's memory. GDB then has two levels of
 reader functions of its own. The first level is for basic symbols, or
 ``minimal symbols'', which are just the names that the linker needs to
 do its work. These are strings with addresses and not much else; we
-assume that addresses in text sections are functions, and addresses
+assume that addresses in text sections are functions, addresses
 in data sections are data, and so forth.
 
 The second level is detailed symbolic information, which typically has
 its own format different from the basic executable file format; for
 instance, information in the DWARF debug format is contained in
-specially-named sections of an ELF file.  By contrast, the old
-\code{stabs} debug format of Berkeley Unix used specially-flagged
+specially named sections of an ELF file.  By contrast, the old
+\code{stabs} debug format of Berkeley Unix used specially flagged
 symbols stored in the general symbol table.
 
 The code for reading symbolic information is somewhat tedious, as the
@@ -397,14 +397,14 @@ Most of the symbolic information will never be looked at in a session,
 since it is local to functions that the user may never examine.  So,
 when GDB first pulls in a program's symbols, it does a cursory scan
 through the symbolic information, looking for just the
-globally-visible symbols and recording only them in the symbol table.
+globally visible symbols and recording only them in the symbol table.
 Complete symbolic info for a function or method is filled in only if
 the user stops inside it.
 
 Partial symbol tables allow GDB to start up in only a few seconds, even
 for large programs. (Shared library symbols are also dynamically loaded, but the process
 is rather different.  Typically GDB uses a system-specific technique
-to be notified when the library is loaded, then it builds a symbol
+to be notified when the library is loaded, then builds a symbol
 table with functions at the addresses that were decided on by the
 dynamic linker.)
 
@@ -412,9 +412,11 @@ dynamic linker.)
 
 \begin{aosasect2}{Language Support}
 
-Source language support mainly consists of expression parsing and value printing.  The details of expression parsing are left up to each language, but in
+Source language support mainly consists of expression parsing and value 
+printing.  The details of expression parsing are left up to each language, 
+but in
 the general the parser is based on a Yacc grammar fed by a
-handwritten lexical analyzer.  In keeping with GDB's goal of providing
+hand-crafted lexical analyzer.  In keeping with GDB's goal of providing
 more flexibility to the interactive user, the parser is not expected
 to be especially stringent; for instance, if it can guess at a
 reasonable type for an expression, it will simply assume that type,
@@ -452,7 +454,7 @@ structure of several dozen function pointers (often called
 memory and registers, to resuming program execution, to setting
 parameters for the handling of shared libraries.  There are about 40
 target vectors in GDB, ranging from the well-used target vector for
-Linux, to obscure vectors such as the one that operates a Xilinx
+Linux to obscure vectors such as the one that operates a Xilinx
 MicroBlaze.  Core dump support uses a target vector that gets data by
 reading a corefile, and there is another target vector that reads data
 from the executable.
@@ -466,14 +468,14 @@ vector for executables and reads from the binary file.  But while the
 program is running, the bytes should instead come from the process's
 address space.  So, GDB has a ``target stack'' where the target vector
 for live processes is pushed on top of the executable's target vector
-when the process starts running, and is then popped when it exits.
+when the process starts running, and is popped when it exits.
 
 In reality, the target stack turns out not to be quite as stack-like
 as one might think.  Target vectors are not really orthogonal to each
 other; if you have both an executable and a live process in the
 session, while it makes sense to have the live process's methods
 override the executable's methods, it almost never makes sense to do
-the reverse.  So, GDB has ended up with a notion of a {\em stratum} in
+the reverse.  So GDB has ended up with a notion of a {\em stratum} in
 which ``process-like'' target vectors are all at one stratum, while
 ``file-like'' target vectors get assigned to a lower stratum, and
 target vectors can get inserted as well as pushed and popped.
@@ -497,12 +499,12 @@ Originally this was handled using target-specific preprocessor macros,
 but as the debugger became more sophisticated, these got larger and
 larger, and over time long macro definitions were made into regular C
 functions called from the macros.  While this helped, it did not help
-much with architectural variants (ARM vs Thumb, 32-bit vs 64-bit
-versions of MIPS or x86, etc), and worse, multiple-architecture
+much with architectural variants (ARM vs. Thumb, 32-bit vs. 64-bit
+versions of MIPS or x86, etc.), and worse, multiple-architecture
 designs were on the horizon, for which macros would not work at all.
 In 1995, I proposed solving this with an object-based design, and
-starting in 1998 Cygnus Solutions funded Andrew Cagney to start the
-changeover.  It took several years, and contributions from dozens of
+starting in 1998 Cygnus Solutions\footnote{Cygnus Solutions is a company founded in 1989 to provide commercial support for free software.} funded Andrew Cagney to start the
+changeover.  It took several years and contributions from dozens of
 hackers to finish the job, affecting perhaps 80,000 lines of code in
 all.
 
@@ -511,7 +513,7 @@ this point may contain as many as 130 methods and variables defining a
 target architecture, although a simple target might only need a dozen
 or so of these.
 
-To get a flavor of how the old and new ways compare, see the
+To get a sense of how the old and new ways compare, see the
 declaration that x86 long doubles are 96 bits in size from
 \code{gdb/config/i386/tm-i386.h}, circa 2002:
 \begin{verbatim}
@@ -531,10 +533,10 @@ i386_gdbarch_init( [...] )
 
 \end{aosasect2}
 
-\begin{aosasect2}{Execution control}
+\begin{aosasect2}{Execution Control}
 
 The heart of GDB is its execution control loop.  We touched on it
-earlier when describing single-stepping over a line---the algorithm
+earlier when describing single-stepping over a line; the algorithm
 entailed looping over multiple instructions until finding one
 associated with a different source line.  The loop is called \code{wait\_for\_inferior}, or ``wfi'' for short.
 
@@ -555,7 +557,7 @@ All of this activity is managed by \code{wait\_for\_inferior}.
 Originally this was a simple loop, waiting for the target to stop and
 then deciding what to do about it, but as ports to various systems
 needed special handling, it grew to a thousand lines, with goto
-statements criss-crossing it for poorly-understood reasons.  For
+statements criss-crossing it for poorly understood reasons.  For
 instance, with the proliferation of Unix variants, there was no one
 person who understood all their fine points, nor did we have access to
 all of them for regression testing, so there was a strong incentive to
@@ -565,7 +567,7 @@ tactic.
 
 The single big loop was also a problem for any kind of asynchronous
 handling or debugging of threaded programs, in which the user wants to
-start and stop a single thread, while allowing the rest of the program
+start and stop a single thread while allowing the rest of the program
 to continue running.
 
 The conversion to an event-oriented model took several years.  I broke
@@ -627,7 +629,7 @@ with a switch statement.
 
 Another approach to remote protocol is to build a ``sprite'' that
 interfaces between GDB and dedicated debugging hardware, including
-JTAG devices, ``wigglers'' and the like.  Oftentimes these devices
+JTAG devices, ``wigglers'', etc.  Oftentimes these devices
 have a library that must run on the computer that is physically
 connected to a target board, and often the library API is not
 architecturally compatible with GDB's internals.  So, while versions of
@@ -640,7 +642,7 @@ and translates the packets into device library calls.
 \begin{aosasect2}{GDBserver}
 
 The GDB sources do include one complete and working implementation of
-the target side of the remote protocol---GDBserver.  GDBserver is a
+the target side of the remote protocol: GDBserver.  GDBserver is a
 {\em native} program that runs under the target's operating system,
 and controls other programs on the target OS using its native
 debugging support, in response to packets received via remote protocol.
@@ -666,8 +668,8 @@ has gone slowly.
 \begin{aosasect1}{Interfaces to GDB}
 
 GDB is fundamentally a command-line debugger.  Over time people have
-tried various schemes to make it into a graphical windowed debugger,
-but despite all the time and effort, none of these are universally
+tried various schemes to make it into a graphical windowed debugger
+but, despite all the time and effort, none of these are universally
 accepted.
 
 \begin{aosasect2}{Command-line Interface}
@@ -700,9 +702,9 @@ language-specific parser.
 
 One way to provide a debugging GUI is to use GDB as a sort of
 ``backend'' to a graphical interface program, translating mouse clicks
-into commands, and formatting print results into windows.  This has
-been made to work several times, such as for DDD, but it's not the
-ideal approach, because sometimes results are formatted for human
+into commands and formatting print results into windows.  This has
+been made to work several times, including KDbg and DDD (Data Display Debugger), but it's not the
+ideal approach because sometimes results are formatted for human
 readability, omitting details and relying on human ability to supply
 context.
 
@@ -710,7 +712,7 @@ To solve this problem, GDB has an alternate ``user'' interface, known
 as the Machine Interface or MI for short.  It is still fundamentally a
 command-line interface, but both commands and results have additional
 syntax that makes everything explicit---each argument is bounded by
-quotes, while complex output has delimiters for subgroups, and
+quotes, and complex output has delimiters for subgroups and
 parameter names for component pieces.  In addition, MI commands can be
 prefixed with sequence identifiers that are echoed back in results,
 ensuring reported results are matched up with the right commands.
@@ -738,7 +740,7 @@ other software to parse accurately:
              line="232"}
 \end{verbatim}
 
-The Eclipse\cite{bib:eclipse-home} development environment is the most
+\noindent The Eclipse\cite{bib:eclipse-home} development environment is the most
 notable client of the MI.
 
 \end{aosasect2}
@@ -762,23 +764,23 @@ split-screen interface.
 As an original GNU program, GDB development started out following the
 ``cathedral'' model of development.  Originally written by Stallman,
 GDB then went through a succession of ``maintainers'', each of whom
-was a combination architect, patch reviewer, and release manager, with
+was a combination of architect, patch reviewer, and release manager, with
 access to the source repository limited to a handful of Cygnus
 employees.
 
-In 1999, GDB migrated to a public source repository, and expanded to a
+In 1999, GDB migrated to a public source repository and expanded to a
 team of several dozen maintainers, aided by scores of individuals with
 commit privileges.  This has accelerated development considerably,
-with the 10 odd commits each week growing to 100 or more.
+with the 10-odd commits each week growing to 100 or more.
 
 \end{aosasect2}
 
 \begin{aosasect2}{Testing Testing}
 
-As a program that a) is highly system-specific, b) has a great many
+As GDB is highly system-specific, has a great many
 ports to systems ranging from the smallest to the largest in
-computerdom, and c) has hundreds of commands, options, and usage
-styles, it is difficult for even the experienced GDB hacker to
+computerdom, and has hundreds of commands, options, and usage
+styles, it is difficult for even an experienced GDB hacker to
 anticipate all the effects of a change.
 
 This is where the test suite comes in.  The test suite consists of a
@@ -792,11 +794,11 @@ hardware and simulators, and to have tests that are specific to a
 single architecture or configuration.
 
 At the end of 2011, the test suite includes some 18,000 test cases,
-which includes basic functionality, language-specific tests,
+which include tests of basic functionality, language-specific tests,
 architecture-specific tests, and MI tests.  Most of these are generic
 and are run for any configuration.  GDB contributors are expected to
 run the test suite on patched sources and observe no regressions, and
-for new features, new tests are expected to accompany each feature.
+new tests are expected to accompany each new feature.
 However, as no one has access to all platforms that might be affected
 by a change, it is rare to get all the way to zero failures; 10--20
 failures is usually reasonable for a trunk snapshot configured for
@@ -811,7 +813,7 @@ native debugging, and some embedded targets will have more failures.
 \begin{aosasect2}{Open Development Wins}
 
 GDB started out as an exemplar of the ``cathedral'' development
-process, in which the maintainer kept close control of the sources,
+process, in which the maintainer keeps close control of the sources,
 with the outside world only seeing progress via periodic snapshots.
 This was rationalized by the relative infrequence of patch submissions,  
 but the closed process was actually discouraging patches. Since
@@ -836,11 +838,11 @@ enthusiastic about a direction, it is unlikely that people can
 guarantee full-time effort for long enough to finish by a chosen date.
 
 For that matter, don't cling to the plan itself if it has become
-outdated.  For a long time, GDB had a plan to restructure as a library
-\code{libgdb} with a well-defined API, that could be linked into other
-programs (in particular ones with GUIs), and the build process was
+outdated.  For a long time, GDB had a plan to restructure as a library,
+\code{libgdb}, with a well-defined API, that could be linked into other
+programs (in particular ones with GUIs); the build process was
 even changed to build a \code{libgdb.a} as an intermediate step.
-Although the idea came up periodically since then, the primacy of
+Although the idea has come up periodically since then, the primacy of
 Eclipse and MI meant that the library's main rationale has been
 sidestepped, and as of January 2012 we have abandoned the library
 concept and are expunging the now-pointless bits of code.
@@ -849,7 +851,7 @@ concept and are expunging the now-pointless bits of code.
 
 \begin{aosasect2}{Things Would Be Great If We Were Infinitely Intelligent}
 
-After seeing some of the changes we made, you might be thinking: why
+After seeing some of the changes we made, you might be thinking: Why
 didn't we do things right in the first place?  Well, we just weren't
 smart enough.
 
