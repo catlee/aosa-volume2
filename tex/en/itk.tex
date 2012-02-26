@@ -258,20 +258,15 @@ process large images that otherwise would have not fitted in main memory.
 
 \end{aosaitemize}
 
-\aosafigure{../images/itk/DataPipelineIllustrationInRegionGrowingApplication.png}{GUI Illustration of a Data Pipeline for performing region growing segmentation}{fig.itk.regiongrowinggui}
-
 Figures~\ref{fig.itk.pipeline} and~\ref{fig.itk.brim} have already presented a
 simplified representation of a data pipeline from the image processing point of
-view. A more detailed case can be seen in
-Figure~\ref{fig.itk.regiongrowinggui}, for a simple application that exposes
-the Data Pipeline connections in its GUI, along with the set of numeric
-parameters that can be adjusted for each one of the intermediate filters. Every
-time that one of the numeric parameters is modified, the data pipeline marks
-its output as ``dirty'' and knows that this particular filter, and all the
-downstream ones that use its output, should be executed again. This feature of
-the pipeline facilitates the exploration of the parameter space while
-maintaining to a minimum the amount of processing power that have to be
-invested at every instance of an experiment.
+view. Image filters typically will have numeric parameters that are used to
+regulate the behavior of the filter. Every time that one of the numeric
+parameters is modified, the data pipeline marks its output as ``dirty'' and
+knows that this particular filter, and all the downstream ones that use its
+output, should be executed again. This feature of the pipeline facilitates the
+exploration of the parameter space while maintaining to a minimum the amount of
+processing power that have to be invested at every instance of an experiment.
 
 The process of updating the pipeline can be driven in such a way that only
 sub-pieces of the images are processed at a time. This is a mechanism necessary
