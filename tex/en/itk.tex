@@ -292,6 +292,8 @@ specific requested region to be processed by that filter will have the
 effect of marking the pipeline as ``dirty'' and indicate the need for
 a refresh from that filter to the downstream filters in that pipeline.
 
+\begin{aosasect3}{Process and Data Objects}
+
 Two main types of objects were designed to hold the basic structure of the
 pipeline.  They are the \code{DataObject} and the \code{ProcessObject}. The
 \code{DataObject} is the abstraction of classes that carry data. For example,
@@ -320,6 +322,35 @@ It is also common for some filters to require two \code{DataObjects} as input,
 as it is the case of the ``Subtract Filter'' illustrated in the right side of
 the same figure.
 
+The \code{ProcessObjects} and \code{DataObjects} are connected together as a
+secondary effect of the process of building up the pipeline. From the
+application developer's point of view, the pipeline is linked together by
+invoking a sequence of calls involving the \code{ProcessObjects} such as:
+
+\begin{aosaitemize}
+\item \code{writer->SetInput( canny->GetOutput() );}
+\item \code{canny->SetInput( median->GetOutput() );}
+\item \code{median->SetInput( reader->GetOutput() );}
+\end{aosaitemize}
+
+Internally, however, what gets to be connected as consequence of these calls is
+not one \code{ProcessObject} to the next \code{ProcessObject}, but the
+downstream \code{ProcessObject} to the \code{DataObject} that is produced as
+output of the upstream \code{ProcessObject}. This connection is made by
+inserting the pointer of that \code{DataObject} in a list of pointers to inputs
+that is held as a member variable of the \code{ProcessObject}. In addition,
+\code{DataObjects} have a pointer to the \code{ProcessObject} that owns them
+and that is responsible for computing its content. Finally, since every
+\code{ProcessObject} owns its \code{DataObjects}, it also holds pointers to
+them in an internal list of pointers that is a member variable of the
+\code{ProcessObject}. This collection of internal links is later exploited to
+propagate calls upstream and downstream the pipeline.
+
+
+\end{aosasect3}
+
+\begin{aosasect3}{The Pipeline Class Hierarchy}
+
 The initial design and implementation of the Data Pipeline in ITK was derived
 from the one in the Visualization Toolkit (VTK)\footnote{See \emph{Architecture
 of Open Source Applications}, Volume 1}, that was a mature project at the time
@@ -344,6 +375,10 @@ dichotomy of the \code{ProcessObject} and \code{DataObject}. The
 functionalities such as the API for communications of \code{Events},
 and the support for multi-threading.
 
+\end{aosasect3}
+
+
+\begin{aosasect3}{The Innerworking of the Pipeline}
 
 \aosafigure{../images/itk/ProcessObjectDataObjectInteractionUML.pdf}{UML
 diagram of Data Pipeline interactions between \code{ProcessObjects} and
@@ -420,6 +455,8 @@ to timing of the calls, and not due to what filter is driving the calls. This
 clarification is important because the ITK pipeline is by nature a \emph{``Pull
 Pipeline''}, in which data is requested from the end, and the logic is also
 controlled from the end.
+
+\end{aosasect3}
 
 \end{aosasect2}
 
