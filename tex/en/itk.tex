@@ -170,42 +170,41 @@ list dependencies between this module and other modules.
 
 \end{aosaenumerate}
 
-The group level is mostly a conceptual division that has been drawn on
-top of the software to help locate filters in the source tree. Groups
-are associated to high level concepts such as Filtering, Segmentation,
-Registration and IO.
-
-This hierarchical structure is illustrated in
-Figure~\ref{fig.itk.modulehierarchy}.
-
 \aosafigure{../images/itk/IllustrationOfModularStructure.pdf}{Hierarchical Structure of Groups, Modules and Classes}{fig.itk.modulehierarchy}
 
+The group level is mostly a conceptual division that has been drawn on top of
+the software to help locate filters in the source tree. Groups are associated
+to high level concepts such as Filtering, Segmentation, Registration and IO.
+This hierarchical structure is illustrated in
+Figure~\ref{fig.itk.modulehierarchy}.  ITK currently has 124 modules, that are
+in turn aggregated into 13 major groups.  The modules have a variety of
+different sizes. This size distribution, in bytes, is presented in
+Figure~\ref{fig.itk.modulesize}.
 
-ITK currently has 124 modules, that are in turn aggregated into 13 major groups.
-The modules have a variety of different sizes. This size distribution, in
-bytes, is presented in Figure~\ref{fig.itk.modulesize}.
-
-\aosafigure{../images/itk/moduleSizePlot.pdf}{Distribution of Module Size in Bytes}{fig.itk.modulesize}
-\aosafigure{../images/itk/moduleSizePlotNoThirdParty.pdf}{Distribution of Module Size in Bytes without Third Party Libraries}{fig.itk.modulesizenothirdparty}
+\aosafigure{../images/itk/moduleSizePlotCombined.pdf}{Distribution of Module Size in KB}{fig.itk.modulesize}
 
 The modularization in ITK applies as well to a set of third party libraries
-that are not directly part of the toolkit, but that the toolkit depend upon, and
-that are distributed along with the rest of the code for the convenience of
+that are not directly part of the toolkit, but that the toolkit depends upon,
+and that are distributed along with the rest of the code for the convenience of
 users. Particular examples of these third party libraries are the image file
-format libraries: HDF5, PNG, TIFF, JPEG and openjpeg among others. When these
-libraries are excluded from the analysis of module size, the distribution
-become the one shown in Figure~\ref{fig.itk.modulesizenothirdparty}
+format libraries: HDF5, PNG, TIFF, JPEG and openjpeg among others.  The third
+party libraries are highlighted here because they make about 56 percent of the
+size of ITK. This reflects the usual nature of open source applications that
+build upon existing platforms. The size distribution of the third party
+libraries does not necessarily reflect the architectural organization of ITK,
+since we have adopted these useful libraries just as they have been developed
+upstream. However, they third party code is distributed along with the toolkit,
+and partitioning it was one of the key driving directives for the
+modularization process.
 
-The reason why Figure~\ref{fig.itk.modulesize} and
-Figure~\ref{fig.itk.modulesizenothirdparty} present separate analysis, with and
-without the third party libraries, is that these libraries make about 56
-percent of the size of ITK. This reflects the usual nature of open source
-applications that build upon existing platforms. The size distribution of the
-third party libraries does not necessarily reflect the architectural
-organization of ITK, since we have adopted these useful third party libraries
-just as they have been developed upstream. However, they third party code is
-distributed along with the toolkit, and partitioning it was one of the key
-driving directives for the modularization process.
+The module size distribution is presented here, because it is a measure of the
+proper modularization of the code. One can see the modularization of the code
+as a continum spectrum that goes from the extreme of having all the code in a
+single module, the monolithic version, to the other extreme of having the code
+partitioned in a very large collection of equally sized modules. This size
+distribution was a tool used to monitor the progression of the modularization
+process, particularly to ensure that no big blocks of code were left in the
+same module unless true logical dependencies called for such grouping.
 
 The modular architecture of ITK enables and facilitates:
 
