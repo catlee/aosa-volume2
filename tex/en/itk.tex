@@ -496,6 +496,8 @@ image analysis capabilities.
 
 \begin{aosasect2}{IO Factories}
 
+\begin{aosasect3}{Embracing Diversitiy with Facades}
+
 The image analysis community has developed a very large set of file formats to
 store image data. Many of these file formats are designed and implemented with
 specific uses in mind, and therefore are fine-tuned to specific types of
@@ -515,9 +517,9 @@ Figure~\ref{fig.itk.io.factoriesregistry}. The actual functionality of reading
 and writing data from image file formats is implemented in a family of
 \code{ImageIO} classes, shown on the right side of
 Figure~\ref{fig.itk.io.factoriesregistry}. These service classes are intended
-to be instantiated on demand when the user request to read or write an image.
+to be instantiated on demand when the user requests to read or write an image.
 The services classes are not exposed to the application code. Instead,
-application are expected to interact with the facade classes:
+applications are expected to interact with the facade classes:
 
 \begin{aosaitemize}
 \item \code{ImageFileReader}
@@ -547,6 +549,75 @@ call to \code{Update()} triggers the execution of the upstream pipeline that is
 providing the input to the writer, and finally results in an image being
 written out to disk into a particular file format.
 
+These facade classes hide from the application developer the
+internal differences that are inherent to the particularities of
+each file format. They even hide the existance of the file format
+itself. The facades are designed in such a way that most of the
+time application developers do not need to know what file formats
+are expected to be read by the application. The typical
+application will simply invoke code such as
+
+\begin{aosaitemize}
+\item \code{std::string filename = this->GetFileNameFromGUI();}
+\item \code{writer->SetFileName( filename );}
+\item \code{writer->Update();}
+\end{aosaitemize}
+
+These calls will work fine regardless of whether the content of the
+\code{filename} variable is any of the following strings:
+
+\begin{aosaitemize}
+\item image1.png
+\item image1.jpeg
+\item image1.tiff
+\item image1.dcm
+\item image1.mha
+\item image1.nii
+\item image1.nii.gz
+\end{aosaitemize}
+
+Where the file name extensions identify a different image file
+format in every case.
+
+\end{aosasect3}
+
+\begin{aosasect3}{Know Thy Pixel Type}
+
+Despite the assistance that the file reader and writer facades provide, it is
+still, up to the application developer to be aware of the pixel type that the
+application needs to process. In the context of medical imaging, it is
+reasonable to expect that the application developer will know whether the input
+image will contain a MRI, a mamogram or a CT scan, and therefore be mindful of
+selecting the appropriate pixel type and image dimensionality for each one of
+these different image modalities. This specificity of image type might not be
+convenient for application settings where users wants to read \emph{``any''}
+image type, which are most commonly found in the scenarios of rapid prototyping
+and teaching.  In the context of deploying a medical image application for
+production in a clinical setting, however, it is expected that the pixel type
+and dimension of the images will be clearly defined and specified based on the
+image modality to be processed.
+
+A concrete example, where an application manages 3D MRI scans, will look like:
+
+\begin{aosaitemize}
+\item \code{typedef itk::Image< signed short, 3 >  MRImageType;}
+\item \code{typedef itk::ImageFileWriter< MRImageType > MRIWriterType;}
+\item \code{MRIWriterType::Pointer writer = MRIWriterType::New();}
+\item \code{writer->Update();}
+\end{aosaitemize}
+
+There is a limit, however, to how much the particularities of the image file
+formats can be hidden from the application developer.  For example, when
+reading image from DICOM files, or when reading RAW images, the application
+developer may have to insert extra calls to further specify the characteristics
+of the file format at hand. DICOM files will be the most commonly found in
+clinical environments, while RAW images are still a necessary evil for
+exchanging data in the research environment.
+
+\end{aosasect3}
+
+\begin{aosasect3}{Together but Separate}
+
 The self-contained nature of every IO Factory and ImageIO service classes is
 also reflected in the modularization. Typically, an ImageIO class depends on a
 specialized library that is dedicated to managing a specific file format. That
@@ -554,20 +625,22 @@ is the case for PNG, JPEG, TIFF and DICOM, for example. In those cases, the
 third party library is managed as a self-contained module, and the specialized
 ImageIO code that interfaces ITK to that third party library is also put in a
 Module by itself. In this way, specific applications may disable many
-file formats that are not relevant for their domain, and can focus on offering
-only those file formats that are useful for the anticipated scenarios of this
-application.
+file formats that are not relevant to their domain, and can focus on offering
+only those file formats that are useful for the anticipated scenarios of that
+given application.
 
 Just as with standard Factories, the IO Factories can also be loaded at
 run-time from dynamic libraries. This flexibility facilitates the use of
 specialized and in-house developed file formats without requiring all such file
-formats to be incorporated directly into the ITK toolkit. The loadable IO
-factories has been one of the most successful features in the Architectural
+formats to be incorporated directly into the ITK toolkit itself. The loadable
+IO factories has been one of the most successful features in the Architectural
 design of ITK. It has made possible to easily manage a challenging situation
 without placing a burden in the code nor obscuring its implementation. More
 recently, the same IO architecture has been adapted to manage the process of
 reading and writing files containing spatial transformations represented by the
 \code{Transform} class family.
+
+\end{aosasect3}
 
 \end{aosasect2}
 
