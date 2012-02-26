@@ -287,7 +287,7 @@ intermediate filter may have to add an extra border to the image region size in
 order to produce that requested output region size.
 More on data streaming in \aosasecref{sec.itk.streaming}.
 
-Both a changes in parameters in a given filter, or a change in the
+Both a change in the parameters of a given filter, or a change in the
 specific requested region to be processed by that filter will have the
 effect of marking the pipeline as ``dirty'' and indicate the need for
 a refresh from that filter to the downstream filters in that pipeline.
@@ -350,6 +350,76 @@ diagram of Data Pipeline interactions between \code{ProcessObjects} and
 \code{DataObjects} for the case of a minimal pipeline involving an
 \code{ImageFileReader}, \code{MedianImageFilter} and
 \code{ImageFileWriter}.}{fig.itk.processobjectdataobjectinteractionuml}
+
+Figure~\ref{fig.itk.processobjectdataobjectinteractionuml} presents an UML
+sequence diagram describing the interactions between \code{ProcessObjects} and
+\code{DataObjects} in a minimal pipeline composed of a \code{FileImageReader},
+\code{MedianImageFilter} and \code{FileImageWriter}. The full interaction
+consist of four passes, as listed below
+
+\begin{aosaitemize}
+\item Update Output Information (upstream call sequece)
+\item Update Requested Region (upstream call sequece)
+\item Update Output Data (upstream call sequece)
+\item Generate Data (downstream call sequece)
+\end{aosaitemize}
+
+The whole process is triggered when an application invokes the \code{Update()}
+method in the last filter of the pipeline. In this concrete example, this is
+the \code{ImageFileWriter}. This \code{Update()} call initiates the first pass
+that goes in the upstream direction. That is, from the last filter in the
+pipeline, towards the first filter in the pipeline.
+
+The goal of this first pass is to ask the question: \emph{``How much data can
+you generate for me ?''}. This question is codified in the method
+\code{UpdateOutputInformation()}. In this method, every filter computes the
+amount of image data that can be produced as output with the given amount of
+data available to it as input. Given that the amount of data input must be
+known first before the filter can answer the question about the amount of data
+output, the question has to propagate to the filter upstream, until it reaches
+a source filter that can answer the first question by itself. In this concrete
+example, that source filter is the \code{ImageFileReader}. This filter can
+figure out the size of its output by gathering information from the image file
+that it has been assigned to read. Once the first filter of the pipeline
+answers the question, then the subsequent filters downstream can compute their
+respective amount of output one after another, until they make it to the last
+filter of the pipeline.
+
+The second pass, also goes in the upstream direction, and it is intended to
+instruct every filter about the amount of output that it is requested to
+produce at this point. The notion of \emph{``Requested Region''} is essential
+to support the streaming capabilities of ITK. It makes possible to tell the
+filters in the pipeline not to generate the entire full image, but to focus
+instead in a subregion of the image, the \emph{``Requested Region''}. This is
+very useful when the image at hand is larger than the RAM memory available in
+the system. The call propagates from the last filter to the first one, and at
+every intermediate filter, the requested region gets to be modified in order to
+take into account any extra borders that a filter may need in the input, in
+order to generate a give region size as output. In our concrete example, the
+Median filter will typically have to add a 1-pixel border to the size of its
+own input. That is, if the writer requests a region of size 500 x 500 pixels to
+the Median filter, the Median filter in its turn will request a region of size
+502 x 502 pixels to the reader, because the Median filter by default needs a
+3x3 pixels input in order to compute the value of one output pixel. The pass is
+encoded in the \code{PropagateRequestedRegion()} method.
+
+The third pass is intended to trigger the computation of data inside of the
+\emph{``Requested Region''}. This pass also goes in the upstream direction and
+it is codified in the \code{UpdateOutputData()} method.  Since every filter
+needs its input data before it can compute its output data, the call is passed
+to the respective upstream filter first, hence the upstream propagation. Upon
+return the curent filter actually proceeds to computes its data.
+
+The fourth and final pass proceeds downstream, and consists of the actual
+execution of computation by every filter. The call is codified in the
+\code{GenerateData()} method. The downstream direction is not the consequence
+of one filter making calls on the its downstream partner, but rather it is the
+consequence that the \code{UpdateOutputData()} calls are returning from the
+first filter to the last filter. That is, the sequence happens downstream due
+to timing of the calls, and not due to what filter is driving the calls. This
+clarification is important because the ITK pipeline is by nature a \emph{``Pull
+Pipeline''}, in which data is requested from the end, and the logic is also
+controlled from the end.
 
 \end{aosasect2}
 
