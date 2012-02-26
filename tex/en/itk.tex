@@ -309,7 +309,7 @@ Figure~\ref{fig.itk.brim}.
 reading a \code{DataObject} from disk, for example by using a \code{ImageFileReader} which is
 a type of \code{ProcessObject}. The \code{ProcessObject} that created a given \code{DataObject} is
 the only one that should modify such \code{DataObject}. This output \code{DataObject} is
-typically passed as input to another \code{ProcessObject} downstream in the pipeline.
+typically connected as input to another \code{ProcessObject} downstream in the pipeline.
 
 This sequence is illustrated in Figure~\ref{fig.itk.processobjectdataobject}.
 The same \code{DataObject} may be passed as input to multiple
@@ -345,6 +345,19 @@ and that is responsible for computing its content. Finally, since every
 them in an internal list of pointers that is a member variable of the
 \code{ProcessObject}. This collection of internal links is later exploited to
 propagate calls upstream and downstream the pipeline.
+
+During all these interactions, the \code{ProcessObject} retains
+control and ownership of the \code{DataObject} that it generates.
+The filters downstream gain access to the information of a given
+\code{DataObject} through the pointer links that are established
+as consequence of the calls to \code{SetInput()} and
+\code{GetOutput()} methods, without ever taking control of such
+input data. For practical purposes, filters should treat their
+input data as read-only objects. This is enforced in the API by
+using the C++ ``\code{const}'' keyword in the arguments of
+\code{SetInput()} methods. As a general rule, ITK embraces a
+const-correct external API, even though internally, this
+const-correctness is overriden by some of the pipeline operations.
 
 
 \end{aosasect3}
