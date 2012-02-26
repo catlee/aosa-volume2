@@ -146,9 +146,9 @@
 \titleformat{\chapter}
   [display] % shape/type of title
   {\sffamily} % formatting commands applied to both label and title
-  {\vspace{-2cm} \hfill \Large Chapter \hspace{-0.2cm} \Huge \thechapter} 
+  {\vspace{-2cm} \hfill \Large chapter\kern0.15em\thechapter} 
   {2cm} % separation between number and chapter title
-  {\Huge} % code preceding title. Last cmd can take arg, which is title
+  {\huge} % code preceding title. Last cmd can take arg, which is title
   [  % everything inside [] comes after the title
      % \hspace*{1cm} % indent author name 
      \Large % make text that follows large
@@ -156,7 +156,7 @@
      \chapterauthor % insert chapter author name 
   ]% end of what comes after title
 
-% list of hard-to-hyphenate words with correct possibly hyphenation-points
+% list of hard-to-hyphenate words with correct possible hyphenation-points
 \hyphenation{Free-RTOS}
 
 \raggedbottom
