@@ -61,7 +61,7 @@ regrettably tens of Kbps is still often the effective speed of mobile
 communications. Although the situation with sending content to a slow
 client might be to some extent improved by increasing the size of
 operating system kernel socket buffers, it's not a general solution to
-the problem and can have undesirable side-effects.
+the problem and can have undesirable side effects.
 
 With persistent connections the problem of handling concurrency is
 even more pronounced, because to avoid latency associated with
@@ -76,7 +76,7 @@ very efficient building blocks. While the other parts of the equation
 such as hardware (CPU, memory, disks), network capacity, application
 and data storage architectures are obviously important, it is in the
 web server software that client connections are accepted and
-processed. Thus, the web server should be able to scale non-linearly
+processed. Thus, the web server should be able to scale nonlinearly
 with the growing number of simultaneous connections and requests per
 second.
 
@@ -92,7 +92,7 @@ was obvious that the standalone web server model cannot be easily
 replicated to satisfy the needs of growing web services. Although
 Apache provided a solid foundation for future development, it was
 architected to spawn a copy of itself for each new connection, which
-was not suitable for non-linear scalability of a website. Eventually
+was not suitable for nonlinear scalability of a website. Eventually
 Apache became a general purpose web server focusing on having many
 different features, a variety of third-party extensions, and universal
 applicability to practically any kind of web application
@@ -115,7 +115,7 @@ out to be one of the most successful ones.
 
 Aimed at solving the C10K problem of 10,000 simultaneous connections,
 NGINX was written with a different architecture in mind---one which is
-much more suitable for non-linear scalability in both the number of
+much more suitable for nonlinear scalability in both the number of
 simultaneous connections and requests per second. NGINX is
 event-based, so it does not follow Apache's style of spawning new
 processes or threads for each web page request. The end result is that
@@ -125,7 +125,7 @@ server with typical hardware.
 
 When the first version of NGINX was released, it was meant to be
 deployed alongside Apache such that static content like HTML, CSS,
-Javascript and images were handled by NGINX to offload concurrency and
+JavaScript and images were handled by NGINX to offload concurrency and
 latency processing from Apache-based application servers. Over the
 course of its development, NGINX has added integration with
 applications through the use of FastCGI, uswgi or SCGI protocols, and
@@ -197,7 +197,7 @@ mainstream functionality more closely.
 
 \end{aosasect1}
 
-\begin{aosasect1}{Overview of the NGINX Architecture}
+\begin{aosasect1}{Overview of NGINX Architecture}
 
 Traditional process- or thread-based models of handling concurrent
 connections involve handling each connection with a separate process
@@ -210,7 +210,7 @@ execution context. Additional CPU time is also spent creating these
 items, which can eventually lead to poor performance due to thread
 thrashing on excessive context switching. All of these complications
 manifest themselves in older web server architectures like
-Apache's. This is a trade off between offering a rich set of generally
+Apache's. This is a tradeoff between offering a rich set of generally
 applicable features and optimized usage of server resources.
 
 From the very beginning, NGINX was meant to be a specialized tool to
@@ -219,7 +219,7 @@ resources while enabling dynamic growth of a website, so it has
 followed a different model. It was actually inspired by the ongoing
 development of advanced event-based mechanisms in a variety of
 operating systems. What resulted is a modular, event-driven,
-asynchronous, single-threaded, non-blocking architecture which became
+asynchronous, single-threaded, nonblocking architecture which became
 the foundation of NGINX code.
 
 NGINX uses multiplexing and event notifications heavily, and dedicates
@@ -248,10 +248,8 @@ upstreams and load balancers. At this time, NGINX doesn't support
 dynamically loaded modules; i.e., modules are compiled along with the
 core at build stage. However, support for loadable modules and ABI is
 planned for the future major releases. More detailed information about
-the roles of different modules can be found in the ``NGINX internals''
-section of this document.
-
-%% Should be an \aosasectref is such a thing exists -- TWB
+the roles of different modules can be found in the
+\aosasecref{sec.nginx.internals} section of this document.
 
 While handling a variety of actions associated with accepting,
 processing and managing network connections and content retrieval,
@@ -284,12 +282,12 @@ listening sockets is created. \code{worker}s then continuously accept,
 read from and write to the sockets while processing HTTP requests and
 responses.
 
-The run-loop is the most complicated part of the NGINX \cde{worker}
+The run-loop is the most complicated part of the NGINX \code{worker}
 code. It includes comprehensive inner calls and relyies heavily on the
 idea of asynchronous task handling. Asynchronous operations are
 implemented through modularity, event notifications, extensive use of
 callback functions and fine-tuned timers. Overall, the key principle
-is to be as non-blocking as possible. The only situation where NGINX
+is to be as nonblocking as possible. The only situation where NGINX
 can still block is when there's not enough disk storage performance
 for a \code{worker} process.
 
@@ -458,7 +456,7 @@ As a result, NGINX configuration was designed to simplify day-to-day
 operations and to provide an easy means for further expansion of web
 server configuration.
 
-NGINX configuration is kept in a number of plaintext files which
+NGINX configuration is kept in a number of plain text files which
 typically reside in \code{/usr/local/etc/nginx} or
 \code{/etc/nginx}. The main configuration file is usually called
 \code{nginx.conf}. To keep it uncluttered, parts of the configuration
@@ -528,462 +526,458 @@ applicable\footnote{See
 
 \end{aosasect1}
 
-%% Copyedited up to here -- TWB
-
-\begin{aosasect1}{NGINX Internals}
+\begin{aosasect1}{NGINX Internals} \label{sec.nginx.internals}
 
 In this section an attempt is made to describe some of the internals
 of NGINX. It can be important for a system administrator to understand
-a general picture of how NGINX works inside, and what is the
-relationship between different parts of NGINX code.
+the general picture of NGINX's internals, and the relationship between
+different parts of NGINX code.
 
-As it was mentioned before, NGINX code consists of a core code and a
+As was mentioned before, the NGINX codebase consists of a core and a
 number of modules. The core of NGINX is responsible for providing the
-foundation of the web server, web- and mail reverse proxies
-functionality---it enables the use of underlying network protocols,
+foundation of the web server, web and mail reverse proxy
+functionalities, enables the use of underlying network protocols,
 builds the necessary run-time environment, and ensures seamless
 interaction between different modules. However, most of the protocol
-and application specific features are done by NGINX modules---not the
+and application specific features are done by NGINX modules, not the
 core.
 
-Internally NGINX is processing connections through a pipeline---or
-chain of modules. In other words for every operation there's a module
-which is doing the relevant work like compression, modifying the
-content, executing server-side includes, communicating to the upstream
+Internally, NGINX processes connections through a pipeline, or chain,
+of modules. In other words, for every operation there's a module which
+is doing the relevant work; e.g., compression, modifying content,
+executing server-side includes, communicating to the upstream
 application servers through FastCGI or uwsgi protocols, or talking to
-a memcached.
+memcached.
 
 There are a couple of NGINX modules that sit somewhere between the
-core and the real ``functional modules''. These modules are ``http''
-and ``mail''. These two modules provide an additional level of
-abstraction between the core and lower level components. What is
-implemented inside these in-between modules, is primarily the handling
-of the sequence of events associated with a respective application
-layer protocol like HTTP, SMTP or IMAP. In combination with NGINX
-core, these upper level modules are responsible for maintaining the
-right order of calls to the respective ``functional'' modules. While
-HTTP protocol is currently implemented as part of ``http'' module,
-there are plans to separate it into a functional module in the future,
-due to a necessity to support other protocols like
-SPDY\footnote{\url{http://www.chromium.org/spdy}}.
+core and the real ``functional'' modules. These modules are
+\code{http} and \code{mail}. These two modules provide an additional
+level of abstraction between the core and lower level components. In
+these modules, the handling of the sequence of events associated with
+a respective application layer protocol like HTTP, SMTP or IMAP is
+implemented. In combination with the NGINX core, these upper level
+modules are responsible for maintaining the right order of calls to
+the respective functional modules. While the HTTP protocol is
+currently implemented as part of \code{http} module, there are plans
+to separate it into a functional module in the future, due to a
+necessity to support other protocols like SPDY.
 
 The functional modules can be divided into event modules, phase
-handlers, output filters, handlers of variables, protocols, upstreams
-and load balancers. Most of these modules complement HTTP
+handlers, output filters, variable handlers, protocols, upstreams and
+load balancers. Most of these modules complement the HTTP
 functionality of NGINX, though event modules and protocols are also
-used for ``mail''. Event modules provide a particular OS-dependent
-event notification mechanism like \emph{kqueue} or \emph{epoll.}
-Depending on the operating system capabilities and build
-configuration, NGINX uses either this or that event module. Overall,
-protocol modules implement HTTPS, TLS/SSL, SMTP, POP3 and IMAP.
+used for \code{mail}. Event modules provide a particular OS-dependent
+event notification mechanism like \code{kqueue} or \code{epoll}.  The
+event module that NGINX uses depends on the operating system
+capabilities and build configuration. Protocol modules allow NGINX to
+communicate through HTTPS, TLS/SSL, SMTP, POP3 and IMAP.
 
-A typical HTTP request processing cycle looks like the following:
+A typical HTTP request processing cycle looks like the following.
 
-\begin{aosaitemize}
+\begin{aosaenumerate}
 
-\item Client sends HTTP request
+\item Client sends HTTP request.
 
-\item NGINX chooses the appropriate phase handler based on the
-configured location matching the request
+\item NGINX core chooses the appropriate phase handler based on the
+  configured location matching the request.
 
-\item (If applicable because of configuration) load balancer picks an
-upstream server for proxying
+\item If configured to do so, a load balancer picks an upstream server
+  for proxying.
 
-\item Handler does its job and passes each output buffer to the first
-filter
+\item Phase handler does its job and passes each output buffer to the first
+  filter.
 
-\item First filter passes the output to the second filter
+\item First filter passes the output to the second filter.
 
-\item Second filter passes the output to third and so on
+\item Second filter passes the output to third (and so on).
 
-\item Final response is sent to the client
+\item Final response is sent to the client.
 
-\end{aosaitemize}
+\end{aosaenumerate}
 
-NGINX module invocation is extremely customizable---it is performed
+NGINX module invocation is extremely customizable. It is performed
 through a series of callbacks using pointers to the executable
-functions. Caveat emptor, it may place a big burden on the programmers
-who'd like to write their own modules, because it has to be defined
-exactly how and when the module should run. There are certain ongoing
-activities to make both NGINX API and developers' documentation better
-and generally more available too.
+functions. However, the downside of this is that it may place a big
+burden on programmers who would like to write their own modules,
+because they must define exactly how and when the module should
+run. Both the NGINX API and developers' documentation are being
+improved and made more available to alleviate this.
 
 Examples of where a module can attach include:
 
 \begin{aosaitemize}
 
-\item Before the configuration file is read and processed
+\item before the configuration file is read and processed
 
-\item For every configuration directive for the location and the
-server where it appears
+\item for each configuration directive for the location and the server
+  where it appears
 
-\item When the main configuration is initialized
+\item when the main configuration is initialized
 
-\item When the server (i.e., host/port) is initialized
+\item when the server (i.e., host/port) is initialized
 
-\item When the server configuration is merged with the main
-configuration
+\item when the server configuration is merged with the main
+  configuration
 
-\item When the location configuration is initialized or merged with
-its parent server configuration
+\item when the location configuration is initialized or merged with
+  its parent server configuration
 
-\item When the master process starts or exits
+\item when the master process starts or exits
 
-\item When a new worker process starts or exits
+\item when a new worker process starts or exits
 
-\item When handling a request
+\item when handling a request
 
-\item When filtering the response header and the body
+\item when filtering the response header and the body
 
-\item When picking, initiating and re-initiating a request to an
-upstream server
+\item when picking, initiating and re-initiating a request to an
+  upstream server
 
-\item When processing the response from an upstream server
+\item when processing the response from an upstream server
 
-\item When finishing an interaction with an upstream server
+\item when finishing an interaction with an upstream server
 
 \end{aosaitemize}
 
-Inside a worker, a simplified overview of a sequence of actions
-leading to the run-loop where the response is generated, looks like
-the following:
+Inside a \code{worker}, the sequence of actions leading to the
+run-loop where the response is generated looks like the following:
 
 \begin{aosaenumerate}
 
-\item Begin ngx\_worker\_process\_cycle()
+\item Begin \code{ngx\_worker\_process\_cycle()}.
 
-\item Process events with OS specific mechanisms (such as \emph{epoll}
-or \emph{kqueue})
+\item Process events with OS specific mechanisms (such as \code{epoll}
+  or \code{kqueue}).
 
-\item Accept events and dispatch the relevant actions
+\item Accept events and dispatch the relevant actions.
 
-\item Process/proxy request header, body
+\item Process/proxy request header and body.
 
-\item Generate response content (header, body), stream it to the
-client
+\item Generate response content (header, body) and stream it to the
+  client.
 
-\item Finalize request
+\item Finalize request.
 
-\item Re-initialize timers and events
+\item Re-initialize timers and events.
 
 \end{aosaenumerate}
 
 The run-loop itself (steps 5 and 6) ensures incremental generation of
 a response and streaming it to the client.
 
-A more detailed view of an HTTP request processing might look like
+%% Is the following paragraph/list necessary? -- TWB
+
+A more detailed view of processing an HTTP request might look like
 this:
 
-\begin{aosaitemize}
+\begin{aosaenumerate}
 
-\item Init request processing
+\item Initialize request processing.
 
-\item Process header
+\item Process header.
 
-\item Process body
+\item Process body.
 
-\item Call the associated handler
+\item Call the associated handler.
 
-\item Run through the processing phases
+\item Run through the processing phases.
 
-\end{aosaitemize}
+\end{aosaenumerate}
 
-Which brings us to the phases. When NGINX is handling an HTTP request,
-it passes it through a number of processing phases. At each phase
-there are handlers to call. In general, phase handlers process a
-request and produce the relevant output. Phase handlers are attached
-to the locations defined in the configuration file.
+Which brings us to the phases. When NGINX handles an HTTP request, it
+passes it through a number of processing phases. At each phase there
+are handlers to call. In general, phase handlers process a request and
+produce the relevant output. Phase handlers are attached to the
+locations defined in the configuration file.
 
 Phase handlers typically do four things: get the location
 configuration, generate an appropriate response, send the header, and
-send the body. A handler has one argument, a specific structure
+send the body. A handler has one argument: a specific structure
 describing the request. A request structure has a lot of useful
 information about the client request, such as the request method, URI,
-and the header.
+and header.
 
 When the HTTP request header is read, NGINX does a lookup of the
 associated virtual server configuration. If the virtual server is
-found, the request goes through:
+found, the request goes through six phases.
 
-\begin{aosaitemize}
+\begin{aosaenumerate}
 
-\item Server rewrite phase
+\item server rewrite phase
 
-\item Location phase
+\item location phase
 
-\item Location rewrite phase (which can bring the request back to the
+\item location rewrite phase (which can bring the request back to the
 previous step)
 
-\item Access control phase
+\item access control phase
 
-\item Try\_files phase
+\item try\_files phase
 
-\item Log phase
+\item log phase
 
-\end{aosaitemize}
+\end{aosaenumerate}
 
-In an attempt to generate the necessary content as a response to the
-request, NGINX is passing the request for processing to a suitable
-content handler. Depending on the exact location configuration NGINX
-may try so-called unconditional handlers first, like \emph{perl},
-\emph{proxy\_pass}, \emph{flv,} \emph{mp4 etc}. If the request doesn't
-match the above content handlers, it goes further to be picked by one
-of the following handlers---in this exact order of
-appearance---\emph{random index}, \emph{index}, \emph{autoindex},
-\emph{gzip\_static}, \emph{static}.
+In an attempt to generate the necessary content in response to the
+request, NGINX passes the request to a suitable content
+handler. Depending on the exact location configuration, NGINX may try
+so-called unconditional handlers first, like \code{perl},
+\code{proxy\_pass}, \code{flv}, \code{mp4}, etc. If the request does
+not match any of the above content handlers, it is picked by one of
+the following handlers, in this exact order: \code{random index},
+\code{index}, \code{autoindex}, \code{gzip\_static}, \code{static}.
 
-The details about indexing modules can be found in the reference
-documentation\footnote{\url{http://nginx.org/en/docs/}}, but these are
-the modules which handle the requests with the trailing slash. If
-there isn't a location to pass the request to any specialized module
-like \emph{mp4} or \emph{autoindex}, the content is considered to be
-just a file or directory on disk (that is, static) and is served by
-\emph{static} content handler. For a directory it would automatically
-rewrite the URI so that the trailing slash is always there (and then
-issue an HTTP redirect).
+Indexing module details can be found in the NGINX documentation, but
+these are the modules which handle requests with a trailing slash. If
+a specialized module like \code{mp4} or \code{autoindex} isn't
+appropriate, the content is considered to be just a file or directory
+on disk (that is, static) and is served by the \code{static} content
+handler. For a directory it would automatically rewrite the URI so
+that the trailing slash is always there (and then issue an HTTP
+redirect).
 
-After the content handlers content is passed to the filters. Filters
-are also attached to the locations, and there can be several filters
+The content handlers' content is then passed to the filters. Filters
+are also attached to locations, and there can be several filters
 configured for a location. Filters do the task of manipulating the
 output produced by a handler. The order of filter execution is
-determined at the compile time. For the out-of-the-box filters it's
-predefined, and for a 3rd party development it can be configured at
-build stage. In the existing NGINX implementation filters can only do
-outbound changes and there's no current mechanism to write and attach
-filters to do input content transformation. Input filtering is
-something to appear in the future versions of NGINX.
+determined at compile time. For the out-of-the-box filters it's
+predefined, and for a third-party filter it can be configured at the
+build stage. In the existing NGINX implementation, filters can only do
+outbound changes and there is currently no mechanism to write and
+attach filters to do input content transformation. Input filtering
+will appear in future versions of NGINX.
 
-Filters follow the design pattern which looks like the following---a
-filter gets called, starts working, calls the next filter until the
-final filter in the chain. After that NGINX finalizes the
-response. Filters don't have to wait for the previous filter to
-finish. Next filter in chain can start its own work as soon as the
-input from the previous one is available (functionally much like in
-the Unix pipeline). In turn, the output response being generated can
-be passed to the client before the entire response from the upstream
-server is received.
+Filters follow a particular design pattern. A filter gets called,
+starts working, and calls the next filter until the final filter in
+the chain is called. After that, NGINX finalizes the response. Filters
+don't have to wait for the previous filter to finish. The next filter
+in a chain can start its own work as soon as the input from the
+previous one is available (functionally much like the Unix
+pipeline). In turn, the output response being generated can be passed
+to the client before the entire response from the upstream server is
+received.
 
-There are header filters and the body filters. NGINX feeds the header
-and the body of the response to the associated filters separately.
+There are header filters and body filters. NGINX feeds the header and
+the body of the response to the associated filters separately.
 
 A header filter consists of three basic steps:
 
+\begin{aosaenumerate}
+
+\item Decide whether to operate on this response.
+
+\item Operate on the response.
+
+\item Call the next filter.
+
+\end{aosaenumerate}
+
+Body filters transform the generated content. Examples of body filters
+include:
+
 \begin{aosaitemize}
 
-\item Decide whether to operate on this response
-
-\item Operate on the response
-
-\item Call the next filter
-
-\end{aosaitemize}
-
-Body filters transform the generated content. Examples of the body
-filters include:
-
-\begin{aosaitemize}
-
-\item Server-side includes
+\item server-side includes
 
 \item XSLT filtering
 
-\item Image filtering (for instance, resizing images on-the-fly)
+\item image filtering (for instance, resizing images on the fly)
 
-\item Charset modification
+\item charset modification
 
-\item Gzip
+\item \code{gzip} compression
 
-\item Chunked encoding
+\item chunked encoding
 
 \end{aosaitemize}
 
-After the filter chain the response is passed to the writer. Along
-with the writer there're a couple of additional special purpose
-filters, namely---the \emph{copy} filter, and the \emph{postpone}
-filter. The \emph{copy} filter is responsible to fill in the memory
+After the filter chain, the response is passed to the writer. Along
+with the writer there are a couple of additional special purpose
+filters, namely the \code{copy} filter, and the \code{postpone}
+filter. The \code{copy} filter is responsible for filling memory
 buffers with the relevant response content which might be stored in a
-proxy temp directory. \emph{Postpone} filter is used with subrequests.
+proxy temporary directory. The \code{postpone} filter is used for
+subrequests.
 
-Subrequests are a very important mechanism of request/response
+Subrequests are a very important mechanism for request/response
 processing. Subrequests are also one of the most powerful aspects of
 NGINX. With subrequests NGINX can return the results from a different
-URL, than the client has originally requested. Some web frameworks
-call this an internal redirect. But NGINX goes further---not only can
-filters perform multiple subrequests and combine the outputs into a
-single response, but subrequests can be also nested and
-hierarchical. A subrequest can perform their own sub-subrequest, and
+URL than the one the client originally requested. Some web frameworks
+call this an internal redirect. However, NGINX goes further---not only
+can filters perform multiple subrequests and combine the outputs into
+a single response, but subrequests can also be nested and
+hierarchical. A subrequest can perform its own sub-subrequest, and a
 sub-subrequest can initiate sub-sub-subrequests. Subrequests can map
 to files on the hard disk, other handlers, or upstream
 servers. Subrequests are most useful for inserting additional content
 based on data from the original response. For example, the SSI
-(server-side include) module uses a filter to scan the contents of the
-returned document, and then replaces \emph{include} directives with
-the contents of the specified URLs. Or it can be an example of making
+(server-side include) module uses a filter to parse the contents of
+the returned document, and then replaces \code{include} directives
+with the contents of specified URLs. Or, it can be an example of making
 a filter that treats the entire contents of a document as a URL to be
 retrieved, and then appends the new document to the URL itself.
 
-Upstream and load balancers are also worth to describe briefly
-here. Upstreams are used to implement what can be identified as a
-content handler which-is-a-reverse-proxy (\emph{proxy\_pass}
-handler). Upstream modules mostly do preparation of the request to be
-sent to an upstream server (or ``backend'') and gather the response
-from upstream. There're no calls to output filters here, for
-instance. What an upstream module exactly does is setting callbacks to
-be invoked when the upstream server is ready to be written to and read
-from. The following callbacks exist for that:
+%% I'm not sure what that last sentence means; it needs to be
+%% reworded, but I'm not sure how. --TWB
+
+Upstream and load balancers are also worth describing
+briefly. Upstreams are used to implement what can be identified as a
+content handler which is a reverse proxy (\code{proxy\_pass}
+handler). %% Not quite sure what this sentence means either --TWB
+Upstream modules mostly prepare the request to be sent to an upstream
+server (or ``backend'') and receive the response from the upstream
+server. There are no calls to output filters here. What an upstream
+module does exactly is set callbacks to be invoked when the upstream
+server is ready to be written to and read from. Callbacks implementing
+the following functionality exist:
 
 \begin{aosaitemize}
 
-\item Crafting a request buffer (or a chain of them) to be sent to the
-upstream server
+\item crafting a request buffer (or a chain of them) to be sent to the
+  upstream server
 
-\item Re-initializing/Resetting the connection to the upstream server
-(which happens right before creating the request again)
+\item re-initializing/resetting the connection to the upstream server
+  (which happens right before creating the request again)
 
-\item Processing the first bits of an upstream response, saving
-pointers to the payload received from the upstream server
+\item processing the first bits of an upstream response and saving
+  pointers to the payload received from the upstream server
 
-\item Aborting the requests (which happens when the client terminates
-prematurely)
+\item aborting requests (which happens when the client terminates
+  prematurely)
 
-\item Finalizing the request when NGINX finishes to read from the
-upstream server
+\item finalizing the request when NGINX finishes reading from the
+  upstream server
 
-\item Trimming the response body (e.g. removing a trailer)
+\item trimming the response body (e.g. removing a trailer)
 
 \end{aosaitemize}
 
-Load balancer modules attach to the \emph{proxy\_pass} handler to
-provide ability to choose an upstream server, when more than one
-upstream server is eligible. Load balancer registers an enabling
+Load balancer modules attach to the \code{proxy\_pass} handler to
+provide the ability to choose an upstream server when more than one
+upstream server is eligible. A load balancer registers an enabling
 configuration file directive, provides additional upstream
-initialization functions (to resolve upstream names in DNS etc.),
+initialization functions (to resolve upstream names in DNS, etc.),
 initializes the connection structures, decides where to route the
-requests, updates stats information. Currently NGINX supports two
-standard disciplines for load balancing to upstream
-servers---round-robin and ip-hash.
+requests, updates stats %% Not sure if this means statistics or typo of 'state'? --TWB
+information. Currently NGINX supports two standard disciplines for
+load balancing to upstream servers: round-robin and ip-hash.
 
 Upstream and load balancing handling mechanisms include algorithms to
-detect failed upstream servers and to re-route the new requests to the
-remaining ones, albeit a lot of additional work is planned to enhance
+detect failed upstream servers and to re-route new requests to the
+remaining ones---though a lot of additional work is planned to enhance
 this functionality. In general, more work on load balancers is
-planned, and in the next versions of NGINX the mechanisms of
-distributing the load across different upstream servers as well as the
+planned, and in the next versions of NGINX the mechanisms for
+distributing the load across different upstream servers as well as
 health checks will be greatly improved.
 
-There are also a couple of other interesting modules which provide
+There are also a couple of other interesting modules which provide an
 additional set of variables for use in the configuration file. While
 the variables in NGINX are created and updated across different
 modules, there are two modules that are entirely dedicated to
-variables---namely, \emph{geo} and \emph{map}. The \emph{geo} module
-is used to facilitate tracking of clients based on their ip
-addresses. This module can create arbitrary variables that depend on
-the client IP addresses. The other module which is \emph{map} allows
-to create variables from variables, essentially providing an ability
-to do a flexible mapping of hostnames and other run-time
-variables. This kind of modules may be called the handlers of
-variables.
+variables: \code{geo} and \code{map}. The \code{geo} module is used to
+facilitate tracking of clients based on their IP addresses. This
+module can create arbitrary variables that depend on the client's IP
+address. The other module, \code{map}, allows for the creation of
+variables from other variables, essentially providing the ability to
+do flexible mappings of hostnames and other run-time variables. This
+kind of module may be called the variable handler.
 
-Memory allocation mechanisms implemented inside a single NGINX worker
-to some extent were inspired by Apache. A high-level description of
-NGINX memory management would be the following. For each connection
-the necessary memory buffers are dynamically allocated, linked, used
-for storing and manipulating header and body of the request and the
-response, and then freed upon connection release. It is very important
-to note that NGINX tries to avoid copying data in memory as much as
-possible and most of the data is passed along by pointer values, not
-by \emph{memcpy}'ing.
+Memory allocation mechanisms implemented inside a single NGINX
+\code{worker} were, to some extent, inspired by Apache. A high-level
+description of NGINX memory management would be the following. For
+each connection, the necessary memory buffers are dynamically
+allocated, linked, used for storing and manipulating the header and
+body of the request and the response, and then freed upon connection
+release. It is very important to note that NGINX tries to avoid
+copying data in memory as much as possible and most of the data is
+passed along by pointer values, not by calling \code{memcpy}.
 
 Going a bit deeper, when the response is generated by a module, the
-retrieved content is put to a memory buffer which is then added to a
+retrieved content is put in a memory buffer which is then added to a
 buffer chain link. Subsequent processing works with this buffer chain
 link as well. Buffer chains are quite complicated in NGINX because
 there are several processing scenarios depending on the module
 type. For instance, it can be quite tricky to manage the buffers
-precisely while implementing a body filter module. Such module can
+precisely while implementing a body filter module. Such modules can
 only operate on one buffer (chain link) at a time and it must decide
 whether to overwrite the input buffer, replace the buffer with a newly
 allocated buffer, or insert a new buffer before or after the buffer in
 question. To complicate things, sometimes a module will receive
 several buffers so that it has an incomplete buffer chain that it must
 operate on. However, at this time NGINX provides only a low-level API
-for manipulating the buffer chains, so before doing an actual
-implementation a 3rd party module developer should become really
+for manipulating buffer chains, so before doing any actual
+implementation a third-party module developer should become really
 fluent with this arcane part of NGINX.
 
-One drawback of the above approach is that for the entire life of a
-connection there are memory buffers allocated. So for long-lived
-connections some memory is wasted. At the same time for a keepalive
-connection NGINX currently maintains only 550 bytes of allocated
-memory. An optimization that would be possible in the next releases of
-NGINX is to re-use memory buffers for the long-lived connections.
+One drawback of the above approach is that there are memory buffers
+allocated for the entire life of a connection. For long-lived
+connections, some memory is wasted. At the same time, for a keepalive
+connection, NGINX allocates only 550 bytes of memory. A possible
+optimization for future releases of NGINX is to reuse memory buffers
+for long-lived connections.
 
-The task of managing memory allocations is done by NGINX pool
-allocator. Shared memory areas are used for accept mutex, cache
-metadata, SSL session cache and the information associated with
+The task of managing memory allocation is done by the NGINX pool
+allocator. Shared memory areas are used to accept mutex, cache
+metadata, the SSL session cache and the information associated with
 bandwidth policing and management (limits). There is a slab allocator
-implemented in NGINX to manage shared memory allocations. To allow
-simultaneous safe use of shared memory a number of locking mechanisms
-are available (mutexes and semaphores).  In order to organize complex
-data structures NGINX also provides a red-black tree
-implementation. RB-trees are used to keep cache metadata in shared
-memory, track non-regex location definitions and in couple of other
-places.
+implemented in NGINX to manage shared memory allocation. To allow
+simultaneous safe use of shared memory, a number of locking mechanisms
+are available (mutexes and semaphores). In order to organize complex
+data structures, NGINX also provides a red-black tree
+implementation. Red-black trees are used to keep cache metadata in
+shared memory, track non-regex location definitions and in a couple of
+other tasks.
 
-Unfortunately all of the above wasn't really ever described in a
-consistent and simple manner, making the job of developing 3rd party
-extensions for NGINX quite complicated. Although some good documents
-on NGINX internals exist---for instance, those produced by Evan
-Miller\footnote{\url{http://www.evanmiller.org/}}, such documents are
-based on a huge effort in reverse engineering of NGINX code, and the
+Unfortunately all of the above was never described in a consistent and
+simple manner, making the job of developing third-party extensions for
+NGINX quite complicated. Although some good documents on NGINX
+internals exist---for instance, those produced by Evan Miller---such
+documents required a huge reverse engineering effort, and the
 implementation of NGINX modules is still more of a black art for many.
 
-Despite certain difficulties associated with 3rd party module
-development, NGINX user community recently saw a lot of useful 3rd
-party modules. There's for instance, an embedded Lua interpreter
-module for NGINX, produced by a group of Chinese
-authors\footnote{\url{http://openresty.org}}. There are additional
-modules for load balancing, full WebDAV support, advanced cache
-control and other interesting 3rd party work that the authors of this
-book encourage and will support in the future.
+Despite certain difficulties associated with third-party module
+development, the NGINX user community recently saw a lot of useful
+third-party modules. There is, for instance, an embedded Lua
+interpreter module for NGINX, additional modules for load balancing,
+full WebDAV support, advanced cache control and other interesting
+third-party work that the authors of this chapter encourage and will
+support in the future.
 
 \end{aosasect1}
 
 \begin{aosasect1}{Lessons Learned}
 
-When Igor Sysoev started to write NGINX most of the software enabling
+When Igor Sysoev started to write NGINX, most of the software enabling
 the Internet already existed, and the architecture of such software
-typically followed certain definitions of the previous server and
-network hardware, operating systems, and past Internet architecture in
-general. However this didn't prevent Igor from thinking he might be
-able to improve things in the web servers area. So while the first
-lesson might seem to be obvious, it's actually in that there's always
-a room for improvement.
+typically followed definitions of legacy server and network hardware,
+operating systems, and old Internet architecture in general. However,
+this didn't prevent Igor from thinking he might be able to improve
+things in the web servers area. So, while the first lesson might seem
+to be obvious, it is that there is always room for improvement.
 
-With the realization in mind of a better web software, Igor had
-actually spent a lot of time developing initial code structure and
-studying different ways of optimizing the code for a variety of
-operating systems. With the ongoing development of a prototype of
-NGINX version 2.0 ten years after Igor began his work on NGINX, it is
-clear that the initial prototype of a new architecture, and the
-initial code structure are vitally important for the future life of a
-software product.
+With the idea for better web software in mind, Igor had actually spent
+a lot of time developing the initial code structure and studying
+different ways of optimizing the code for a variety of operating
+systems. With the ongoing development of a prototype of NGINX version
+2.0 ten years after Igor began his work on NGINX, it is clear that the
+initial prototype of a new architecture, and the initial code
+structure are vitally important for the future of a software product.
 
-Another point worth mentioning is the development should be
-focused. The Windows version of NGINX is probably a good example on
-how it's worth it to avoid diluting the development efforts on
-something that is not either a developer's core competence or the
+Another point worth mentioning is that development should be
+focused. The Windows version of NGINX is probably a good example of
+how it is worth avoiding the dilution of development efforts on
+something that is neither the developer's core competence or the
 target application. It is equally applicable to the rewrite engine,
 that appeared during several attempts to enhance NGINX with more
 features for backward compatibility with the existing legacy setups.
 
-Last but not least, it's worth mentioning that despite NGINX
-developer's community is not very large, 3rd party modules and
-extensions for NGINX have always been a very important part of its
+Last but not least, it is worth mentioning that despite the fact that
+the NGINX developer community is not very large, third-party modules
+and extensions for NGINX have always been a very important part of its
 popularity. The work done by Evan Miller, Piotr Sikora, Valery
 Kholodkov, Zhang Yichun (agentzh) and other talented software
-engineers has been much appreciated by NGINX user community and the
-original developers.
+engineers has been much appreciated by the NGINX user community and
+its original developers.
 
 \end{aosasect1}
 
