@@ -237,7 +237,7 @@ toolkit reflects the organization of the community and in some cases the
 processes that have been adopted for the continuous growth and quality control
 of the software.
 
-\begin{aosasect2}{Data Pipeline}
+\begin{aosasect2}{Data Pipeline}\label{sec.itk.datapipeline}
 The staged nature of most image analysis tasks led naturally to the selection
 of a Data Pipeline architecture as the backbone infrastructure for data
 processing. The Data Pipeline enables:
@@ -652,6 +652,78 @@ developing the Insight Toolkit was to enable the streaming of image data
 through the Data Pipeline. More specifically, to be able to process large
 images by pushing sub-blocks of the image throughout the data pipeline, and then
 assembling the resulting blocks on the output side of the pipeline.
+
+\aosafigure{../images/itk/StreamingImageDiagram.pdf}{Illustration of Image Streaming Process}{fig.itk.streaming}
+
+This partitioning of the image domain is illustrated in
+Figure~\ref{fig.itk.streaming} for the concrete example of a Median filter. The
+Median filter computes the value of one output pixel as the statistical median
+of the pixel values taken from the input image in a neighborhood around the
+pixel to be computed as output. The size of that neighborhood is a numerical
+parameter of the filter. In this case we set it to be 2 pixels, which means
+that we will take a neighborhood by using a radius of 2 pixels all around our
+output pixel. This leads to a neighborhood of 5x5 pixels composed of the
+position of the output pixel in the middle, and a rectangular border of 2
+pixels around it. This is usually called a Manhattan radius. When the Median
+filter is asked to computed a particular \emph{``Requested Region''} of the
+output image, it turns around and requests its updstream filter to provide a
+larger region that is formed by the \emph{``Requested Region''} enlarged by a
+border of 2 pixels, given that in this case the neighborhood radius is equal to
+2 pixels. In the specific case of Figure~\ref{fig.itk.streaming}, when asked
+for Region 2, of size equals to 100x25 pixels, the Median filter passes along
+that request to its upstream filter for a region of size 100x29 pixels. The 29
+pixels size in the vertical direction is computed as 25 pixels plus two borders
+of 2 pixels radius each. Note that the horizontal dimension is not enlarged in
+this case because it is already at the maximum that the input image can
+provide, and therefore, the enlarged request of 104 pixels computed as 100
+pixels plus two borders of 2 pixels, gets to be cropped to the maximum size of
+the image, which is 100 pixels in this horizontal dimension.
+
+ITK filters that operate on neighborhoods will take care of the boundary
+conditions by using one of the three typical approaches of: considering a null
+value outside of the image, mirroring the pixels values across the border, or
+repeating the border value in the outside. In the case of the Median filter, a
+zero flux Neumann boundary condition is used, which simply means that the
+pixels outside of the region border are assumed to be a repetition of the pixel
+values found in the last pixels in the border. It is a well kept dirty little
+secret of the image processing litterature that most of the implementation
+difficulties of image filters are related to the proper management of boundary
+conditions. This is a particular symptom of the disconnection between the
+theoretical training found in many textbooks and the software practice of image
+processing.  In ITK this was managed by implementing a collection of image
+iterator classes and an associated family of boundary condition calculators.
+These two helper classes families hide from image filters the
+complexities of managing boundary conditions in N-dimensions.
+
+The streaming process is driven from outside the filter, typically by the
+\code{ImageFileWriter} or the \code{StreamingImageFilter}. These two classes
+implement the streaming functionality of taking the total size of the image,
+and partition it in a number of division requested by the application
+developer.  Then, during thei \code{Update()} call, they go in an iteration
+loop asking for each one of the intermediate pieces of the image. At that
+stage, they take advantage of the \code{SetRequestedRegion()} API described in
+Figure~\ref{fig.itk.processobjectdataobjectinteractionuml} in
+Section~\aosasecref{sec.itk.datapipeline}. That allows to constrain the
+computation of the upstream pipeline to a subregion of the image.
+
+The application code driving the streaming process will look like
+
+\begin{aosaitemize}
+\item \code{median->SetInput( reader->GetOutput() );}
+\item \code{median->SetNeighborhoodRadius( 2 );}
+\item \code{writer->SetInput( median->GetOutput() );}
+\item \code{writer->SetFileName( filename );}
+\item \code{writer->SetNumberOfStreamDivisions( 4 );}
+\item \code{writer->Update();}
+\end{aosaitemize}
+
+Where the only new element is the \code{SetNumberOfStreamDivisions()} call,
+that defines the number of pieces in which the image will be split for the
+purpose of streaming it through the pipeline. To match the example of
+Figure~\ref{fig.itk.streaming} we have used here 4 as the number of regions to
+split the image into. This means that the \code{writer} is going to trigger the
+execution of the \code{median} filter four times, each time with a different
+\emph{``Requested Region''}.
 
 There are interesting similarities between the process of Streaming
 and the process of paralellizing the execution of a given filter. Both
