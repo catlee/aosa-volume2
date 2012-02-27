@@ -189,7 +189,7 @@ rejected automatically.
 
 \begin{aosasect1}{Demographic Records (Hibernate)}
 
-A demographic record contains general metadata about a patient: for
+A demographic record contains general metadata about a patient; for
 example, their name, age, address, language, and sex. Consider it to
 be the result of an intake form that a patient fills out during their
 first visit to a doctor. All of this data is retrieved and displayed
@@ -415,7 +415,8 @@ be a lot easier to just focus on using one for day-to-day operations
 of OSCAR. You can generally date code in OSCAR by knowing which
 permissions model preceded which other permissions model:
 
-% TA: this kind of comes out of nowhere -- is there a better way to format this?
+% FIXME: TA: this kind of comes out of nowhere -- is there a better 
+%% way to format this?
 Provider Type $\rightarrow$ Provider Roles $\rightarrow$ CAISI Programs/Roles
 
 The oldest type of permissions model, ``Provider Type'', is so dated
@@ -507,7 +508,7 @@ records that have been viewed since the previous push to the server
 are sent. The process isn't exactly like delta patching, but it's
 close.
 
-\aosafigure{../images/oscar/integratoroscar.png}{Data exchange between OSCARs and Integrator.}{fig.oscar.integrator}
+\aosafigure[250pt]{../images/oscar/integratoroscar.png}{Data exchange between OSCARs and Integrator.}{fig.oscar.integrator}
 
 Let me go into a little more detail about how the Integrator works
 with an example: a remote clinic seeing another clinic's patient. When
@@ -525,7 +526,7 @@ and so on. This data is cached locally so that the local OSCAR doesn't
 have to send a request to the Integrator every time it wants to see
 this data, but the local cache expires every hour.
 
-\aosafigure{../images/oscar/integratorupload.png}{The Demographic information and associated data is sent to the Integrator during a data push from the home clinic. The record on the Integrator may not be a representation of the complete record from the home clinic as the OSCAR can choose not to send all patient data.}{fig.oscar.datatransfer}
+\aosafigure[250pt]{../images/oscar/integratorupload.png}{The Demographic information and associated data is sent to the Integrator during a data push from the home clinic. The record on the Integrator may not be a representation of the complete record from the home clinic as the OSCAR can choose not to send all patient data.}{fig.oscar.datatransfer}
 
 After the initial setup of a remote patient by copying their
 demographic data to the local OSCAR, that patient is set up as any other
@@ -536,7 +537,7 @@ local data that is recorded is recorded just like any other patient
 data---to the patient record, and sent to the Integrator---but not
 permanently stored on any remote machine.
 
-\aosafigure{../images/oscar/integratordemodownload.png}{A remote OSCAR requests data from the Integrator by asking for a specific patient record. The Integrator server sends only the demographic information, which is stored permanently on the remote OSCAR.}{fig.oscar.request}
+\aosafigure[250pt]{../images/oscar/integratordemodownload.png}{A remote OSCAR requests data from the Integrator by asking for a specific patient record. The Integrator server sends only the demographic information, which is stored permanently on the remote OSCAR.}{fig.oscar.request}
 
 This has a very important implication, especially for patient consent
 and how that factors into the design of the Integrator. Let's say that
@@ -551,7 +552,7 @@ similar to walking into a clinic carrying a copy of your paper
 chart. They can see the chart while they're interacting with you, but
 you take it home with you once you're done there.
 
-\aosafigure{../images/oscar/integratordataretrieval.png}{A remote clinic can see the contents of a patient chart by asking for the data; if the appropriate consent is present, the data is sent. The data is never stored permanently on the remote OSCAR.}{fig.oscar.reply}
+\aosafigure[250pt]{../images/oscar/integratordataretrieval.png}{A remote clinic can see the contents of a patient chart by asking for the data; if the appropriate consent is present, the data is sent. The data is never stored permanently on the remote OSCAR.}{fig.oscar.reply}
 
 Another very important ability is for physicians to decide what kinds
 of data they want to share with the other connected clinics via their
