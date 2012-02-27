@@ -808,21 +808,84 @@ use of C++ templates, factorizing behaviors that are identified as patterns.
 snippets of code that are needed in a myriad of places across the toolkit.
 \end{aosaitemize}
 
-Many of these items may sound like platitudes and appear as obvious
-choices today, but when ITK development started in 1990, some of them
-where not that obvious. In particular, at the time, the support of
-most C++ compilers offered for templates were not quite following a
-consistent standard. Even today, decisions such as the adoption of
-generic programming and the use of a widely templated implementation
-continue to be controversial in the community. This is manifested in
-the communities that prefer to use ITK via the wrapping layers to
+Many of these items may sound like platitudes and appear as obvious choices
+today, but when ITK development started in 1999, some of them where not that
+obvious. In particular, at the time, the support of most C++ compilers offered
+for templates were not quite following a consistent standard. Even today,
+decisions such as the adoption of generic programming and the use of a widely
+templated implementation continue to be controversial in the community. This is
+manifested in the communities that prefer to use ITK via the wrapping layers to
 Python, Tcl or Java.
 
-There is also the general risk of doing ``too much of a good thing''.
-Meaning, the risk of taking too far the use of templates, or taking to
-far the use of macros. It is easy to get overboard and to end up
-creating a new language on top of C++ that is essemtially based on the
-use of templates and macros.
+
+\begin{aosasect3}{Generic Programming}
+
+The adoption of Generic Programming was one of the defining implementation
+features of ITK. It was a difficult decision in 1999 when the support of
+compilers for C++ templates was rather fragmented, and the Standard Template
+Library (STL) was still considered a bit exotic.
+
+Generic Programming was adopted in ITK by embracing the use of C++ templates
+for implementing generalization of concepts and in this way increasing code
+reuse. The typical example of C++ template parameterization in ITK is the
+\code{Image} class, that can be instantiated in the following way
+
+\begin{aosaitemize}
+\item \code{typedef unsigned char PixelType;}
+\item \code{const unsigned int Dimension = 3;}
+\item \code{typedef itk::Image< PixelType, Dimension > ImageType;}
+\item \code{ImageType::Pointer image = ImageType::New();}
+\end{aosaitemize}
+
+In this expression, the application developer chooses the type to be used to
+represent pixels in the image, as well as the dimension of the image as a grid
+in space. In this particular example, we chose to use an \code{8-bit} pixel
+represented in an \code{unsigned char} type, for a 3D image. Thanks to the
+underlying Generic implementation of ITK, it is possible to instantiate images
+of any pixel type and any dimension in ITK.
+
+To make possible to write these expressions, ITK developers had to implement
+the \code{Image} class by being very careful about the assupmtions made about
+the pixel type.  Once the application developer has instantiated the image
+type, it can create objects of that type, or it can proceed to instantiate
+image filters whose type, in turn, depend on the image type.  For example:
+
+\begin{aosaitemize}
+\item \code{typedef itk::MedianImageFilter< ImageType, ImageType> FilterType;}
+\item \code{FilterType::Pointer median = FilterType::New();}
+\end{aosaitemize}
+
+The algorithmic specificity of different image filters restricts the actual
+pixel types that they can support. For example, some image filters expect the
+image pixel type to be an scalar type while some other filters expect the pixel
+type to be a floating point number. When instantiated with inappropriate pixel
+types, these filters will produce compilation errors or will results in
+erroneous computational results. To prevent incorrect instantiations and to
+facilitate the troubleshooting of compilation errors, ITK adopted the use of
+\emph{``Concept Checking''} that is based on forcing the exercise of certain
+expected features of the types, with the goal of producing early failures
+combined with human readable error messages.
+
+C++ templates are also exploited in certain sections of the toolkit in the form
+of Template Metaprogramming, with the goal of increasing run-time speed
+performance of the code. In particular for unrolling loops that control the
+computation of low dimensional vectors and matrices. Ironically, we have found
+over time that certain compilers have got smarter at figuring out when to
+unroll loops, and no longer need the help of Template MetaProgramming
+expressions in some cases.
+
+\end{aosasect3}
+
+
+\begin{aosasect3}{Knowing when to Stop}
+
+There is also the general risk of doing \emph{``too much of a good thing''}.
+Meaning, the risk of taking too far the use of templates, or taking too far the
+use of macros. It is easy to get overboard and to end up creating a new
+language on top of C++ that is essentially based on the use of templates and
+macros. This is a fine line, and it demans continuous atttention from the
+development team to make sure that the language features are properly used
+without being abused.
 
 As a concrete example, the widespread use of explicitly naming types via the C++
 ``typedefs'', has proved to be particularly important. This practice plays two
@@ -839,6 +902,8 @@ managing images larger than 4Gigabytes in all platforms. A task that was of the
 utmost importance for promoting the use of ITK in the fields of Microscopy and
 Remote sensing, where image of tens of Gigabytes in size are of common
 occurrence.
+\end{aosasect3}
+
 \end{aosasect2}
 
 \begin{aosasect2}{Maintainability}
