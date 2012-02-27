@@ -122,6 +122,11 @@
 \addtolength{\itemsep}{-0.5\baselineskip}}
 {\end{itemize}}
 
+% new environment for second-level nested itemized lists
+\newenvironment{aosaitemize2}
+{\begin{itemize}\addtolength{\itemsep}{-0.3\baselineskip}}
+{\end{itemize}}
+
 \newcommand{\aosaboxref}[1]{Box~\ref{#1}}
 \newcommand{\aosachapref}[1]{Chapter~\ref{#1}}
 \newcommand{\aosafigref}[1]{Figure~\ref{#1}}
@@ -133,7 +138,7 @@
 
 \newcommand{\aosagraphics}[2][375pt]{\includegraphics[width={#1}]{#2}}
 \newcommand{\aosaquestion}[1]{\begin{textbf}{#1}\end{textbf}}
-\newcommand{\code}[1]{\small{\texttt{#1}}}
+\newcommand{\code}[1]{\texttt{#1}}
 
 % GHC commands
 \newcommand{\clift}[1]{\lfloor{#1}\rfloor}
