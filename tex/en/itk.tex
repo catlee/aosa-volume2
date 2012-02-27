@@ -45,9 +45,9 @@ input image, will improve some characteristics of the image by let's say
 reducing noise or increasing contrast, and then will proceed to identify some
 features in the image, such as corners and strong edges. This type of
 processing is naturally well suited for a data pipeline architecture, as
-shown in Figure~\ref{fig.itk.pipeline}.
+shown in \aosafigref{fig.itk.pipeline}.
 
-To illustrate this point, Figure~\ref{fig.itk.brim} below, shows an image of a
+To illustrate this point, \aosafigref{fig.itk.brim} below, shows an image of a
 brain from a magnetic resonance image (MRI), and the result of processing it
 with a median filter to reduce its level of noise, as well as the outcome of an
 edge detection filter used to identify the borders of anatomical structures.
@@ -176,10 +176,10 @@ The group level is mostly a conceptual division that has been drawn on top of
 the software to help locate filters in the source tree. Groups are associated
 to high level concepts such as Filtering, Segmentation, Registration and IO.
 This hierarchical structure is illustrated in
-Figure~\ref{fig.itk.modulehierarchy}.  ITK currently has 124 modules, that are
+\aosafigref{fig.itk.modulehierarchy}.  ITK currently has 124 modules, that are
 in turn aggregated into 13 major groups.  The modules have a variety of
 different sizes. This size distribution, in bytes, is presented in
-Figure~\ref{fig.itk.modulesize}.
+\aosafigref{fig.itk.modulesize}.
 
 \aosafigure{../images/itk/moduleSizePlotCombined.pdf}{Distribution of Module Size in KB}{fig.itk.modulesize}
 
@@ -297,7 +297,7 @@ images and geometrical meshes. The \code{ProcessObject} provides an abstraction
 for the image filters and mesh filters that process such data.
 \code{ProcessObjects} take \code{DataObjects} as input and perform some type of
 algorithmic transformation on them, such as the ones illustrated in
-Figure~\ref{fig.itk.brim}.
+\aosafigref{fig.itk.brim}.
 
 \aosafigure{../images/itk/ProcessObjectDataObject.pdf}{Relationship between \code{ProcessObjects} and \code{DataObjects}}{fig.itk.processobjectdataobject}
 
@@ -307,7 +307,7 @@ a type of \code{ProcessObject}. The \code{ProcessObject} that created a given \c
 the only one that should modify such \code{DataObject}. This output \code{DataObject} is
 typically connected as input to another \code{ProcessObject} downstream in the pipeline.
 
-This sequence is illustrated in Figure~\ref{fig.itk.processobjectdataobject}.
+This sequence is illustrated in \aosafigref{fig.itk.processobjectdataobject}.
 The same \code{DataObject} may be passed as input to multiple
 \code{ProcessObjects}, as it is shown in the Figure for the \code{DataObject}
 constructed by the File Reader at the beginning of the pipeline.
@@ -365,7 +365,7 @@ from the one in the Visualization Toolkit (VTK)\footnote{See \emph{Architecture
 of Open Source Applications}, Volume 1}, that was a mature project at the time
 that ITK development was in its initial stages.
 
-Figure~\ref{fig.itk.processobjectdataobjecthierarchy} shows the Object Oriented
+\aosafigref{fig.itk.processobjectdataobjecthierarchy} shows the Object Oriented
 hierarchy of the pipeline Objects in ITK. In particular the relationship
 between the basic \code{Object}, \code{ProcessObject}, \code{DataObject}, and
 some of the classes in the filter family and the data family. In this
@@ -387,7 +387,7 @@ and the support for multi-threading.
 \end{aosasect3}
 
 
-\begin{aosasect3}{The Innerworking of the Pipeline}
+\begin{aosasect3}{The Inner Workings of the Pipeline}
 
 \aosafigure{../images/itk/ProcessObjectDataObjectInteractionUML.pdf}{UML
 sequence diagram of Data Pipeline interactions between \code{ProcessObjects}
@@ -395,7 +395,7 @@ and \code{DataObjects} for the case of a minimal pipeline involving an
 \code{ImageFileReader}, \code{MedianImageFilter} and
 \code{ImageFileWriter}.}{fig.itk.processobjectdataobjectinteractionuml}
 
-Figure~\ref{fig.itk.processobjectdataobjectinteractionuml} presents an UML
+\aosafigref{fig.itk.processobjectdataobjectinteractionuml} presents an UML
 sequence diagram describing the interactions between \code{ProcessObjects} and
 \code{DataObjects} in a minimal pipeline composed of an \code{ImageFileReader},
 \code{MedianImageFilter} and \code{ImageFileWriter}. The full interaction
@@ -492,7 +492,7 @@ image analysis capabilities.
 
 \begin{aosasect2}{IO Factories}
 
-\begin{aosasect3}{Embracing Diversitiy with Facades}
+\begin{aosasect3}{Embracing Diversity with Facades}
 
 The image analysis community has developed a very large set of file formats to
 store image data. Many of these file formats are designed and implemented with
@@ -509,10 +509,10 @@ These IO extensible architecture is built upon the Factories mechanism
 described in the previous section. The main difference is that in the IO case,
 the IO Factories are registered in a specialized registry that is managed by
 the \code{ImageIOFactory} base class, shown on the upper left corner of
-Figure~\ref{fig.itk.io.factoriesregistry}. The actual functionality of reading
+\aosafigref{fig.itk.io.factoriesregistry}. The actual functionality of reading
 and writing data from image file formats is implemented in a family of
 \code{ImageIO} classes, shown on the right side of
-Figure~\ref{fig.itk.io.factoriesregistry}. These service classes are intended
+\aosafigref{fig.itk.io.factoriesregistry}. These service classes are intended
 to be instantiated on demand when the user requests to read or write an image.
 The services classes are not exposed to the application code. Instead,
 applications are expected to interact with the facade classes:
@@ -612,7 +612,7 @@ exchanging data in the research environment.
 
 \end{aosasect3}
 
-\begin{aosasect3}{Together but Separate}
+\begin{aosasect3}{Together But Separate}
 
 The self-contained nature of every IO Factory and ImageIO service classes is
 also reflected in the modularization. Typically, an ImageIO class depends on a
@@ -641,6 +641,7 @@ reading and writing files containing spatial transformations represented by the
 \end{aosasect2}
 
 \begin{aosasect2}{Streaming}\label{sec.itk.streaming}
+
 ITK was conceived initially as a set of tools for processing the images
 acquired by the Visible Human
 Project\footnote{\url{http://www.nlm.nih.gov/research/visible/visible_human.html}}.
@@ -656,7 +657,7 @@ assembling the resulting blocks on the output side of the pipeline.
 \aosafigure{../images/itk/StreamingImageDiagram.pdf}{Illustration of Image Streaming Process}{fig.itk.streaming}
 
 This partitioning of the image domain is illustrated in
-Figure~\ref{fig.itk.streaming} for the concrete example of a Median filter. The
+\aosafigref{fig.itk.streaming} for the concrete example of a Median filter. The
 Median filter computes the value of one output pixel as the statistical median
 of the pixel values taken from the input image in a neighborhood around the
 pixel to be computed as output. The size of that neighborhood is a numerical
@@ -669,7 +670,7 @@ filter is asked to computed a particular \emph{``Requested Region''} of the
 output image, it turns around and requests its updstream filter to provide a
 larger region that is formed by the \emph{``Requested Region''} enlarged by a
 border of 2 pixels, given that in this case the neighborhood radius is equal to
-2 pixels. In the specific case of Figure~\ref{fig.itk.streaming}, when asked
+2 pixels. In the specific case of \aosafigref{fig.itk.streaming}, when asked
 for Region 2, of size equals to 100x25 pixels, the Median filter passes along
 that request to its upstream filter for a region of size 100x29 pixels. The 29
 pixels size in the vertical direction is computed as 25 pixels plus two borders
@@ -702,7 +703,7 @@ and partition it in a number of division requested by the application
 developer.  Then, during thei \code{Update()} call, they go in an iteration
 loop asking for each one of the intermediate pieces of the image. At that
 stage, they take advantage of the \code{SetRequestedRegion()} API described in
-Figure~\ref{fig.itk.processobjectdataobjectinteractionuml} in
+\aosafigref{fig.itk.processobjectdataobjectinteractionuml} in
 Section~\aosasecref{sec.itk.datapipeline}. That allows to constrain the
 computation of the upstream pipeline to a subregion of the image.
 
@@ -720,7 +721,7 @@ The application code driving the streaming process will look like
 Where the only new element is the \code{SetNumberOfStreamDivisions()} call,
 that defines the number of pieces in which the image will be split for the
 purpose of streaming it through the pipeline. To match the example of
-Figure~\ref{fig.itk.streaming} we have used here 4 as the number of regions to
+\aosafigref{fig.itk.streaming} we have used here 4 as the number of regions to
 split the image into. This means that the \code{writer} is going to trigger the
 execution of the \code{median} filter four times, each time with a different
 \emph{``Requested Region''}.
@@ -796,7 +797,7 @@ address these cases.
 
 \begin{aosasect2}{Reusability}
 The principle of reusability can also be read as ``avoidance of redundancy''.
-In the case of ITK, this has been achieved by a three-prone approach.
+In the case of ITK, this has been achieved by a three-pronged approach.
 
 \begin{aosaitemize}
 \item First, the adoption of Object Oriented Programming, and in particular the
@@ -877,7 +878,7 @@ expressions in some cases.
 \end{aosasect3}
 
 
-\begin{aosasect3}{Knowing when to Stop}
+\begin{aosasect3}{Knowing When to Stop}
 
 There is also the general risk of doing \emph{``too much of a good thing''}.
 Meaning, the risk of taking too far the use of templates, or taking too far the
@@ -1068,26 +1069,26 @@ that are more relevant to the architecture are:
 \item Interger types were standardized
 \item Typedefs where fixed to allow management of image larger than 4Gb in all platforms
 \item The software process was revised
-\begin{aosaitemize}
-\item Migrated from CVS to Git
-\item Introduced Code Review with Gerrit
-\item Introduced testing on demand with CDash@home
-\item Improved method for downloading data for unit testing
-\end{aosaitemize}
+  \begin{aosaitemize2}
+    \item Migrated from CVS to Git
+    \item Introduced Code Review with Gerrit
+    \item Introduced testing on demand with CDash@home
+    \item Improved method for downloading data for unit testing
+  \end{aosaitemize2}
 \item Deprecated support for obsolete compilers
 \item Improved support for many IO image file formats including
-\begin{aosaitemize}
-\item DICOM
-\item JPEG2000
-\item TIFF (BigTIFF)
-\item HDF5
-\end{aosaitemize}
+  \begin{aosaitemize2}
+    \item DICOM
+    \item JPEG2000
+    \item TIFF (BigTIFF)
+    \item HDF5
+  \end{aosaitemize2}
 \item Introduced a framework for supporting GPU computation
 \item Introduced support for video processing
-\begin{aosaitemize}
-\item Added a bridge to OpenCV
-\item Added a bridge to VXL
-\end{aosaitemize}
+  \begin{aosaitemize2}
+    \item Added a bridge to OpenCV
+    \item Added a bridge to VXL
+  \end{aosaitemize2}
 
 \end{aosaitemize}
 
