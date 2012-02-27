@@ -55,7 +55,7 @@ chemspill release in between our regularly scheduled releases, we
 decided to plan as if every release could be a chemspill release, and
 designed our release automation accordingly.
 
-This mindset has three important side-effects:
+This mindset has three important consequences:
 
 \begin{aosaenumerate}
 
@@ -560,19 +560,15 @@ package happens quietly in the background. Only after the update files
 are downloaded, and ready to be applied, will Firefox prompt the user
 with the option to apply the update and restart.
 
-%% QUERY: We need an explanation of what a "release train" is and what the
-%% different release trains are, either here or somewhere earlier in the 
-%% section.
-The catch is, we generate a \emph{lot} of updates. For any given release
-train, we generate updates from all supported previous releases along
-that release train to the new latest release for that train.  For Firefox \code{LATEST}, that
-means generating updates for every platform, every locale, and every
-installer from Firefox \code{LATEST-1}, \code{LATEST-2}, \code{LATEST-3}, {\ldots} 
- in both complete and partial forms. We do all this for several
-release trains at a time.
+The catch is, we generate a \emph{lot} of updates. For a series of releases on
+a product line, we generate updates from all supported previous releases in the
+series to the new latest release for that product line.  For Firefox
+\code{LATEST}, that means generating updates for every platform, every locale,
+and every installer from Firefox \code{LATEST-1}, \code{LATEST-2},
+\code{LATEST-3}, {\ldots} in both complete and partial forms. We do all this
+for several different product lines at a time.
 
-%% QUERY: What does "bumps" mean here? Increments? Uploads? Downloads? --ARB
-Our update generation automation bumps the update configuration files
+Our update generation automation modifies the update configuration files
 of each release's build off a branch to maintain our canonical list of
 what version numbers, platforms, and localizations need to have
 updates created to offer users this newest release. We offer updates
@@ -623,9 +619,12 @@ generating major updates once the 3.6.* release train is no longer supported.
 At build time we generate ``complete update'' \code{.mar} files which
 contain all the files for the new release, compressed with \code{bz2}
 and then archived into a \code{.mar} file. Both complete and partial
-updates are downloaded automatically through the update channel a user
-is on.
-%% QUERY: Do we know what an "update channel" is? --ARB
+updates are downloaded automatically through the update channel to which a 
+user's Firefox is registered. We have different update channels (that is,
+release users look
+for updates on release channel, beta users look on beta channel, etc.) so that
+we can serve updates to, for example, release users at a different time than 
+we serve updates to beta users.
 
 Partial update .mar files are created by comparing the complete .mar for the
 old release with the complete .mar for the new release to create a
