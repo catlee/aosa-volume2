@@ -127,6 +127,7 @@ and \_append as a method of extending task functionality by injecting
 code indicated by using prepend or append suffix into the beginning
 or end of a task.
 
+%% QUERY: I removed a LOT of whitespace from this figure - is that okay? --ARB
 \begin{figure}
 \begin{verbatim}
 DESCRIPTION = "GNU grep utility"
@@ -146,41 +147,28 @@ EXTRA_OECONF = "--disable-perl-regexp"
 
 do_configure_prepend
 () {
-
 rm
 -f ${S}/m4/init.m4
-
 }
 </FONT></FONT>
 
 do_install () {
-
   autotools_do_install
-
   install -d ${D}${base_bindir}
-
   mv ${D}${bindir}/grep ${D}${base_bindir}/grep.${PN}
-
   mv ${D}${bindir}/egrep ${D}${base_bindir}/egrep.${PN}
-
   mv ${D}${bindir}/fgrep ${D}${base_bindir}/fgrep.${PN}
 }
 
 pkg_postinst_${PN}() {
-
   update-alternatives --install ${base_bindir}/grep grep grep.${PN} 100
-
   update-alternatives --install ${base_bindir}/egrep egrep egrep.${PN} 100
-
   update-alternatives --install ${base_bindir}/fgrep fgrep fgrep.${PN} 100
 }
 
 pkg_prerm_${PN}() {
-
   update-alternatives --remove grep grep.${PN}
-
   update-alternatives --remove egrep egrep.${PN}
-
   update-alternatives --remove fgrep fgrep.${PN}
 }
 \end{verbatim}
@@ -355,7 +343,7 @@ over a period of time in order to allow BitBake to run multiple
 processes during a build, as it was initially single threaded, and to
 allow different user experiences.
 
-\aosafigure{../images/yocto/aosa3.jpg}{Overview of BitBake IPC}{fig.yocto.ipc}
+\aosafigure[300pt]{../images/yocto/aosa3.jpg}{Overview of BitBake IPC}{fig.yocto.ipc}
 
 All Poky builds are begun by starting a user interface instance. The
 user interface provides a mechanism for logging of build output, build
@@ -437,14 +425,14 @@ python, one of the things that needs to be done is the variable needs
 to be run through BitBakes bb.codeparser to ensure that it's valid
 python and that it contains no circular references.  An example of a
 variable containing python is this example taken from
-./meta/conf/distro/include/tclibc-eglibc.inc:
+\code{./meta/conf/distro/include/tclibc-eglibc.inc}:
 
 \begin{verbatim}
 LIBCEXTENSION = "${@['', '-gnu'][(d.getVar('ABIEXTENSION', True) or '') != '']}"
 \end{verbatim}
 
 This variable is included from one of the OE-Core configuration files,
-\code{./meta/conf/distro/include/defaultsetup.conf} and is used to
+\linebreak \code{./meta/conf/distro/include/defaultsetup.conf} and is used to
 provide a set of default options across different distro
 configurations that one would want to lay on top of Poky or
 OpenEmbedded. This file imports some eglibc specific variables that

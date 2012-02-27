@@ -25,22 +25,22 @@ Mozilla Community's network of mirrors which provide the downloads to
 our users.
 
 We'll look at some of the decisions that have been made to
-improve this process, for example: our sanity-checking script that helps
-eliminate much of what used to be vulnerable to human error, our
-automated signing script, our integration of mobile releases into the
-desktop release process, patcher (where updates are created) and AUS (Application Update Service) where updates are
+improve this process; for example, our sanity-checking script that helps
+eliminate much of what used to be vulnerable to human error; our
+automated signing script; our integration of mobile releases into the
+desktop release process; patcher, where updates are created; and AUS (Application Update Service), where updates are
 served to our users across multiple versions of the software.
 
 This chapter describes the mechanics of how we generate release builds
 for Firefox. Most of this chapter details the significant
 steps that occur in a release process once the builds start, but
-there are also plenty of complex cross-group communications to deal
+there is also plenty of complex cross-group communication to deal
 with before Release Engineering even starts to generate release
-builds, so lets start there.
+builds, so let's start there.
 
 \begin{aosasect1}{Look \code{N} Ways Before You Start a Release}
 
-\aosafigure[100pt]{../images/ffreleng/gotobuild.png}{Getting From Code to ``Go to build''}{fig.ffreleng.getting}
+\aosafigure[100pt]{../images/ffreleng/gotobuild.png}{Getting from code to ``Go to build''}{fig.ffreleng.getting}
 
 When we started on the project to improve Mozilla's release process,
 we began with the premise that the more popular Firefox became, the
@@ -62,11 +62,6 @@ This mindset has three important side-effects:
 \item We do a postmortem after \emph{every} release, and look to see
   where things could be made smoother, easier, and faster next
   time. If at all possible, we find and fix at least one thing,
-%% QUERY: I'm not sure about "any one thing" here - you mean you
-%% only fix one thing at a time? (Surely not.) Or that you fix
-%% things that are small, i.e., not systemic? Or can we just 
-%% change this to "fix anything," --ARB
-%% rephrased - is this now ok? joduinn 13feb2012
   no matter how small, immediately---before the next release. This constant
   polishing of our release automation means we're always looking for
   new ways to rely on less human involvement while also improving
@@ -99,13 +94,12 @@ This mindset has three important side-effects:
   decision. Changing processes
   during a chemspill is risky, so in order to make sure everyone
   is familiar with the process when minutes matter, we use this
-  same process for chemspill and regular (non-chemspill)
-  releases.
+  same process for chemspill and regular releases.
 
 \end{aosaenumerate}
 
-%% FIXME: Don't forget to check this image in the printed proof.
-\aosafigure{../images/ffreleng/timeline.png}{Complete Release Timeline, Using a Chemspill as Example}{fig.ffreleng.timeline}
+%% FIXME: Don't forget to check this image in the printed proof. --ARB
+\aosafigure{../images/ffreleng/timeline.png}{Complete release timeline, using a chemspill as example}{fig.ffreleng.timeline}
 
 \end{aosasect1}
 
@@ -114,22 +108,23 @@ This mindset has three important side-effects:
 \begin{aosasect2}{Who Can Send the ``Go to Build''?}
 
 Before the start of the release, one person is designated to assume
-responsibility for coordinating the entire release. This person needs to be
-someone who attends triage meetings, understands the
-background context on all the work being landed, referees bug severity
-disputes fairly, approves landing of late-breaking changes, and makes
+responsibility for coordinating the entire release. This person needs to 
+attend triage meetings, understand the
+background context on all the work being landed, referee bug severity
+disputes fairly, approve landing of late-breaking changes, and make
 tough back-out decisions.  Additionally, on the actual release day
 this person is on point for all communications with the different
 groups (developers, QA, Release Engineering, website developers, PR,
 marketing, etc.).
 
 Different companies use different titles for this role. Some titles we've heard 
-include: Release Manager, Release Engineer, Program Manager, Project Manager, Product Manager, Product Czar, Release
-Driver. In this chapter, we will use the term "Release Coordinator" 
+include Release Manager, Release Engineer, Program Manager, Project 
+Manager, Product Manager, Product Czar, Release
+Driver. In this chapter, we will use the term ``Release Coordinator''
 as we feel it most clearly defines the role in our process as described above. 
 The important point here is that the role, and the final authority of the role, is
 clearly understood by everyone before the release starts, regardless 
-of their background, or previous work experiences elsewhere. In the 
+of their background or previous work experiences elsewhere. In the 
 heat of a release day, it is important tnat everyone knows to abide by, and trust, 
 the coordination decisions that this person makes. 
 
@@ -147,7 +142,7 @@ coordination decisions that this person makes.
 \begin{aosasect2}{How to Send the ``Go to Build''?}
 
 Early experiments with sending ``go to build'' in IRC channels or
-verbally over the phone all led to misunderstandings,
+verbally over the phone led to misunderstandings,
 occasionally causing problems for the release in progress. Therefore,
 we now require that the ``go to build'' signal for every release is
 done by email, to a mailing list that includes everyone across all
@@ -160,10 +155,10 @@ go to build Firefox 6.0.1
 \end{verbatim}
 
 Similarly, if a problem is found in the release, the Release
-Coordinator will send a new "all stop" email to the same mailing list,
+Coordinator will send a new ``all stop'' email to the same mailing list,
 with a new subject line. We found that it was not sufficient to just hit reply
 on the most recent email about the release; email threading in some
-email clients caused some people to not notice the "all stop" email if
+email clients caused some people to not notice the ``all stop'' email if
 it was way down a long and unrelated thread.
 
 \end{aosasect2}
@@ -202,7 +197,7 @@ to be created from.
     \end{aosaenumerate2}
 
 \item A clear sense of the urgency for this particular release.  While
-  sounds obvious, it is important when handling some important edge
+  it sounds obvious, it is important when handling some important edge
   cases, so here is a quick summary:
 
   \begin{aosaenumerate2}
@@ -247,9 +242,8 @@ opinions, reach a decision, and then communicate that decision about
 urgency consistently across all groups. If new information arrives,
 the Release Coordinator reassesses, and then communicates the new
 urgency to all the same groups. Having some groups believe a release
-is a ``chemspill'', while other groups believe the same release is ``routine''
-can be very destructive to cross-group cohesion across an
-organization.
+is a chemspill, while other groups believe the same release is routine
+can be destructive to cross-group cohesion.
 
 Finally, these emails also became very useful to measure where time
 was spent during a release.  While they are only accurate to
@@ -291,8 +285,8 @@ that will be used (such as desktop or mobile), the branch to look at (e.g.,
 \code{mozilla-release}), the build and version number, and the names of the
 products that are to be built (such as ``fennec'' or ``firefox''). It will fail if
 the release repositories do not
-match what's in the configurationss, if locale repository changesets don't
-match our shipping locales and localization changeset files, and if the
+match what's in the configurations, if locale repository changesets don't
+match our shipping locales and localization changeset files, or if the
 release version and build number don't match what has been given to
 our build tools with the tag generated using the product,
 version, and build number. If all
@@ -347,9 +341,9 @@ Coordinator. The release branch can be used to make release-specific
 modifications to the source code, such as bumping version numbers or
 finalizing the set of locales that will be built. If a critical
 security vulnerability is discovered in the future that requires an
-immediate fix (a ``chemspill'' situation), a minimal set of changes to
+immediate fix---a chemspill---a minimal set of changes to
 address the vulnerability will be landed on this relbranch and a new
-version of Firefox generated and released from that relbranch. When we have to do another round of
+version of Firefox generated and released from it. When we have to do another round of
 builds for a particular release, buildN, we use these relbranches to
 grab the same code that was signed off on for `go to build', which is
 where any changes to that release code will have been landed. The
@@ -371,7 +365,7 @@ the Mercurial operations could fail due to temporary network outages, web
 server issues, or the back end Mercurial server being temporarily
 overloaded. Being able to automatically retry these operations and
 continue saves a lot of our time, since we don't have to manually
-recover, cleanup any bustage fallout and then get the release automation running again.
+recover, clean up any fallout and then get the release automation running again.
     
 \code{hgtool.py} is a utility that encapsulates several common Mercurial
 operations, like cloning, pulling, and updating with a single invocation. It
@@ -404,14 +398,14 @@ reduce the total time to have builds ready by 15 minutes.
 
 \begin{aosasect1}{Localization Repacks and Partner Repacks}
 
-\aosafigure{../images/ffreleng/repacksl10n.png}{Repacking Firefox for Each Localization}{fig.ffreleng.repack}
+\aosafigure{../images/ffreleng/repacksl10n.png}{Repacking Firefox for each localization}{fig.ffreleng.repack}
 
 Once the desktop builds are generated and uploaded to
-\code{\code{ftp.mozilla.org}}, our automation triggers the localization
-repackaging jobs. A "localization repack" takes the original 
+\code{ftp.mozilla.org}, our automation triggers the localization
+repackaging jobs. A ``localization repack'' takes the original 
 build (which contains the en-US locale), unpacks it, replaces
 the en-US strings with the strings for another locale that we
-are shipping in this release and repackages all the files back
+are shipping in this release, then repackages all the files back
 up again (this is why we call them repacks). We repeat this 
 for each locale shipping in the release. Originally, we did all 
 repacks serially. However, as we added more locales, this took 
@@ -419,13 +413,13 @@ a long time to complete, and we had to restart from the beginning
 if anything failed out mid-way through. 
 
 Now, we instead split the entire set of repacks into
-six concurrent jobs, each processed concurrently on six
+six jobs, each processed concurrently on six
 different machines. This approach completes the work in
 approximately a sixth of the time. This also allows us to redo
 a subset of repacks if an individual repack fails, without
 having to redo all repacks. (We could split the repacks into
 even more, smaller, concurrent jobs, but we found it took away
-too many machines from the pool which affected other unrelated
+too many machines from the pool, which affected other unrelated
 jobs triggered by developers on our continuous integration
 system.) 
     
@@ -493,7 +487,7 @@ keyphrases, passwords, and keystores are passed among release
 engineers only in secure channels, often in person, to minimize the
 risk of exposure as much as possible.
 
-\aosafigure[325pt]{../images/ffreleng/signing.png}{Signing Firefox Installers}{fig.ffreleng.signing}
+\aosafigure[325pt]{../images/ffreleng/signing.png}{Signing Firefox installers}{fig.ffreleng.signing}
 
 Until recently this signing process involved a release engineer
 working on a dedicated server (the ``signing master'') for almost an
@@ -526,14 +520,6 @@ human to sign is important for two reasons. Firstly, it reduces the
 risk of human error. Secondly, it allows signing to
 proceed during non-work hours, without needing a release engineer
 awake at a computer at the time.  
-
-%% QUERY: The following sentence is orphaned and I think it should go in the
-%% paragraph above ("The release engineer") but I'm not sure exactly where.
-%% --ARB
-%% The win32 installers are signed
-%% with Authenticode and then we generate gpg signatures for all the
-%% platforms.
-%% I think this is no longer needed, already covered in the text above. joduinn 13feb2012
 
 All deliverables have an MD5SUM and SHA1SUM generated for them, and
 those hash values are written to files of the same name.  These files
@@ -736,12 +722,12 @@ updates live.
 \begin{aosasect1}{Pushing to Public Mirrors and AUS}
 
 Once the Release Coordinator gets signoff from QA and various
-other groups at Mozilla, then the Release Coordinator gives
+other groups at Mozilla, they give
 Release Engineering the go-ahead to push the files to our
 community mirror network. We rely on our community mirrors to be
 able to handle a few hundred million users downloading updates
 over the next few days. All the installers, as well as the complete 
-and partial updates for all platforms and locales are already on our
+and partial updates for all platforms and locales, are already on our
 internal mirror network at this point. Publishing the files to
 our external mirrors involves making a change to an rsync exclude file
 for the public mirrors module.  Once this change is made, the
