@@ -20,8 +20,6 @@ interesting:
 
 \end{aosaenumerate}
 
-\begin{aosasect1}{What is Moodle?}
-
 Moodle\footnote{\url{http://moodle.org/}} provides a place online
 where students and teachers can come together to teach and learn. A
 Moodle site is divided into Courses. A course will have certain users
@@ -33,45 +31,40 @@ wiki. Within the course, these resources and activities will be
 structured in some way. For example they may be grouped into logical
 topics, or into weeks on a calendar.
 
-% Moodle course.tiff
-% FIXME: insert figure
+\aosafigure{../images/moodle/course.png}{Moodle Course}{fig.moodle.course}
 
 Moodle can be used as a stand-alone application. If you wanted to
 teach software architecture (for example) you could download Moodle to
 your web hosting, install it, start creating courses, and wait for
 students to come and self-register. Alternatively, if you are a large
 institution, Moodle would be just one of the systems you run. You
-would probably also have:
+would probably also have the infrastructure shown in
+\aosafigref{fig.moodle.uni}:
 
-% \begin{aosafigure{../moodle/university-systems.png}{University Systems}{fig.moodle.university}
-% FIXME: insert university systems diagram here (must convert from Dia format)
+\aosafigure{../images/moodle/university.png}{University Infrastructure}{fig.moodle.uni}
 
 \begin{aosaitemize}
 
 \item an authentication/identity provider (for example LDAP) to
   control user accounts across all your systems.
 
-
 \item a student information system. That is, a database of all your
-  students, which program of study they are one, and hence which
+  students, which program of study they are on, and hence which
   courses they need to complete; and their transcript, that is a high
   level summary of the results of the courses they have
   completed. This would also deal with other administrative functions
   like tracking whether they have paid their fees.
 
-
 \item a document repository (for example Alfresco). To store files,
   and track the workflow as users collaborate to create files.
-
 
 \item an ePortfolio. This is a place where students can put assets and
   assemble them. This might be in order to build a CV (resume), or to
   assemble evidence that they have met the requirements of a
-  work-based course.
+  practice-based course.
 
-
-\item reporting or analytics tools. To generate high level information
-  about what is going on in your institution.
+\item a reporting or analytics tools. To generate high level
+  information about what is going on in your institution.
 
 \end{aosaitemize}
 
@@ -95,9 +88,7 @@ available. That limited the kind of architecture that was possible
 initially, but much has changed since then. The current release is the
 Moodle 2.2.x series.
 
-\end{aosasect1}
-
-\begin{aosasect1}{How Moodle Works}
+\begin{aosasect1}{An Overview of How Moodle Works}
 
 A Moodle installation comprises three parts:
 
@@ -108,7 +99,7 @@ A Moodle installation comprises three parts:
   by the web server.
 
 \item The database, managed by one of the supported RDMSs. In fact,
-  Moodle adds a prefix to all the table names, so it can share a
+  moodle adds a prefix to all the table names, so it can share a
   database with other applications, if desired.
 
 \item The \code{moodledata} folder. This is a folder where Moodle
@@ -124,8 +115,8 @@ but just one shared copy of the database and moodledata, probably on
 other servers.
 
 The configuration information about these three parts is stored in a
-file called \code{config.php} in the root of the \code{moodle} folder
-when Moodle is installed.
+file called config.php in the root of the \code{moodle} folder when
+Moodle is installed.
 
 \begin{aosasect2}{Request Dispatching}
 
@@ -135,24 +126,23 @@ requests. An important aspect of Moodle's design is, therefore, the
 URL namespace, and how URLs get dispatched to different scripts.
 
 Moodle uses the standard PHP approach to this. To view the main page
-for a course, the URL would be \url{.../course/view.php?id=123}, where
-123 is the unique id of the course in the database. To view a forum
-discussion, the URL would be something like
-\url{.../mod/forum/discuss.php?id=456789}. That is, these particular
-scripts, \url{course/view.php} or \url{mod/forum/discuss.php} would
-handle these requests. This is simple. To understand how Moodle
-handles a particular request, you look at the URL and start reading
-code there.
+for a course, the URL would be \code{.../course/view.php?id=123},
+where \code{123} is the unique id of the course in the database. To
+view a forum discussion, the URL would be something like
+\code{.../mod/forum/discuss.php?id=456789}. That is, these particular
+scripts, \code{course/view.php} or \code{mod/forum/discuss.php} would
+handle these requests. This is simple for the developer. To understand
+how Moodle handles a particular request, you look at the URL and start
+reading code there. It is ugly from the user's point of view. These
+URLs are, however, permanent. The URLs do not change if the course is
+renamed, or if a moderator moves a discussion to a different forum.
 
 The alternative approach one could take is to have a single entry
-point \url{.../index.php/\emph{extra}}, where \emph{extra} is
-information needed to make the request unique. The single script
-\code{index.php} would then dispatch the requests in some way. This
-approach adds a layer of indirection, which is something software
-developers always like to do. The lack of this layer of indirection
-does not seem to hurt Moodle. (In the rare cases where you really want
-to rewrite the URL namespace, this can be done elsewhere in the
-software stack, for example by using \code{mod\_rewrite}.)
+point \code{.../index.php/\[extra information to make the request
+  unique\]}. The single script \code{index.php} would then dispatch
+the requests in some way. This approach adds a layer of indirection,
+which is something software developers always like to do. The lack of
+this layer of indirection does not seem to hurt Moodle.
 
 \end{aosasect2}
 
@@ -198,24 +188,28 @@ same way.
 
 A plugin is Moodle takes the form of a folder containing files. The
 plugin has a type and a name, which together make up the
-'Frankenstyle' component name of the plugin. (the word Frankenstyle
-arouse out of an argument in the developers' Jabber channel, but
-everyone liked it and it stuck.) The plugin type and name determine
-the path to the plugin folder. The plugin type gives a prefix, and
-then the foldername is the plugin name. Here are some examples.
+``Frankenstyle'' component name of the plugin\footnote{The word
+  ``Frankenstyle'' arouse out of an argument in the developers' Jabber
+  channel, but everyone liked it and it stuck.}. The plugin type and
+name determine the path to the plugin folder. The plugin type gives a
+prefix, and then the foldername is the plugin name. Here are some
+examples.
 
 \begin{tabular}{llll}
-Plugin type & Plugin name & Frankenstyle & Folder \\
-mod (Activity module) & forum & mod\_forum & mod/forum \\
-mod (Activity module) & quiz & mod\_quiz & mod/quiz \\
-block (Side-lock) & navigation & block\_navigation & blocks/navigation \\
-qtype (Question type) & shortanswer & qtype\_shortanswer & question/type/shortanswer \\
-quiz (Quiz report) & statistics & quiz\_statistics & mod/quiz/report/statistics \\
+Plugin type           & Plugin name & Frankenstyle      & Folder \\
+mod (Activity module) & \code{forum}       & \code{mod\_forum}         & \code{mod/forum} \\
+mod (Activity module) & \code{quiz}        & \code{mod\_quiz}          & \code{mod/quiz} \\
+block (Side-block)    & \code{navigation}  & \code{block\_navigation}  & \code{blocks/navigation} \\
+qtype (Question type) & \code{shortanswer} & \code{qtype\_shortanswer} & \code{question/type}/shortanswer \\
+quiz (Quiz report)    & \code{statistics}  & \code{quiz\_statistics}   & \code{mod/quiz/report/statistics}
 \end{tabular}
 
 The last example shows that each activity module is allowed to declare
-sub-plugin types. At the moment, of all the different types of plugin,
-only activity modules are allowed to do this.
+sub-plugin types. At the moment only activity modules can do this, for
+two reasons. If all plugins could have sub-plugins that might cause
+performance problems. Activity modules are the main educational
+activities in Moodle, and so the most important type of plugin, so
+they get special privilidges.
 
 \end{aosasect2}
 
@@ -227,17 +221,17 @@ chosen to implement a plugin that displays ``Hello world''.
 
 This plugin does not really fit naturally into any of the standard
 Moodle plugin types. It is just a script, with no connection to
-anything else, so I will choose to implement it as a \emph{local}
+anything else, so I will choose to implement it as a ``local''
 plugin. This is a catch-all plugin type for miscellaneous
 functionality that does not fit anywhere better. I will name my plugin
-greet, to give a Frankensyle name of \code{local\_greet}, and a folder
-path of \code{local/greet}. The plugin code can be downloaded from
-\url{https://github.com/timhunt/moodle-local\_greet}.
+\code{greet}, to give a Frankensyle name of \code{local\_greet}, and a
+folder path of \code{local/greet}. The plugin code can be downloaded
+from \url{https://github.com/timhunt/moodle-local_greet}.
 
 Each plugin must contain a file called \code{version.php} which
-defines some basic meta-data about the plugin. This is used by the
+defines some basic metadata about the plugin. This is used by the
 Moodle's plugin installer system to install and upgrade the plugin.
-Ours is:
+For example, \code{local/greet/version.php} contains:
 
 \begin{verbatim}
 <?php
@@ -250,13 +244,13 @@ $plugin->maturity     = MATURITY_STABLE;
 It may seem redundant to include the component name, since this can be
 deduced from the path, but the installer uses this to verify that the
 plugin has been installed in the right place. The version field is the
-version of this plugin. Maturity is ALPHA/BETA/RC/STABLE. Requires is
-the minimum version of Moodle that this plugin is compatible with. If
-necessary, one can also document other plugins that this one depends
-on.
+version of this plugin. Maturity is ALPHA, BETA, RC (release
+candidate), or STABLE. Requires is the minimum version of Moodle that
+this plugin is compatible with. If necessary, one can also document
+other plugins that this one depends on.
 
-Now here is the main scrip for this simple plugin, which we put
-in \code{local/greet/index.php}:
+Now here is the main script for this simple plugin (stored in
+\code{local/greet/index.php}):
 
 \begin{verbatim}
 <?php
@@ -285,16 +279,23 @@ echo $OUTPUT->box(get_string('greet', 'local_greet',
 echo $OUTPUT->footer();                                       // 13
 \end{verbatim}
 
-\begin{aosasect3}{Line 1: Bootstrapping Moodle}
+\end{aosasect2}
+
+\begin{aosasect2}{Bootstrapping Moodle}
+
+\begin{verbatim}
+require_once(dirname(__FILE__) . '/../../config.php');        // 1
+\end{verbatim}
 
 The single line of this script that does the most work is the first. I
-said above that config.php contains the details Moodle needs to
+said above that \code{config.php} contains the details Moodle needs to
 connect to the database and find the moodledata folder. It ends,
 however, with the line \code{require\_once('lib/setup.php')}. This:
 
 \begin{aosaenumerate}
 
-\item loads all the standard Moodle libraries using \code{require\_once};
+\item loads all the standard Moodle libraries using
+  \code{require\_once};
 
 \item starts the session handling;
 
@@ -304,9 +305,13 @@ however, with the line \code{require\_once('lib/setup.php')}. This:
 
 \end{aosaenumerate}
 
-\end{aosasect3}
+\end{aosasect2}
 
-\begin{aosasect3}{Line 2: Checking the User Is Logged In}
+\begin{aosasect2}{Checking the User Is Logged In}
+
+\begin{verbatim}
+require_login();                                              // 2
+\end{verbatim}
 
 This line causes Moodle to check that the current user is logged in,
 using whatever authentication plugin the administrator has
@@ -320,15 +325,23 @@ the user is enrolled in, or otherwise allowed to access this course,
 and is allowed to see this activity. If not, an appropriate error
 would be displayed.
 
-\end{aosasect3}
+\end{aosasect2}
 
-\begin{aosasect3}{Line 3: Getting the Context}
+\end{aosasect1}
+
+\begin{aosasect1}{Moodle's Roles and Permissions System}
 
 The next two lines of code show how to check that the user has
 permission to do something. As you can see, from the developer's point
 of view, the API is very simple. Behind the scenes, however, there is
 a sophisticated access system which gives the administrator great
 flexibility to control who can do what.
+
+\begin{aosasect2}{Getting the Context}
+
+\begin{verbatim}
+$context = context_system::instance();                        // 3
+\end{verbatim}
 
 In Moodle, users can have different permissions in different
 places. For example, a user might be a Teacher in one course, and a
@@ -344,30 +357,15 @@ nested, with one category containing other categories. Category
 contexts can also contain Course contexts. Finally, each activity in a
 course will have its own Module context.
 
+\aosafigure{../images/moodle/contexts.png}{Contexts}{fig.moodle.contexts}
+
+\end{aosasect2}
+
+\begin{aosasect2}{Checking the User Has Permission to Use This Script}
+
 \begin{verbatim}
-System
-   Humanities faculty
-      History department
-         History 101
-            ...
-         Napoleon 202
-            Social forum
-            Resource: Napoleon biography
-            Forum: was Napoleon right?
-            Quiz: Napoleon facts
-            ...
-      Art department
-         Art 101
-         ...
-      Introduction to the humanities
-   Science faculty
-      ...
-   ...
+require_capability('local/greet:begreeted', $context);        // 4
 \end{verbatim}
-
-\end{aosasect3}
-
-\begin{aosasect3}{Line 4: Checking the User Has Permission to Use This Script}
 
 Now we have got the context---the relevant area of Moodle to check the
 permission in---we now need to decide which permission to check. Each
@@ -379,11 +377,11 @@ capability: \code{local/greet:begreeted}.
 
 The check is done using the \code{require\_capability} function, which
 takes the capability name and the context. Like other
-\code{require\_\ldots} functions, it will not return if the user does
-not have the capability. It will display an error instead. In other
-places we would use the non-fatal \code{has\_capability} function,
-which returns a boolean. We might use that, for example, to determine
-whether to display a link to this script from another page.
+\code{require\_{\ldots}} functions, it will not return if the user
+does not have the capability. It will display an error instead. In
+other places we would use the non-fatal \code{has\_capability}
+function, which returns a Boolean. We might use that, for example, to
+determine whether to display a link to this script from another page.
 
 How does the administrator configure which user has which permission?
 Here is the calculation that \code{has\_capability} performs (at least
@@ -402,12 +400,18 @@ conceptually):
 
 \end{aosaenumerate}
 
+\end{aosasect2}
+
+\begin{aosasect2}{Defining Capabilities}
+
 As the example shows, a plugin can define new capabilities, relating
-to the particular functionality it provides. This is done using a file
-called access.php. This is stored inside a db sub-folder in the
-plugin, which is where all the information required to install or
-upgrade the plugin lives. Here is the \code{access.php} file for our
-plugin, which we put in \code{local/greet/db/access.php}:
+to the particular functionality it provides. Inside each Moodle
+plugin, there is a sub-folder of the code called \code{db}. This
+contains all the information required to install or upgrade the
+plugin. One of those bits of information is a file called
+\code{access.php} that defines the capabilities. Here is the
+\code{access.php} file for our plugin, which lives in
+\code{local/greet/db/access.php}:
 
 \begin{verbatim}
 <?php
@@ -419,16 +423,16 @@ $capabilities = array('local/greet:begreeted' => array(
 \end{verbatim}
 
 This gives some metadata about each capability which are used when
-constructing the permissions management user-interface. We also give
+constructing the permissions management user interface. It also give
 default permissions for common types of role.
 
-\end{aosasect3}
+\end{aosasect2}
 
-\begin{aosasect3}{Roles}
+\begin{aosasect2}{Roles}
 
 The next part of the Moodle permissions system is roles. A role is
 really just a named set of permissions. When you are logged into
-Moodle, you will have the 'Authenticated user' role in the system
+Moodle, you will have the ``Authenticated user'' role in the system
 context, and since the system context is the root of the hierarchy,
 that role will apply everywhere.
 
@@ -436,24 +440,24 @@ Within a particular course, you may be a student, and that role
 assignment will apply in the course context, and all the module
 contexts within it. In another course, however, you may have a
 different role. For example, Mr Gradgrind may be teacher in the
-'Facts, Facts, Facts' course, but a Student in the professional
-development course 'Facts aren't everything'. Finally, a user might be
-given the Moderator role in one particular forum (Module context).
+``Facts, Facts, Facts'' course, but a Student in the professional
+development course ``Facts Aren't Everything''. Finally, a user might
+be given the Moderator role in one particular forum (Module context).
 
-\end{aosasect3}
+\end{aosasect2}
 
-\begin{aosasect3}{Permissions}
+\begin{aosasect2}{Permissions}
 
 A role defines a permission for each capability. For example, we will
-probably say that the teacher role ALLOWS moodle/course:manage, but
-the student role does not. However, both Student and Teacher will
+probably say that the teacher role ALLOWS \code{moodle/course:manage},
+but the student role does not. However, both Student and Teacher will
 allow \code{mod/forum:startdiscussion}.
 
 The roles are normally defined globally, but they can be re-defined in
 each context. For example, if we want to make one particular wiki
 activity read-only to students of the course, then we would override
 the permissions for the Student role in that wiki (Module) context, to
-set the permission for \code{mod/wiki:edit} to \code{PREVENT}.
+set the permission for \code{mod/wiki:edit} to PREVENT.
 
 There are four Permissions:
 
@@ -473,9 +477,9 @@ In a given context, a role will have one of these four permissions for
 each capability. One different between PROHIBIT and PREVENT is that a
 PROHIBIT cannot be overridden in sub-contexts.
 
-\end{aosasect3}
+\end{aosasect2}
 
-\begin{aosasect3}{Permission Aggregation}
+\begin{aosasect2}{Permission Aggregation}
 
 Finally we aggregate the permissions for all the roles the user has in
 this context.
@@ -492,7 +496,7 @@ this context.
 
 \end{aosaitemize}
 
-A use case for PROHIBIT is this: Suppose a user has been making
+A use case for PROHIBIT is this. Suppose a user has been making
 abusive posts in a number of forums, and we want to stop them
 immediately. We can create a Naughty user role, which sets
 \code{mod/forum:post} and other such capabilities to PROHIBIT. We can
@@ -508,11 +512,19 @@ permissions for each capability; they can alter the role definitions
 in sub-contexts; and then they can assign different roles to users in
 different contexts.
 
-Now, back to our example script{\ldots}
+\end{aosasect2}
 
-\end{aosasect3}
+\end{aosasect1}
 
-\begin{aosasect3}{Line 5: Get Data From the Request}
+\begin{aosasect1}{Back to Our Example Script}
+
+Next in our script we cover some miscellaneous points:
+
+\begin{aosasect2}{Get Data From the Request}
+
+\begin{verbatim}
+$name = optional_param('name', '', PARAM_TEXT);               // 5
+\end{verbatim}
 
 Something that every web application has to do is to get data from the
 request (GET or POST variables) without being susceptible to SQL
@@ -520,28 +532,37 @@ injection or cross-site scripting attacks. Moodle provides two ways to
 do this.
 
 The simple method is the one shown here. To get a single variable, we
-give the parameter name (here 'name') a default value, and the
+give the parameter name (here \code{name}) a default value, and the
 expected type. The expected type is used to clean the input of all
 unexpected characters. There are numerous types like
-\code{PARAM\_INT}, \code{PARAM\_ALPHANUM}, \code{PARAM\_EMAIL} and so
-on.  There is also a similar \code{required\_param} function, which
-gives a fatal error if an expected parameter is not found.
+\code{PARAM\_INT}, \code{PARAM\_ALPHANUM}, \code{PARAM\_EMAIL}, and so
+on.
+
+There is also a similar \code{required\_param} function, which like
+other \code{require\_{\ldots}} functions stops execution and displays
+an error message to the user if the expected parameter is not found.
 
 The other way Moodle has to get data from the request is a
 fully-fledged forms library. This is a wrapper around the HTML
-QuickForm library from PEAR. (For non-PHP programmers, PEAR is PHP's
-equivalent of CPAN.) This seemed like a good choice when we selected
-it, but is now no longer maintained, so at some time in the future we
-will have to tackle moving to a new forms library, which many of us
-look forwards to, because QuickForm has several irritating design
-issues. For now, however, it is adequate. Forms can be defined as a
-collection of fields of various types (e.g. text box, select
-drop-down, date-selector) with client- and server-side validation
-(including use of the same \code{PARAM\_\ldots} types).
+QuickForm library from PEAR\footnote{For non-PHP programmers, PEAR is
+  PHP's equivalent of CPAN.}. This seemed like a good choice when we
+selected it, but is now no longer maintained, so at some time in the
+future we will have to tackle moving to a new forms library, which
+many of us look forwards to, because QuickForm has several irritating
+design issues. For now, however, it is adequate. Forms can be defined
+as a collection of fields of various types (e.g. text box, select
+drop-down, date-selector) with client- and server- side validation
+(including use of the same \code{PARAM\_{\ldots}} types).
 
-\end{aosasect3}
+\end{aosasect2}
 
-\begin{aosasect3}{Line 6: Global Variables}
+\begin{aosasect2}{Global Variables}
+
+\begin{verbatim}
+if (!$name) {
+    $name = fullname($USER);                                  // 6
+}
+\end{verbatim}
 
 Here we see the first of the global variables Moodle
 provides. \code{\$USER} makes accessible the information about the
@@ -557,46 +578,48 @@ user accessing this script. Other globals include:
 
 \item \code{\$COURSE}: the course we are within.
 
-\item And several others, some of which we will encounter later.
-
 \end{aosaitemize}
+
+\noindent
+and several others, some of which we will encounter later.
 
 You may have read the words ``global variable'' with horror. Note,
 however, that PHP processes a single request at a time. Therefore
 these variables are not as global as all that. In fact, PHP global
 variables can be seen as an implementation of the Thread-scoped
-registry pattern (in the sense of Martin Fowler, \emph{Patterns of
-  Enterprise Application Architecture}) and this is the way in which
+registry pattern (in the sense of Martin Fowler, Patterns of
+Enterprise Application Architecture) and this is the way in which
 Moodle uses them. It is very convenient in that it makes commonly used
 objects available thought the request without requiring them to be
 passed to every function and method. It is only infrequently abused.
 
-\end{aosasect3}
+\end{aosasect2}
 
-\begin{aosasect3}{Line 6 Again: Nothing Is Simple}
+\begin{aosasect2}{Nothing is Simple}
 
 This line also serves to make a point about the problem
 domain. Nothing is ever simple. Here, we just want to display a user's
-name, but we can't simply echo:
-
-\begin{verbatim}
-$USER->firstname, ' ', $USER->lastname
-\end{verbatim}
-
-The school may have policies about showing either of those parts, and
-different cultures have different conventions for which order to show
-names. Therefore, there are several configurations settings, and we
-have a function to assemble the full name according to the rules.
+name, but we can't simply concatenate \code{\$USER->firstname},
+\code{'~'}, and \code{\$USER->lastname}. The school may have policies
+about showing either of those parts, and different cultures have
+different conventions for which order to show names. Therefore, there
+are several configurations settings, and we have a function to
+assemble the full name according to the rules.
 
 Similarly with dates. Different users may be in different
-timezones. Moodle stores all dates as Unix timestamps, which are
-integers, and so work simply cross-DB. There is then a
-\code{userdate()} function to display the timestamp to the user using
-the appropriate timezone and locale settings.
+time-zones. Moodle stores all dates as Unix time-stamps, which are
+integers, and so work simply cross-DB. There is then a \code{userdate}
+function to display the time-stamp to the user using the appropriate
+timezone and locale settings.
 
-\end{aosasect3}
+\end{aosasect2}
 
-\begin{aosasect3}{Line 7: Logging}
+\begin{aosasect2}{Logging}
+
+\begin{verbatim}
+add_to_log(SITEID, 'local_greet', 'begreeted',
+        'local/greet/index.php?name=' . urlencode($name));    // 7
+\end{verbatim}
 
 All significant actions in Moodle are logged. Logs are written to a
 table the database. This is a trade-off. It makes sophisticated
@@ -609,8 +632,6 @@ problems can be mitigated in various ways, for example by batching
 writes, or archiving or deleting old records to remove them from the
 main database.
 
-\end{aosasect3}
-
 \end{aosasect2}
 
 \end{aosasect1}
@@ -619,10 +640,14 @@ main database.
 
 Output is mainly handled via two global objects.
 
-\begin{aosasect2}{Line 8: The \code{\$PAGE} Global}
+\begin{aosasect2}{The \code{\$PAGE} Global}
 
-\code{\$PAGE} stores information about the page we are going to
-output, that will be needed when the time comes to generate the
+\begin{verbatim}
+$PAGE->set_context($context);                                 // 8
+\end{verbatim}
+
+\code{\$PAGE} stores the information about the page we are going to
+output that will be needed when the time comes to generate the
 HTML. In this script, we need to explicitly specify the current
 context. (In other situations, this might have been set automatically
 by \code{require\_login}.) We also need to set the URL for this
@@ -634,29 +659,39 @@ title, which will end up in the head element of the HTML.
 
 \end{aosasect2}
 
-\begin{aosasect2}{Line 9: Moodle URL}
+\begin{aosasect2}{Moodle URL}
 
-I just wanted to flag this nice little helper class we have. Note, as
-a sign of the age of Moodle's code-base, that I was not able to use it
-in the call to the \code{add\_to\_log} function.
+\begin{verbatim}
+$PAGE->set_url(new moodle_url('/local/greet/index.php'),
+        array('name' => $name));                              // 9
+\end{verbatim}
+
+I just wanted to flag this nice little helper class we have. As an
+aside, recall that the \code{add\_to\_log} function call above did not
+use this helper class. Indeed, the log API cannot code with
+\code{moodle\_url} objects. This sort of inconsistency is a typical
+sign of a code-base as old as Moodle's.
 
 \end{aosasect2}
 
-\begin{aosasect2}{Line 10: Internationalisation}
+\begin{aosasect2}{Internationalisation}
+
+\begin{verbatim}
+$PAGE->set_title(get_string('welcome', 'local_greet'));       // 10
+\end{verbatim}
 
 Moodle uses its own system to allow the interface to be translated
 into any language. There may now be good PHP internationalisation
-libraries, but in 2002 when it was first
-implemented\footnote{\url{(http://git.moodle.org/gw?p=moodle.git;a=commitdiff;h=1180c6dc56dba2b3938119584044c69c8de62725}}
-there was not one available that was adequate. The system is based
-around the \code{get\_string} function. Strings are identified by a
-key and the plugin Frankenstyle name. As can be seen on line 12, it is
-possible to interpolate values into the string. (Multiple values are
-handled using PHP arrays or objects.)
+libraries, but in 2002 when it was first implemented there was not one
+available that was adequate. The system is based around the
+\code{get\_string} function. Strings are identified by a key and the
+plugin Frankenstyle name. As can be seen on line 12, it is possible to
+interpolate values into the string. (Multiple values are handled using
+PHP arrays or objects.)
 
 The strings are looked up in language files that are just plain PHP
-arrays. Here is the language file for our plugin, which we put in
-\code{local/greet/lang/en/local\_greet.php}:
+arrays. Here is the language file
+\code{local/greet/lang/en/local\_greet.php} for our plugin:
 
 \begin{verbatim}
 <?php
@@ -668,12 +703,12 @@ $string['pluginname'] = 'Hello world example';
 
 Note that, as well as the two string used in our script, we also have
 to define a string to give a name to our capability, and we have to
-define a string \code{'pluginname'} which is the name of our plugin as
+define a string \code{pluginname} which is the name of our plugin as
 it appears in the user interface.
 
 The different languages are identified by the two-letter country code
 (\code{en} here). Languages packs may derive from other language
-packs. For example the \code{fr\_ca} (French canadian) language pack
+packs. For example the \code{fr\_ca} (French Canadian) language pack
 declares \code{fr} (French) as the parent language, and thus only has
 to define those strings that differ from the French. Since Moodle
 originated in Australia, \code{en} means British English, and
@@ -686,30 +721,34 @@ particular course they are currently in), and then searching through
 all the language packs and parent language packs to find the string.
 
 Producing the language pack files, and co-ordinating the translation
-effort is managed at \url{http://lang.moodle.org/}, which is Moodle
+effort is managed at \url{http://lang.moodle.org/}, which is moodle
 with a custom plugin\footnote{\code{local\_amos},
-\url{http://docs.moodle.org/22/en/AMOS}.}. It uses both Git and the
-  database as a back-end to store the language files with full version
-  history.
+  \url{http://docs.moodle.org/22/en/AMOS}.}. It uses both Git and the
+database as a back-end to store the language files with full version
+history.
 
 \end{aosasect2}
 
-\begin{aosasect2}{Line 11: Starting Output}
+\begin{aosasect2}{Starting Output}
+
+\begin{verbatim}
+echo $OUTPUT->header();                                       // 11
+\end{verbatim}
 
 This is another innocuous-looking line that does much more than it
 seems. The point is that before any output can be done, the applicable
 theme (skin) to use must be worked out. The theme may depend on a
 combination which context we are in and the user's
-preferences. \code{\$PAGE->context} was, however, only set on line
-8. In order to solve the problem, some PHP magic is used so that the
-first time a method on \code{\$OUTPUT} is called, it re-initialises
-itself based on the information in \code{\$PAGE}, and only then
-generates the output.
+preferences. \code{\$PAGE-{\textgreater}context} was, however, only
+set on line 8. In order to solve the problem, some PHP magic is used
+so that the first time a method on \code{\$OUTPUT} is called, it
+re-initialises itself based on the information in \code{\$PAGE}, and
+only then generates the output.
 
 Another thing that needs to be done is that every page in Moodle may
 contain \emph{blocks}. These are extra configurable bits of content
 that are included in the page. (They are a type of plugin.) Again, the
-exact collation of blocks to display depends in a flexible way (that
+exact collection of blocks to display depends in a flexible way (that
 the administrator can control) on the page context and some other
 aspects of the page identity. Therefore, another part of preparing for
 output is a call to
@@ -728,12 +767,17 @@ is returned, and the rest is stored to be returned by
 
 \end{aosasect2}
 
-\begin{aosasect2}{Line 12: Outputting the Body of the Page}
- 
+\begin{aosasect2}{Outputting the Body of the Page}
+
+\begin{verbatim}
+echo $OUTPUT->box(get_string('greet', 'local_greet',
+        format_string($name)));                               // 12
+\end{verbatim}
+
 This line outputs the body of the page. Here we simply display the
 greeting in a box. The greeting is again a localised string, this time
 with a value substituted into a placeholder. The core renderer
-\code{\$OUTPUT} provides many convenience methods like \code{box()} to
+\code{\$OUTPUT} provides many convenience methods like \code{box} to
 describe the required output in quite high-level terms. Different
 themes can control what HTML is actually output to make the box.
 
@@ -741,15 +785,19 @@ The content that originally came from the user (\code{\$name}) is
 output though the \code{format\_string} function. This is the other
 part of providing XSS protection. It also enables the user of text
 filters (another plugin type). An example filter would be the LaTeX
-filter, which replaces input like \code{\$x + 1\$} with an image of
-the equation. I will mention, but not explain, that there are actually
-three different functions (\code{s()}, \code{format\_string()}, and
-\code{format\_text()}) depending on the particular type of content
+filter, which replaces input like \code{\$\$x + 1\$\$} with an image
+of the equation. I will mention, but not explain, that there are
+actually three different functions (\code{s}, \code{format\_string},
+and \code{format\_text}) depending on the particular type of content
 being output.
 
 \end{aosasect2}
 
-\begin{aosasect2}{Line 13: Finishing Output}
+\begin{aosasect2}{Finishing Output}
+
+\begin{verbatim}
+echo $OUTPUT->footer();                                       // 13
+\end{verbatim}
 
 Finally, we have to output the footer of the page. This example does
 not show it, but Moodle tracks all the JavaScript that is required by
@@ -759,13 +807,15 @@ page without waiting for all the JavaScript to load. A developer would
 include JavaScript using API calls like
 \code{\$PAGE-{\textgreater}requires-{\textgreater}js('/local/greet/cooleffect.js')}.
 
-\begin{aosasect3}{Should We Be Mixing Logic and Output?}
+\end{aosasect2}
 
-Obviously, putting the output code directly in index.php, even if at a
-high level of abstraction, limits the flexibility that themes have to
-control the output. This is another sign of the age of the Moodle
-code-base. The \code{\$OUTPUT} global was introduced in 2010 as a
-stepping stone on the way from the old code, where the output and
+\begin{aosasect2}{Should We Be Mixing Logic and Output?}
+
+Obviously, putting the output code directly in \code{index.php}, even
+if at a high level of abstraction, limits the flexibility that themes
+have to control the output. This is another sign of the age of the
+Moodle code-base. The \code{\$OUTPUT} global was introduced in 2010 as
+a stepping stone on the way from the old code, where the output and
 controller code was in the same file, to a design where all the view
 code was properly separated. This also explains the rather ugly way
 that the entire page layout is generated, then split in half, so that
@@ -776,7 +826,7 @@ completely (or partially) override the view code for a given script.
 
 With a small refactoring, we can go the final step and move all the
 output code out of our index.php and into a renderer. We could change
-the end of \code{index.php} (lines 11--13) to:
+the end of index.php (lines 11 to 13) to:
 
 \begin{verbatim}
 $output = $PAGE->get_renderer('local_greet');
@@ -803,10 +853,8 @@ a subclass of this renderer that overrides the \code{greeting\_page}
 method. \code{\$PAGE-{\textgreater}get\_renderer()} determines the
 appropriate renderer class to instantiate depending on the current
 theme. Thus, the output (view) code is fully separated from the
-controller code in index.php, and we have been able to refactor from
-typical legacy Moodle code to a clean MVC architecture.
-
-\end{aosasect3}
+controller code in \code{index.php}, and we have been able to refactor
+from typical legacy Moodle code to a clean MVC architecture.
 
 \end{aosasect2}
 
@@ -814,11 +862,118 @@ typical legacy Moodle code to a clean MVC architecture.
 
 \begin{aosasect1}{Database Abstraction}
 
-TODO
+The hello world script was sufficiently simple that it did not need to
+access the database, although several of the Moodle library calls used
+did do database queries. Now I will quickly talk about the Moodle
+database layer.
+
+Moodle used to use the ADOdb library of as the basis of its database
+abstraction layer, but there were issues for us, and the extra layer
+of library code had a noticeable impact on performance, so in Moodle
+2.0 we switched to our own abstraction layer, which is a thin wrapper
+around the various PHP database libraries.
+
+\begin{aosasect2}{The \code{moodle\_database} Class}
+
+The heart of the library is the \code{moodle\_database} class. This
+defines the interface provided by the \code{\$DB} global variable,
+which gives access to the database connection. A typical usage might
+be:
+
+\begin{verbatim}
+$course = $DB->get_record('course', array('id' => $courseid));
+\end{verbatim}
+
+That translates into the SQL:
+
+\begin{verbatim}
+SELECT * FROM mdl_course WHERE id = $courseid;
+\end{verbatim}
+
+\noindent
+and returns the data as a plain PHP object with public fields, so you
+could access \code{\$course-{\textgreater}id},
+\code{\$course-{\textgreater}fullname}, etc.
+
+Simple methods like this deal with basic queries, and simple updates
+and inserts. Sometimes it is necessary to do more complex SQL, for
+example to run reports. In that case, there are methods to execute
+arbitrary SQL:
+
+\begin{verbatim}
+$courseswithactivitycounts = $DB->get_records_sql(
+        'SELECT c.id, ' . $DB->sql_concat('shortname', "' '", 'fullname') . ' AS coursename,
+                COUNT(1) AS activitycount
+         FROM {course} c
+         JOIN {course_modules} cm ON cm.course = c.id
+         WHERE c.category = :categoryid
+         GROUP BY c.id, c.shortname, c.fullname ORDER BY c.shortname, c.fullname',
+        array('categoryid' => $category));
+\end{verbatim}
+
+\noindent
+Some things to note there:
+
+\begin{aosaenumerate}
+
+\item The table names are wrapped in \code{\{\}} so that the library
+  can find them and prepend the table name prefix.
+
+\item The library uses placeholders to insert values into the SQL. In
+  some cases this can use the facilities of the underlying database
+  driver. In other cases the we have to insert the values
+  ourselves. Our library can support either named placeholders (as
+  above) or anonymous ones, using \code{?} as the placeholder.
+
+\item In order that the SQL works on all our supported databases you
+  have to use the right subset of standard SQL. For example, you can
+  see that I have used the AS keyword for column aliases, but not for
+  table aliases. Both of those things are necessary.
+
+\item Even so, there are some things where no subset of standard SQL
+  will work on all our supported databases, for example, every
+  database has a different way to concatenate strings. In these cases,
+  we have compatibility function to generate the correct SQL.
+
+\end{aosaenumerate}
+
+\end{aosasect2}
+
+\begin{aosasect2}{Defining the Database Structure}
+
+Another area where database management systems differ a lot is in the
+SQL syntax required to define tables. To get round this problem, each
+Moodle plugin (and Moodle core) defines the required database tables
+in an XML format, and the Moodle install system parses that, and uses
+the information to create the right tables and indexes in the
+database. There is a developer tool called XMLDB built into Moodle to
+help create and edit these install files.
+
+If the database structure needs to change between two releases of
+Moodle (or of a plugin), then the developer is responsible for writing
+code (using an additional database object that provides DDL methods)
+to update the database structure, while preserving all the users'
+data. Thus, Moodle will always self-update from one release to the
+next, simplifying the maintenance task for administrators.
+
+One contentious point, stemming from the fact that Moodle started out
+using MySQL 3, is that the Moodle database does not use foreign
+keys. This allows some buggy behaviour to remain undetected even
+though modern databases would be capable of detecting the problem. The
+difficulty is that people have been running Moodle sites without
+foreign keys for years, so there is almost certainly inconsistent data
+present, and so adding the keys now would be impossible, without a
+very difficult clean-up job. Even so, since the XMLDB system was added
+to Moodle 1.7 (in 2006!), the install.xml files have contained the
+definitions of the foreign keys that should exist, and we are still
+hoping, one day, to do all the work necessary to allow us to create
+them during the install process.
+
+\end{aosasect2}
 
 \end{aosasect1}
 
-\begin{aosasect1}{What I Have Not Covered}
+\begin{aosasect1}{What We Have Not Covered}
 
 I hope I have given you a good overview of how Moodle works. Due to
 lack of space I have had to omit several interesting topics, including
@@ -826,35 +981,56 @@ how authentication, enrolment and grade plugins allow Moodle to
 interoperate with student information systems, and the interesting
 content-addressed way that Moodle stores uploaded files. Details of
 these, and other aspects of Moodle's design can be found in the
-developer documentation: http://docs.moodle.org/dev/.
+developer documentation\footnote{\url{http://docs.moodle.org/dev/.}}.
 
 \end{aosasect1}
 
 \begin{aosasect1}{Lessons Learned}
 
-TODO turn these bullets into proper writing.
+One interesting aspect of working on Moodle is that it came out of a
+research project. Moodle enables (but does not enforce) a social
+constructivist
+pedagogy\footnote{\url{http://docs.moodle.org/en/Pedagogy}}. That is,
+we learn best by actually creating something, and we learn from each
+other as a community. Martin Dougiamas's PhD question did not ask
+whether this was an effective model for education, but rather he was
+asking whether that is an effective model for running an open source
+project. That is, can we view the Moodle project as an attempt to
+learn how to build and use a VLE, and an attempt to learn that by
+actually building an using Moodle as a community where teacher,
+developers, administrators and students all teach and learn from each
+other. I find this a very good model for how to think about the
+process of doing software development. The main place this learning
+happens is in discussions in the Moodle project forums, and in the bug
+database.
 
-\begin{aosaitemize}
+Perhaps the most important consequence of this learning approach is
+that you should not be afraid to start by implementing the simplest
+thing at first. To give an example, at first Moodle had a few
+hard-coded roles like Teacher, Student, Administrator. That was enough
+for many years. Eventually, it proved too inflexible, and so the Roles
+system was introduced. When it came time to design the roles system
+for Moodle 1.7, there was a lot of experience in the community about
+how people were using Moodle, and a lot of little feature requests
+that showed what people needed from a more flexible access control
+system. This all helped design the Roles system to be as simple as
+possible, but as complex as necessary. In fact, the first version of
+the roles system ended up slightly too complex, and it was
+subsequently simplified a little in Moodle 2.0.
 
-\item Nothing is as simple as it seems.
+Now, if you take the view that programming is a problem solving
+exercise, then you might think that Moodle got the design wrong the
+first time, and later had to waste time correcting it. I suggest that
+is an unhelpful viewpoint. At the time Moodle started, no-one knew
+enough to design the roles system we have now. If you take the
+learning viewpoint, then the various stages Moodle went through were
+necessary and inevitable.
 
-\item Still, start with the simple solution, and only move to
-  something more complex when the need arises. You \emph{can} change
-  the architecture later---and by then you will have a much better
-  idea what is needed. Later, the technology may have moved on, making
-  it easier to implement the complex thing.
-
-\item The most profound thing I have learned from Moodle, which I have
-  not yet alluded to, is that writing software is a learning
-  process. Working on educational software is a good way to realise
-  this, particularly Moodle which embraces a Social Constructivist
-  pedagogy. I strongly recommend the article
-  \url{http://docs.moodle.org/en/Pedagogy}. Don't think of building
-  your software as a problem to solve. Rather, think of it as
-  something you have to learn. Something you can only learn by doing
-  it, and by iterating with others, particularly your users.
-
-\end{aosaitemize}
+For this to work, it must be possible to change almost any aspect of a
+system's architecture. I think Moodle shows that this is possible. It
+does take a certain amount of effort, but it can be done when
+necessary, and from the user's point of view it is just a gradual
+evolution.
 
 \end{aosasect1}
 
