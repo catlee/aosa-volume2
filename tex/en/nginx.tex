@@ -1,4 +1,4 @@
-\begin{aosachapter}{Nginx}{s:nginx}{Andrey Alexeev}
+\begin{aosachapter}{Nginx}{s:nginx}{Andrew Alexeev}
 
 nginx (pronounced ``engine x'') is a free open source web server
 written by Igor Sysoev, a Russian software engineer. Since its public
@@ -137,7 +137,7 @@ to build a scalable web infrastructure upon.
 
 \end{aosasect2}
 
-\begin{aosasect2}{Are There More Advantages of Using nginx?}
+\begin{aosasect2}{Are There More Advantages to Using nginx?}
 
 Handling high concurrency with high performance and efficiency has
 always been the key benefit of deploying nginx. However, there
@@ -248,15 +248,14 @@ upstreams and load balancers. At this time, nginx doesn't support
 dynamically loaded modules; i.e., modules are compiled along with the
 core at build stage. However, support for loadable modules and ABI is
 planned for the future major releases. More detailed information about
-the roles of different modules can be found in the
-\aosasecref{sec.nginx.internals} section of this document.
+the roles of different modules can be found in 
+\aosasecref{sec.nginx.internals}.
 
-%% DELETEME: Got to here with proofing. ==ARB
 While handling a variety of actions associated with accepting,
 processing and managing network connections and content retrieval,
 nginx uses event notification mechanisms and a number of disk I/O
 performance enhancements in Linux, Solaris and BSD-based operating
-systems, like \code{kqueue}, \code{epoll}, and \code{event ports}. The
+systems, like \code{kqueue}, \code{epoll}, and \code{event\,ports}. The
 goal is to provide as many hints to the operating system as possible,
 in regards to obtaining timely asynchronous feedback for inbound and
 outbound traffic, disk operations, reading from or writing to sockets,
@@ -278,17 +277,17 @@ every connection. Instead, \code{worker} processes accept new requests
 from a shared ``listen'' socket and execute a highly efficient
 run-loop inside each \code{worker} to process thousands of connections
 per \code{worker}. There's no arbitration or distribution of
-connections to the \code{worker}s. Upon startup, and initial set of
+connections to the \code{worker}s. Upon startup, an initial set of
 listening sockets is created. \code{worker}s then continuously accept,
 read from and write to the sockets while processing HTTP requests and
 responses.
 
 The run-loop is the most complicated part of the nginx \code{worker}
-code. It includes comprehensive inner calls and relyies heavily on the
+code. It includes comprehensive inner calls and relies heavily on the
 idea of asynchronous task handling. Asynchronous operations are
 implemented through modularity, event notifications, extensive use of
 callback functions and fine-tuned timers. Overall, the key principle
-is to be as nonblocking as possible. The only situation where nginx
+is to be as non-blocking as possible. The only situation where nginx
 can still block is when there's not enough disk storage performance
 for a \code{worker} process.
 
@@ -296,9 +295,9 @@ Because nginx does not fork a process or thread per connection, memory
 usage is very conservative and extremely efficient in the vast
 majority of cases. nginx conserves CPU cycles as well because there's
 no ongoing create-destroy pattern for processes or threads. What nginx
-does is check the state of the network and storage, initializes new
-connections, adds them to the run-loop, processing asynchronously
-until completion, at which point the a connection is deallocated and
+does is check the state of the network and storage, initialize new
+connections, add them to the run-loop, and process asynchronously
+until completion, at which point the connection is deallocated and
 removed from the run-loop. Combined with the careful use of
 \code{syscall}s and an accurate implementation of supporting
 interfaces like pool and slab memory allocators, nginx typically
@@ -323,8 +322,8 @@ the load pattern is CPU intensive---for instance, handling a lot of
 TCP/IP, doing SSL, or compression---the number of nginx \code{worker}s
 should match the number of CPU cores; if the load is mostly disk I/O
 bound---for instance, serving different sets of content from storage,
-or heavy proxying---the number of \code{worker}s might be 1.5-2
-times the number of cores. Some engineers choose the number of
+or heavy proxying---the number of \code{worker}s might be one and a half
+to two times the number of cores. Some engineers choose the number of
 \code{worker}s based on the number of individual storage units
 instead, though efficiency of this approach depends on the type and
 configuration of disk storage.
@@ -345,8 +344,8 @@ underlying storage architecture.
 Another problem with the existing \code{worker} model is related to
 limited support for embedded scripting. For one, with the standard
 nginx distribution, only embedding Perl scripts is supported. There is
-a simple explanation for that---the key problem here is the
-possibility of an embedded script to potentially block on any
+a simple explanation for that: the key problem is the
+possibility of an embedded script to block on any
 operation or exit unexpectedly. Both types of behavior would
 immediately lead to a situation where the worker is hung, affecting
 many thousands of connections at once. More work is planned to make
@@ -357,11 +356,11 @@ a broader range of applications.
 
 \begin{aosasect2}{nginx Process Roles}
 
-nginx runs several processes in memory. There is a single master
+nginx runs several processes in memory; there is a single master
 process and several \code{worker} processes. There are also a couple
 of special purpose processes, specifically a cache loader and cache
 manager. All processes are single-threaded in version 1.x of
-nginx. All processes primarily use shared memory mechanisms for
+nginx. All processes primarily use shared-memory mechanisms for
 inter-process communication. The master process is run as the
 \code{root} user. The cache loader, cache manager and \code{worker}s
 run as an unprivileged user.
@@ -415,7 +414,7 @@ Caching in nginx is implemented in the form of hierarchical data
 storage on a filesystem. Cache keys are configurable, and different
 request-specific parameters can be used to control what gets into the
 cache. Cache keys and cache metadata are stored in the shared memory
-segments---which the cache loader, cache manager and \code{worker}s
+segments, which the cache loader, cache manager and \code{worker}s
 can access. Currently there is not any in-memory caching of files,
 other than optimizations implied by the operating system's virtual
 filesystem mechanisms. Each cached response is placed in a different
@@ -424,17 +423,17 @@ controlled through nginx configuration directives. When a response is
 written to the cache directory structure, the path and the name of the
 file are derived from an MD5 hash of the proxy URL.
 
-What happens when nginx is going to place content in the cache is the
-following. When nginx reads the response from an upstream server, the
+The process for placing content in the cache is as follows:
+When nginx reads the response from an upstream server, the
 content is first written to a temporary file outside of the cache
 directory structure. When nginx finishes processing the request it
 renames the temporary file and moves it to the cache directory. If the
 temporary files directory for proxying is on another file system, the
-file will be copied. Thus it's recommended to keep both temporary and
+file will be copied, thus it's recommended to keep both temporary and
 cache directories on the same file system. It is also quite safe to
 delete files from the cache directory structure when they need to be
 explicitly purged. There are third-party extensions for nginx
-available which make it possible to control cached content remotely,
+which make it possible to control cached content remotely,
 and more work is planned to integrate this functionality in the main
 distribution.
 
@@ -442,12 +441,12 @@ distribution.
 
 \end{aosasect1}
 
-\begin{aosasect1}{nginx Configuration}
+\begin{aosasect1}{Nginx Configuration}
 
-Ideas that served as the foundation for nginx configuration design
-were inspired by the Apache experience of the author of nginx. The
-main lesson learned is that a much more scalable configuration system
-is essential for a web server. The scaling main problem was
+nginx's configuration system was inspired by Igor Sysoev's experiences with
+Apache. His main insight was 
+that a scalable configuration system
+is essential for a web server. The main scaling problem was
 encountered when maintaining large complicated configurations with
 lots of virtual servers, directories, locations and datasets. In a
 relatively big web setup it can be a nightmare if not done properly
@@ -458,7 +457,7 @@ operations and to provide an easy means for further expansion of web
 server configuration.
 
 nginx configuration is kept in a number of plain text files which
-typically reside in \code{/usr/local/etc/nginx} or
+typically reside in \code{/usr/local\-/etc\-/nginx} or
 \code{/etc/nginx}. The main configuration file is usually called
 \code{nginx.conf}. To keep it uncluttered, parts of the configuration
 can be put in separate files which can be automatically included in
@@ -483,15 +482,17 @@ avoid unnecessary ambiguity there isn't anything like a ``global web
 server'' configuration. nginx configuration is meant to be clean and
 logical, allowing users to maintain complicated configuration files
 that comprise thousands of directives. To quote the author,
-``Locations, Directories, and other blocks in the global server
+``Locations, directories, and other blocks in the global server
 configuration are the features I never liked in Apache, so this is the
-reason why they were never implemented in nginx''.
+reason why they were never implemented in nginx.''
+%% QUERY: Can you give a source for this quote? Is it from a blog
+%% post, from a newsgroup posting, a personal email...? --ARB
 
 Configuration syntax, formatting and definitions follow a so-called
-C-style convention. This particular approach for making configuration
-files is already a proven recipe for a variety of open source and
-commercial software. By its design, C-style configuration is well
-suited for nested descriptions, being logical and easy to create, read
+C-style convention. This particular approach to making configuration
+files is already being used by a variety of open source and
+commercial software applications. By design, C-style configuration is well-suited 
+for nested descriptions, being logical and easy to create, read
 and maintain, and liked by many engineers. C-style configuration of
 nginx can also be easily automated.
 
@@ -505,16 +506,18 @@ rewrite engine differs too.
 In general, nginx settings also provide support for several original
 mechanisms that can be very useful as part of a lean web server
 configuration. It makes sense to briefly mention variables and the
-\code{try\_files} directive here, which are somewhat unique to
-nginx. Variables in nginx were developed to provide an additional even
-more powerful mechanism to control run-time configuration of a web
+\code{try\_files} directive, which are somewhat unique to
+nginx. Variables in nginx were developed to provide an additional 
+even-more-powerful mechanism to control run-time configuration of a web
 server. Variables are optimized for quick evaluation and are
 internally pre-compiled to indices. Evaluation is done on demand;
 i.e., the value of a variable is typically calculated only once and
 cached for the lifetime of a particular request. Variables can be used
 with different configuration directives, providing additional
 flexibility for describing conditional request processing
-behavior. The \code{try\_files} directive was initially meant to
+behavior. 
+
+The \code{try\_files} directive was initially meant to
 gradually replace conditional \code{if} configuration statements in a
 more proper way, and it was designed to quickly and efficiently
 try/match against different URI-to-content mappings. Overall, the
@@ -522,25 +525,20 @@ try/match against different URI-to-content mappings. Overall, the
 and useful. It is recommended that the reader thoroughly check the
 \code{try\_files} directive and adopt its use whenever
 applicable\footnote{See
-  \url{http://nginx.org/en/docs/http/ngx\_http\_core\_module.html#try\_files}
+  \url{http://nginx.org/en/docs/http/ngx_http_core_module.html#try_files}
   for more details.}.
 
 \end{aosasect1}
 
 \begin{aosasect1}{nginx Internals} \label{sec.nginx.internals}
 
-In this section an attempt is made to describe some of the internals
-of nginx. It can be important for a system administrator to understand
-the general picture of nginx's internals, and the relationship between
-different parts of nginx code.
-
 As was mentioned before, the nginx codebase consists of a core and a
 number of modules. The core of nginx is responsible for providing the
 foundation of the web server, web and mail reverse proxy
-functionalities, enables the use of underlying network protocols,
+functionalities; it enables the use of underlying network protocols,
 builds the necessary run-time environment, and ensures seamless
-interaction between different modules. However, most of the protocol
-and application specific features are done by nginx modules, not the
+interaction between different modules. However, most of the protocol-
+and application-specific features are done by nginx modules, not the
 core.
 
 Internally, nginx processes connections through a pipeline, or chain,
@@ -553,15 +551,15 @@ memcached.
 There are a couple of nginx modules that sit somewhere between the
 core and the real ``functional'' modules. These modules are
 \code{http} and \code{mail}. These two modules provide an additional
-level of abstraction between the core and lower level components. In
+level of abstraction between the core and lower-level components. In
 these modules, the handling of the sequence of events associated with
 a respective application layer protocol like HTTP, SMTP or IMAP is
-implemented. In combination with the nginx core, these upper level
+implemented. In combination with the nginx core, these upper-level
 modules are responsible for maintaining the right order of calls to
 the respective functional modules. While the HTTP protocol is
-currently implemented as part of \code{http} module, there are plans
-to separate it into a functional module in the future, due to a
-necessity to support other protocols like SPDY.
+currently implemented as part of the \code{http} module, there are plans
+to separate it into a functional module in the future, due to 
+the need to support other protocols like SPDY\footnote{See "SPDY: An experimental protocol for a faster web" at \url{http://www.chromium.org/spdy/spdy-whitepaper}}.
 
 The functional modules can be divided into event modules, phase
 handlers, output filters, variable handlers, protocols, upstreams and
@@ -700,7 +698,7 @@ and header.
 
 When the HTTP request header is read, nginx does a lookup of the
 associated virtual server configuration. If the virtual server is
-found, the request goes through six phases.
+found, the request goes through six phases:
 
 \begin{aosaenumerate}
 
@@ -709,7 +707,7 @@ found, the request goes through six phases.
 \item location phase
 
 \item location rewrite phase (which can bring the request back to the
-previous step)
+previous phase)
 
 \item access control phase
 
@@ -758,7 +756,7 @@ pipeline). In turn, the output response being generated can be passed
 to the client before the entire response from the upstream server is
 received.
 
-There are header filters and body filters. nginx feeds the header and
+There are header filters and body filters; nginx feeds the header and
 the body of the response to the associated filters separately.
 
 A header filter consists of three basic steps:
@@ -773,7 +771,7 @@ A header filter consists of three basic steps:
 
 \end{aosaenumerate}
 
-Body filters transform the generated content. Examples of body filters
+\noindent Body filters transform the generated content. Examples of body filters
 include:
 
 \begin{aosaitemize}
@@ -885,7 +883,7 @@ kind of module may be called the variable handler.
 
 Memory allocation mechanisms implemented inside a single nginx
 \code{worker} were, to some extent, inspired by Apache. A high-level
-description of nginx memory management would be the following. For
+description of nginx memory management would be the following: For
 each connection, the necessary memory buffers are dynamically
 allocated, linked, used for storing and manipulating the header and
 body of the request and the response, and then freed upon connection
@@ -897,9 +895,9 @@ Going a bit deeper, when the response is generated by a module, the
 retrieved content is put in a memory buffer which is then added to a
 buffer chain link. Subsequent processing works with this buffer chain
 link as well. Buffer chains are quite complicated in nginx because
-there are several processing scenarios depending on the module
+there are several processing scenarios which differ depending on the module
 type. For instance, it can be quite tricky to manage the buffers
-precisely while implementing a body filter module. Such modules can
+precisely while implementing a body filter module. Such a module can
 only operate on one buffer (chain link) at a time and it must decide
 whether to overwrite the input buffer, replace the buffer with a newly
 allocated buffer, or insert a new buffer before or after the buffer in
@@ -926,15 +924,15 @@ simultaneous safe use of shared memory, a number of locking mechanisms
 are available (mutexes and semaphores). In order to organize complex
 data structures, nginx also provides a red-black tree
 implementation. Red-black trees are used to keep cache metadata in
-shared memory, track non-regex location definitions and in a couple of
+shared memory, track non-regex location definitions and for a couple of
 other tasks.
 
-Unfortunately all of the above was never described in a consistent and
+Unfortunately, all of the above was never described in a consistent and
 simple manner, making the job of developing third-party extensions for
 nginx quite complicated. Although some good documents on nginx
 internals exist---for instance, those produced by Evan Miller---such
 documents required a huge reverse engineering effort, and the
-implementation of nginx modules is still more of a black art for many.
+implementation of nginx modules is still a black art for many.
 
 Despite certain difficulties associated with third-party module
 development, the nginx user community recently saw a lot of useful
@@ -954,21 +952,21 @@ typically followed definitions of legacy server and network hardware,
 operating systems, and old Internet architecture in general. However,
 this didn't prevent Igor from thinking he might be able to improve
 things in the web servers area. So, while the first lesson might seem
-to be obvious, it is that there is always room for improvement.
+obvious, it is this: there is always room for improvement.
 
-With the idea for better web software in mind, Igor had actually spent
+With the idea for better web software in mind, Igor spent
 a lot of time developing the initial code structure and studying
 different ways of optimizing the code for a variety of operating
-systems. With the ongoing development of a prototype of nginx version
-2.0 ten years after Igor began his work on nginx, it is clear that the
+systems. It took ten years for development of a prototype of nginx version
+2.0 to begin after Igor began his work on nginx; it is clear that the
 initial prototype of a new architecture, and the initial code
-structure are vitally important for the future of a software product.
+structure, are vitally important for the future of a software product.
 
 Another point worth mentioning is that development should be
 focused. The Windows version of nginx is probably a good example of
 how it is worth avoiding the dilution of development efforts on
 something that is neither the developer's core competence or the
-target application. It is equally applicable to the rewrite engine,
+target application. It is equally applicable to the rewrite engine
 that appeared during several attempts to enhance nginx with more
 features for backward compatibility with the existing legacy setups.
 
