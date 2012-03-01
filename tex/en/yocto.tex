@@ -101,7 +101,7 @@ architectural designs of BitBake and some of the decisions surrounding
 them and their implementation by BitBake contributors are ones we will
 be discussing later.
 
-\aosafigure{../images/yocto/aosa1.jpg}{Poky Build Process}{fig.yocto.execution}
+\aosafigure{../images/yocto/aosa1.jpg}{Poky build process}{fig.yocto.execution}
 
 BitBake then runs through its weighted task queue, spawning threads
 (up to the number defined by \code{BB\_NUMBER\_THREADS} in
@@ -189,7 +189,7 @@ pkg_prerm_${PN}() {
   update-alternatives --remove fgrep fgrep.${PN}
 }
 \end{verbatim}
-\caption{BitBake Recipe for \code{grep}}
+\caption{BitBake recipe for \code{grep}}
 \label{fig.yocto.recipe}
 \end{figure}
 
@@ -218,7 +218,7 @@ use an imaginary layer called \code{meta-myproject}, to provide the software
 and configuration to create a graphical user interface to enable
 configuration of the NAS.
 
-\aosafigure{../images/yocto/aosa2.jpg}{Example of BitBake Layering}{fig.yocto.layering}
+\aosafigure{../images/yocto/aosa2.jpg}{Example of BitBake layering}{fig.yocto.layering}
 
 During the setup of the BitBake environment, by sourcing
 \code{oe-build-init-env}, some initial configuration files are generated.
