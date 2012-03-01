@@ -1,4 +1,4 @@
-\begin{aosachapter}{Nginx}{s:nginx}{Andrew Alexeev}
+\begin{aosachapter}{nginx}{s:nginx}{Andrew Alexeev}
 
 nginx (pronounced ``engine x'') is a free open source web server
 written by Igor Sysoev, a Russian software engineer. Since its public
@@ -441,7 +441,7 @@ distribution.
 
 \end{aosasect1}
 
-\begin{aosasect1}{Nginx Configuration}
+\begin{aosasect1}{nginx Configuration}
 
 nginx's configuration system was inspired by Igor Sysoev's experiences with
 Apache. His main insight was 
@@ -481,7 +481,8 @@ overlap. For instance, there is no such thing as putting a
 avoid unnecessary ambiguity there isn't anything like a ``global web
 server'' configuration. nginx configuration is meant to be clean and
 logical, allowing users to maintain complicated configuration files
-that comprise thousands of directives. To quote the author,
+that comprise thousands of directives. In a private conversation, the
+Sysoev said, 
 ``Locations, directories, and other blocks in the global server
 configuration are the features I never liked in Apache, so this is the
 reason why they were never implemented in nginx.''
