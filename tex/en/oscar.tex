@@ -5,19 +5,19 @@ have attempted to bridge the gap between the physical and digital
 worlds of patient care. Governments in countries around the world have
 attempted to come up with a solution that enables better care for
 patients at a lower cost while reducing the paper trail that medicine
-typically generates. Many countries have been very successful in their
-attempts to create such a system---some, like the Canadian province of
+typically generates. Many governments have been very successful in their
+attempts to create such a system---some, like that of the Canadian province of
 Ontario, have not (some may remember the so-called ``eHealth Scandal''
 in Ontario that, according to the Auditor General, cost taxpayers \$1
 billion CAD).
 
-An EMR permits the digitization of a patient chart and when used
+An EMR permits the digitization of a patient chart, and when used
 properly should make it easier for a physician to deliver care. A good
-system should provider a physician a bird's eye view of a patient's
+system should provide a physician a bird's eye view of a patient's
 current and ongoing conditions, their prescription history, their
 recent lab results, history of their previous visits, and so on. OSCAR
 (Open Source Clinical Application Resource), an approximately
-10 year old project of McMaster University in Hamilton, Ontario,
+ten-year-old project of McMaster University in Hamilton, Ontario,
 Canada, is the open source community's attempt to provide such a system
 to physicians at low or no cost.
 
@@ -52,7 +52,7 @@ how OSCAR might have been designed today if there was an opportunity to do so.
 
 As a Tomcat web application, OSCAR generally follows the typical
 model-view-controller design pattern. This means that the model code
-(Data Access Objects, or DAOs) are separate from the controller code
+(Data Access Objects, or DAOs) is separate from the controller code
 (servlets) and those are separated from the views (Java Server Pages,
 or JSPs). The most significant difference between the two is that
 servlets are classes and JSPs are HTML pages marked up with Java
@@ -69,7 +69,7 @@ I mentioned that OSCAR is a fairly old project. This has implications
 for how effectively the MVC pattern has been applied. In short, there
 are sections of the code that completely disregard the pattern as they
 were written before tighter enforcement of the MVC pattern began. Some
-of the most common features are written this way---for example,
+of the most common features are written this way; for example,
 performing many actions related to demographics (patient records) are
 done via the \code{demographiccontrol.jsp} file---this includes
 creating patients and updating their data.
@@ -78,7 +78,7 @@ OSCAR's age is a hurdle for tackling many of the problems that are
 facing the source tree today. Indeed, there has been significant
 effort made to improve the situation, including enforcing design rules
 via a code review process. This is an approach that the community at
-present has decided will allow better collaboration in the future and
+present has decided will allow better collaboration in the future, and
 will prevent poor code from becoming part of the code base, which has
 been a problem in the past.
 
@@ -98,8 +98,8 @@ line, we must make the decision carefully.
 
 \begin{aosasect1}{Version Control}
 
-With OSCAR, a CVS repository has been used for much of the project's
-life. Commits weren't often checked for consistency and it would be
+A CVS repository was used for much of OSCAR's
+life. Commits weren't often checked for consistency and it was
 possible to commit code that could break the build. It was tough for
 developers to keep up with changes---especially new developers joining
 the project late in its lifecycle. A new developer could see something
@@ -109,20 +109,22 @@ significant had been modified (this was especially prevalent during
 long holidays, such as Christmas break, when not many people were
 watching the source tree).
 
-Things have changed now. OSCAR's source tree is now controlled by
-git. Any commits to the main branch have to pass code style checking,
+Things have changed; OSCAR's source tree is now controlled by
+git. Any commits to the main branch have to pass code-style checking and
 unit testing, successfully compile, and be code reviewed by the
-developers (much of this is handled by the combination of Hudson and
-Gerrit). The project has become much more tightly controlled. Many
+developers (much of this is handled by the combination of Hudson\footnote{A
+continuous integration server: \url{http://hudson-ci.org/}.} and
+Gerrit\footnote{A code review tool: \url{http://code.google.com/p/gerrit/}.}). 
+The project has become much more tightly controlled. Many
 or all of the issues caused by poor handling of the
 source tree have been solved.
 
 \end{aosasect1}
 
-\begin{aosasect1}{Data Model/DAOs}
+\begin{aosasect1}{Data Models/DAOs}
 
 When looking through the OSCAR source, you may notice that there are
-many different ways to access the database---you can use a direct
+many different ways to access the database: you can use a direct
 connection to the database via a class called \code{DBHandler}, use a
 legacy Hibernate model, or use a generic JPA model. As new and easier
 database access models became available, they were integrated into
@@ -132,30 +134,31 @@ three types of data access methods are best described with examples.
 
 \end{aosasect1}
 
-\begin{aosasect1}{EForms (\code{DBHandler})}
+\begin{aosasect2}{EForms (\code{DBHandler})}
 
 The EForm system allows users to create their own forms to attach to
 patient records---this feature is usually used to replace a
-paper-based form with a digital version. The form's template file is
-loaded on each creation of a form of that type and the data in the
+paper-based form with a digital version. 
+On each creation of a form of a particular type, the form's template file is
+loaded; then the data in the
 form is stored in the database for each instance. Each instance is
 attached to a patient record.
 
 EForms allow you to pull in certain types of data from a patient chart
 or other area of the system via free-form SQL queries (which are
 defined in a file called \code{apconfig.xml}). This can be extremely
-useful as a form can load and then be immediately populated with
+useful, as a form can load and then immediately be populated with
 demographic or other relevant information without intervention from
 the user; for example, you wouldn't have to type in a patient's name,
 age, date of birth, hometown, phone number, or the last note that was
-recorded for the patient (and so on).
+recorded for that patient.
 
-A design decision was made when originally developing the EForm module
+A design decision was made, when originally developing the EForm module,
 to use raw database queries to populate a POJO (plain-old Java object)
 called \code{EForm} in the controller that is then passed to the view
-layer to display data on the screen, sort of like a Java Bean. Using a
+layer to display data on the screen, sort of like a JavaBean. Using a
 POJO in this case is actually closer in design to the Hibernate or JPA
-architecture as I'll discuss in the next sections.
+architecture, as I'll discuss in the next sections.
 
 All of the functionality regarding saving EForm instances and
 templates is done via raw SQL queries run through the \code{DBHandler}
@@ -168,8 +171,8 @@ class that uses
 injection doesn't occur.
 
 Depending on the type of application you're writing, direct access of
-a database is sometimes fine. In certain cases, removing that
-restriction can even speed development up. Using this method to access
+a database is sometimes fine. In certain cases, it
+can even speed development up. Using this method to access
 the database doesn't conform to the model-view-controller design
 pattern, though: if you're going to change your database structure
 (the model), you have to change the SQL query elsewhere (in the
@@ -181,16 +184,16 @@ It may not surprise you to find out that the \code{DBHandler} object
 is one of the oldest pieces of code still intact in the source. I
 personally don't know where it originated from but I consider it to be
 the most ``primitive'' of database access types that exist in the
-OSCAR source. No new code is permitted to use this class, and if there
-is code that gets committed that does use it, the commit will be
+OSCAR source. No new code is permitted to use this class, and if 
+code is committed that uses it, the commit will be
 rejected automatically.
 
-\end{aosasect1}
+\end{aosasect2}
 
-\begin{aosasect1}{Demographic Records (Hibernate)}
+\begin{aosasect2}{Demographic Records (Hibernate)}
 
 A demographic record contains general metadata about a patient; for
-example, their name, age, address, language, and sex. Consider it to
+example, their name, age, address, language, and sex; consider it to
 be the result of an intake form that a patient fills out during their
 first visit to a doctor. All of this data is retrieved and displayed
 as part of OSCAR's Master Record for a specific demographic.
@@ -210,7 +213,7 @@ field and database column. The file describes which table to look at
 and what type of object to return. When OSCAR starts, this file will
 be read and a sanity check occurs to make sure that this kind of
 mapping can actually be made (server startup fails if it can't). Once
-running, you grab and instance of the DemographicDao object and run
+running, you grab an instance of the \code{DemographicDao} object and run
 queries against it.
 
 The best part about using Hibernate over \code{DBHandler} is that all
@@ -220,7 +223,7 @@ any type of SQL injection attack. Hibernate will often build large
 queries to grab the data, and it doesn't always perform in an
 extremely efficient way.
 
-I mentioned in the previous section an example about the EForm module
+In the previous section I mentioned an example of the EForm module
 using \code{DBHandler} to populate a POJO. This is the next logical
 step to preventing that kind of code from being written. If the model
 has to change, only the \code{.hbm.xml} file and the model class have
@@ -235,16 +238,16 @@ incorrectly OSCAR won't even start. For this reason, nobody should be
 writing new code that uses pure Hibernate, either. Instead, generic
 JPA is being embraced in new development.
 
-\end{aosasect1}
+\end{aosasect2}
 
-\begin{aosasect1}{Integrator Consent (JPA)}
+\begin{aosasect2}{Integrator Consent (JPA)}
 
 The newest form of database access is done via generic JPA. If the
 OSCAR project decided to switch from Hibernate to another database
 access API, conforming to the JPA standard for DAOs and Model objects
-makes it very easy to migrate. Unfortunately, because this is so
+would make it very easy to migrate. Unfortunately, because this is so
 ``new'' to the OSCAR project, there are almost no areas of the system
-that actually use this method to get data!
+that actually use this method to get data.
 
 In any case, let me explain how it works. Instead of a \code{.hbm.xml}
 file, you add annotations to your Model and DAO objects. These
@@ -277,23 +280,23 @@ way that ActiveRecord works in Ruby on Rails. The model class defines
 the data type and the database stores it; what happens in between
 that---getting data in and out---is not up to the user.
 
-\end{aosasect1}
+\end{aosasect2}
 
-\begin{aosasect1}{Issues with Hibernate and JPA}
+\begin{aosasect2}{Issues with Hibernate and JPA}
 
-Both Hibernate and JPA offer some significant benefits to typical use
+Both Hibernate and JPA offer some significant benefits in typical use
 cases. For simple retrieval and storage, they really cut time out of
 development and debugging.
 
 However, that doesn't mean that their implementation into OSCAR has
 been without issue. Because the user doesn't define the SQL between
 the database and the POJO referencing a specific row, Hibernate gets
-to choose the best way to do it. The best way can manifest itself in a
+to choose the best way to do it. The ``best way'' can manifest itself in a
 couple of ways: Hibernate can choose to just retrieve the simple data
 from the row, or it can perform a join and retrieve a lot of
 information at once. Sometimes these joins get out of hand.
 
-I'll talk about another example. The \code{casemgmt\_note} table
+Here's another example: The \code{casemgmt\_note} table
 stores all patient notes. Each note object stores lots of metadata
 about the note---but it also stores a list of all of the issues that
 the note deals with (issues can be things like, ``smoking cessation''
@@ -327,9 +330,9 @@ that has 10,000,000 rows, you've just created a $5{\times}10^{12}$ row
 temporary table in memory, which the select statement is then run against and
 that temporary table is discarded.
 
-For one very specific extreme case that we ran into, the join across
-three tables caused a temporary table to be created that was created
-was somewhere around $7{\times}10^{12}$ rows in length, of which about
+In one extreme case that we ran into, the join across
+three tables caused a temporary table to be created that was 
+around $7{\times}10^{12}$ rows in length, of which about
 1000 rows were eventually selected. This operation took about 5
 minutes and locked the \code{casemgmt\_note} table while it was running.
 
@@ -338,8 +341,7 @@ statement that restricted the scope of the first table before joining
 with the other two. The newer, far more efficient query brought the
 number of rows to select down to a very manageable 300,000 and
 enormously improved performance of the notes retrieval operation (down
-to about 0.10 seconds to perform the same select statement as
-mentioned previously).
+to about 0.1 seconds to perform the same select statement).
 
 The moral of the story is simply that while Hibernate does a fairly
 good job, unless the join is very explicitly defined and controlled
@@ -350,26 +352,25 @@ implementation of the query up to the database access library and only
 really allows you to control definition. Unless you're careful with
 how you define things, it can all fall apart under extreme
 conditions. Furthermore, if you're a database programmer with lots of
-SQL knowledge, it won't really help too much when designing a
-JPA-enabled class and it removes some of the control that you would
+SQL knowledge, it won't really help much when designing a
+JPA-enabled class, and it removes some of the control that you would
 have if you were writing an SQL statement manually. Ultimately, a good
-knowledge of both SQL as well as JPA annotations and how they affect
+knowledge of both SQL and JPA annotations and how they affect
 queries is required.
 
-\end{aosasect1}
+\end{aosasect2}
 
 \begin{aosasect1}{Permissions}
 
-CAISI was originally a standalone product---a fork of OSCAR---to help
+CAISI (Client Access to Integrated Services and Information) was originally a standalone product---a fork of OSCAR---to help
 manage homeless shelters in Toronto. A decision was eventually made to
 merge the code from CAISI into the main source branch. The original
 CAISI project may no longer exist, but what it gave to OSCAR is very
-important.
+important: its permission model.
 
-With that said, the permissions model in OSCAR is extremely powerful
+The permissions model in OSCAR is extremely powerful
 and can be used to create just about as many roles and permission sets
-as possible.
-
+as possible.  
 \emph{Providers} belong to \emph{programs} (as \emph{staff}) where
 they have a specific \emph{role}. Each \emph{program} takes place at
 a \emph{facility}. Each \emph{role} has a description (for example,
@@ -383,13 +384,16 @@ This format may be easy to understand, but under the hood it requires
 quite a bit of heavy lifting to actually check for these types of
 permissions. The name of the role that the current provider has is
 checked against its list of permissions for a match with the action
-that they are trying to perform. For example, reading a doctor's notes
-would have ``read doctor notes'' checked for each and every note
+that they are trying to perform. For example, a provider attempting to 
+read a doctor's notes
+would cause ``read doctor notes'' to be checked for each and every note
 written by a doctor.
 
-Another problem is the reliance on English. Anybody using OSCAR in a
+Another problem is the reliance on English for permission definition. 
+Anybody using OSCAR in a
 language other than English would still need to write their
-permissions in a format such as ``read \emph{[role]} notes''.
+permissions in a format such as ``read \emph{[role]} notes'', using
+the English words ``read'', ``write'', ``notes'', and so on.
 
 CAISI's permission model is a significant part of OSCAR, but it's not
 the only model in place. Before CAISI was implemented, another
@@ -398,26 +402,23 @@ in use in many parts of the system today.
 
 For this second system, providers are assigned one or many roles (for
 example, ``doctor'', ``nurse'', ``admin'', and so on). They can be
-assigned as many roles as you want---each role's permissions stack on
+assigned as many roles as necessary---the roles' permissions stack on
 top of each other. These permissions are generally used for
 restricting access to parts of the system, as opposed to CAISI's
-permissions where you are being restricted to certain pieces of data
+permissions which restrict access to certain pieces of data
 on a patient's chart. For example, a user has to have the ``\_admin''
 ``read'' permission on a role that they have assigned to them to be
 able to access the Admin panel. Having the ``read'' permission will
 exempt them from being able to perform administrative tasks,
 however. They'll need the ``write'' permission as well for that.
 
-Both of these systems accomplish roughly the same goal. It's due to
+Both of these systems accomplish roughly the same goal; it's due to
 CAISI's merge later in the project lifecycle that they both
 exist. They don't always exist happily together, so in reality it can
 be a lot easier to just focus on using one for day-to-day operations
 of OSCAR. You can generally date code in OSCAR by knowing which
 permissions model preceded which other permissions model:
-
-% FIXME: TA: this kind of comes out of nowhere -- is there a better 
-%% way to format this?
-Provider Type $\rightarrow$ Provider Roles $\rightarrow$ CAISI Programs/Roles
+\emph{Provider Type} then \emph{Provider Roles} then \emph{CAISI Programs/Roles}
 
 The oldest type of permissions model, ``Provider Type'', is so dated
 that it's actually not used in most parts of the system and is in fact
@@ -434,13 +435,14 @@ OSCAR's Integrator component is a separate web application that
 independent OSCAR instances use to exchange patient, program and
 provider information over a secure link. It can be optionally
 installed as a component for an installation in an environment such as
-a LHN or a hospital. The easiest way to describe the Integrator is as
+%% QUERY: Confirm Local Health Network is correct. --ARB
+a LHN (Local Health Network) or a hospital. The easiest way to describe the Integrator is as
 a temporary storage facility.
 
 Consider the following use case and argument for use of the
-Integrator: in Hospital Ex, there is an ENT (ear, nose, and throat)
-clinic as well as an Endocrinology clinic. If an ENT doctor refers
-their patient to an Endocrinologist upstairs, they may be required to
+Integrator: in Hospital X, there is an ENT (ear, nose, and throat)
+clinic as well as an endocrinology clinic. If an ENT doctor refers
+their patient to an endocrinologist upstairs, they may be required to
 send along patient history and records. This is inconvenient and
 generates more paper than is necessary---perhaps the patient is only
 seeing the endocrinologist once. By using the Integrator, the
@@ -448,8 +450,8 @@ patient's data can be accessed on the endocrinologist's EMR, and
 access to the contents of the patient's chart can be revoked after the
 visit.
 
-A more extreme example is if an unconscious man shows up in an ER with
-nothing but his health card; because the home clinic and the
+A more extreme example: if an unconscious man shows up in an ER with
+nothing but his health card, because the home clinic and the
 hospital's system are connected via the Integrator, the man's record
 can be pulled and it can be very quickly realized that he has been
 prescribed the blood thinner Warfarin. Ultimately, information
@@ -468,7 +470,7 @@ service; OSCAR communicates via POST and GET requests to the
 Integrator URL.
 
 As an independently developed project (initially as part of the CAISI
-project, actually), the Integrator is fairly strict in adhering to the
+project), the Integrator is fairly strict in adhering to the
 MVC design pattern. The original developers have done an excellent job
 of setting it up with very clearly defined lines between the models,
 views, and controllers. The most recently implemented type of database
@@ -497,28 +499,29 @@ on the Integrator doesn't require an update of that file.
 \begin{aosasect2}{Design}
 
 Data for the Integrator comes in from all of the connected EMRs at
-scheduled times and once there another EMR can request that data. None
+scheduled times and, once there, another EMR can request that data. None
 of the data on the Integrator is stored permanently, though---its
 database could be erased and it could be rebuilt from the client data.
 
-What data is sent is configured individually at each OSCAR sending
-data to the Integrator, and except in situations where the entire
+The dataset sent is configured individually at each OSCAR instance
+which is connected to a particular 
+Integrator, and except in situations where the entire
 patient database has to be sent to the Integrator server, only patient
 records that have been viewed since the previous push to the server
 are sent. The process isn't exactly like delta patching, but it's
 close.
 
-\aosafigure[250pt]{../images/oscar/integratoroscar.png}{Data exchange between OSCARs and Integrator.}{fig.oscar.integrator}
+\aosafigure[200pt]{../images/oscar/integratoroscar.png}{Data exchange between OSCARs and Integrator.}{fig.oscar.integrator}
 
 Let me go into a little more detail about how the Integrator works
 with an example: a remote clinic seeing another clinic's patient. When
-that clinic wants to access that patient's record, the clinics first
+that clinic wants to access the patient's record, the clinics first
 have to have been connected to the same Integrator server. The
 receptionist can search the Integrator for the remote patient (by name
 and optionally date of birth or sex) and find their record stored on
 the server. They initiate the copy of a limited set of the patient's
 demographic information and then double-check with the patient to make
-sure that it's ok to retrieve their record from their home clinic by
+sure that they consent to the retrieval of their record by
 completing a consent form. Once completed, the Integrator server will
 deliver whatever information the Integrator knows about that
 patient---notes, prescriptions, allergies, vaccinations, documents,
@@ -542,7 +545,7 @@ permanently stored on any remote machine.
 This has a very important implication, especially for patient consent
 and how that factors into the design of the Integrator. Let's say that
 a patient sees a remote physician and is fine with them having access
-to their record, but they only want to do so temporarily. After their
+to their record, but only temporarily. After their
 visit, they can revoke the consent for that clinic to be able to view
 that patient's record and the next time that clinic opens the
 patient's chart there won't be any data there (with the exception of
@@ -550,7 +553,7 @@ any data that was locally recorded). This ultimately gives control
 over how and when a record is viewed directly to the patient and is
 similar to walking into a clinic carrying a copy of your paper
 chart. They can see the chart while they're interacting with you, but
-you take it home with you once you're done there.
+you take it home with you when you leave.
 
 \aosafigure[250pt]{../images/oscar/integratordataretrieval.png}{A remote clinic can see the contents of a patient chart by asking for the data; if the appropriate consent is present, the data is sent. The data is never stored permanently on the remote OSCAR.}{fig.oscar.reply}
 
@@ -562,7 +565,7 @@ but not prescriptions, and so on. Ultimately it's up to the group of
 physicians who set up the Integrator server to decide what kinds of
 data they're comfortable with sharing with each other.
 
-As I mentioned briefly before, the Integrator is only a temporary
+As I mentioned before, the Integrator is only a temporary
 storage warehouse and no data is ever stored permanently there. This
 is another very important decision that was made during development;
 it allows clinics to back out of sharing any and all data via the
@@ -599,14 +602,14 @@ place---the most frequently used being DemographicWs.
 
 Dealing with the Integrator data can sometimes be a little
 tricky. OSCAR doesn't have anything truly built-in to handle this kind
-of data---so what is usually done is that when retrieving a certain
+of data, so what usually happens is when retrieving a certain
 kind of patient data (for example, notes for a patient's chart) the
 Integrator client is asked to retrieve data from the server. That data
 is then manually transformed into a local class representing that data
-(in the case of notes, it's a CaseManagementNote). A boolean flag is
+(in the case of notes, it's a \code{CaseManagementNote}). A boolean flag is
 set inside the class to indicate that it's a piece of remote content
 and that is used to change how the data is displayed to the user on
-the screen. On the opposite end, CaisiIntegratorUpdateTask handles taking local
+the screen. On the opposite end, \code{CaisiIntegratorUpdateTask} handles taking local
 OSCAR data, converting it into the Integrator's data format, and then
 sending that data to the Integrator server.
 
@@ -626,13 +629,13 @@ to debug in the event of an error.
 As you can probably imagine, OSCAR has its share of issues when it
 comes to overall design. It does, however, provide a complete feature
 set that most users will find no issues with. That's ultimately the
-goal of the project---provide a good solution that works in most
+goal of the project: provide a good solution that works in most
 situations.
 
 I can't speak for the entire OSCAR community, so this section will be
 highly subjective and from my point of view. I feel that there are
 some important takeaways from an architectural discussion about the
-project, though.
+project.
 
 First, it's clear that poor source control in the past has caused the
 architecture of the system to become highly chaotic in parts,
@@ -644,18 +647,19 @@ we won't have to deal with such a problem again.
 Next, because the project is so old, it's difficult to upgrade (or
 even change) libraries without causing significant disruption
 throughout the code base. That's exactly what has happened, though. I
-find it often difficult to figure out what's necessary and what isn't
+often find it difficult to figure out what's necessary and what isn't
 when I'm looking in the library folder. In addition to that, sometimes
 when libraries undergo major upgrades they break backwards
 compatibility (changing package names is a common offense). There are
-often several libraries included with OSCAR that accomplish the same
-task---this goes back to poor source control, but also that there has
+often several libraries included with OSCAR that all accomplish the same
+task---this goes back to poor source control, but also the fact that
+that there has
 been no list or documentation describing which library is required by
 which component.
 
 Additionally, OSCAR is a little inflexible when it comes to adding new
 features to existing subsystems. For example, if you want to add a new
-box to the E-Chart, you'll have to create a new JSP page, a new
+box to the E-Chart, you'll have to create a new JSP page and a new
 servlet, modify the layout of the E-Chart (in a few places), and
 modify the configuration file of the application so that your servlet
 can load.
@@ -688,12 +692,12 @@ past few versions) we can come up with a better design for how the
 application would be built. The system still has to provide a base
 level of functionality (mandated by the Ontario government for
 certification as an EMR), so that all has to be baked in by
-default. But if I were to design OSCAR today, I would design it in a
+default. But if OSCAR were to be redesigned today, it should be designed in a
 truly modular fashion that would allow modules to be treated as
 plugins; if you didn't like the default E-Form module, you could write
 your own (or even another module entirely). It should be able to speak
 to more systems (or more systems should be able to speak to it),
-including medical hardware that you see in increasing use throughout
+including the medical hardware that you see in increasing use throughout
 the industry, such as devices for measuring visual acuity. This also
 means that it would be easy to adapt OSCAR to the requirements of
 local and federal governments around the world for storing medical
@@ -712,14 +716,14 @@ proprietary code as a security measure (which isn't really a security
 measure at all), but being open source, OSCAR should lead the charge
 with better data protection.
 
-I stand firmly as a believer in the OSCAR project. Of the many
+I stand firmly as a believer in the OSCAR project. We have
 hundreds of users that we know about (and the many hundreds that we
-don't), we receive valuable feedback from the physicians who are
+don't), and we receive valuable feedback from the physicians who are
 interacting with our project on a daily basis. Through the development
 of new processes and new features, we hope to grow the installed base
 and to support users from other regions. It is our intention to make
 sure that what we deliver is something that improves the lives of the
-physicians who use OSCAR as well as the lives of their patients by
+physicians who use OSCAR as well as the lives of their patients, by
 creating better tools to help manage healthcare.
 
 \end{aosasect1}
