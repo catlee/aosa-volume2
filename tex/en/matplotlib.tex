@@ -4,18 +4,18 @@
 %% QUERY: Should we capitalize "matplotlib" in the title of the chapter? 
 %% What about elsewhere (i.e., at the beginning of sentences)?  --ARB
 
-matplotlib is a Python-based plotting library widely used in
-the scientific Python computing community with full support for 2D and
-limited support for 3D graphics.  The library targets a broad range of
+matplotlib is a Python-based plotting library with full support for 
+2D and limited support for 3D graphics, widely used in
+the Python scientific computing community.  The library targets a broad range of
 use cases.  It can embed graphics in the user interface toolkit of
 your choice, and currently supports interactive graphics on all major
 desktop operating systems in the GTK+, Qt, Tk, FLTK, wxWidgets and
 Cocoa toolkits.  It can be called interactively from the
 interactive Python shell to produce graphics with simple, procedural
-commands much like Mathematica\texttrademark, IDL\texttrademark\ or
+commands, much like Mathematica\texttrademark, IDL\texttrademark\ or
 MATLAB\texttrademark.  matplotlib can also be embedded in a headless
-webserver to provide hardcopy in both raster based formats like
-Portable Network Graphics (PNG) as well as vector formats like
+webserver to provide hardcopy in both raster-based formats like
+Portable Network Graphics (PNG) and vector formats like
 PostScript, Portable Document Format (PDF) and Scalable Vector
 Graphics (SVG) that look great on paper.
 
@@ -24,12 +24,12 @@ Graphics (SVG) that look great on paper.
 matplotlib's origin dates to an attempt by one of us (John Hunter) to
 free himself and his fellow epilepsy researchers from a proprietary
 software package for doing electrocorticography (ECoG) analysis.  The
-laboratory in which he worked had only one license to the software,
+laboratory in which he worked had only one license for the software,
 and the various graduate students, medical students, postdocs, interns,
 and investigators took turns sharing the hardware key dongle.
 MATLAB is widely used in the biomedical community for
 data analysis and visualization, so Hunter set out, with some success,
-to replace the proprietary software with a MATLAB based version that
+to replace the proprietary software with a MATLAB-based version that
 could be utilized and extended by multiple investigators.  MATLAB,
 however, naturally views the world as an array of floating point
 numbers, and the complexities of real-world hospital records for
@@ -43,8 +43,8 @@ the leading desktop windowing system for Linux.
 matplotlib was thus originally developed as an EEG/ECoG visualization
 tool for this GTK+ application, and this use case directed its
 original architecture.  matplotlib was originally designed to serve a
-second purpose as well: as a replacement for interactive command
-driven graphics generation, something that MATLAB does very well.  The
+second purpose as well: as a replacement for interactive command-driven 
+graphics generation, something that MATLAB does very well.  The
 MATLAB design makes the simple task of loading a data file and
 plotting very straightforward, where a full object-oriented API would
 be too syntactically heavy.  So matplotlib also provides a stateful
@@ -59,7 +59,7 @@ dictionaries, sets and more.
 
 \begin{aosasect1}{Overview of Matplotlib Architecture}
 
-The top level matplotlib object that contains and manages all of the
+The top-level matplotlib object that contains and manages all of the
 elements in a given graphic is called the \code{Figure}.  One of the
 core architectural tasks matplotlib must solve is implementing a
 framework for representing and manipulating the \code{Figure} that
@@ -72,8 +72,7 @@ rendering to multiple devices, but also the basic event
 handling and windowing of most popular user interface toolkits.
 Because of this, users can create fairly rich interactive graphics
 and toolkits incorporating mouse and keyboard input that can be
-plugged into the six user interface toolkits we support without
-modification.
+plugged without modification into the six user interface toolkits we support.
 
 The architecture to accomplish this is logically separated into three
 layers, which can be viewed as a stack.  Each layer that sits above
@@ -140,14 +139,14 @@ pixel buffers rendered by the agg backend into each user interface
 toolkit we support, so one can get pixel-exact graphics across UIs and
 operating systems.  Because the PNG output matplotlib produces also
 uses the agg renderer, the hardcopy is identical to the screen
-display, so what-you-see is what-you-get across UIs, operating systems
+display, so what you see is what you get across UIs, operating systems
 and PNG output.
 
 The matplotlib \code{Event} framework maps underlying UI events like
 \code{key-press-event} or \linebreak \code{mouse-motion-event} to the
 matplotlib classes \code{KeyEvent} or \code{MouseEvent}.
 Users can connect to these events to callback functions and
-interact with their figure and data, for example, to \code{pick}
+interact with their figure and data; for example, to \code{pick}
 a data point or group of points, or manipulate some aspect of the 
 figure or its constituents.  The following code sample illustrates
 how to toggle all of the lines in an \code{Axes} window when the
@@ -178,8 +177,8 @@ plt.show()
 \end{verbatim}
 
 The abstraction of the underlying UI toolkit's event framework allows
-both matplotlib developers as well as end-users to write UI event
-handling code in a ``write once run everywhere'' fashion. For example,
+both matplotlib developers and end-users to write UI event-handling 
+code in a ``write once run everywhere'' fashion. For example,
 the interactive panning and zooming of matplotlib figures that works
 across all user interface toolkits is implemented in the matplotlib
 event framework.
@@ -194,7 +193,7 @@ Continuing with the analogy that the \code{FigureCanvas} from the
 backend is the paper, the \code{Artist} is the object that knows how
 to take the \code{Renderer} (the paintbrush) and put ink on the
 canvas.  Everything you see in a matplotlib \code{Figure} is an
-\code{Artist} instance: the title, the lines, the tick labels, the
+\code{Artist} instance; the title, the lines, the tick labels, the
 images, and so on all correspond to individual \code{Artist} instances
 (see \aosafigref{fig.matplotlib.artiststree}).  The base class is
 \code{matplotlib.artist.Artist}, which contains attributes that every
@@ -202,7 +201,7 @@ images, and so on all correspond to individual \code{Artist} instances
 coordinate system to the canvas coordinate system (discussed in more
 detail below), the visibility, the clip box which defines the region
 the artist can paint into, the label, and the interface to handle user
-interaction such as ``picking''; i.e., detecting when a mouse click
+interaction such as ``picking''; that is, detecting when a mouse click
 happens over the artist.
 
 \aosafigure{../images/matplotlib/artists_figure.pdf}{A Figure}{fig.matplotlib.artistsfigure}
@@ -212,7 +211,7 @@ happens over the artist.
 The coupling between the \code{Artist} hierarchy and the backend
 happens in the \code{draw} method.  For example, in the mockup class below
 where we create \code{SomeArtist} which subclasses \code{Artist}, the
-essential method that \code{SomeArtist} must implement is \code{draw}
+essential method that \code{SomeArtist} must implement is \code{draw},
 which is passed a renderer from the backend.
 The \code{Artist} doesn't know what kind of backend the renderer is going to
 draw onto (PDF, SVG, GTK+ DrawingArea, etc.) but it does know the
@@ -339,7 +338,7 @@ plt.show()
 
 \code{pyplot} is a stateful interface that handles much of the boilerplate
 for creating figures and axes and connecting them to the backend of
-your choice, and maintains a module level internal data structures
+your choice, and maintains module-level internal data structures
 representing the current figure and axes to which to direct plotting
 commands.
 
@@ -361,7 +360,7 @@ internal state is managed.
   the script.  \code{pyplot} will check its internal data structures to see
   if there is a current \code{Figure} instance.  If so, it will
   extract the current \code{Axes} and direct plotting to the
-  \code{Axes.hist} API call.  In this case, there is none, so it will
+  \code{Axes.hist} API call.  In this case there is none, so it will
   create a \code{Figure} and \code{Axes}, set these as current, and
   direct the plotting to \code{Axes.hist}.
 
@@ -378,7 +377,7 @@ internal state is managed.
 
 \end{aosaitemize}
 
-A somewhat stripped down and simplified version of \code{pyplot}'s
+A somewhat stripped-down and simplified version of \code{pyplot}'s
 frequently used line plotting function \code{matplotlib.pyplot.plot}
 is shown below to illustrate how a pyplot function wraps functionality
 in matplotlib's object-oriented core.  All other \code{pyplot} scripting
@@ -400,7 +399,7 @@ the documentation string from the corresponding API method and
 attaches a properly formatted version to the \code{pyplot.plot}
 method; we have a dedicated module \code{matplotlib.docstring} to
 handle this docstring magic.  The \code{*args} and \code{**kwargs} in
-the documentation signature are special conventions in Python to mean:
+the documentation signature are special conventions in Python to mean
 all the arguments and keyword arguments that are passed to the method.
 This allows us to forward them on to the corresponding API method.
 The call \code{ax = gca()} invokes the stateful machinery to ``get
@@ -460,10 +459,10 @@ methods in the backend API was reduced considerably, to only:
 
 \end{aosaitemize}
 
-It is possible to implement all of the drawing necessary for a new
+It's possible to implement all of the drawing necessary for a new
 backend using only these methods.\footnote{We could also go one step
   further and draw text using \code{draw\_path}, removing the
-  necessity for the \code{draw\_text} method, but we haven't gotten
+  need for the \code{draw\_text} method, but we haven't gotten
   around to making that simplification.  Of course, a backend would
   still be free to implement its own \code{draw\_text} method to
   output ``real'' text.}  This is useful for getting a new backend
@@ -473,10 +472,10 @@ efficient output.  For example, when drawing markers (small symbols
 used to indicate the vertices in a line plot), it is more
 space-efficient to write the marker's shape only once to the file, and
 then repeat it as a ``stamp'' everywhere it is used.  In that case,
-the backend can implement a \code{draw\_markers} method.  If it is
+the backend can implement a \code{draw\_markers} method.  If it's
 implemented, the backend writes out the marker shape once and then
 writes out a much shorter command to reuse it in a number of
-locations.  If it is not implemented, the core simply draws the marker
+locations.  If it's not implemented, the core simply draws the marker
 multiple times using multiple calls to \code{draw\_path}.
 
 The full list of optional backend API methods is:
@@ -501,6 +500,8 @@ The full list of optional backend API methods is:
 matplotlib spends a lot of time transforming coordinates from one
 system to another.  These coordinate systems include:
 
+%% FIXME: The first item in this list is widowed - try and fix before
+%% publication.  --ARB
 \begin{aosaitemize}
 \item \textbf{data:} the original raw data values
 
@@ -530,16 +531,20 @@ performance.
 
 Transform nodes may be either simple affine transformations and
 non-affine transformations.  Affine transformations are the family of
-transformations that preserves straight lines and ratios of distances,
+transformations that preserve straight lines and ratios of distances,
 including rotation, translation, scale and skew.  Two-dimensional
 affine transformations are represented using a $3 \times 3$ affine
 transformation matrix.  The transformed point $(x\prime, y\prime)$ is
 obtained by matrix-multiplying the original point $(x, y)$ by this
 matrix:
+
 % FIXME: put this back in once we can find the bmatrix environment
-% \begin{math}
-% \begin{bmatrix} x' \\ y' \\ 1 \end{bmatrix} = \begin{bmatrix} s_x & \theta_x & t_x \\ \theta_y & s_y & t_y \\ 0 & 0 & 1 \end{bmatrix} \begin{bmatrix} x \\ y \\ 1 \end{bmatrix}
-% \end{math}
+\smallskip
+\begin{math}
+\begin{bmatrix} x' \\ y' \\ 1 \end{bmatrix} = \begin{bmatrix} s_x & \theta_x & t_x \\ \theta_y & s_y & t_y \\ 0 & 0 & 1 \end{bmatrix} \begin{bmatrix} x \\ y \\ 1 \end{bmatrix}
+\end{math}
+\smallskip
+
 Two-dimensional coordinates can then easily be transformed by simply
 multiplying them by the transformation matrix.  Affine transformations
 also have the useful property that they can be composed together using
@@ -552,6 +557,8 @@ transforming coordinates to reduce the amount of computation.  Having
 fast affine transformations is important, because it makes interactive
 panning and zooming in a GUI window more efficient.
 
+\aosafigure{../images/matplotlib/nonaffine_transforms.pdf}{The same data, plotted with three different non-affine transformations: logarithmic, polar and Lambert.}{fig.matplotlib.nonaffine}
+
 Non-affine transformations in matplotlib are defined using Python
 functions, so they are truly arbitrary.  Within the matplotlib core,
 non-affine transformations are used for logarithmic scaling, polar
@@ -560,8 +567,6 @@ These non-affine transformations can be freely mixed with affine ones
 in the transformation graph.  matplotlib will automatically simplify
 the affine portion and only fall back to the arbitrary functions for
 the non-affine portion.
-
-\aosafigure{../images/matplotlib/nonaffine_transforms.pdf}{The same data, plotted with three different non-affine transformations: logarithmic, polar and Lambert.}{fig.matplotlib.nonaffine}
 
 From these simple pieces, matplotlib can do some pretty advanced
 things.  A blended transformation is a special transformation node
@@ -579,10 +584,10 @@ zoomed, the other is updated to match.  In this case, the same
 transform node is simply shared between two axes, which may even be on
 two different figures.  \aosafigref{fig.matplotlib.transformtree}
 shows an example transformation graph with some of these advanced
-features at work.  axes1 has a logarithmic $x$ axis.  axes1 and axes2
+features at work.  axes1 has a logarithmic $x$ axis;  axes1 and axes2
 share the same $y$ axis.
 
-\aosafigure{../images/matplotlib/transform_tree.pdf}{An example transformation graph.}{fig.matplotlib.transformtree}
+\aosafigure[300pt]{../images/matplotlib/transform_tree.pdf}{An example transformation graph.}{fig.matplotlib.transformtree}
 
 \end{aosasect1}
 
@@ -591,7 +596,7 @@ share the same $y$ axis.
 When plotting line plots, there are a number of steps that are
 performed to get from the raw data to the line drawn on screen.  In an
 earlier version of matplotlib, all of these steps were tangled
-together.  These have since been refactored so they are discrete steps
+together.  They have since been refactored so they are discrete steps
 in a ``path conversion'' pipeline.  This allows each backend to choose
 which parts of the pipeline to perform, since some are only useful in
 certain contexts.
@@ -619,7 +624,7 @@ certain contexts.
   points.  More importantly, very large or very small coordinate
   values can cause overflow errors in the rendering of the output
   file, which results in completely garbled output.  This step of the
-  pipeline clips the polyline as it exits and enter the edges of the
+  pipeline clips the polyline as it enters and exits the edges of the
   figure to prevent both of these problems.
 
 \item \textbf{Snapping:} Perfectly vertical and horizontal lines can
@@ -633,6 +638,8 @@ certain contexts.
   vector backends should continue to have exact data points.  Some
   renderers of vector file formats, such as Adobe Acrobat, perform
   pixel snapping when viewed on screen.
+\aosafigure[250pt]{../images/matplotlib/pixel_snapping.pdf}{A close-up view of the effect of pixel snapping.  On the left, without pixel snapping; on the right, with pixel snapping.}{fig.matplotlib.pixelsnapping}
+
 
 \item \textbf{Simplification:} When plotting really dense plots, many
   of the points on the line may not actually be visible.  This is
@@ -645,11 +652,9 @@ certain contexts.
   depends on a threshold based on what would be visible at a given
   resolution specified by the user.
 
-\end{aosaenumerate}
-
-\aosafigure{../images/matplotlib/pixel_snapping.pdf}{A close-up view of the effect of pixel snapping.  On the left, without pixel snapping; on the right, with pixel snapping.}{fig.matplotlib.pixelsnapping}
-
 \aosafigure{../images/matplotlib/path_simplification.pdf}{The figure on the right is a close-up of the figure on the left.  The circled vertex is automatically removed by the path simplification algorithm, since it lies exactly on the line between its neighboring vertices, and therefore is redundant.}{fig.matplotlib.pathsimplification}
+
+\end{aosaenumerate}
 
 \end{aosasect1}
 
@@ -686,7 +691,7 @@ internal math rendering engine, called \code{mathtext}.
 onto a much simpler parser written using the \code{pyparsing}
 \cite{bib:pyparsing} parsing framework.  This port was written based
 on the published copy of the TeX source code \cite{bib:texprogram}.
-The simple parser builds up a tree of boxes and glue (in TeX
+The simple parser builds up a tree of \emph{boxes} and \emph{glue} (in TeX
 nomenclature), that are then laid out by the layout engine.  While the
 complete TeX math rendering engine is included, the large set of
 third-party TeX and LaTeX math libraries is not.  Features in such
@@ -793,13 +798,13 @@ backends were written around this API to extend the functionality
 around a simpler and more flexible drawing API.  We would have been
 well-served by adopting the PDF drawing specification \cite{bib:pdf},
 which itself was developed from decades of experience Adobe had with
-its PostScript specification, which would give us mostly
+its PostScript specification; it would have given us mostly
 out-of-the-box compatibility with PDF itself, the Quartz Core Graphics
 framework, and the Enthought Enable Kiva drawing kit \cite{bib:kiva}.
 
 One of the curses of Python is that it is such an easy and expressive
 language that developers often find it easier to re-invent and
-re-implement functionality that exists in other packages rather than
+re-implement functionality that exists in other packages than
 work to integrate code from other packages.  matplotlib could have
 benefited in early development from expending more effort on
 integration with existing modules and APIs such as Enthought's Kiva
