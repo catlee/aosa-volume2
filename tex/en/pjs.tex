@@ -1,36 +1,38 @@
 \begin{aosachapter}{Processing.js}{s:pjs}{Mike Kamermans}
 
+%% British English spellings used (en-gb)
+
 Originally developed by Ben Fry and Casey Reas, the Processing
-programming languages started as an open source programming language
+programming language started as an open source programming language
 (based on Java) to help the electronic arts and visual design
 communities learn the basics of computer programming in a visual
 context. Offering a highly simplified model for 2D and 3D graphics
-compared to most programming language, it quickly became well suited
+compared to most programming languages, it quickly became well suited
 for a wide range of activities, from teaching programming through
 writing small visualisations to creating multi-wall art installations,
-and performing a wide variety of tasks, from simply reading in a
+and became able to perform a wide variety of tasks, from simply reading in a
 sequence of strings to acting as the de facto IDE for programming and
 operating the popular ``Arduino'' open source hardware prototyping
-boards. Continuing to gain in popularity, Processing has firmly taken
+boards. Continuing to gain popularity, Processing has firmly taken
 its place as an easy to learn, widely used programming language for
 all things visual, and so much more.
-  
+
 The basic Processing program, called a ``sketch'', consists of two
 functions: \code{setup} and \code{draw}. The first is the main program
 entry point, and can contain any amount of initialization
 instructions. After finishing \code{setup}, Processing programs can do
-one of two things: 1) call \code{draw}, and if no \code{noLoop} call
-has been made, schedule another call to \code{draw} at a fixed
-interval upon completion; or 2) call \code{draw}, and if a
-\code{noLoop} occurs do not schedule a new call to \code{draw}, but
-wait for input events from the user. This allows for two modes to
+one of two things: 1) call \code{draw}, and
+schedule another call to \code{draw} at a fixed
+interval upon completion; or 2) call \code{draw}, and
+wait for input events from the user. By default, Processing does the
+former; calling \code{noLoop} results in the latter. This allows for two modes to
 present sketches, namely a fixed framerate graphical environment, or
 an interactive, event-based updating graphical environment. In both
 cases, user events are monitored and can be handled either in their
 own event handlers, or for certain events that set persistent global
 values, directly in the \code{draw} function.
 
-Processing.js is the sister project of Processing, designed to bring
+Processing.js is a sister project of Processing, designed to bring
 it to the web without the need for Java or plugins. It started as an
 attempt by John Resig to see if the Processing language could be
 ported to the web, by using the---at the time brand new---HTML5
@@ -38,65 +40,68 @@ ported to the web, by using the---at the time brand new---HTML5
 with a proof of concept library released to the public in
 2008. Written with the idea in mind that ``your code should just
 work'', Processing.js has been refined over the years to make your
-data visualizations, digital art, interactive animations, educational
+data visualisations, digital art, interactive animations, educational
 graphs, video games, etc. work using web standards and without any
-plug-ins. You write code using the Processing language, either in the
+plugins. You write code using the Processing language, either in the
 Processing IDE or your favourite editor of choice, include it on a web
 page using a \code{{\textless}canvas{\textgreater}} element, and
 Processing.js does the rest, rendering everything in the
 \code{{\textless}canvas{\textgreater}} element and letting users
 interact with the graphics in the same way they would with a normal
-stand-alone Processing program.
+standalone Processing program.
 
 \begin{aosasect1}{How Does It Work?}
 
 Processing.js is a bit unusual as an open source project, in that the
-code base is just a single file called \code{processing.js},
+code base is a single file called \code{processing.js},
 containing the code for Processing, the single object that makes up
 the entire library. In terms of how the code is structured, we
 constantly shuffle things around inside this object as we try to clean
 it up a little bit with every release. Its design is relatively
 straightforward, and its function can be described in a single
-sentence: it rewrites Processing source code into pure Javascript
+sentence: it rewrites Processing source code into pure JavaScript
 source code, and every Processing API function call is mapped to a
-corresponding function in the Javascript Processing object, which
+corresponding function in the JavaScript Processing object, which
 effects the same thing on a \code{{\textless}canvas{\textgreater}}
 element as the Processing call would effect on a Java Applet canvas.
 
 For speed, we have two separate code paths for 2D and 3D functions,
 and when a sketch is loaded, either one or the other is used for
 resolving function wrappers so that we don't add bloat to running
-instances. However, in terms of data structures and code flow knowing
-Javascript means you can read \code{processing.js}, with the possible
+instances. However, in terms of data structures and code flow, knowing
+JavaScript means you can read \code{processing.js}, with the possible
 exception of the syntax parser.
 
-\begin{aosasect2}{Unifying Java and Javascript}
+\begin{aosasect2}{Unifying Java and JavaScript}
 
-Rewriting Processing source code into Javascript source code means
+Rewriting Processing source code into JavaScript source code means
 that you can simply tell the browser to execute the rewritten source,
 and if you rewrote it correctly, things just work. But, making sure
 the rewrite is correct has taken, and still occasionally takes, quite
 a bit of effort. Processing syntax is based on Java, which means that
 Processing.js has to essentially transform Java source code into
-Javascript source code. Initially, this was achieved by treating the
+JavaScript source code. Initially, this was achieved by treating the
 Java source code as a string, and iteratively replacing substrings of
-Java with their Javascript equivalents\footnote{For those interested
-  in the early incarnation of the parser, it can be found at
+Java with their JavaScript equivalents\footnote{For those interested
+  in an early incarnation of the parser, it can be found at
   \url{https://github.com/jeresig/processing-js/blob/51d280c516c0530cd9e63531076dfa147406e6b2/processing.js},
   running from line 37 to line 266.}. For a small syntax set, this is
 fine, but as time went on and complexity added to complexity, this
 approach started to break down. Consequently, the parser was
-completely rewritten to build an Abstract Syntax Tree instead, first
+completely rewritten to build an Abstract Syntax Tree (AST) instead, first
 breaking down the Java source code into functional blocks, and then
-mapping each of those blocks to their corresponding Javascript
+mapping each of those blocks to their corresponding JavaScript
 syntax. The result is that, at the cost of
 readability\footnote{Readers are welcome to peruse
   \url{https://github.com/jeresig/processing-js/blob/v1.3.0/processing.js\#L17649},
   up to line 19217.}, Processing.js now effectively contains an
-on-the-fly Java to Javascript transcompiler.
+on-the-fly Java to JavaScript transcompiler.
+
+%% QUERY: Should there be leading spaces/indentation for these examples?
+%%        What about the {{...}} and @@@ blocks? -- TWB
 
 \begin{verbatim}
-    {{ two block comparison: "A Processing sketch and its Processing.js conversion"}}
+    {{ two block comparison: "A Processing sketch and its Processing.js equivalent"}}
     @@@
       void setup() {
         size(200,200);
@@ -129,26 +134,26 @@ on-the-fly Java to Javascript transcompiler.
               $p.ellipse($p.mouseX, $p.mouseY, d, d); }
           $p.draw = draw; }
     @@@
-    {{ two block comparison: "A Processing sketch and its Processing.js conversion"}}
+    {{ two block comparison: "A Processing sketch and its Processing.js equivalent"}}
 \end{verbatim}
 
 This sounds like a great thing, but there are a few problems when
-converting Java syntax to Javascript syntax:
+converting Java syntax to JavaScript syntax:
 
 \begin{aosaenumerate}
 
-\item Java programs are isolated entities. Javascript programs share
+\item Java programs are isolated entities. JavaScript programs share
   the world with a web page.
 
-\item Java is strongly typed. Javascript is not.
+\item Java is strongly typed. JavaScript is not.
 
-\item Java is a class/instance based OO language. Javascript is not.
+\item Java is a class/instance based object-oriented language. JavaScript is not.
 
-\item Java has distinct variables and methods. Javascript does not.
+\item Java has distinct variables and methods. JavaScript does not.
 
-\item Java allows method overloading. Javascript does not.
+\item Java allows method overloading. JavaScript does not.
 
-\item Java allows importing compiled code. Javascript has no idea what
+\item Java allows importing compiled code. JavaScript has no idea what
   that even means.
 
 \end{aosaenumerate}
@@ -163,10 +168,13 @@ sections will discuss each of these issues in greater detail.
 
 \begin{aosasect1}{Significant Differences}
 
-\emph{Java makes you wait for your program to load things. Javascript can lock up your entire browser.}
+%% QUERY: Should these \emph pseudo-headings be made into
+%%        aosasect2 ? --TWB
+
+\emph{Java makes you wait for your program to load things. JavaScript can lock up your entire browser.}
 
 Java programs are isolated entities, running in their own thread in
-the greater pool of applications on your system. Javascript programs,
+the greater pool of applications on your system. JavaScript programs,
 on the other hand, live inside a browser, and compete with each other
 in a way that desktop applications don't. When a Java program loads a
 file, the program waits until the resource is done loading, and
@@ -175,27 +183,27 @@ isolated entity on its own, this is fine. The operating system stays
 responsive because it's responsible for thread scheduling, and even if
 the program takes an hour to load all its data, you can still use your
 computer. On a web page, this is not how things work. If you have a
-Javascript ``program'' waiting for a resource to be done loading, it
+JavaScript ``program'' waiting for a resource to be done loading, it
 will lock its process until that resource is available. If you're
-using a browser that uses one process per tab, it'll lock up your tab,
+using a browser that uses one process per tab, it will lock up your tab,
 and the rest of the browser is still usable. If you're using a browser
 that doesn't, your entire browser will seem frozen. So, regardless of
 what the process represents, the page the script runs on won't be
 usable until the resource is done loading, and it's entirely possible
-that your Javascript will lock up the entire browser.
+that your JavaScript will lock up the entire browser.
 
 This is unacceptable on the modern web, where resources are
 transferred asynchronously, and the page is expected to function
 normally while resources are loaded in the background. While this is
 great for traditional web pages, for web applications this is a real
-brain twister: how do you make Javascript idle, waiting for a resource
-to load, when there is no explicit mechanish to make Javascript idle?
-While there is no explicit threading in Javascript, there is an event
-model, and there is an XMLHTTPRequest object for requesting arbitrary
+brain twister: how do you make JavaScript idle, waiting for a resource
+to load, when there is no explicit mechanism to make JavaScript idle?
+While there is no explicit threading in JavaScript, there is an event
+model, and there is an \code{XMLHTTPRequest} object for requesting arbitrary
 (not just XML or HTML) data from arbitrary URLS. This object comes
 with several different status events, and we can use it to
 asynchronously get data while the browser stays responsive. Which is
-great in programs of which you control the source code: you make it
+great in programs in which you control the source code: you make it
 simply stop after scheduling the data request, and make it pick up
 execution when the data is available. However, this is near impossible
 for code that was written based on the idea of synchronous resource
@@ -205,20 +213,20 @@ alternative approaches.
 
 For some things, we decided to force synchronous waiting
 anyway. Loading a file with strings, for instance, uses a synchronous
-XMLHTTPRequest, and will halt execution of the page until the data is
+\code{XMLHTTPRequest}, and will halt execution of the page until the data is
 available. For other things, we had to get creative. Loading images,
 for instance, uses the browser's built-in mechanism for loading
-images; we build a new \code{Image} in Javascript, set its \code{src}
+images; we build a new \code{Image} in JavaScript, set its \code{src}
 attribute to the image URL, and the browser does the rest, notifying
 us that the image is ready through the \code{onload} event. This
-doesn't even rely on an XMLHTTPRequest, but simply exploits the
+doesn't even rely on an \code{XMLHTTPRequest}, it simply exploits the
 browser's capabilities.
 
 To make matters easier when you already know which images you are
 loading, we added preload directives so that the sketch does not start
 execution until preloading is complete. A user can indicate any number
-of images to preload via a comment block at the start of the sketch,
-and Processing.js then track outstanding image loading. The onload
+of images to preload via a comment block at the start of the sketch;
+Processing.js then tracks outstanding image loading. The \code{onload}
 event for an image tells us that it is done transferring and is
 considered ready to be rendered (rather than simply having been
 downloaded but not decoded to a pixel array in memory yet), after
@@ -247,31 +255,31 @@ require waiting.
 \end{verbatim}
 
 For other things, we've had to build more complicated ``wait for me''
-systems. Fonts, unlike images, do not have built in browser loading
+systems. Fonts, unlike images, do not have built-in browser loading
 (or at least not a system as functional as image loading). While it is
 possible to load a font using a CSS \code{@font-face} rule and rely on
-the browser to make it all happen, there are no Javascript events that
+the browser to make it all happen, there are no JavaScript events that
 can be used to determine that a font finished loading. We are slowly
-seeing events getting added to browsers to generate Javascript events
-for font download completion, but this events come ``too early'', as
+seeing events getting added to browsers to generate JavaScript events
+for font download completion, but these events come ``too early'', as
 the browser may need anywhere from a few to a few hundred more
 milliseconds to actually parse the font for use on the page after
 download. Thus, acting on these events will still lead to either no
 font being applied, or the wrong font being applied if there is a
-known fallback font. Rather than relying on these events, we embedded
+known fallback font. Rather than relying on these events, we embed
 a tiny TrueType font that only contains the letter ``A'' with
 impossibly small metrics, and instruct the browser to load this font
 via an \code{@font-face} rule with a data URI that contains the font's
-bytecode as BASE64 string. This font is so small that we can rely on
-it being immediately available, and for any other font load
-instruction we compare text metrics between the desired font, and this
-tiny font. A hidden div is set up with text styled using the desired
-font, with our tiny font as fallback. As long as the text in that div
+bytecode as a BASE64 string. This font is so small that we can rely on
+it being immediately available. For any other font load
+instruction we compare text metrics between the desired font and this
+tiny font. A hidden \code{{\textless}div{\textgreater}} is set up with text styled using the desired
+font, with our tiny font as fallback. As long as the text in that \code{{\textless}div{\textgreater}}
 is impossibly small, we know the desired font is not available yet,
-and we simply poll availability this way at set intervals until the
+and we simply poll at set intervals until the
 text has sensible metrics.
 
-\emph{Java Is Strongly Typed. Javascript Is Not.}
+\emph{Java is strongly typed. JavaScript is not.}
 
 In Java, the number 2 and the number 2.0 are different values, and
 they will do different things during mathematical operations. For
@@ -279,13 +287,13 @@ instance, the code \code{i = 1/2} will result in \code{i} being 0,
 because the numbers are treated as integers, whereas \code{i = 1/2.0},
 \code{i = 1.0/2}, and even \code{i = 1./2.} will all result in
 \code{i} being 0.5, because the numbers are considered decimal
-fractions with a non-zero integer part, and a zero fraction. Even if
+fractions with a non-zero integer part, and a zero fractional part. Even if
 the intended data type is a floating point number, if the arithmetic
-uses only integers, the result will be integer. This lets you write
+uses only integers, the result will be an integer. This lets you write
 fairly creative math statements in Java, and consequently in
 Processing, but these will generate potentially wildly different
-results when ported to Processing.js, as Javascript only knows
-``numbers''. As far as Javascript is concerned, 2 and 2.0 are the same
+results when ported to Processing.js, as JavaScript only knows
+``numbers''. As far as JavaScript is concerned, 2 and 2.0 are the same
 number, and this can give rise to very interesting bugs when running a
 sketch using Processing.js.
 
@@ -294,9 +302,9 @@ would be, but you can't argue with real world feedback: it turns out
 this is almost never an issue for people who put their sketches online
 using Processing.js. Rather than solving this in some cool and
 creative way, the resolution of this problem was actually remarkably
-straight-forward; we didn't solve it, and as a design choice, we don't
+straightforward; we didn't solve it, and as a design choice, we don't
 intend to ever revisit that decision. Short of adding a symbol table
-with strong typing so that we can fake types in Javascript and switch
+with strong typing so that we can fake types in JavaScript and switch
 functionality based on type, this incompatibility cannot properly be
 solved without leaving much harder to find edge case bugs, and so
 rather than adding bulk to the code and slowdown to execution, we left
@@ -305,24 +313,24 @@ try to take advantage of Java's implicit number type casting. That
 said, sometimes you will forget, and the result can be quite
 interesting.
 
-\emph{Java is Class-Based Object Oriented, With Separate Variable and Method Spaces. Javascript is Not.}
+\emph{Java is a class/instance-based object-oriented language, with separate variable and method spaces. JavaScript is not.}
 
-Javascript uses prototype objects, and the inheritance model that
+JavaScript uses prototype objects, and the inheritance model that
 comes with it. This means all objects are essentially key/value pairs
 where each key is a string, and values are either primitives, arrays,
 objects, or functions. On the inheritance side, prototypes can extend
 other prototypes, but there is no real concept of ``superclass'' and
 ``subclass''. In order to make ``proper'' Java-style object-oriented code
-work, we had to implement classical inheritance for Javascript in
+work, we had to implement classical inheritance for JavaScript in
 Processing.js, without making it super slow (we think we succeeded in
 that respect). We also had to come up with a way to prevent variable
 names and function names from stepping on each other. Because of the
-key/value nature of Javascript objects, defining a variable called
-\code{line}, followed by a function like \code{line(x1,y1, x2,y2)} will leave
+key/value nature of JavaScript objects, defining a variable called
+\code{line}, followed by a function like \code{line(x1,y1,x2,y2)} will leave
 you with an object that uses whatever was declared last for a
-key. Javascript first sets \code{object.line = "some value"} for you, and
+key. JavaScript first sets \code{object.line = "some value"} for you, and
 then sets \code{object.line = function(x1,y1,x2,y2)\{...\}}, overriding what
-you thought was your variable \code{line}.
+you thought your variable \code{line} was.
 
 It would have slowed down the library a lot to create separate
 administration for variables and methods/functions, so again the
@@ -334,40 +342,38 @@ world does things differently. Sometimes your code won't work, and
 it's because we decided that having your code break due to a naming
 conflict is preferable to your code always working, but always being
 slow. A second reason for not implementing variable and function
-separation was that this could break Javascript code used inside
-Processing sketches. Closures and the scope chain for Javascript rely
+separation was that this could break JavaScript code used inside
+Processing sketches. Closures and the scope chain for JavaScript rely
 on the key/value nature of objects, so driving a wedge in that by
 writing our own administration would have also severely impacted
 performance in terms of Just-In-Time compilation and compression based
 on functional closures.
 
-\emph{Java Allows Method Overloading. Javascript Does Not.}
+\emph{Java allows method overloading. JavaScript does not.}
 
 One of Java's more powerful features is that you can define a
-function, let's say add(int,int), and then define another function
-with the same name, but a different number of arguments, e.g. add(int,
-int, int), or with different argument types, e.g. add(ComplexNumber,
-ComplexNumber). Calling \code{add} with two or three integer arguments will
+function, let's say \code{add(int,int)}, and then define another function
+with the same name, but a different number of arguments, e.g. \code{add(int,int,int)}, or with different argument types, e.g. \code{add(ComplexNumber,ComplexNumber)}. Calling \code{add} with two or three integer arguments will
 automatically call the appropriate function, and calling \code{add} with
-floats or Car objects will generate an error. Javascript, on the other
-hand, does not support this. In Javascript, a function is a property,
-and you can dereference it (in which case Javascript will give you a
+floats or Car objects will generate an error. JavaScript, on the other
+hand, does not support this. In JavaScript, a function is a property,
+and you can dereference it (in which case JavaScript will give you a
 value based on type coercion, which in this case returns \code{true} when
 the property points to a function definition, or \code{false} when it
 doesn't), or you can call it as a function using the execution
 operators (which you will know as parentheses with zero or more
-arguments between them). If you define a function as add(x,y) and then
-call it as add(1,2,3,4,5,6), Javascript is okay with that. It'll set x
-to 1 and y to 2 and simply ignore the rest of the arguments. In order
+arguments between them). If you define a function as \code{add(x,y)} and then
+call it as \code{add(1,2,3,4,5,6)}, JavaScript is okay with that. It will set \code{x}
+to 1 and \code{y} to 2 and simply ignore the rest of the arguments. In order
 to make overloading work, we rewrite functions with the same name but
 different argument count to a numbered function, so that
-function(a,b,c) in the source becomes function$3(a,b,c) in the
-rewritten code, and function(a,b,c,d) becomes function$4(a,b,c,d),
+\code{function(a,b,c)} in the source becomes \code{function\$3(a,b,c)} in the
+rewritten code, and \code{function(a,b,c,d)} becomes \code{function\$4(a,b,c,d)},
 ensuring the correct code paths.
 
 We also mostly solved overloading of functions with the same number
 but differently typed arguments, as long as the argument types can be
-seen as \emph{different} by Javascript. Javascript can tell the functional
+seen as \emph{different} by JavaScript. JavaScript can tell the functional
 type of properties using the \code{typeof} operator, which will return
 either \code{number}, \code{string}, \code{object} or \code{function} depending on what a
 property represents. Declaring \code{var x = 3} followed by \code{x = '6'} will
@@ -376,17 +382,17 @@ cause \code{typeof x} to report \code{number} after the initial declaration, and
 argument count differ in argument type, we rename them and switch
 based on the result of the typeof operation. This does not work when
 the functions take arguments of type \code{object}, so for these functions
-we have an additional checking involing the \code{instanceof} operator
+we have an additional check involving the \code{instanceof} operator
 (which returns the name of the function that was used to create the
 object) to make function overloading work. In fact, the only place
 where we cannot successfully transcompile overloaded functions is
 where the argument count is the same between functions, and the
-argument types are different numerical types. As Javascript only has
-one numerical type, declaring functions such as add(int x, int y),
-add(float x, float y) and add(double x, double y) will
+argument types are different numerical types. As JavaScript only has
+one numerical type, declaring functions such as \code{add(int x, int y)},
+\code{add(float x, float y)} and \code{add(double x, double y)} will
 clash. Everything else, however, will work just fine.
 
-\emph{Java Allows Importing Compiled Code.}
+\emph{Java allows importing compiled code.}
 
 Sometimes, plain Processing is not enough, and additional
 functionality is introduced in the form of a Processing library. These
@@ -394,69 +400,69 @@ take the form of a \code{.jarchive} with compiled Java code, and offer
 things like networking, audio, video, hardware interfacing and other
 exotic functions not covered by Processing itself.
 
-This is a problem, because compiled Java code is JVM byte code. This
+This is a problem, because compiled Java code is Java byte code. This
 has given us many headaches: how do we support library imports without
 writing a Java byte code decompiler? After about a year of
 discussions, we settled on what may seem the simplest solution. Rather
 than trying to also cover Processing libraries, we decided to support
 the import keyword in sketches, and create a Processing.js Library
-API, so that library developers can write a Javascript version of
+API, so that library developers can write a JavaScript version of
 their library (where feasible, given the web's nature), so that if
 they write a package that is used via \code{import processing.video},
 native Processing will pick the \code{.jarchive}, and Processing.js
 will instead pick processing.video.js, thus ensuring that things
 ``just work''. This functionality is slated for Processing.js 1.4, and
 library imports is the last major feature that is still missing from
-Processing.js (we currently support the import keyword only in the
+Processing.js (we currently support the \code{import} keyword only in the
 sense that it is removed from the source code before conversion), and
 will be the last major step towards parity.
 
-\emph{WHY PICK JAVASCRIPT IF IT CAN'T DO JAVA?}
+\emph{Why pick JavaScript if it can't do Java?}
 
 This is not an unreasonable question, and it has multiple answers. The
-most obvious one is that Javascript comes with the browser. You don't
-``install'' Javascript yourself, there's no plugin to download first;
+most obvious one is that JavaScript comes with the browser. You don't
+``install'' JavaScript yourself, there's no plugin to download first;
 it's just there. If you want to port something to the web, you're
-stuck with Javascript. Although given the flexibility of Javascript,
+stuck with JavaScript. Although, given the flexibility of JavaScript,
 ``stuck with'' is really not doing justice to how powerful the language
-is. So, one reason to pick Javascript is ``because it's already
+is. So, one reason to pick JavaScript is ``because it's already
 there''. Pretty much every device that is of interest comes with a
-Javascript-capable browser these days. The same cannot be said for
+JavaScript-capable browser these days. The same cannot be said for
 Java, which is being offered less and less as a preinstalled
 technology, if it is available at all.
 
 However, the proper answer is that it's not really true that
-Javascript ``can't do'' the things that Java does; it can, but it would
-just be slower. Even though out of the box Javascript can't do some of
+JavaScript ``can't do'' the things that Java does; it \emph{can}, it would
+just be slower. Even though out of the box JavaScript can't do some of
 the things Java does, it's still a Turing-complete programming
 language and it can be made to emulate any other programming language,
 at the cost of speed. We could, technically, write a full Java
-interpreter, with a String heap, separate variable and method models,
-class vs. instance object orientation with rigid class hierarchies,
+interpreter, with a \code{String} heap, separate variable and method models,
+class/instance object-orientation with rigid class hierarchies,
 and everything else under the Sun (or, these days, Oracle), but that's
 not what we're in it for: Processing.js is about offering a
 Processing-to-the-web conversion, in as little code as is necessary
 for that. This means that even though we decided not to make it do
 certain Java things, our library has one huge benefit: it can cope
-with embedded Javascript really, really well.
+with embedded JavaScript really, really well.
 
 In fact, during a meeting between the Processing.js and Processing
-people, at Bocoup in Boston, in 2010, Ben Fry asked John Resig why he
+people at Bocoup in Boston, in 2010, Ben Fry asked John Resig why he
 used regular expression replacement and only partial conversion
 instead of doing a proper parser and compiler. John's response was
 that it was important to him that people be able to mix Processing
-syntax (Java) and Javascript without having to choose between
+syntax (Java) and JavaScript without having to choose between
 them. That initial choice has been crucial in shaping the philosophy
 of Processing.js ever since. We've worked hard to keep it true in our
 code, and we can see a clear payoff when we look at all the ``purely
 web'' users of Processing.js, who never used Processing, and will
-happily mix Processing and Javascript syntax with things working just
+happily mix Processing and JavaScript syntax with things working just
 fine.
 
 \begin{verbatim}
-    {{an example of Javascript and Processing working together}}
+    {{an example of JavaScript and Processing working together}}
     @@@
-      // Javascript (would throw an error in native Processing)
+      // JavaScript (would throw an error in native Processing)
       var cs = { x: 50,
                  y: 0,
                  label: "my label",
@@ -476,48 +482,48 @@ fine.
         translate(width/2,height/2);
         angle += PI/frameRate;
         while(angle>2*PI) { angle-=2*PI; }
-        jQuery('#log').text(angle); // Javascript (error in native Processing)
-        cs.rotate(angle);           // legal Javascript as well as Processing
+        jQuery('#log').text(angle); // JavaScript (error in native Processing)
+        cs.rotate(angle);           // legal JavaScript as well as Processing
         stroke(random(255));
         point(cs.x, cs.y); }
     @@@
-    {{an example of Javascript and Processing working together}}
+    {{an example of JavaScript and Processing working together}}
 \end{verbatim}
 
 A lot of things in Java are promises: strong typing is a content
 promise to the compiler, visibility is a promise on who will call
 methods and reference variables, interfaces are promises that
 instances contain the methods the interface describes, etc. Break
-those promises and the compiler complains. But, if you don't --and
-this is a one of the most important thoughts for Processing.js-- then
+those promises and the compiler complains. But, if you don't---and
+this is a one of the most important thoughts for Processing.js---then
 you don't need the additional code for those promises in order for a
 program to work. If you stick a number in a variable, and your code
 treats that variable as if it has a number in it, then at the end of
 the day \code{var varname} is just as good as \code{int varname}. Do you need
-typing? In Java, you do; in Javascript, you don't, so why force it in?
+typing? In Java, you do; in JavaScript, you don't, so why force it in?
 The same goes for other code promises. If the Processing compiler
 doesn't complain about your code, then we can strip all the explicit
 syntax for your promises and it'll still work the same.
 
 This has made Processing.js a ridiculously useful library for data
 visualisation, media presentation and even entertainment. Sketches in
-native Processing work, but sketches that mix Java and Javascript also
-work just fine, as do sketches that use pure Javascript by treating
+native Processing work, but sketches that mix Java and JavaScript also
+work just fine, as do sketches that use pure JavaScript by treating
 Processing.js as a glorified canvas drawing framework. In an effort to
 reach parity with native Processing, without forcing Java-only syntax,
-the project had been taken in by an audience as wide as the web
+the project has been taken in by an audience as wide as the web
 itself. We've seen activity all over the web using
 Processing.js. Everyone from IBM to Google has built visualisations,
-presentations and even games with Processing.js -- Processing.js is
+presentations and even games with Processing.js---Processing.js is
 making a difference.
 
-Another great thing about converting Java syntax to Javascript, while
-leaving Javascript untouched, is that we've enabled something we
+Another great thing about converting Java syntax to JavaScript while
+leaving JavaScript untouched is that we've enabled something we
 hadn't even thought about ourselves: Processing.js will work with
-anything that will work with Javascript. One of the really interesting
+anything that will work with JavaScript. One of the really interesting
 things that we're now seeing, for instance, is that people are using
 CoffeeScript (a wonderfully simple, Ruby-like programming language
-that transcompiles to Javascript) in combination with Processing.js,
+that transcompiles to JavaScript) in combination with Processing.js,
 with really cool results. Even though we set out to build ``Processing
 for the web'' based on parsing Processing syntax, people took what we
 did and used it with brand new syntaxes. They could never have done
@@ -526,10 +532,12 @@ sticking with code conversion rather than writing a code interpreter,
 Processing.js has given Processing a reach on the web far beyond what
 it would have had if it had stayed Java-only, or even if it had kept a
 Java-only syntax, with execution on the web taken care of by
-Javascript. The uptake of our code not just by end users, but also by
+JavaScript. The uptake of our code not just by end users, but also by
 people who try to integrate it with their own technologies, has been
 both amazing and inspiring. Clearly we're doing something right, and
 the web seems happy with what we're doing.
+
+%% TWB note to self: stopped here
 
 \begin{aosasect2}{The Result}
 
@@ -554,9 +562,9 @@ the library is written in a way that lets you rewrite it to pure
 Processing code with a few search-replace operations. In this case the
 code can be made to work online virtually immediately. When the
 library does things that cannot be implemented in pure Processing, but
-can be implemented using plain Javascript, more work is required to
-effectively emulate the library using Javascript code, but porting is
-still possible. The only isntances of Processing code that cannot be
+can be implemented using plain JavaScript, more work is required to
+effectively emulate the library using JavaScript code, but porting is
+still possible. The only instances of Processing code that cannot be
 ported are those that rely on functionality that is inherently
 unavailable to browsers, such as interfacing directly with hardware
 devices (such as webcams or Arduino boards) or performing unattended
@@ -575,7 +583,7 @@ online will become portable.
 Processing.js is presented and developed as a large, single file, but
 architecturally it represents three different components: 1) the
 launcher, responsible for converting Processing source to
-Processing.js flavoured Javascript and executing it, 2) static
+Processing.js flavoured JavaScript and executing it, 2) static
 functionality that can be used by all sketches, and 3) sketch
 functionality that has to be tied to individual instances.
 
@@ -590,7 +598,7 @@ In the preprocessing step, Processing.js directives are split off from
 the code, and acted upon. These directives come in two flavours:
 settings and load instructions. There is a small number of directives,
 keeping with the ``it should just work'' philosophy, and the only
-settings that sketch authors can effect are related to page
+settings that sketch authors can affect are related to page
 interaction. By default a sketch will keep running if the page is not
 in focus, but the \code{pauseOnBlur=true} directive sets up a sketch in
 such a way that it will halt execution when the page the sketch is
@@ -613,11 +621,11 @@ sketches don't incur multiple load attempts for the same resource.
 
 The code conversion consists of decomposing the source code into AST
 nodes, such as statements and expressions, methods, variables,
-classes, etc. This AST then expanded to Javascript source code that
+classes, etc. This AST then expanded to JavaScript source code that
 builds a sketch-equivalent program when executed. This converted
 source code makes heavy use of the Processing.js instance framework
 for setting up class relations, where classes in the Processing source
-code become Javascript prototypes with special functions for
+code become JavaScript prototypes with special functions for
 determining superclasses and bindings for superclass functions and
 variables.
 
@@ -628,7 +636,7 @@ variables.
 The final step in the launch process is sketch execution, which
 consists of determining whether or not all preloading has finished,
 and if it has, adding the sketch to the list of running instances
-and triggering its Javascript onLoad event so that any sketch
+and triggering its JavaScript onLoad event so that any sketch
 listeners can take the appropriate action. After this the Processing
 chain is run through: \code{setup}, then \code{draw}, and if the
 sketch is a looping sketch, setting up an interval call to \code{draw}
@@ -664,7 +672,7 @@ constructor:
 
 \item PShape, used to representing shape objects.
 
-\item PShapSVG, an extension for PShape objects, built from and
+\item PShapeSVG, an extension for PShape objects, built from and
   representing SVG XML.
 
 For PShapeSVG, we implemented our own
@@ -695,7 +703,7 @@ Processing API.
 
 \item PFont, represents a font resource.
 
-There is no Font object defined for Javascript (at least for now), so
+There is no Font object defined for JavaScript (at least for now), so
 rather than actually storing the font as an object, our PFont
 implementation loads a font via the browser, computes its metrics
 based on how the browser renders text with it, and then caches the
@@ -741,7 +749,7 @@ rather than identity. Thus, list.remove(myobject) iterates through the
 list looking for an element for which element.equals(myobject), rather
 than element==myobject, is true. Because all objects must have an
 \code{equals} method, we implemented a ``virtual equals'' function on
-the Javascript side of things. This function takes two objects as
+the JavaScript side of things. This function takes two objects as
 arguments, checks whether either of them implements their own
 \code{equals} function, and if so, falls through to that function
 instead. If they don't, and the passed objects are primitives,
@@ -909,7 +917,7 @@ page. This lets us quantify how well (or not!) Processing.js performs
 in browsers that support HTML5's
 \code{{\textless}canvas{\textgreater}} element. Every time an
 optimization patch passes unit and ref testing, it is run through our
-performance test page. Javascript is a curious beast, and beautiful
+performance test page. JavaScript is a curious beast, and beautiful
 code can, in fact, run several orders of magnitude slower than code
 that contains the same lines several times over, with inline code
 rather than function calls. This makes performance testing crucial. We
@@ -922,15 +930,15 @@ end of the function.
 
 Another way in which we try to make Processing.js fast is by looking
 at what runs it. As Processing.js is highly dependent on the
-efficiency of Javascript engines, it makes sense to also look at which
+efficiency of JavaScript engines, it makes sense to also look at which
 features various engines offer to speed things up. Especially now that
 browsers are starting to support hardware accelerated graphics,
 instant speed boost are possible when engines offer new and more
 efficient datatypes and functions to perform low level operations that
-Processing.js depends on. For instance, Javascript technically has no
+Processing.js depends on. For instance, JavaScript technically has no
 static typing, but graphics hardware programming environments do. By
 exposing the data structures used to talk to the hardware directly to
-Javascript, it is possible to significantly speed up sections of code
+JavaScript, it is possible to significantly speed up sections of code
 of which we know that they will only use specific values.
 
 \end{aosasect2}
@@ -943,7 +951,7 @@ manipulation (if possible). If you access an object variable multiple
 times, cache it. If you call a function multiple times, cache the
 result. Return once you have all the information you need, and
 generally apply all the tricks a code optimiser would apply
-yourself. Javascript is a particularly nice language for this, since
+yourself. JavaScript is a particularly nice language for this, since
 it comes with an incredible amount of flexibility. For example, rather
 than using:
 
@@ -955,14 +963,14 @@ if ((result = functionresult)!==null) {
 }
 \end{verbatim}
 
-\noindent in Javascript this becomes:
+\noindent in JavaScript this becomes:
 
 \begin{verbatim}
 var = functionresult || default
 \end{verbatim}
 
 There is also another form of small code, and that's in terms of
-runtime code. Because Javascript lets you change function bindings on
+runtime code. Because JavaScript lets you change function bindings on
 the fly, running code becomes much smaller if you can say ``bind the
 function for line2D to the function call for \code{line}'' once you
 know that a program runs in 2D rather than 3D mode, so that you don't
@@ -976,7 +984,7 @@ if(mode==2D) { line2D() } else { line3D() }
 for every function call that might be either in 2D or 3D mode.
 
 Finally, there is the process of minification. There are a number of
-good systems available that let you compress your Javascript code by
+good systems available that let you compress your JavaScript code by
 renaming variables, stripping whitespace, and applying certain code
 optimisations that are hard to do by hand while still keeping the code
 readable. Examples of these are the YUI minifier and Google's closure
@@ -993,7 +1001,7 @@ the entire Processing.js library in gzipped form in 65KB.
 Not everything that can currently be done in Processing can be done in
 the browser. Security models prevent certain things like saving files
 to the hard disk and performing USB or serial port I/O, and a lack of
-typing in Javascript can have unexpected consequences (such as all
+typing in JavaScript can have unexpected consequences (such as all
 math being floating point math). Sometimes we're faced with the choice
 between adding an incredible amount of code to enable an edge case, or
 mark the ticket as a ``wontfix'' issue. In such cases, a new ticket gets
@@ -1001,7 +1009,7 @@ filed, typically titled ``Add documentation that explains why...''.
 
 In order to make sure these things aren't lost, we have documentation
 online for people who start using Processing.js with a Processing
-background, and people who start using Processing.js with a Javascript
+background, and people who start using Processing.js with a JavaScript
 background, covering the differences between what is expected, and
 what actually happens. Certain things just deserve special mention,
 because no matter how much work we put into Processing.js, there are
@@ -1020,13 +1028,13 @@ every time the team changes.
 The most important lesson we learned while writing Processing.js is
 that when porting a language, what matters is that the result is
 correct, not whether or not the code used in your port is similar to
-the original. Even though Java and Javascript are fairly similar,
-syntax wise, and modifying Java code to legal Javascript code is
-fairly easy, it often pays off to look at what Javascript can natively
+the original. Even though Java and JavaScript are fairly similar,
+syntax wise, and modifying Java code to legal JavaScript code is
+fairly easy, it often pays off to look at what JavaScript can natively
 do and exploit that to get the same functional result. Taking
 advantage of the lack of typing by recycling variables, using certain
-built in functions that are fast in Javascript but slow in Java, or
-avoiding patterns that are fast in Java but slow in Javascript means
+built in functions that are fast in JavaScript but slow in Java, or
+avoiding patterns that are fast in Java but slow in JavaScript means
 your code may look radically different, but has the exact same
 effect. You often hear people say not to reinvent the wheel, but that
 only applies to working with a single programming language. When
