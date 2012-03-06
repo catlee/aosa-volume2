@@ -222,7 +222,8 @@ Compiler Total  & 28,275 & 139,955 & 4.9 \\ \hline
 All C and C{-}{-} code & 43,865 & 48,450 & 1.10 \\
 \hline
 \end{tabular}
-\caption{Lines of code in GHC, past and present} \label{f:lines}
+\caption{Lines of code in GHC, past and present}
+\label{f:lines}
 \end{figure}
 
 \end{aosasect2}
@@ -268,15 +269,9 @@ IDEs and analysis tools.  More about this later in
 As with most compilers, compiling a Haskell source file proceeds in a
 sequence of phases, with the output of each phase becoming the input
 of the subsequent phase.  The overall structure of the different
-phases is illustrated in \aosafigref{f:pipeline}.
+phases is illustrated in \aosafigref{fig.ghc.pipeline}.
 
-\begin{figure}
-\begin{center}
-\includegraphics[scale=0.3]{HscPipe2.png}
-\end{center}
-\caption{The compiler phases}
-\label{f:pipeline}
-\end{figure}
+\aosafigure{../images/ghc/hscpipe2.png}{The Compiler Phases}{fig.ghc.pipeline}
 
 \begin{aosasect3}{Parsing}
 
@@ -395,22 +390,22 @@ removed, because the subsequent optimisation passes that need to work
 with the Haskell program have a smaller language to deal with.  The
 process of desugaring therefore removes all the syntactic sugar,
 translating the full Haskell syntax into a much smaller language that
-we call \Core{}.  We'll talk about \Core{} in detail in \aosasecref{s:core}.
+we call \code{Core}.  We'll talk about \code{Core} in detail in \aosasecref{s:core}.
 
 \end{aosasect3}
 
 \begin{aosasect3}{Optimisation}
 
-Now that the program is in \Core{}, the process of optimisation
+Now that the program is in \code{Core}, the process of optimisation
 begins.  One of GHC's great strengths is in optimising away layers of
-abstraction, and all of this work happens at the \Core{} level.
-\Core{} is a tiny functional language, but it is a tremendously
+abstraction, and all of this work happens at the \code{Core} level.
+\code{Core} is a tiny functional language, but it is a tremendously
 flexible medium for expressing optimisations, ranging from the very
 high level, such as strictness analysis, to the very low-level, such
 as strength reduction.
 
-Each of the optimisation passes takes \Core{} and produces
-\Core{}.  The main pass here is called the \emph{Simplifier}, whose job
+Each of the optimisation passes takes \code{Core} and produces
+\code{Core}.  The main pass here is called the \emph{Simplifier}, whose job
 it is to perform a large collection of correctness-preserving
 transformations on the program, with the goal of producing a more
 efficient program.  Some of these transformations are simple and
@@ -426,14 +421,14 @@ which order depends on the optimisation level selected by the user.
 
 \begin{aosasect3}{Code Generation}
 
-Once the \Core{} program has been optimised, the process of code
+Once the \code{Core} program has been optimised, the process of code
 generation begins.  After a couple of administrative passes, the code
 takes one of two routes: either it is turned into \emph{byte code} for
 execution by the interactive interpreter, or it is passed to the
 \emph{code generator} for eventual translation to machine code.
 
-The code generator first converts the \Core{} into a language called
-\code{STG}, which is essentially just \Core{} annotated with more
+The code generator first converts the \code{Core} into a language called
+\code{STG}, which is essentially just \code{Core} annotated with more
 information required by the code generator.  Then, \code{STG} is translated
 to \code{Cmm}, a low-level imperative language with an explicit stack. From
 here, the code takes one of three routes:
@@ -469,11 +464,6 @@ been particularly effective in GHC.
 \begin{aosasect2}{The Intermediate Language}
 \label{s:core}
 
-\newcommand{\clift}[1]{\lfloor#1\rfloor}
-\newcommand{\ol}[1]{\overline{#1}}
-\newcommand{\tcase}[2]{\mathbf{case}\;#1\;\mathbf{of}\;\ol{#2}}
-\newcommand{\tlet}[4]{\mathbf{let}\;#1{:}#2 = #3\;\mathbf{in}\;#4}
-\newcommand{\tcast}[2]{#1\xspace\triangleright\xspace#2}
 \begin{figure}
 $$
 \begin{array}{lrll}
@@ -495,7 +485,7 @@ t,e,u & ::= & x  & \text{Variables} \\
 \end{array} 
 $$
 \label{fig:core-syntax}
-\caption{The syntax of \Core{}}
+\caption{The syntax of \code{Core}}
 \end{figure}
 
 A typical structure for a compiler for a statically-typed language is
@@ -505,11 +495,11 @@ different: it has a \emph{statically-typed intermediate language}.  As
 it turns out, this design choice has had a pervasive effect on the
 design and development of GHC.
 
-GHC's intermediate language is called \Core{} (when thinking of the
+GHC's intermediate language is called \code{Core} (when thinking of the
 implementation) or System FC (when thinking about the theory).  Its
 syntax is given in \aosafigref{fig:core-syntax}.  The exact details
 are not imortant here; the intersted reader can consult
-\citet{bib:system-f} for more details.  For our present purposes,
+\cite{bib:system-f} for more details.  For our present purposes,
 however, the following points are the key ones:
 
 \begin{aosaitemize}
@@ -517,9 +507,9 @@ however, the following points are the key ones:
 \item Haskell is a very large source language.  The data type
   representing its syntax tree has literally hundreds of constructors.
 
-  In contrast \Core{} is a tiny, principled, lambda calculus.  It has
+  In contrast \code{Core} is a tiny, principled, lambda calculus.  It has
   extremely few syntactic forms, yet we can translate all of Haskell
-  into \Core{}.
+  into \code{Core}.
 
 \item Haskell is an \emph{implicitly-typed} source language.  A
   program may have few or no type annotations; instead it is up to the
@@ -528,29 +518,29 @@ however, the following points are the key ones:
   occasionally somewhat \emph{ad-hoc}, reflecting the design
   compromises that every real programming language embodies.
 
-  In contrast \Core{} is an \emph{explicitly-typed} language.  Every
+  In contrast \code{Core} is an \emph{explicitly-typed} language.  Every
   binder has an explicit type, and terms include explicit type
-  abstractions and applications.  \Core{} enjos a very simple, fast
+  abstractions and applications.  \code{Core} enjos a very simple, fast
   type checking algorithm, that checks that the program is type
   correct.  The algorithm is entirely straightforward; there are no
   \emph{ad-hoc} compromises.
 
 \end{aosaitemize}
 
-All of GHC's analysis and optimisation passes work on \Core{}. This is
-great: because \Core{} is such a tiny language an optimisation has
-only a few cases to deal with.  Although \Core{} is small, it is
+All of GHC's analysis and optimisation passes work on \code{Core}. This is
+great: because \code{Core} is such a tiny language an optimisation has
+only a few cases to deal with.  Although \code{Core} is small, it is
 extremely expressive---System F was, after all, originally developed
 as a foundational calculus for typed computation.  When new language
 features are added to the source language (and that happens all the
-time!) the changes are usually restricted to the front end; \Core{}
+time!) the changes are usually restricted to the front end; \code{Core}
 stays unchanged, and hence so does most of the compiler.
 
-But why is \Core{} typed?  After all, if the type inference engine
+But why is \code{Core} typed?  After all, if the type inference engine
 accepts the source program, that program is presumably well typed, and
 each optimisation pass presumably maintains that type-correctness.
-\Core{} may enjoy a fast type checking algorithm, but why would you
-ever want to run it?  Moreover, making \Core{} typed carries
+\code{Core} may enjoy a fast type checking algorithm, but why would you
+ever want to run it?  Moreover, making \code{Core} typed carries
 significant costs, because every transformation or optimisation pass
 must produce a well-typed program, and generating all those type
 annotations is often non-trivial.
@@ -560,7 +550,7 @@ intermediate language, for several reasons:
 
 \begin{aosaitemize}
 
-\item Running the \Core{} type checker (we call it \Lint{}) is a very
+\item Running the \code{Core} type checker (we call it \code{Lint}) is a very
   powerful consistency check on the compiler itself.  Imagine that you
   write an ``optimisation'' that accidentally generates code that
   treats an integer value as a function, and tries to call it.  The
@@ -568,14 +558,14 @@ intermediate language, for several reasons:
   runtime in a bizarre way. Tracing a seg-fault back to the particular
   optimisation pass that broke the program is a long road.
 
-  Now imagine instead that we run \Lint{} after every optimisation
+  Now imagine instead that we run \code{Lint} after every optimisation
   pass (and we do, if you use the flag \code{-dcore-lint}): it will
   report a precisely-located error immediately after the offending
   optimsiation.  What a blessing.
 
-  Of course, type soundness is not the same as correctness: \Lint{}
+  Of course, type soundness is not the same as correctness: \code{Lint}
   will not signal an error if you ``optimise'' $(x*1)$ to $1$ instead
-  of to $x$.  But if the program passes \Lint{}, it will guarantee to
+  of to $x$.  But if the program passes \code{Lint}, it will guarantee to
   run without seg-faults; and moreover in practice we have found that
   it is surprisingly hard to accidentally write optimisations that are
   type-correct but not semantically correct!
@@ -583,13 +573,13 @@ intermediate language, for several reasons:
   \item The type inference algorithm for Haskell is very large and
     very complex: a glance at \aosafigref{f:lines} confirms that the
     type checker is by far the largest single component of GHC.  Large
-    and complex means error-prone.  But \Lint{} serves as an 100\%
+    and complex means error-prone.  But \code{Lint} serves as an 100\%
     independent check on the type inference engine: if the type
     inference engine accepts a program that is not, in fact,
-    type-corect, \Lint{} will reject it. So \Lint{} serves as a
+    type-corect, \code{Lint} will reject it. So \code{Lint} serves as a
     powerful auditor of the type inference engine.
 
-\item The existence of \Core{} has also proved to be a tremendous
+\item The existence of \code{Core} has also proved to be a tremendous
   sanity check on the \emph{design} of the source language.  Our users
   constantly suggest new features that they would like in the
   language. Sometimes these features are manifestly ``syntactic
@@ -597,19 +587,19 @@ intermediate language, for several reasons:
   sometimes they are deeper, and it can be hard to tell how
   far-reaching the feature is.
 
-  \Core{} gives us a precise way to evaluate such features.  If the
-  feature can readily be translated into \Core{}, that reassures us
+  \code{Core} gives us a precise way to evaluate such features.  If the
+  feature can readily be translated into \code{Core}, that reassures us
   that nothing fundamentally new is going on: the new feature is
   syntactic-sugar-like. On the other hand, if it would require an
-  extension to \Core, then we think much, much more carefully.
+  extension to \code{Core}, then we think much, much more carefully.
 
 \end{aosaitemize}
 
-In practice \Core{} has been incredibly stable: over a 20-year time
-period we have added exactly one new major feature to \Core{} (namely
+In practice \code{Core} has been incredibly stable: over a 20-year time
+period we have added exactly one new major feature to \code{Core} (namely
 coercions and their associated casts).  Over the same period, the
 source languaage has evolved enormously.  We attribte this stability
-not to our own brilliance, but rather to the fact that \Core{} is
+not to our own brilliance, but rather to the fact that \code{Core} is
 based dirctly on foundational mathematics: bravo Girard!
 
 \end{aosasect2}
@@ -624,7 +614,7 @@ done before or after desugaring.  The trade-offs are these:
 \item Typechecking before desugaring means that the type checker must
   deal directly with Haskell's very large syntax, so the typechecker
   has many cases to consider.  If we desugared into (an untyped
-  variant of) \Core{} first, one might hope that the type checker
+  variant of) \code{Core} first, one might hope that the type checker
   would become much smaller.
 
 \item On the other hand, typechecking after desugaring would impose a
@@ -632,7 +622,7 @@ done before or after desugaring.  The trade-offs are these:
   programs are type-correct.  After all, desugaring implies a
   deliberate loss of information.  It is probably the case that in
   95\% of the cases there no problem, but \emph{any} problem here
-  would force some compromise in the design of \Core{} to preserve
+  would force some compromise in the design of \code{Core} to preserve
   some extra information.
 
 \item Most seriously of all, typechecking a desugared program would
@@ -744,7 +734,7 @@ likely that this approach is a good choice for Haskell.
 \begin{aosasect2}{Inter-Module Optimisation}
 
 Functional languages encourage the programmer to write small
-definitions.  For example, here is the definition of \code{&&} from
+definitions.  For example, here is the definition of \code{\&\&} from
 the standard library:
 
 \begin{verbatim}
@@ -844,8 +834,8 @@ code, and GHC is no exception in this respect.
 \label{s:rules}
 
 The core of GHC is a long sequence of optimisation passes, each of
-which performs some semantics-preserving transformormation, \Core{}
-into \Core{}.  But the author of a library defines functions that
+which performs some semantics-preserving transformormation, \code{Core}
+into \code{Core}.  But the author of a library defines functions that
 often have some non-trivial, domain-specific transformations of their
 own, ones that cannot possibly be predicted by GHC. So GHC allows
 library authors to define \emph{rewrite rules} that are used to
@@ -861,7 +851,7 @@ One example is the \code{foldr/build} rule, which is expressed like this:
  #-}
 \end{verbatim}
 
-The entire rule is a pragma, introduce by \code{{-# RULES}.  The rule
+The entire rule is a pragma, introduce by \code{\{-\# RULES}.  The rule
   says that whenever GHC sees the expression \code{(foldr k z (build
     g))} it should rewrite it to \code{(g k z)}.  This transformation
   is semantics-preserving, but it takes a research paper to argue that
@@ -891,7 +881,7 @@ supports plugins in the following way:
 
 \begin{aosaitemize}
 
-\item The programmer writes a \Core{} to \Core{} pass, as an ordinary
+\item The programmer writes a \code{Core} to \code{Core} pass, as an ordinary
   Haskell function in a module \code{P.hs}, say, and compiles it to
   object code.
 
@@ -908,7 +898,7 @@ supports plugins in the following way:
 But what is ``the appropriate point in the pipeline''?  GHC does not
 know, and so it allow the plugin to make that decision.  As a result
 of this and other matters, the API that the plugin must offer is a bit
-more complicated than a single \Core{} to \Core{} function---but not
+more complicated than a single \code{Core} to \code{Core} function---but not
 much.
 
 Plugins sometimes require, or produce, auxiliary plugin-specific data.
@@ -1367,7 +1357,7 @@ remains manageable.  We attribute this to three main factors:
 \item There's no substitute for good software engineering.  Modularity
   always pays off: making the APIs between components as small as
   possible makes the individual components more flexible because they
-  have fewer interdependencies.  For example, GHC's \Core datatype
+  have fewer interdependencies.  For example, GHC's \code{Core} datatype
   being small reduces the coupling between Core-to-Core passes, to the
   extent that they are almost completely independent and can be run in
   an arbitrary order.
