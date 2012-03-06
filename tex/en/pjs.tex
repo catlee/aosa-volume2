@@ -169,7 +169,7 @@ sections will discuss each of these issues in greater detail.
 \begin{aosasect1}{Significant Differences}
 
 %% QUERY: Should these \emph pseudo-headings be made into
-%%        aosasect2 ? --TWB
+%%        aosasect2 ? Maybe \paragraph ? --TWB
 
 \emph{Java makes you wait for your program to load things. JavaScript can lock up your entire browser.}
 
@@ -537,13 +537,11 @@ people who try to integrate it with their own technologies, has been
 both amazing and inspiring. Clearly we're doing something right, and
 the web seems happy with what we're doing.
 
-%% TWB note to self: stopped here
-
 \begin{aosasect2}{The Result}
 
 As we are coming up to Processing.js 1.4.0, our work has resulted in a
 library that will run any sketch you give it, provided it does not
-rely on compiled java library imports. If you can write it in
+rely on compiled Java library imports. If you can write it in
 Processing, and it runs, you can put it on a webpage and it will just
 run. Due to the differences in hardware access and low level
 implementations of different parts of the rendering pipeline there
@@ -557,7 +555,7 @@ code optimization.
 Thanks to the efforts of many developers working to resolve over 1800
 bug reports, Processing sketches run using Processing.js ``just
 work''. Even sketches that rely on library imports can be made to work,
-providing the library code is at hand. Under favourable circumstances,
+provided that the library code is at hand. Under favourable circumstances,
 the library is written in a way that lets you rewrite it to pure
 Processing code with a few search-replace operations. In this case the
 code can be made to work online virtually immediately. When the
@@ -568,9 +566,9 @@ still possible. The only instances of Processing code that cannot be
 ported are those that rely on functionality that is inherently
 unavailable to browsers, such as interfacing directly with hardware
 devices (such as webcams or Arduino boards) or performing unattended
-disk writes, but even this is changing. Browsers are constantly adding
+disk writes, though even this is changing. Browsers are constantly adding
 functionality to allow for more elaborate applications, and limiting
-factors today may disappear a year later, so that hopefully in the not
+factors today may disappear a year from now, so that hopefully in the not
 too distant future, even sketches that are currently impossible to run
 online will become portable.
 
@@ -590,7 +588,7 @@ functionality that has to be tied to individual instances.
 \begin{aosasect2}{The Launcher}
 
 The launcher component takes care of three things: code preprocessing,
-code conversion, and sketch execution
+code conversion, and sketch execution.
 
 \begin{aosasect3}{Preprocessing}
 
@@ -598,9 +596,9 @@ In the preprocessing step, Processing.js directives are split off from
 the code, and acted upon. These directives come in two flavours:
 settings and load instructions. There is a small number of directives,
 keeping with the ``it should just work'' philosophy, and the only
-settings that sketch authors can affect are related to page
+settings that sketch authors can change are related to page
 interaction. By default a sketch will keep running if the page is not
-in focus, but the \code{pauseOnBlur=true} directive sets up a sketch in
+in focus, but the \code{pauseOnBlur\,=\,true} directive sets up a sketch in
 such a way that it will halt execution when the page the sketch is
 running on is not in focus, resuming execution when the page is in
 focus again. Also by default, keyboard input is only routed to a
@@ -608,18 +606,18 @@ sketch when it is focussed. This is especially important when people
 run multiple sketches on the same page, as keyboard input intended for
 one sketch should not be processed by another. However, this
 functionality can be disabled, routing keyboard events to every sketch
-that is running on a page, using the \code{globalKeyEvents=true} directive.
+that is running on a page, using the \code{globalKeyEvents\,=\,true} directive.
 
 Load instructions take the form of the aforementioned image preloading
 and font preloading. Because images and fonts can be used by multiple
 sketches, they are loaded and tracked globally, so that different
-sketches don't incur multiple load attempts for the same resource.
+sketches don't attempt multiple loads for the same resource.
 
 \end{aosasect3}
 
 \begin{aosasect3}{Code Conversion}
 
-The code conversion consists of decomposing the source code into AST
+The code conversion component decomposes the source code into AST
 nodes, such as statements and expressions, methods, variables,
 classes, etc. This AST then expanded to JavaScript source code that
 builds a sketch-equivalent program when executed. This converted
@@ -636,7 +634,7 @@ variables.
 The final step in the launch process is sketch execution, which
 consists of determining whether or not all preloading has finished,
 and if it has, adding the sketch to the list of running instances
-and triggering its JavaScript onLoad event so that any sketch
+and triggering its JavaScript \code{onLoad} event so that any sketch
 listeners can take the appropriate action. After this the Processing
 chain is run through: \code{setup}, then \code{draw}, and if the
 sketch is a looping sketch, setting up an interval call to \code{draw}
@@ -667,13 +665,16 @@ constructor:
 
 \begin{aosaitemize}
 
+%% QUERY Should these be \emph, \code, or perhaps make this an
+%%   definitions list rather than an itemized list? -- TWB
+
 \item Char, an internal object used to overcome some of the
-  behavioural quirks for Java's \code{char} datatype.
+  behavioural quirks of Java's \code{char} datatype.
 
-\item PShape, used to representing shape objects.
+\item PShape, which represents shape objects.
 
-\item PShapeSVG, an extension for PShape objects, built from and
-  representing SVG XML.
+\item PShapeSVG, an extension for PShape objects, which is built from and
+  represents SVG XML.
 
 For PShapeSVG, we implemented our own
 SVG-to-\code{{\textless}canvas{\textgreater}}-instructions code. Since
@@ -692,27 +693,27 @@ this means we don't have any dead code sitting in Processing.js,
 taking up space and potentially causing bugs because a patch
 accidentally makes use of a function that shouldn't be there.
 
-\item PMatrix2D and PMatrix3D, used for matrix operations in 2D and 3D
+\item PMatrix2D and PMatrix3D, which performs matrix operations in 2D and 3D
   mode.
 
-\item PImage, represents an image resource.
+\item PImage, which represents an image resource.
 
 This is effectively a wrapper of the Image object, with some
 additional functions and properties so that its API matches the
 Processing API.
 
-\item PFont, represents a font resource.
+\item PFont, which represents a font resource.
 
 There is no Font object defined for JavaScript (at least for now), so
 rather than actually storing the font as an object, our PFont
 implementation loads a font via the browser, computes its metrics
 based on how the browser renders text with it, and then caches the
 resultant PFont object. For speed, PFonts have a reference to the
-canvas that was uses to determine the font properties, in case
-textWidth must be calculated, but because we track PFont objects based
+canvas that was used to determine the font properties, in case
+\code{textWidth} must be calculated, but because we track PFont objects based
 on name/size pair, if a sketch uses a lot of distinct text sizes, or
 fonts in general, this will consume too much memory. As such, PFonts
-will clear their cached canvas and instead call a generic textWidth
+will clear their cached canvas and instead call a generic \code{textWidth}
 computation function when the cache grows too large. As a secondary
 memory preservation strategy, if the font cache continues to grow
 after clearing the cached canvas for each PFont, font caching is
@@ -720,12 +721,12 @@ disabled entirely, and font changes in the sketch simply build new
 throwaway PFont objects for every change in font name, text size or
 text leading.
 
-\item DrawingShared, Drawing2D, and Drawing3D, housing all the
+\item DrawingShared, Drawing2D, and Drawing3D, which house all the
   graphics functions.
 
 The DrawingShared object is actually the biggest speed trap in
-Processing.js, responsible for determining whether a sketch is
-launching in 2D or 3D mode, and then rebinding all graphics functions
+Processing.js. It determines if a sketch is
+launching in 2D or 3D mode, and then rebinds all graphics functions
 to either the Drawing2D or Drawing3D object. This ensures short code
 path for graphics instructions, as 2D Processing sketches cannot used
 3D functions, and vice versa. By only binding one of the two sets of
@@ -734,9 +735,9 @@ graphics mode in every function to determine the code path, and we
 save space by not binding the graphics functions that are guaranteed
 not to be used.
 
-\item ArrayList, a container that emulates Java's ArrayList.
+\item ArrayList, a container that emulates Java's \code{ArrayList}.
 
-\item HashMap, a container that emulates Java's HashMap.
+\item HashMap, a container that emulates Java's \code{HashMap}.
 
 ArrayList, and HashMap in particular, are special data structures
 because of how Java implements them. These containers rely on the Java
@@ -745,14 +746,14 @@ concepts of equality and hashing, and all objects in Java have an
 stored in lists and maps.
 
 For non-hashing containers, objects are resolved based on equality
-rather than identity. Thus, list.remove(myobject) iterates through the
-list looking for an element for which element.equals(myobject), rather
-than element==myobject, is true. Because all objects must have an
+rather than identity. Thus, \code{list.remove(myobject)} iterates through the
+list looking for an element for which \code{element.equals(myobject)}, rather
+than \code{element\,==\,myobject}, is true. Because all objects must have an
 \code{equals} method, we implemented a ``virtual equals'' function on
 the JavaScript side of things. This function takes two objects as
 arguments, checks whether either of them implements their own
-\code{equals} function, and if so, falls through to that function
-instead. If they don't, and the passed objects are primitives,
+\code{equals} function, and if so, falls through to that function.
+If they don't, and the passed objects are primitives,
 primitive equality is checked. If they're not, then there is no
 equality.
 
@@ -763,9 +764,9 @@ are found based on first finding the container that matches their hash
 code, in which the object is then searched for based on equality
 evaluation. As all objects in Java have a \code{hashCode} method, we also
 wrote a ``virtual hashcode'' function, which takes a single object as
-argument. The function checks whether the object implements its own
-\code{hashCode} function, and if so falls through to that function
-instead. If it doesn't, the hashcode is computed based on the same
+an argument. The function checks whether the object implements its own
+\code{hashCode} function, and if so falls through to that function.
+If it doesn't, the hash code is computed based on the same
 hashing algorithm that is used in Java.
 
 \end{aosaitemize}
@@ -774,7 +775,7 @@ hashing algorithm that is used in Java.
 
 \begin{aosasect2}{Administration}
 
-The final piece of functionality in the static code library, is the
+The final piece of functionality in the static code library is the
 instance list of all sketches that are currently running on the
 page. This instance list stores sketches based on the canvas they have
 been loaded in, so that users can call
@@ -785,7 +786,7 @@ sketch for page interaction purposes.
 
 Instance code takes the form of \code{p.functor = function(arg, ...)}
 definitions for the Processing API, and \code{p.constant = ...} for sketch
-state variables (\code{p} being our reference to the sketch being set
+state variables (where \code{p} is our reference to the sketch being set
 up). Neither of these are located in dedicated code blocks. Rather,
 the code is organized based on function, so that instance code
 relating to PShape operations is defined near the PShape object, and
@@ -794,19 +795,19 @@ Drawing2D and Drawing3D objects.
 
 In order to keep things fast, a lot of code that could be written as
 static code with an instance wrapper is actually implemented as purely
-instance code. For instance, the \code{lerpColor(c1, c2, ratio)} function,
+instance code. For instance, the \code{lerpColor(c1,\,c2,\,ratio)} function,
 which determines the color corresponding to the linear interpolation
 of two colors, is defined as an instance function. Rather than having
-\code{p.lerpColor(c1,c2,ratio)} acting as a wrapper for some static function
-\code{Processing.lerpColor(c1,c2,ratio)}, the fact that nothing else in
+\code{p.lerpColor(c1,\,c2,\,ratio)} acting as a wrapper for some static function
+\code{Processing.lerpColor(c1,\,c2,\,ratio)}, the fact that nothing else in
 Processing.js relies on \code{lerpColor} means that code execution is
 faster if we write it as a pure instance function. While this does
 ``bloat'' the instance object, most functions for which we insist on an
 instance function rather than a wrapper to the static library are
 small. Thus, at the expense of memory we create really fast code
 paths. While the full Processing object will take up a one-time memory
-slice worth around 5MB when initially set up, the prerequisite code
-for individual sketches only takes up about 500KB.
+slice worth around 5 MB when initially set up, the prerequisite code
+for individual sketches only takes up about 500 KB.
 
 \end{aosasect3}
 
@@ -837,10 +838,10 @@ writing new code or rewriting old code, cannot be marked as resolved
 until there is a unit or reference test that allows others to verify
 not only that the code works the way it should, but also that it
 breaks when it should. For most code, this typically involves a unit
-test - a short bit of code that calls a function and simply tests
+test---a short bit of code that calls a function and simply tests
 whether the function returns the correct values, for both legal and
 illegal function calls. Not only does this allow us to test code
-contributions, but it also lets us perform regression tests.
+contributions, it also lets us perform regression tests.
 
 Before any code is accepted and merged into our stable development
 branch, the modified Processing.js library is validated against an
@@ -894,9 +895,9 @@ inside the sketch that generated it, forming a test, and these tests
 are then run by Processing.js on a visual reference test page which
 executes each test and performs pixel comparisons between ``what it
 should look like'' and ``what it looks like''. If the pixels are off, the
-test fails, and the developer is presented with three images; one
-showing what it should look like, one showing how Processing.js
-rendered it, and one showing the difference between the two, marking
+test fails, and the developer is presented with three images:
+what it should look like, how Processing.js
+rendered it, and the difference between the two, marking
 problem areas as red pixels, and correct areas as white. Much like
 unit tests, these tests must pass before any code contribution can be
 accepted.
@@ -912,7 +913,7 @@ improve it'' principle, most functions in Processing.js don't just come
 with unit or ref tests, but also with performance (or ``perf'')
 tests. Small bits of code that simply call a function, without testing
 the correctness of the function, are run several hundred times in a
-row, and their run time recorded on a special performance test web
+row, and their run time is recorded on a special performance test web
 page. This lets us quantify how well (or not!) Processing.js performs
 in browsers that support HTML5's
 \code{{\textless}canvas{\textgreater}} element. Every time an
@@ -933,13 +934,13 @@ at what runs it. As Processing.js is highly dependent on the
 efficiency of JavaScript engines, it makes sense to also look at which
 features various engines offer to speed things up. Especially now that
 browsers are starting to support hardware accelerated graphics,
-instant speed boost are possible when engines offer new and more
-efficient datatypes and functions to perform low level operations that
+instant speed boosts are possible when engines offer new and more
+efficient data types and functions to perform the low level operations that
 Processing.js depends on. For instance, JavaScript technically has no
 static typing, but graphics hardware programming environments do. By
 exposing the data structures used to talk to the hardware directly to
 JavaScript, it is possible to significantly speed up sections of code
-of which we know that they will only use specific values.
+if we know that they will only use specific values.
 
 \end{aosasect2}
 
@@ -980,11 +981,10 @@ have to perform:
 if(mode==2D) { line2D() } else { line3D() }
 \end{verbatim}
 
-\noindent
-for every function call that might be either in 2D or 3D mode.
+\noindent for every function call that might be either in 2D or 3D mode.
 
 Finally, there is the process of minification. There are a number of
-good systems available that let you compress your JavaScript code by
+good systems that let you compress your JavaScript code by
 renaming variables, stripping whitespace, and applying certain code
 optimisations that are hard to do by hand while still keeping the code
 readable. Examples of these are the YUI minifier and Google's closure
@@ -992,7 +992,7 @@ compiler. We use these technologies in Processing.js to offer end
 users bandwidth convenience---minification after stripping comments
 can shrink the library by as much as 50\%, and taking advantage of
 modern browser/server interaction for gzipped content, we can offer
-the entire Processing.js library in gzipped form in 65KB.
+the entire Processing.js library in gzipped form in 65 KB.
 
 \end{aosasect2}
 
@@ -1008,15 +1008,15 @@ mark the ticket as a ``wontfix'' issue. In such cases, a new ticket gets
 filed, typically titled ``Add documentation that explains why...''.
 
 In order to make sure these things aren't lost, we have documentation
-online for people who start using Processing.js with a Processing
-background, and people who start using Processing.js with a JavaScript
+for people who start using Processing.js with a Processing
+background, and for people who start using Processing.js with a JavaScript
 background, covering the differences between what is expected, and
 what actually happens. Certain things just deserve special mention,
 because no matter how much work we put into Processing.js, there are
 certain things we cannot add without sacrificing usability. A good
 architecture doesn't just cover the way things are, it also covers
 why; without that, you'll just end up having the same discussions
-about what the code looks like and whether it should be different,
+about what the code looks like and whether it should be different
 every time the team changes.
 
 \end{aosasect2}
@@ -1028,48 +1028,48 @@ every time the team changes.
 The most important lesson we learned while writing Processing.js is
 that when porting a language, what matters is that the result is
 correct, not whether or not the code used in your port is similar to
-the original. Even though Java and JavaScript are fairly similar,
-syntax wise, and modifying Java code to legal JavaScript code is
-fairly easy, it often pays off to look at what JavaScript can natively
+the original. Even though Java and JavaScript syntax are fairly similar,
+and modifying Java code to legal JavaScript code is
+fairly easy, it often pays to look at what JavaScript can natively
 do and exploit that to get the same functional result. Taking
 advantage of the lack of typing by recycling variables, using certain
-built in functions that are fast in JavaScript but slow in Java, or
+built-in functions that are fast in JavaScript but slow in Java, or
 avoiding patterns that are fast in Java but slow in JavaScript means
 your code may look radically different, but has the exact same
 effect. You often hear people say not to reinvent the wheel, but that
 only applies to working with a single programming language. When
 you're porting, reinvent as many wheels as you need to obtain the
-performance you require
+performance you require.
 
 Another important lesson is to return early, return often, and branch
 as little as possible. An if/then statement followed by a return can
 be made (sometimes drastically) faster by using an if-return/return
-construction instead, using the return statement as conditional
+construction instead, using the return statement as a conditional
 shortcut. While it's conceptually pretty to aggregate your entire
 function state before calling the ultimate return statement for that
 function, it also means your code path may traverse code that is
-entirely unrelated to what you will be returning. Don't waste cycles,
+entirely unrelated to what you will be returning. Don't waste cycles;
 return when you have all the information you need.
 
 A third lesson concerns testing your code. In Processing.js we had the
 benefit of starting with very good documentation outlining how
 Processing was ``supposed'' to work, and a large set of test cases, most
-of which started out as ``known fail''. This allowed us to do two thing:
+of which started out as ``known fail''. This allowed us to do two things:
 1) write code against tests, and 2) create tests before writing
-code. The usual process of writing code, followed by creating test
-cases for that code, actually creates biased tests. Rather than
+code. The usual process, in which code is written and then test
+cases are written for that code, actually creates biased tests. Rather than
 testing whether or not your code does what it should do, according to
 the specification, you are only testing whether your code is
 bug-free. In Processing.js, we instead start by creating test cases
 based on what the functional requirements for some function or set of
 functions is, based on the documentation for it. With these unbiased
 tests, we can then write code that is functionally complete, rather
-than simply bug free but possibly deficient.
+than simply bug-free but possibly deficient.
 
 The last lesson is also the most general one: apply the rules of agile
 development to individual fixes as well. No one benefits from you
 retreating into dev mode and not being heard from for three days
-straight, while you write the perfect solution. Rather, get your
+straight while you write the perfect solution. Rather, get your
 solutions to the point where they work, and not even necessarily for
 all test cases, then ask for feedback. Working alone, with a test
 suite for catching errors, is no guarantee for good or complete
