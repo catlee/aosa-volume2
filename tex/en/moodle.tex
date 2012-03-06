@@ -1,29 +1,29 @@
 \begin{aosachapter}{Moodle}{s:moodle}{Tim Hunt}
 
-Moodle is a web application used in educational settings. While I will
-try to give an overview of all aspects of how Moodle works, I will
-focus on those areas where I think Moodle's design is particularly
+Moodle is a web application used in educational settings. While this chapter will
+try to give an overview of all aspects of how Moodle works, it
+focuses on those areas where Moodle's design is particularly
 interesting:
 
 \begin{aosaenumerate}
 
-\item the way the application is divided into plugins;
+\item The way the application is divided into plugins;
 
-\item the permission system, which controls which users can perform
+\item The permission system, which controls which users can perform
   which actions in different parts of the system;
 
-\item the way output is generated, so that different themes (skins)
+\item The way output is generated, so that different themes (skins)
   can be used to give different appearances, and so that the interface
-  can be localised; and
+  can be localised.
 
-\item the database abstraction layer.
+\item The database abstraction layer.
 
 \end{aosaenumerate}
 
 Moodle\footnote{\url{http://moodle.org/}} provides a place online
 where students and teachers can come together to teach and learn. A
-Moodle site is divided into Courses. A course will have certain users
-enrolled in it in different roles, such as Student or Teacher. Each
+Moodle site is divided into \emph{courses}. A course will have certain users
+enrolled in it in different roles, such as \emph{student} or \emph{Teacher}. Each
 course will comprise a number of resource and activities. A resource
 might be a PDF file, a page of HTML within Moodle, or a link to
 something else on the web. An activity might be a forum, a quiz or a
@@ -31,54 +31,54 @@ wiki. Within the course, these resources and activities will be
 structured in some way. For example they may be grouped into logical
 topics, or into weeks on a calendar.
 
-\aosafigure{../images/moodle/course.png}{Moodle Course}{fig.moodle.course}
+\aosafigure{../images/moodle/course.png}{Moodle course}{fig.moodle.course}
 
-Moodle can be used as a stand-alone application. If you wanted to
+Moodle can be used as a standalone application. If you wanted to
 teach software architecture (for example) you could download Moodle to
-your web hosting, install it, start creating courses, and wait for
+your web host, install it, start creating courses, and wait for
 students to come and self-register. Alternatively, if you are a large
 institution, Moodle would be just one of the systems you run. You
 would probably also have the infrastructure shown in
 \aosafigref{fig.moodle.uni}:
 
-\aosafigure{../images/moodle/university.png}{University Infrastructure}{fig.moodle.uni}
+\aosafigure{../images/moodle/university.png}{University infrastructure}{fig.moodle.uni}
 
 \begin{aosaitemize}
 
-\item an authentication/identity provider (for example LDAP) to
+\item An authentication/identity provider (for example LDAP) to
   control user accounts across all your systems.
 
-\item a student information system. That is, a database of all your
+\item A student information system; that is, a database of all your
   students, which program of study they are on, and hence which
-  courses they need to complete; and their transcript, that is a high
-  level summary of the results of the courses they have
-  completed. This would also deal with other administrative functions
+  courses they need to complete; and their transcript---a high-level 
+  summary of the results of the courses they have
+  completed. This would also deal with other administrative functions,
   like tracking whether they have paid their fees.
 
-\item a document repository (for example Alfresco). To store files,
-  and track the workflow as users collaborate to create files.
+\item A document repository (for example, Alfresco); to store files,
+  and track workflow as users collaborate to create files.
 
-\item an ePortfolio. This is a place where students can put assets and
-  assemble them. This might be in order to build a CV (resume), or to
-  assemble evidence that they have met the requirements of a
+\item An ePortfolio; this is a place where students can assemble assets,
+  either to build a CV (resume), or to
+  provide evidence that they have met the requirements of a
   practice-based course.
 
-\item a reporting or analytics tools. To generate high level
+\item A reporting or analytics tool; to generate high-level
   information about what is going on in your institution.
 
 \end{aosaitemize}
 
-Moodle focusses on providing a space online where people can engage in
+Moodle focuses on providing an online space for
 teaching and learning, rather than any of the other systems that an
 educational organisation might need. Moodle provides a basic
-implementation of the other functionality, so that it can function as
-a stand-alone system, or will integrate with other systems. The role
+implementation of the other functionalities, so that it can function either as
+a stand-alone system or integrated with other systems. The role
 Moodle plays is normally called a virtual learning environment (VLE),
 or learning or course management system (LMS, CMS or even LCMS).
 
 Moodle is open source or free software (GPL). It is written in PHP. It
 will run on most common web servers, on common platforms. It requires
-a database, and will work with MySQL, PostgreSQL, MS SQL Server or
+a database, and will work with MySQL, PostgreSQL, Microsoft SQL Server or
 Oracle.
 
 The Moodle project was started by Martin Dougiamas in 1999, while he
@@ -99,8 +99,8 @@ A Moodle installation comprises three parts:
   by the web server.
 
 \item The database, managed by one of the supported RDMSs. In fact,
-  moodle adds a prefix to all the table names, so it can share a
-  database with other applications, if desired.
+  Moodle adds a prefix to all the table names, so it can share a
+  database with other applications if desired.
 
 \item The \code{moodledata} folder. This is a folder where Moodle
   stores uploaded and generated files, and so needs to be writable by
@@ -110,12 +110,12 @@ A Moodle installation comprises three parts:
 \end{aosaenumerate}
 
 These can all be on a single server. Alternatively, in a load-balanced
-set-up, there will be multiple copies of the code on each web-server,
-but just one shared copy of the database and moodledata, probably on
+set-up, there will be multiple copies of the code on each web server,
+but just one shared copy of the database and \code{moodledata}, probably on
 other servers.
 
 The configuration information about these three parts is stored in a
-file called config.php in the root of the \code{moodle} folder when
+file called \code{config.php} in the root of the \code{moodle} folder when
 Moodle is installed.
 
 \begin{aosasect2}{Request Dispatching}
@@ -127,19 +127,23 @@ URL namespace, and how URLs get dispatched to different scripts.
 
 Moodle uses the standard PHP approach to this. To view the main page
 for a course, the URL would be \code{.../course/view.php?id=123},
-where \code{123} is the unique id of the course in the database. To
+where \code{123} is the unique id of the course in \linebreak
+the database. To
 view a forum discussion, the URL would be something like
+\linebreak 
 \code{.../mod/forum/discuss.php?id=456789}. That is, these particular
 scripts, \code{course/view.php} or \code{mod/forum/discuss.php} would
-handle these requests. This is simple for the developer. To understand
+handle these requests. 
+
+This is simple for the developer. To understand
 how Moodle handles a particular request, you look at the URL and start
 reading code there. It is ugly from the user's point of view. These
 URLs are, however, permanent. The URLs do not change if the course is
 renamed, or if a moderator moves a discussion to a different forum.
 
 The alternative approach one could take is to have a single entry
-point \code{.../index.php/\[extra information to make the request
-  unique\]}. The single script \code{index.php} would then dispatch
+point 
+\code{\ldots/index.php/[extra\-information-to-make-the-request-unique]}. The single script \code{index.php} would then dispatch
 the requests in some way. This approach adds a layer of indirection,
 which is something software developers always like to do. The lack of
 this layer of indirection does not seem to hurt Moodle.
@@ -150,32 +154,32 @@ this layer of indirection does not seem to hurt Moodle.
 
 Like many successful open source projects, Moodle is built out of many
 plugins, working together with the core of the system. This is a good
-approach because at allows people to change an enhance Moodle in
+approach because at allows people to change and enhance Moodle in
 defined ways. An important advantage of an open source system is that
 you can tailor it to your particular needs. Making extensive
 customisations to the code can, however, lead to big problems when the
 time comes to upgrade, even when using a good version control
 system. By allowing as many customisations and new features as
 possible to be implemented as self-contained plugins that interact
-with Moodle core through a defined API, it easier for people to
+with the Moodle core through a defined API, it is easier for people to
 customise Moodle to their needs, and to share customisations, while
 still being able to upgrade the core Moodle system.
 
 There are various ways a system can be built as a core surrounded by
 plugins. Moodle has a relatively fat core, and the plugins are
 strongly-typed. When I say a fat core, I mean that there is a lot of
-functionality in the core. This contrasts to the kind of architecture
+functionality in the core. This contrasts with the kind of architecture
 where just about everything, except for a small plugin-loader stub, is
 a plugin.
 
 When I say plugins are strongly type, I mean that depending on which
 type of functionality you want to implement, you have to write a
 different type of plugin, and implement a different API. For example,
-an new Activity module plugin would be very different from a new
+a new Activity module plugin would be very different from a new
 Authentication plugin or a new Question type. At the last count there
 are about 35 different types of plugin. This contrasts with the kind
 of architecture where all plugins use basically the same API and then,
-perhaps, subscript the the subset of hooks or events they are
+perhaps, subscript the subset of hooks or events they are
 interested in.
 
 Generally, the trend in Moodle has been to try to shrink the core, by
@@ -186,23 +190,25 @@ types of plugin as much as possible, so that in areas of common
 functionality, like install and upgrade, all types of plugins work the
 same way.
 
-A plugin is Moodle takes the form of a folder containing files. The
+A plugin in Moodle takes the form of a folder containing files. The
 plugin has a type and a name, which together make up the
 ``Frankenstyle'' component name of the plugin\footnote{The word
-  ``Frankenstyle'' arouse out of an argument in the developers' Jabber
+  ``Frankenstyle'' arose out of an argument in the developers' Jabber
   channel, but everyone liked it and it stuck.}. The plugin type and
 name determine the path to the plugin folder. The plugin type gives a
-prefix, and then the foldername is the plugin name. Here are some
-examples.
+prefix, and the foldername is the plugin name. Here are some
+examples:
 
-\begin{tabular}{llll}
-Plugin type           & Plugin name & Frankenstyle      & Folder \\
-mod (Activity module) & \code{forum}       & \code{mod\_forum}         & \code{mod/forum} \\
-mod (Activity module) & \code{quiz}        & \code{mod\_quiz}          & \code{mod/quiz} \\
-block (Side-block)    & \code{navigation}  & \code{block\_navigation}  & \code{blocks/navigation} \\
-qtype (Question type) & \code{shortanswer} & \code{qtype\_shortanswer} & \code{question/type}/shortanswer \\
-quiz (Quiz report)    & \code{statistics}  & \code{quiz\_statistics}   & \code{mod/quiz/report/statistics}
+\medskip
+\noindent \begin{tabular}{llll}
+\bf{Plugin type}      & \bf{Plugin name}   & \bf{Frankenstyle}         & \bf{Folder} \\
+mod (Activity module) & \smcode{forum}       & \smcode{mod\_forum}         & \smcode{mod/forum} \\
+mod (Activity module) & \smcode{quiz}        & \smcode{mod\_quiz}          & \smcode{mod/quiz} \\
+block (Side-block)    & \smcode{navigation}  & \smcode{block\_navigation}  & \smcode{blocks/navigation} \\
+qtype (Question type) & \smcode{shortanswer} & \smcode{qtype\_shortanswer} & \smcode{question/type}/shortanswer \\
+quiz (Quiz report)    & \smcode{statistics}  & \smcode{quiz\_statistics}   & \smcode{mod/quiz/report/statistics}
 \end{tabular}
+\medskip
 
 The last example shows that each activity module is allowed to declare
 sub-plugin types. At the moment only activity modules can do this, for
@@ -721,7 +727,7 @@ particular course they are currently in), and then searching through
 all the language packs and parent language packs to find the string.
 
 Producing the language pack files, and co-ordinating the translation
-effort is managed at \url{http://lang.moodle.org/}, which is moodle
+effort is managed at \url{http://lang.moodle.org/}, which is Moodle
 with a custom plugin\footnote{\code{local\_amos},
   \url{http://docs.moodle.org/22/en/AMOS}.}. It uses both Git and the
 database as a back-end to store the language files with full version
