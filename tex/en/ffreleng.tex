@@ -753,11 +753,130 @@ automatically update Firefox to the latest version.
 
 \begin{aosasect1}{Lessons Learned}
 
-%% FIXME: please fill this in.
+As software engineers, our temptation is to jump to solve what we
+see as the immediate and obvious technical problem. However, Release
+Engineering spans across different fields---both technical and 
+non-technical---so being aware of technical and non-technical issues is important.
 
-\begin{aosasect2}{For More Information}
+\begin{aosasect2}{The Importance of Buy-in from Other Stakeholders}
 
-For more information, please see:
+It was important to make sure that all stakeholders understood that our
+slow, fragile release engineering exposed the organization, and our users, to
+risks. This involved acknowledging lost business opportunities, or market
+exposures caused by slow, fragile automation. Further, Mozilla's ability to
+protect our users with super-fast turnaround on releases became more important
+as we grew to have more users, which in turn made us more attractive as a
+target.
+
+Interestingly, some people had only ever experienced fragile release automation
+in their careers, so came to Mozilla with low, "oh, it's always this bad"
+expectations. Explaining the business gains to be found with a robust, scalable
+release automation process helped everyone understand the importance of the
+"invisible" Release Engineering improvement work.
+
+\end{aosasect2}
+
+\begin{aosasect2}{Educating Other Groups}
+
+To make the release process more efficient and more reliable required work, by
+Release Engineering and other groups across Mozilla. However, it was
+interesting to see how often "it takes a long time to ship a release" was
+mistranslated as "it takes Release Engineering a long time to ship a release".
+This misconception ignored the release work done by groups outside of Release
+Engineering, and was demotivating to the Release Engineers. Fixing this
+misconception required educating people across Mozilla on where time was
+actually spent by different groups during a release.  We did this with low-tech
+"wall-clock" timestamps on emails of clear handoffs across groups, and a series
+of "wall-clock" blogposts detailing where time was spent.
+
+\begin{aosaitemize}
+\item These helped raise awareness of which different groups were actually
+involved in a release.
+\item These helped people appreciate whenever RelEng got processes to run
+faster, which in turn helped motivate Release Engineers to make further
+improvements.
+\item These helped other groups think about how they too could help improve the
+overall release process---a big mindset shift for the entire organization.
+\item Finally, these also eliminated all the unclear handoff communications
+across groups, which had historically cost us many respins, false-starts, and
+other costly disruptions to the release process.
+\end{aosaitemize}
+
+\end{aosasect2}
+
+\begin{aosasect2}{Recognizing People Problems}
+
+Many of our "release engineering" problems were actually people problems:
+miscommunication between teams; lack of clear leadership; and stress, fatigue
+and anxiety during chemspill releases. By having clear handoffs to eliminate
+these human miscommunications, our releases immediately started to go more
+smoothly, and cross-group human interactions quickly improved.
+
+\end{aosasect2}
+
+\begin{aosasect2}{Managing Turnover}
+
+When we started this project, we were losing team members too often. In itself,
+this is bad. However, the lack of accurate up-to-date documentation meant that
+most of the technical understanding of the release process was documented by
+folklore and oral histories, which we lost whenever a person left. We needed to
+turn this situation around, urgently.
+
+We felt the best way to improve morale and show that things were getting better
+was to make sure people could see that we had a plan to make things better, and
+that people had some control over their own destiny. We did this my making sure
+that we had the time to fix at least one thing---anything!---after each
+release. We implemented this by negotiating for a day or two of "do not disturb"
+time immediately after we shipped a release. Solving immediate small problems,
+while they were still fresh in people's minds, helped clear distractions, so
+people could focus on larger term problems in subsequent releases. More
+importantly, this gave people the feeling that we had regained some control
+over our own fate, and that things were truly getting better.
+
+\end{aosasect2}
+
+\begin{aosasect2}{Managing Change}
+
+Because of market pressures, Mozilla's needs from the release process changed
+while we were working on improving it. This is not unusual and should be
+expected.
+
+We knew we had to continue shipping releases using the current release process,
+while we were building the new process. We decided against attempting to build
+a separate "greenfield project" while also supporting the existing
+systems; we felt the current systems were so fragile that we literally would
+not have the time to do anything new.
+
+We also knew from the outset that we didn't fully realize what was broken. Each
+incremental improvement allowed us to step back and check for new surprises,
+before starting work on the next improvement. Phrases like "draining the
+swamp", "peeling the onion", and "how did this ever work?" were heard
+frequently whenever we discovered new surprises throughout this project.
+
+Given all this, we decided to make lots of small, continuous improvements to
+the existing process. Each iterative improvement made the next release a little
+bit better. More importantly, each improvement freed up just a little bit more
+time during the next release, which allowed a release engineer a little more
+time to make the next improvement. Each of these improvements snowballed until
+we found ourselves past the tipping point, and able to make time to work on
+significant major improvements. At that point, the gains from release
+optimizations really kicked in.
+
+\end{aosasect2}
+\end{aosasect1}
+
+\begin{aosasect1}{For More Information}
+
+We're really proud of the work done so far, and the abilities that it has
+brought to Mozilla in a newly-heated-up global browser market.
+
+Four years ago, doing two chemspill releases in a month would be a talking
+point within Mozilla. By contrast, last week a published exploit in a third-party
+library caused Mozilla to ship eight chemspills releases in two low-fuss days.
+
+As with everything, our release automation still has plenty of room for
+improvement, and our needs and demands continue to change. For a look at our
+ongoing work, please see:
 
 \begin{aosaitemize}  
 
@@ -783,8 +902,6 @@ For more information, please see:
   notes if you edit the URL appropriately.
 
 \end{aosaitemize}
-
-\end{aosasect2}
 
 \end{aosasect1}
 
