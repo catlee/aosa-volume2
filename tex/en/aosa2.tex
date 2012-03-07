@@ -15,6 +15,7 @@
 \usepackage{sectsty}
 \usepackage{xspace}
 \usepackage{wrapfig}
+\usepackage{mathtools} % for bmatrix in matplotlib
 \usepackage[small]{caption}  % make caption text size smaller
 
 \usepackage[T1]{fontenc}
@@ -100,8 +101,8 @@
 \newenvironment{aosasect3}[1]{\subsubsection*{#1}}{}
 
 \newenvironment{aosabox}[1]
-{ \begin{figure}[h!]\vspace{-0.7cm}\centering \rule[-.7cm]{12.82cm}{0.75pt} \begin{minipage}[t]{12.82cm}\begin{framed}\centerline{{\textbf{#1}}} }
-{ \end{framed}\end{minipage} \rule{12.82cm}{0.75pt} \end{figure} }
+{ \begin{figure}[h!]\vspace{-0.7cm}\centering \rule[-.7cm]{13.83cm}{0.75pt} \begin{minipage}[t]{13.83cm}\begin{framed}\centerline{{\textbf{#1}}} }
+{ \end{framed}\end{minipage} \rule{13.83cm}{0.75pt} \end{figure} }
 
 \newenvironment{aosadescription}
 {\begin{description}\addtolength{\itemsep}{-0.5\baselineskip}}
@@ -139,6 +140,7 @@
 \newcommand{\aosagraphics}[2][375pt]{\includegraphics[width={#1}]{#2}}
 \newcommand{\aosaquestion}[1]{\begin{textbf}{#1}\end{textbf}}
 \newcommand{\code}[1]{\texttt{#1}}
+\newcommand{\smcode}[1]{\small\texttt{#1}\normalsize}
 
 % GHC commands
 \newcommand{\clift}[1]{\lfloor{#1}\rfloor}

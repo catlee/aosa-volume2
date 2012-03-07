@@ -55,7 +55,7 @@ chemspill release in between our regularly scheduled releases, we
 decided to plan as if every release could be a chemspill release, and
 designed our release automation accordingly.
 
-This mindset has three important side-effects:
+This mindset has three important consequences:
 
 \begin{aosaenumerate}
 
@@ -560,19 +560,15 @@ package happens quietly in the background. Only after the update files
 are downloaded, and ready to be applied, will Firefox prompt the user
 with the option to apply the update and restart.
 
-%% QUERY: We need an explanation of what a "release train" is and what the
-%% different release trains are, either here or somewhere earlier in the 
-%% section.
-The catch is, we generate a \emph{lot} of updates. For any given release
-train, we generate updates from all supported previous releases along
-that release train to the new latest release for that train.  For Firefox \code{LATEST}, that
-means generating updates for every platform, every locale, and every
-installer from Firefox \code{LATEST-1}, \code{LATEST-2}, \code{LATEST-3}, {\ldots} 
- in both complete and partial forms. We do all this for several
-release trains at a time.
+The catch is, we generate a \emph{lot} of updates. For a series of releases on
+a product line, we generate updates from all supported previous releases in the
+series to the new latest release for that product line.  For Firefox
+\code{LATEST}, that means generating updates for every platform, every locale,
+and every installer from Firefox \code{LATEST-1}, \code{LATEST-2},
+\code{LATEST-3}, {\ldots} in both complete and partial forms. We do all this
+for several different product lines at a time.
 
-%% QUERY: What does "bumps" mean here? Increments? Uploads? Downloads? --ARB
-Our update generation automation bumps the update configuration files
+Our update generation automation modifies the update configuration files
 of each release's build off a branch to maintain our canonical list of
 what version numbers, platforms, and localizations need to have
 updates created to offer users this newest release. We offer updates
@@ -583,17 +579,24 @@ and/or partial \code{.mar} (Mozilla Archive) files are hosted.
 
 \begin{aosasect2}{Major Updates vs.\ Minor Updates}
 
-%% FIXME: We will need to add line breaks here. --ARB
+%% FIXME: We will need to add line breaks here. --ARB Greg, does this look okay?
 \begin{figure}  
 \begin{verbatim}
 <updates>
-    <update type="minor"  version="7.0.1" extensionVersion="7.0.1" buildID="20110928134238" detailsURL="https://www.mozilla.com/en-US/firefox/7.0.1/releasenotes/">
-        <patch type="complete" URL="http://download.mozilla.org/?product=firefox-7.0.1-complete&os=osx&lang=en-US&force=1" hashFunction="SHA512" hashValue="7ecdbc110468b9b4627299794d793874436353dc36c80151550b08830f9d8c5afd7940c51df9270d54e11fd99806f41368c0f88721fa17e01ea959144f473f9d" size="28680122"/>
-        <patch type="partial" URL="http://download.mozilla.org/?product=firefox-7.0.1-partial-6.0.2&os=osx&lang=en-US&force=1" hashFunction="SHA512" hashValue="e9bb49bee862c7a8000de6508d006edf29778b5dbede4deaf3cfa05c22521fc775da126f5057621960d327615b5186b27d75a378b00981394716e93fc5cca11a" size="10469801"/>
+    <update type="minor" version="7.0.1" extensionVersion="7.0.1" buildID="201109281
+34238" detailsURL="https://www.mozilla.com/en-US/firefox/7.0.1/releasenotes/">
+        <patch type="complete" URL="http://download.mozilla.org/?product=firefox-7.0
+.1-complete&os=osx&lang=en-US&force=1" hashFunction="SHA512" hashValue="7ecdbc110468
+b9b4627299794d793874436353dc36c80151550b08830f9d8c5afd7940c51df9270d54e11fd99806f413
+68c0f88721fa17e01ea959144f473f9d" size="28680122"/>
+        <patch type="partial" URL="http://download.mozilla.org/?product=firefox-7.0.
+1-partial-6.0.2&os=osx&lang=en-US&force=1" hashFunction="SHA512" hashValue="e9bb49be
+e862c7a8000de6508d006edf29778b5dbede4deaf3cfa05c22521fc775da126f5057621960d327615b51
+86b27d75a378b00981394716e93fc5cca11a" size="10469801"/>
     </update>
 </updates>
 \end{verbatim}
-\caption{Sample Update Snippet}
+\caption{Sample update snippet}
 \label{fig.ffreleng.snippet}
 \end{figure}
 
@@ -623,9 +626,12 @@ generating major updates once the 3.6.* release train is no longer supported.
 At build time we generate ``complete update'' \code{.mar} files which
 contain all the files for the new release, compressed with \code{bz2}
 and then archived into a \code{.mar} file. Both complete and partial
-updates are downloaded automatically through the update channel a user
-is on.
-%% QUERY: Do we know what an "update channel" is? --ARB
+updates are downloaded automatically through the update channel to which a 
+user's Firefox is registered. We have different update channels (that is,
+release users look
+for updates on release channel, beta users look on beta channel, etc.) so that
+we can serve updates to, for example, release users at a different time than 
+we serve updates to beta users.
 
 Partial update .mar files are created by comparing the complete .mar for the
 old release with the complete .mar for the new release to create a
@@ -754,11 +760,130 @@ automatically update Firefox to the latest version.
 
 \begin{aosasect1}{Lessons Learned}
 
-%% FIXME: please fill this in.
+As software engineers, our temptation is to jump to solve what we
+see as the immediate and obvious technical problem. However, Release
+Engineering spans across different fields---both technical and 
+non-technical---so being aware of technical and non-technical issues is important.
 
-\begin{aosasect2}{For More Information}
+\begin{aosasect2}{The Importance of Buy-in from Other Stakeholders}
 
-For more information, please see:
+It was important to make sure that all stakeholders understood that our
+slow, fragile release engineering exposed the organization, and our users, to
+risks. This involved all levels of the organization acknowledging the lost business opportunities, and market risks, caused by slow
+fragile automation. Further, Mozilla's ability to
+protect our users with super-fast turnaround on releases became more important
+as we grew to have more users, which in turn made us more attractive as a
+target.
+
+Interestingly, some people had only ever experienced fragile release automation
+in their careers, so came to Mozilla with low, ``oh, it's always this bad"
+expectations. Explaining the business gains expected with a robust, scalable
+release automation process helped everyone understand the importance of the
+``invisible'' Release Engineering improvement work we were about to undertake.
+
+\end{aosasect2}
+
+\begin{aosasect2}{Involving Other Groups}
+
+To make the release process more efficient and more reliable required work, by
+Release Engineering and other groups across Mozilla. However, it was
+interesting to see how often ``it takes a long time to ship a release'' was
+mistranslated as ``it takes Release Engineering a long time to ship a release".
+This misconception ignored the release work done by groups outside of Release
+Engineering, and was demotivating to the Release Engineers. Fixing this
+misconception required educating people across Mozilla on where time was
+actually spent by different groups during a release.  We did this with low-tech
+``wall-clock'' timestamps on emails of clear handoffs across groups, and a series
+of ``wall-clock'' blogposts detailing where time was spent.
+
+\begin{aosaitemize}
+\item These helped raise awareness of which different groups were actually
+involved in a release.
+\item These helped people appreciate whenever RelEng got processes to run
+faster, which in turn helped motivate Release Engineers to make further
+improvements.
+\item These helped other groups think about how they too could help improve the
+overall release process---a big mindset shift for the entire organization.
+\item Finally, these also eliminated all the unclear handoff communications
+across groups, which had historically cost us many respins, false-starts, and
+other costly disruptions to the release process.
+\end{aosaitemize}
+
+\end{aosasect2}
+
+\begin{aosasect2}{Establishing Clear Handoffs}
+
+Many of our ``release engineering'' problems were actually people problems:
+miscommunication between teams; lack of clear leadership; and the resulting stress, fatigue
+and anxiety during chemspill releases. By having clear handoffs to eliminate
+these human miscommunications, our releases immediately started to go more
+smoothly, and cross-group human interactions quickly improved.
+
+\end{aosasect2}
+
+\begin{aosasect2}{Managing Turnover}
+
+When we started this project, we were losing team members too often. In itself,
+this is bad. However, the lack of accurate up-to-date documentation meant that
+most of the technical understanding of the release process was documented by
+folklore and oral histories, which we lost whenever a person left. We needed to
+turn this situation around, urgently.
+
+We felt the best way to improve morale and show that things were getting better
+was to make sure people could see that we had a plan to make things better, and
+that people had some control over their own destiny. We did this by making sure
+that we set aside time to fix at least one thing---anything!---after each
+release. We implemented this by negotiating for a day or two of ``do not disturb"
+time immediately after we shipped a release. Solving immediate small problems,
+while they were still fresh in people's minds, helped clear distractions, so
+people could focus on larger term problems in subsequent releases. More
+importantly, this gave people the feeling that we had regained some control
+over our own fate, and that things were truly getting better.
+
+\end{aosasect2}
+
+\begin{aosasect2}{Managing Change}
+
+Because of market pressures, Mozilla's business and product needs from the release process changed
+while we were working on improving it. This is not unusual and should be
+expected.
+
+We knew we had to continue shipping releases using the current release process,
+while we were building the new process. We decided against attempting to build
+a separate ``greenfield project'' while also supporting the existing
+systems; we felt the current systems were so fragile that we literally would
+not have the time to do anything new.
+
+We also assumed from the outset that we didn't fully understand what was broken. Each
+incremental improvement allowed us to step back and check for new surprises,
+before starting work on the next improvement. Phrases like ``draining the
+swamp", ``peeling the onion", and ``how did this ever work?'' were heard
+frequently whenever we discovered new surprises throughout this project.
+
+Given all this, we decided to make lots of small, continuous improvements to
+the existing process. Each iterative improvement made the next release a little
+bit better. More importantly, each improvement freed up just a little bit more
+time during the next release, which allowed a release engineer a little more
+time to make the next improvement. These improvements snowballed until
+we found ourselves past the tipping point, and able to make time to work on
+significant major improvements. At that point, the gains from release
+optimizations really kicked in.
+
+\end{aosasect2}
+\end{aosasect1}
+
+\begin{aosasect1}{For More Information}
+
+We're really proud of the work done so far, and the abilities that it has
+brought to Mozilla in a newly-heated-up global browser market.
+
+Four years ago, doing two chemspill releases in a month would be a talking
+point within Mozilla. By contrast, last week a published exploit in a third-party
+library caused Mozilla to ship eight chemspills releases in two low-fuss days.
+
+As with everything, our release automation still has plenty of room for
+improvement, and our needs and demands continue to change. For a look at our
+ongoing work, please see:
 
 \begin{aosaitemize}  
 
@@ -784,8 +909,6 @@ For more information, please see:
   notes if you edit the URL appropriately.
 
 \end{aosaitemize}
-
-\end{aosasect2}
 
 \end{aosasect1}
 

@@ -555,11 +555,11 @@ not supposed to modify the message; they just make a binary decision
 and return a boolean answering the question, ``Did the rule match or
 not?''.  Rules can also record information in the metadata dictionary.
 
-In the figure, green arrows indicates message flow when the rule
-matches, while red arrows indicate message flow when the rule does not
+In the figure, solid arrows indicates message flow when the rule
+matches, while dotted arrows indicate message flow when the rule does not
 match.  The outcome of each rule is recorded in the metadata
 dictionary so that later on, Mailman will know (and be able to report)
-exactly which rules matched and which ones missed.  The blue arrows
+exactly which rules matched and which ones missed.  The dashed arrows
 indication transitions which are taken unconditionally, regardless of
 whether the rule matches or not.
 
