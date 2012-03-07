@@ -516,7 +516,7 @@ when a bug cannot be reproduced on the untranslated interpreter, debugging is
 difficult. It typically involves running GDB on the nearly unreadable generated
 C sources.
 
-Translating even a restricted subset of Python to a much lower level language
+Translating even a restricted subset of Python to a much lower-level language
 like C is not an easy task. The lowering passes described in
 Section~\ref{sec.pypy.translator} are not really independent. Functions are being
 annotated and rtyped throughout translation, and the annotator has some
@@ -548,17 +548,13 @@ developers are tenacious. Most famously, the current PyPy JIT is the
 \emph{fifth} attempt to add a JIT to PyPy!
 
 The PyPy project also prides itself on its visualization tools. The flow-graph
-charts in Section~\ref{sec.pypy.translator} are one example. 
-%% QUERY: This sentence is a little confusing; I'm not sure how the phrase
-%% "regular expression parse trees" fits in. It it something PyPy has? Is
-%% it something PyPy has tools to show invocation of? Please rewrite. --ARB
-PyPy also has tools to,
-for example, show invocation of the garbage collector over time and regular
-expression parse trees. Of special interest is jitviewer, a program that
-allows one to visually peel back the layers of a jitted function, from Python bytecode
-to JIT IR to assembly. (The jitviewer is shown in
-\aosafigref{fig.pypy.jitviewer}.) Visualization tools help developers
-understand how PyPy's many layers interact with each other.
+charts in Section~\ref{sec.pypy.translator} are one example.  PyPy also has
+tools to show invocation of the garbage collector over time and view the parse
+trees of regular expressions. Of special interest is jitviewer, a program that
+allows one to visually peel back the layers of a jitted function, from Python
+bytecode to JIT IR to assembly. (The jitviewer is shown in
+\aosafigref{fig.pypy.jitviewer}.) Visualization tools help developers understand
+how PyPy's many layers interact with each other.
 
 \aosafigure[300pt]{../images/pypy/jitviewer.png}{The jitviewer showing Python bytecode and associated JIT IR operations}{fig.pypy.jitviewer}
 
